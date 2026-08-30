@@ -6,7 +6,14 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
-## [Unreleased] - Fase 6: Verticais Especializadas (Farmácia ANARME & Gráfica/Insumos)
+## [1.0.0] - 2026-08-30 - Lançamento Oficial do ZBIZ+
+### Added
+- **M-Pesa C2B Integration:** Driver `MpesaDriver` com normalização de números moçambicanos (prefixos 84/85 e DDI 258) e chamadas STK Push.
+- **Webhooks & Idempotência:** Endpoint `/api/webhooks/mpesa` com validação de assinatura, atualização atómica de pagamentos de subscrição e prevenção contra processamento duplicado de transações.
+- **Gateway Manager:** `PaymentGatewayManager` extensível para múltiplos provedores móveis de Moçambique.
+- Suite de testes de integração financeira e pagamentos móveis (`tests/Feature/Payments/`).
+
+## [0.6.0] - 2026-08-30 - Fase 6: Verticais Especializadas (Farmácia ANARME & Gráfica/Insumos)
 ### Added
 - **ZBIZ Pharmacy:** Model `ProductBatch` com controlo rigoroso de lotes e datas de validade.
 - **Algoritmo FEFO (First Expired, First Out):** `PharmacyBatchService` para dispensação prioritária automática dos lotes com vencimento mais próximo e quarentena de lotes expirados.

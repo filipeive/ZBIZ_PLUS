@@ -319,3 +319,13 @@ Route::get('/health', function () {
         'version' => config('app.version', '1.0.0')
     ]);
 })->name('health');
+// ==========================================
+// M-PESA & MOBILE PAYMENTS (ZBIZ+)
+// ==========================================
+Route::prefix('webhooks')->group(function () {
+    Route::post('/mpesa', [\App\Http\Controllers\API\PaymentWebhookController::class, 'handleMpesaWebhook'])->name('webhooks.mpesa');
+});
+
+Route::prefix('payments')->group(function () {
+    Route::post('/mpesa/c2b', [\App\Http\Controllers\API\PaymentWebhookController::class, 'initiateMpesa'])->name('payments.mpesa.c2b');
+});
