@@ -6,7 +6,15 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
-## [Unreleased] - Fase 3: Core ERP & Multi-Branch
+## [Unreleased] - Fase 4: Motor de Licenciamento SaaS & Planos
+### Added
+- Modelos `Plan`, `Subscription` e `SubscriptionPayment` para monetização SaaS.
+- Seeder `PlanSeeder` com planos comerciais para o mercado moçambicano (Starter, Pro, Business, Pharmacy+, Enterprise).
+- `SubscriptionService` para gestão de períodos de avaliação (Trial 30 dias), subscrições, upgrades e validação de limites de utilizadores e filiais.
+- Middleware `CheckSubscriptionStatus` com fallback seguro para modo somente-leitura em caso de expiração da subscrição.
+- Testes automatizados de licenciamento e limites (`tests/Feature/Licensing/SubscriptionAndPlansTest.php`).
+
+## [0.3.0] - 2026-08-30 - Fase 3: Core ERP & Multi-Branch
 ### Added
 - Entidade `Customer` com validação de NUIT moçambicano, controlo de limite de crédito (`credit_limit`) e recálculo automático de saldo devedor.
 - Entidade `Supplier` para gestão de fornecedores e contas a pagar.

@@ -61,6 +61,16 @@ class Tenant extends Model
         return $this->hasMany(Debt::class);
     }
 
+    
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function currentSubscription(): HasOne
+    {
+        return $this->hasOne(Subscription::class)->latestOfMany();
+    }
     public function financialAccounts(): HasMany
     {
         return $this->hasMany(FinancialAccount::class);
