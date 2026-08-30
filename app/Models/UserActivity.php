@@ -12,6 +12,7 @@ class UserActivity extends Model
     use HasFactory;
 
     protected $fillable = [
+        'tenant_id', 'branch_id',
         'user_id',
         'action',
         'model_type',

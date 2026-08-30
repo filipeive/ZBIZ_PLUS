@@ -20,6 +20,7 @@ class User extends Authenticatable
     use HasFactory;
 
     protected $fillable = [
+        'tenant_id', 'branch_id',
         'name',
         'employee_code',
         'email',

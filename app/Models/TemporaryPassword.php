@@ -14,6 +14,7 @@ class TemporaryPassword extends Model
     use HasFactory;
 
     protected $fillable = [
+        'tenant_id', 'branch_id',
         'user_id',
         'token',
         'password_hash',

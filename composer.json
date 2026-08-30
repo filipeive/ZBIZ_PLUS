@@ -3,7 +3,10 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "keywords": [
+        "laravel",
+        "framework"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.2",
@@ -27,17 +30,18 @@
         "pestphp/pest-plugin-laravel": "^3.2"
     },
     "autoload": {
-    "psr-4": {
-        "App\\": "app/",
-        "Database\\Factories\\": "database/factories/",
-        "Database\\Seeders\\": "database/seeders/"
-    },
-    "files": [
-        "app/Helpers/PermissionHelper.php",
-        "app/Helpers/permissions.php",
-        "app/Helpers/NotificationHelper.php",
-         "app/Helpers/SearchHelper.php"
-    ]
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        },
+        "files": [
+            "app/Helpers/PermissionHelper.php",
+            "app/Helpers/permissions.php",
+            "app/Helpers/NotificationHelper.php",
+            "app/Helpers/SearchHelper.php",
+            "app/Helpers/tenancy.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

@@ -1,6 +1,8 @@
 <?php
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -8,11 +10,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
+    use BelongsToTenant;
     use SoftDeletes; 
 
     protected $dates = ['deleted_at']; 
 
     protected $fillable = [
+        'tenant_id', 'branch_id',
         'category_id', 'linked_product_id', 'name', 'description', 'type', 
         'purchase_price', 'selling_price', 'stock_quantity',
         'min_stock_level', 'unit', 'is_active',

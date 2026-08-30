@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SaleItem extends Model
 {
     protected $fillable = [
+        'tenant_id', 'branch_id',
         'sale_id', 'product_id', 'quantity', 'original_unit_price',
         'unit_price', 'discount_amount', 'discount_percentage', 
         'discount_type', 'discount_reason', 'total_price'

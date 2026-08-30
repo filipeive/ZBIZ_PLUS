@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Setting extends Model
 {
-    protected $fillable = ['key', 'value', 'group', 'type'];
+    protected $fillable = [
+        'tenant_id', 'branch_id','key', 'value', 'group', 'type'];
 
     /**
      * Get a setting value by key.

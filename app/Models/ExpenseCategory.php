@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ExpenseCategory extends Model
 {
+    use BelongsToTenant;
     use HasFactory;
 
     /**
@@ -15,6 +18,7 @@ class ExpenseCategory extends Model
      * @var array<string>
      */
     protected $fillable = [
+        'tenant_id', 'branch_id',
         'name',
         'description',
         'is_operational',

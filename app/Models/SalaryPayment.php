@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 class SalaryPayment extends Model
 {
     protected $fillable = [
+        'tenant_id', 'branch_id',
         'user_id',
         'financial_account_id',
         'financial_transaction_id',

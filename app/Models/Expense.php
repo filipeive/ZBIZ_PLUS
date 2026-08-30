@@ -2,13 +2,17 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
 class Expense extends Model
 {
+    use BelongsToTenant;
     protected $fillable = [
+        'tenant_id', 'branch_id',
         'user_id', 'expense_category_id', 'financial_account_id', 'description', 'amount',
         'expense_date', 'receipt_number', 'notes', 'product_id', 'quantity',
         'receipt_file_path',

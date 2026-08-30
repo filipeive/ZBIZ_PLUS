@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,8 +12,10 @@ use Illuminate\Support\Facades\DB;
 
 class Order extends Model
 {
+    use BelongsToTenant;
     // Campos que podem ser preenchidos em massa
     protected $fillable = [
+        'tenant_id', 'branch_id',
         'user_id',
         'customer_name',
         'customer_phone', 

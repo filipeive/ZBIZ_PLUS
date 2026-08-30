@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class DebtItem extends Model
 {
     protected $fillable = [
+        'tenant_id', 'branch_id',
         'debt_id',
         'product_id',
         'quantity',

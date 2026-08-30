@@ -9,7 +9,8 @@ class Role extends Model
 {
     use HasFactory;
     
-    protected $fillable = ['name', 'description'];
+    protected $fillable = [
+        'tenant_id', 'branch_id','name', 'description'];
 
     // Relacionamento com usuários
     public function users()
