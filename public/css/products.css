@@ -1,0 +1,330 @@
+/* Arquivo: public/css/products.css */
+
+/* Estados de carregamento */
+.loading-state {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Mensagens de erro */
+.error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: none;
+}
+
+.error-message.show {
+    display: block;
+}
+
+/* Campos com erro */
+.field-error {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Spinner de carregamento personalizado */
+.btn-loading .spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    border-right-color: transparent;
+    animation: spin 0.75s linear infinite;
+}
+
+/* Estilos para o modal de estoque */
+.stock-increase {
+    color: #28a745 !important;
+}
+
+.stock-decrease {
+    color: #dc3545 !important;
+}
+
+/* Preview de estoque - cores diferentes por tipo */
+.stock-preview-positive {
+    background-color: #d1e7dd !important;
+    border-color: #badbcc !important;
+    color: #0f5132 !important;
+}
+
+.stock-preview-negative {
+    background-color: #f8d7da !important;
+    border-color: #f5c2c7 !important;
+    color: #842029 !important;
+}
+
+.stock-preview-warning {
+    background-color: #fff3cd !important;
+    border-color: #ffecb5 !important;
+    color: #664d03 !important;
+}
+
+/* Formulário de estoque - mensagens de erro específicas */
+#stock-form .error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: none;
+}
+
+#stock-form .error-message.show {
+    display: block;
+}
+
+#stock-form .field-error {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Animação de rotação */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Badges de status personalizados */
+.badge.bg-light {
+    color: #495057 !important;
+}
+
+/* Hover effects para botões de ação */
+.btn-group .btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-group .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Quick stats bar */
+.card.bg-light {
+    border-left: 4px solid var(--bs-primary);
+}
+
+.card.bg-light:hover {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+/* Melhor responsividade para a tabela */
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.4rem;
+        font-size: 0.75rem;
+    }
+    
+    .badge {
+        font-size: 0.7em;
+    }
+}
+
+/* Estilos para campos de produto/serviço */
+#product-fields {
+    border-top: 1px solid #dee2e6;
+    padding-top: 1rem;
+    margin-top: 1rem;
+}
+
+#product-fields::before {
+    content: "Campos específicos para produtos";
+    position: absolute;
+    top: -10px;
+    left: 15px;
+    background: white;
+    padding: 0 10px;
+    font-size: 0.875rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* Preview de estoque - melhor visual */
+#stock-preview {
+    border-radius: 8px;
+    position: relative;
+}
+
+#stock-preview::before {
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: 20px;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 5px solid currentColor;
+}
+
+/* Toast customizado */
+.toast-container .toast {
+    min-width: 300px;
+}
+
+.toast .toast-body {
+    font-weight: 500;
+}
+
+/* Animações suaves */
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Melhor visual para campos desabilitados */
+.form-control:disabled,
+.form-select:disabled {
+    background-color: #f8f9fa;
+    opacity: 0.7;
+}
+
+/* Indicador visual para estoque baixo */
+.badge.bg-warning {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Melhor visual para o botão de novo produto */
+#btn-novo-produto {
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+    transition: all 0.2s ease-in-out;
+}
+
+#btn-novo-produto:hover {
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.4);
+    transform: translateY(-1px);
+}
+
+/* Visual aprimorado para filtros */
+.card-header {
+    border-bottom: 2px solid #e9ecef;
+}
+
+.card-header h5 {
+    margin: 0;
+    font-weight: 600;
+}
+
+/* Melhor espaçamento para os filtros */
+#filter-form .row {
+    align-items: end;
+}
+
+#filter-form .form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+/* Status indicator melhorado */
+.badge.bg-success,
+.badge.bg-secondary {
+    font-size: 0.75em;
+    padding: 0.4em 0.6em;
+}
+
+/* Melhor visual para preços */
+.text-success.fw-bold {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    letter-spacing: 0.5px;
+}
+
+/* Aprimoramento da paginação */
+.pagination {
+    margin: 0;
+}
+
+.page-link {
+    border-radius: 6px;
+    margin: 0 2px;
+    border: 1px solid #dee2e6;
+}
+
+.page-link:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+/* Melhor visual para mensagens vazias */
+.text-center.py-5 {
+    padding: 3rem 1rem !important;
+}
+
+.text-center.py-5 i {
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+/* Responsividade melhorada */
+@media (max-width: 576px) {
+    .btn-group-sm .btn {
+        padding: 0.2rem 0.3rem;
+        font-size: 0.7rem;
+    }
+    
+    .modal-lg {
+        max-width: 95%;
+        margin: 10px auto;
+    }
+    
+    .d-flex.gap-2 {
+        flex-direction: column;
+        gap: 0.5rem !important;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.25rem;
+    }
+    
+    .card-body.p-0 {
+        padding: 0.5rem !important;
+    }
+}
+
+/* Melhor contraste para modo escuro (se aplicável) */
+@media (prefers-color-scheme: dark) {
+    .card.bg-light {
+        background-color: #2d3748 !important;
+        border-color: #4a5568;
+    }
+    
+    .text-muted {
+        color: #a0aec0 !important;
+    }
+    
+    .badge.bg-light {
+        background-color: #4a5568 !important;
+        color: #e2e8f0 !important;
+    }
+}
