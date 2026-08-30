@@ -6,7 +6,16 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
-## [Unreleased] - Fase 5: ZBIZ POS 2.0 (Frente de Caixa Rápida)
+## [Unreleased] - Fase 6: Verticais Especializadas (Farmácia ANARME & Gráfica/Insumos)
+### Added
+- **ZBIZ Pharmacy:** Model `ProductBatch` com controlo rigoroso de lotes e datas de validade.
+- **Algoritmo FEFO (First Expired, First Out):** `PharmacyBatchService` para dispensação prioritária automática dos lotes com vencimento mais próximo e quarentena de lotes expirados.
+- **Alertas Regulatórios ANARME:** Consultas parametrizadas de risco de validade (30, 60 e 90 dias).
+- **Receitas Médicas:** Model `Prescription` para rastreio de prescrições e psicotrópicos.
+- **ZBIZ Repro / Gráfica:** Model `ProductInsumo` e `InsumoManagerService` para vinculação de matérias-primas e dedução automática de stock na venda de serviços de cópia/impressão.
+- Suite de testes automatizados para farmácia e gráfica (`tests/Feature/Verticals/`).
+
+## [0.5.0] - 2026-08-30 - Fase 5: ZBIZ POS 2.0 (Frente de Caixa Rápida)
 ### Added
 - Módulo `POSController` com endpoints ultrarrápidos para busca por código de barras, SKU e categorização dinâmica.
 - Interface moderna Blade + TailwindCSS + Alpine.js (`resources/views/pos/index.blade.php`) com suporte a atalhos de teclado (F2 Buscar, F4 Cliente, F9 Checkout, ESC Cancelar).

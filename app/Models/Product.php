@@ -30,6 +30,16 @@ class Product extends Model
     ];
 
     
+    
+    public function batches(): HasMany
+    {
+        return $this->hasMany(ProductBatch::class);
+    }
+
+    public function insumos(): HasMany
+    {
+        return $this->hasMany(ProductInsumo::class, 'parent_product_id');
+    }
     public function productBranches(): HasMany
     {
         return $this->hasMany(ProductBranch::class);
