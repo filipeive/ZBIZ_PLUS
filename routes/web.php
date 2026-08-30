@@ -478,4 +478,14 @@ Route::prefix('documents/templates')->name('documents.templates.')->group(functi
     // ... outras rotas ...
 });
 
+
+// ===== ZBIZ POS 2.0 (FRENTE DE CAIXA RÁPIDA) =====
+Route::middleware(['auth'])->prefix('pos')->name('pos.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\POS\POSController::class, 'index'])->name('index');
+    Route::get('/search', [\App\Http\Controllers\POS\POSController::class, 'searchProducts'])->name('search');
+    Route::post('/sale', [\App\Http\Controllers\POS\POSController::class, 'storeSale'])->name('sale');
+    Route::get('/receipt/{sale}', [\App\Http\Controllers\POS\POSController::class, 'printReceipt'])->name('receipt');
+    Route::post('/sync-offline', [\App\Http\Controllers\POS\POSController::class, 'syncOfflineSales'])->name('sync-offline');
+});
+
 require __DIR__ . '/auth.php';

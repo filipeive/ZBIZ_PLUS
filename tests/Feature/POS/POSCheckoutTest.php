@@ -1,0 +1,205 @@
+<?php
+
+namespace Tests\Feature\POS;
+
+use App\Models\Branch;
+use App\Models\Category;
+use App\Models\Customer;
+use App\Models\Debt;
+use App\Models\FinancialAccount;
+use App\Models\Product;
+use App\Models\ProductBranch;
+use App\Models\Role;
+use App\Models\Sale;
+use App\Models\Tenant;
+use App\Models\User;
+use App\Services\Inventory\StockManagerService;
+use App\Services\TenantContext;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class POSCheckoutTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected Tenant $tenant;
+    protected Branch $branch;
+    protected User $cashier;
+    protected Product $product1;
+    protected Product $product2;
+    protected Customer $customer;
+    protected FinancialAccount $cashAccount;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->tenant = Tenant::create([
+            'name'          => 'Supermercado Central',
+            'slug'          => 'super-central',
+            'business_type' => 'retail',
+            'status'        => 'active',
+        ]);
+
+        $this->branch = Branch::create([
+            'tenant_id' => $this->tenant->id,
+            'name'      => 'Caixa 01',
+            'code'      => 'CX01',
+            'is_main'   => true,
+            'is_active' => true,
+        ]);
+
+        $role = Role::firstOrCreate(['name' => 'cashier', 'guard_name' => 'web']);
+
+        $this->cashier = User::create([
+            'tenant_id' => $this->tenant->id,
+            'branch_id' => $this->branch->id,
+            'name'      => 'Operador Teste',
+            'email'     => 'caixa@super.co.mz',
+            'password'  => bcrypt('password'),
+            'role_id'   => $role->id,
+        ]);
+
+        $this->cashAccount = FinancialAccount::create([
+            'tenant_id'       => $this->tenant->id,
+            'branch_id'       => $this->branch->id,
+            'name'            => 'Caixa Principal',
+            'slug'            => 'caixa-principal',
+            'type'            => 'cash',
+            'current_balance' => 0,
+            'is_active'       => true,
+        ]);
+
+        $category = Category::create([
+            'tenant_id' => $this->tenant->id,
+            'name'      => 'Alimentação',
+        ]);
+
+        $this->product1 = Product::create([
+            'tenant_id'      => $this->tenant->id,
+            'category_id'    => $category->id,
+            'name'           => 'Leite Condensado Moça',
+            'barcode'        => '7891000100100',
+            'type'           => 'product',
+            'purchase_price' => 70.00,
+            'selling_price'  => 100.00,
+            'stock_quantity' => 50,
+        ]);
+
+        ProductBranch::create([
+            'tenant_id'      => $this->tenant->id,
+            'product_id'     => $this->product1->id,
+            'branch_id'      => $this->branch->id,
+            'stock_quantity' => 50,
+            'min_stock_level'=> 5,
+        ]);
+
+        $this->product2 = Product::create([
+            'tenant_id'      => $this->tenant->id,
+            'category_id'    => $category->id,
+            'name'           => 'Biscoito Maria',
+            'barcode'        => '7891000200200',
+            'type'           => 'product',
+            'purchase_price' => 20.00,
+            'selling_price'  => 35.00,
+            'stock_quantity' => 100,
+        ]);
+
+        ProductBranch::create([
+            'tenant_id'      => $this->tenant->id,
+            'product_id'     => $this->product2->id,
+            'branch_id'      => $this->branch->id,
+            'stock_quantity' => 100,
+            'min_stock_level'=> 10,
+        ]);
+
+        $this->customer = Customer::create([
+            'tenant_id'    => $this->tenant->id,
+            'branch_id'    => $this->branch->id,
+            'name'         => 'Empresa Silva Lda',
+            'nuit'         => '400555666',
+            'credit_limit' => 5000.00,
+            'current_debt' => 0,
+        ]);
+
+        app(TenantContext::class)->setTenant($this->tenant)->setBranch($this->branch);
+    }
+
+    public function test_pos_search_finds_products_by_barcode(): void
+    {
+        $this->actingAs($this->cashier);
+
+        $response = $this->getJson('/pos/search?q=7891000100100');
+        $response->assertOk();
+        $response->assertJsonPath('products.0.name', 'Leite Condensado Moça');
+        $response->assertJsonPath('products.0.stock_quantity', 50);
+    }
+
+    public function test_pos_sale_checkout_deducts_stock_and_updates_ledger(): void
+    {
+        $this->actingAs($this->cashier);
+
+        $payload = [
+            'customer_name'  => 'Cliente Balcão',
+            'items'          => [
+                [
+                    'product_id' => $this->product1->id,
+                    'quantity'   => 3,
+                    'unit_price' => 100.00,
+                    'discount'   => 0,
+                ],
+                [
+                    'product_id' => $this->product2->id,
+                    'quantity'   => 2,
+                    'unit_price' => 35.00,
+                    'discount'   => 0,
+                ]
+            ],
+            'discount_amount'=> 10.00, // 300 + 70 - 10 = 360 MT
+            'payment_method' => 'cash',
+            'amount_paid'    => 400.00,
+        ];
+
+        $response = $this->postJson('/pos/sale', $payload);
+        $response->assertOk();
+        $response->assertJsonPath('total_amount', 360);
+        $response->assertJsonPath('change_amount', 40);
+
+        // Stock deduction check
+        $stockService = app(StockManagerService::class);
+        $this->assertEquals(47, $stockService->getStock($this->product1->id, $this->branch->id));
+        $this->assertEquals(98, $stockService->getStock($this->product2->id, $this->branch->id));
+
+        // Ledger check
+        $this->assertEquals(360.00, $this->cashAccount->fresh()->current_balance);
+    }
+
+    public function test_pos_credit_sale_creates_debt_for_customer(): void
+    {
+        $this->actingAs($this->cashier);
+
+        $payload = [
+            'customer_id'    => $this->customer->id,
+            'items'          => [
+                [
+                    'product_id' => $this->product1->id,
+                    'quantity'   => 5,
+                    'unit_price' => 100.00,
+                    'discount'   => 0,
+                ]
+            ],
+            'discount_amount'=> 0,
+            'payment_method' => 'credit',
+            'amount_paid'    => 0,
+        ];
+
+        $response = $this->postJson('/pos/sale', $payload);
+        $response->assertOk();
+
+        // Debt record created
+        $this->assertEquals(1, Debt::count());
+        $this->assertEquals(500.00, Debt::first()->remaining_amount);
+        $this->assertEquals(500.00, $this->customer->fresh()->current_debt);
+        $this->assertEquals(4500.00, $this->customer->fresh()->available_credit);
+    }
+}

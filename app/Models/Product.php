@@ -17,7 +17,7 @@ class Product extends Model
 
     protected $fillable = [
         'tenant_id', 'branch_id',
-        'category_id', 'linked_product_id', 'name', 'description', 'type', 
+        'category_id', 'linked_product_id', 'barcode', 'sku', 'name', 'description', 'type', 
         'purchase_price', 'selling_price', 'stock_quantity',
         'min_stock_level', 'unit', 'is_active',
         'deleted_at','original_name',

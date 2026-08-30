@@ -6,7 +6,16 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
-## [Unreleased] - Fase 4: Motor de Licenciamento SaaS & Planos
+## [Unreleased] - Fase 5: ZBIZ POS 2.0 (Frente de Caixa Rápida)
+### Added
+- Módulo `POSController` com endpoints ultrarrápidos para busca por código de barras, SKU e categorização dinâmica.
+- Interface moderna Blade + TailwindCSS + Alpine.js (`resources/views/pos/index.blade.php`) com suporte a atalhos de teclado (F2 Buscar, F4 Cliente, F9 Checkout, ESC Cancelar).
+- Suporte a multi-pagamento no POS: Dinheiro com cálculo de troco, M-Pesa, Cartão POS e Fiado/Crédito com criação imediata de dívida.
+- Suporte a modo Offline-First com enfileiramento em cache local e sincronização automática via `/pos/sync-offline`.
+- Layout de Impressão Térmica 80mm/58mm (`resources/views/pos/receipt.blade.php`) com NUIT do cliente/empresa, operador e data.
+- Testes automatizados de frente de caixa e checkout (`tests/Feature/POS/POSCheckoutTest.php`).
+
+## [0.4.0] - 2026-08-30 - Fase 4: Motor de Licenciamento SaaS & Planos
 ### Added
 - Modelos `Plan`, `Subscription` e `SubscriptionPayment` para monetização SaaS.
 - Seeder `PlanSeeder` com planos comerciais para o mercado moçambicano (Starter, Pro, Business, Pharmacy+, Enterprise).
