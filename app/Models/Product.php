@@ -29,6 +29,21 @@ class Product extends Model
         'is_active' => 'boolean',
     ];
 
+    
+    public function productBranches(): HasMany
+    {
+        return $this->hasMany(ProductBranch::class);
+    }
+
+    public function getStockForBranch(?int $branchId = null): int
+    {
+        $branchId ??= current_branch_id();
+        if ($branchId) {
+            $pb = $this->productBranches()->where('branch_id', $branchId)->first();
+            return $pb ? (int)$pb->stock_quantity : 0;
+        }
+        return (int)$this->stock_quantity;
+    }
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);

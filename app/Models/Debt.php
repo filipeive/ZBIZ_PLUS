@@ -15,6 +15,7 @@ class Debt extends Model
     use SoftDeletes;
 
     protected $fillable = [
+        'customer_id',
         'tenant_id', 'branch_id',
         'debt_type',
         'user_id',
@@ -52,6 +53,11 @@ class Debt extends Model
     ];
 
     // Relacionamentos
+    
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

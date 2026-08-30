@@ -3,26 +3,29 @@
 namespace App\Models;
 
 use App\Traits\BelongsToTenant;
-
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class FinancialAccount extends Model
 {
     use BelongsToTenant;
+
     protected $fillable = [
-        'tenant_id', 'branch_id',
+        'tenant_id',
+        'branch_id',
         'name',
         'slug',
         'type',
         'opening_balance',
+        'current_balance',
         'is_active',
         'sort_order',
     ];
 
     protected $casts = [
         'opening_balance' => 'decimal:2',
-        'is_active' => 'boolean',
+        'current_balance' => 'decimal:2',
+        'is_active'       => 'boolean',
     ];
 
     public function transactions(): HasMany
@@ -36,10 +39,9 @@ class FinancialAccount extends Model
     }
 
     /**
-     * Saldo actual = opening_balance + inflows - outflows
-     * APENAS transações confirmadas (exclui revertidas/canceladas).
+     * Recalcular saldo total a partir do livro-razão.
      */
-    public function getCurrentBalanceAttribute(): float
+    public function calculateLedgerBalance(): float
     {
         $confirmedTransactions = $this->transactions()->where('status', 'confirmed');
 

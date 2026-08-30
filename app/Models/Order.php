@@ -43,6 +43,11 @@ class Order extends Model
     /* ============================
      * RELACIONAMENTOS
      * ============================ */
+    
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

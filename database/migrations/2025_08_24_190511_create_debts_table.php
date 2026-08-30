@@ -9,32 +9,39 @@ return new class extends Migration
     public function up()
     {
         Schema::create('debts', function (Blueprint $table) {
-        $table->id();
-        $table->unsignedBigInteger('user_id')->nullable(); // usuário que criou
-        $table->unsignedBigInteger('sale_id')->nullable(); // venda relacionada
-        $table->foreignId('order_id')->nullable()->constrained('orders')->onDelete('set null');
-        $table->string('customer_name', 100);
-        $table->string('customer_phone', 20)->nullable();
-        $table->string('customer_document', 20)->nullable();
-        $table->decimal('original_amount', 10, 2);
-        $table->decimal('paid_amount', 10, 2)->default(0);
-        $table->decimal('remaining_amount', 10, 2);
-        $table->date('debt_date');
-        $table->date('due_date')->nullable();
-        $table->enum('status', ['active', 'partial', 'paid', 'overdue', 'cancelled'])->default('active');
-        $table->text('description')->nullable();
-        $table->text('notes')->nullable();
+            $table->id();
+            $table->string('debt_type', 20)->default('product'); // product, money
+            $table->unsignedBigInteger('user_id')->nullable(); // usuário que criou
+            $table->unsignedBigInteger('employee_id')->nullable(); // se dívida de funcionário
+            $table->unsignedBigInteger('sale_id')->nullable(); // venda relacionada
+            $table->unsignedBigInteger('generated_sale_id')->nullable();
+            $table->foreignId('order_id')->nullable()->constrained('orders')->onDelete('set null');
+            
+            $table->string('customer_name', 100)->nullable();
+            $table->string('customer_phone', 30)->nullable();
+            $table->string('customer_document', 30)->nullable();
 
-        $table->timestamps();
+            $table->string('employee_name', 100)->nullable();
+            $table->string('employee_phone', 30)->nullable();
+            $table->string('employee_document', 30)->nullable();
 
-        $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
-        $table->foreign('sale_id')->references('id')->on('sales')->onDelete('set null');
+            $table->decimal('original_amount', 14, 2);
+            $table->decimal('paid_amount', 14, 2)->default(0);
+            $table->decimal('remaining_amount', 14, 2);
+            $table->date('debt_date');
+            $table->date('due_date')->nullable();
+            $table->string('status', 20)->default('active'); // active, partial, paid, overdue, cancelled
+            $table->text('description')->nullable();
+            $table->text('notes')->nullable();
 
-        $table->index(['status', 'due_date']);
-        $table->index(['customer_name']);
-        $table->index(['debt_date']);
-});
+            $table->softDeletes();
+            $table->timestamps();
 
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
+            $table->index(['status', 'due_date']);
+            $table->index(['customer_name']);
+            $table->index(['debt_date']);
+        });
     }
 
     public function down()

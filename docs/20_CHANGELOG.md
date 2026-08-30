@@ -6,7 +6,17 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
-## [Unreleased] - Fase 2: Multi-Tenancy & Segurança
+## [Unreleased] - Fase 3: Core ERP & Multi-Branch
+### Added
+- Entidade `Customer` com validação de NUIT moçambicano, controlo de limite de crédito (`credit_limit`) e recálculo automático de saldo devedor.
+- Entidade `Supplier` para gestão de fornecedores e contas a pagar.
+- Gestão de stock multi-filial com `ProductBranch` (quantidades isoladas por loja e armazém).
+- Módulo de transferência de stock entre filiais (`StockTransfer` e `StockManagerService`).
+- Turnos e Fecho de Caixa com contagem cega (`CashShift`).
+- `FinancialLedgerService` aprimorado para auditoria atómica, sincronização de vendas/despesas e métricas consolidadas ou por filial.
+- Suite completa de testes automatizados (`tests/Feature/Core/`).
+
+## [0.2.0] - 2026-08-30 - Fase 2: Multi-Tenancy & Segurança
 ### Added
 - Model `Tenant` para gestão de empresas clientes e subscrições.
 - Model `Branch` para suporte nativo a múltiplas filiais por empresa.

@@ -10,9 +10,17 @@ class Role extends Model
     use HasFactory;
     
     protected $fillable = [
-        'tenant_id', 'branch_id','name', 'description'];
+        'tenant_id',
+        'branch_id',
+        'name',
+        'guard_name',
+        'description',
+    ];
 
-    // Relacionamento com usuários
+    protected $attributes = [
+        'guard_name' => 'web',
+    ];
+
     public function users()
     {
         return $this->hasMany(User::class);

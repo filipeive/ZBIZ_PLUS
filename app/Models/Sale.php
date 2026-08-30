@@ -12,6 +12,7 @@ class Sale extends Model
 {
     use BelongsToTenant;
     protected $fillable = [
+        'customer_id',
         'tenant_id', 'branch_id',
         'user_id', 'customer_name', 'customer_phone',
         'subtotal', 'discount_amount', 'discount_percentage', 
@@ -29,6 +30,16 @@ class Sale extends Model
         'updated_at' => 'date',
     ];
 
+    
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function getCustomerDisplayNameAttribute(): string
+    {
+        return $this->customer?->name ?? $this->customer_name ?? 'Cliente Avulso';
+    }
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
