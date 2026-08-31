@@ -123,22 +123,8 @@ class RegisterController extends Controller
                 'sort_order'      => 2,
             ]);
 
-            // 4. Criar Categorias Padrão baseadas no Setor
-            $defaultCategories = match ($validated['business_type']) {
-                'pharmacy'    => ['Antibióticos', 'Analgésicos & Anti-inflamatórios', 'Vitaminas & Suplementos', 'Higiene & Dermocosméticos', 'Material Hospitalar'],
-                'reprography' => ['Impressão Digital', 'Fotocópias', 'Encadernação & Plastificação', 'Grandes Formatos & Banners', 'Brindes & Serigrafia'],
-                'restaurant'  => ['Pratos Principais', 'Bebidas & Sumos', 'Sobremesas', 'Entradas', 'Cafetaria'],
-                default       => ['Mercearia', 'Bebidas & Refrescos', 'Higiene Pessoal', 'Limpeza', 'Diversos'],
-            };
-
-            foreach ($defaultCategories as $catName) {
-                Category::create([
-                    'tenant_id'   => $tenant->id,
-                    'name'        => $catName,
-                    'description' => "Categoria inicial de {$catName}",
-                    'is_active'   => true,
-                ]);
-            }
+            // 4. Criar Categorias Padrão especializadas por Setor
+            \App\Services\Tenant\TenantSectorService::seedCategoriesForTenant($tenant, $validated['business_type']);
 
             // 5. Obter ou Criar Role Super Admin
             $role = Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web'], ['description' => 'Administrador Geral']);

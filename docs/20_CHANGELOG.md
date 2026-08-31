@@ -6,6 +6,14 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
+## [1.0.3] - 2026-08-31 - Correção de Coluna de Despesas & Categorias Setoriais Rigorosas
+### Fixed
+- **Coluna `receipt_number` na tabela `expenses`:** Adicionada migration `2026_08_31_000006_add_receipt_number_to_expenses_table.php` resolvendo a exceção SQLSTATE ao consultar despesas e relatórios.
+- **Categorização Rigorosa por Setor (`TenantSectorService`):** Correção do seeding e vinculação de categorias especializadas para Farmácias (Antibióticos, Analgésicos, Vitaminas, Pediátricos, Psicotrópicos ANARME), eliminando categorias de mercearia/bebidas em tenants farmacêuticos.
+
+### Added
+- **Modernização Global de Telas em TailwindCSS:** Atualizadas as views de **Vendas (`sales/index.blade.php`)**, **Fiados & Dívidas (`debts/index.blade.php`)**, **Despesas (`expenses/index.blade.php`)**, **Finanças/Livro-Razão (`finances/index.blade.php`)** e **Cadastro de Produtos (`products/create.blade.php`)** com o design escuro e responsivo do ZBIZ POS 2.0.
+
 ## [1.0.2] - 2026-08-31 - Migração Total para TailwindCSS & Temas Setoriais Dinâmicos
 ### Fixed
 - **Inconsistência de Coluna `status` vs `is_active`:** Corrigidas todas as consultas SQL em `Category`, `ProductController`, `OrderController`, `CategoryController` e `SearchController`, adicionando o scope `scopeActive()` no model `Category`.

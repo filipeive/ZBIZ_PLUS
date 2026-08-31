@@ -1,39 +1,38 @@
-@extends('layouts.app')
+<?php $__env->startSection('title', 'Livro-Razão & Finanças'); ?>
+<?php $__env->startSection('page-title', 'Livro-Razão Financeiro & Contas'); ?>
 
-@section('title', 'Livro-Razão & Finanças')
-@section('page-title', 'Livro-Razão Financeiro & Contas')
-
-@php
+<?php
     $theme = tenant_theme();
-@endphp
+?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="space-y-6">
     
     <!-- Top Stats / Balances -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        @forelse($accounts ?? [] as $account)
+        <?php $__empty_1 = true; $__currentLoopData = $accounts ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $account): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
             <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ $account->name }}</span>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider"><?php echo e($account->name); ?></span>
                         <div class="w-8 h-8 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center text-xs">
-                            <i class="fa-solid {{ $account->type === 'mobile_money' ? 'fa-mobile-screen-button' : 'fa-wallet' }} {{ $theme['text_accent'] }}"></i>
+                            <i class="fa-solid <?php echo e($account->type === 'mobile_money' ? 'fa-mobile-screen-button' : 'fa-wallet'); ?> <?php echo e($theme['text_accent']); ?>"></i>
                         </div>
                     </div>
                     <div class="text-2xl font-black font-heading text-white">
-                        {{ number_format($account->current_balance, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
+                        <?php echo e(number_format($account->current_balance, 2, ',', '.')); ?> <span class="text-xs text-slate-400 font-normal">MT</span>
                     </div>
                 </div>
                 <div class="mt-4 pt-3 border-t border-slate-800/80 text-[10px] text-slate-500">
-                    Conta {{ $account->is_active ? 'Ativa' : 'Inativa' }} • Filial: {{ $account->branch?->name ?? 'Principal' }}
+                    Conta <?php echo e($account->is_active ? 'Ativa' : 'Inativa'); ?> • Filial: <?php echo e($account->branch?->name ?? 'Principal'); ?>
+
                 </div>
             </div>
-        @empty
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
             <div class="col-span-full py-12 text-center text-slate-500 bg-slate-900/40 rounded-3xl border border-slate-800">
                 <p>Nenhuma conta financeira configurada.</p>
             </div>
-        @endforelse
+        <?php endif; ?>
     </div>
 
     <!-- Ledger Transactions Table -->
@@ -58,47 +57,54 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-800/60">
-                    @forelse($transactions ?? [] as $tx)
+                    <?php $__empty_1 = true; $__currentLoopData = $transactions ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $tx): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                         <tr class="hover:bg-slate-800/30 transition">
                             <td class="py-3.5 font-mono text-slate-400">
-                                {{ $tx->created_at ? $tx->created_at->format('d/m/Y H:i') : '-' }}
+                                <?php echo e($tx->created_at ? $tx->created_at->format('d/m/Y H:i') : '-'); ?>
+
                             </td>
                             <td class="py-3.5 font-bold text-white">
-                                {{ $tx->description }}
+                                <?php echo e($tx->description); ?>
+
                             </td>
                             <td class="py-3.5 text-slate-400">
-                                {{ $tx->account?->name ?? 'Geral' }}
+                                <?php echo e($tx->account?->name ?? 'Geral'); ?>
+
                             </td>
                             <td class="py-3.5">
-                                <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase {{ $tx->type === 'in' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border border-rose-500/30' }}">
-                                    {{ $tx->type === 'in' ? 'Entrada' : 'Saída' }}
+                                <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase <?php echo e($tx->type === 'in' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'); ?>">
+                                    <?php echo e($tx->type === 'in' ? 'Entrada' : 'Saída'); ?>
+
                                 </span>
                             </td>
-                            <td class="py-3.5 text-right font-black font-mono {{ $tx->type === 'in' ? 'text-emerald-400' : 'text-rose-400' }}">
-                                {{ $tx->type === 'in' ? '+' : '-' }}{{ number_format($tx->amount, 2, ',', '.') }} MT
+                            <td class="py-3.5 text-right font-black font-mono <?php echo e($tx->type === 'in' ? 'text-emerald-400' : 'text-rose-400'); ?>">
+                                <?php echo e($tx->type === 'in' ? '+' : '-'); ?><?php echo e(number_format($tx->amount, 2, ',', '.')); ?> MT
                             </td>
                             <td class="py-3.5 text-right font-mono text-slate-300">
-                                {{ number_format($tx->balance_after ?? 0, 2, ',', '.') }} MT
+                                <?php echo e(number_format($tx->balance_after ?? 0, 2, ',', '.')); ?> MT
                             </td>
                         </tr>
-                    @empty
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                         <tr>
                             <td colspan="6" class="py-12 text-center text-slate-500">
                                 <i class="fa-solid fa-scale-balanced text-3xl mb-2 text-slate-600"></i>
                                 <p>Nenhuma transação financeira registada.</p>
                             </td>
                         </tr>
-                    @endforelse
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
 
-        @if(isset($transactions) && method_exists($transactions, 'links'))
+        <?php if(isset($transactions) && method_exists($transactions, 'links')): ?>
             <div class="mt-6 pt-4 border-t border-slate-800">
-                {{ $transactions->links() }}
+                <?php echo e($transactions->links()); ?>
+
             </div>
-        @endif
+        <?php endif; ?>
     </div>
 
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /home/fdev-ms/Filipe/ZBIZ_PLUS/resources/views/finances/index.blade.php ENDPATH**/ ?>

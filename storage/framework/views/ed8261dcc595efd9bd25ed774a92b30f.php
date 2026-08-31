@@ -1,13 +1,11 @@
-@extends('layouts.app')
+<?php $__env->startSection('title', 'Fiados & Dívidas'); ?>
+<?php $__env->startSection('page-title', 'Gestão de Fiados & Contas a Receber'); ?>
 
-@section('title', 'Fiados & Dívidas')
-@section('page-title', 'Gestão de Fiados & Contas a Receber')
-
-@php
+<?php
     $theme = tenant_theme();
-@endphp
+?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="space-y-6">
     
     <!-- Top Controls Bar -->
@@ -18,7 +16,7 @@
         </div>
 
         <div class="flex items-center gap-3">
-            <a href="{{ route('debts.create') }}" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
+            <a href="<?php echo e(route('debts.create')); ?>" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
                 <i class="fa-solid fa-plus"></i> Novo Fiado
             </a>
         </div>
@@ -41,55 +39,62 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-800/60">
-                    @forelse($debts as $debt)
+                    <?php $__empty_1 = true; $__currentLoopData = $debts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $debt): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                         <tr class="hover:bg-slate-800/30 transition">
                             <td class="py-3.5 font-mono text-slate-400">
-                                {{ $debt->created_at ? $debt->created_at->format('d/m/Y') : '-' }}
+                                <?php echo e($debt->created_at ? $debt->created_at->format('d/m/Y') : '-'); ?>
+
                             </td>
                             <td class="py-3.5 font-bold text-white">
-                                {{ $debt->customer_name ?? $debt->customer?->name ?? 'Cliente' }}
+                                <?php echo e($debt->customer_name ?? $debt->customer?->name ?? 'Cliente'); ?>
+
                             </td>
                             <td class="py-3.5 text-slate-400">
-                                {{ $debt->customer_phone ?? $debt->customer?->phone ?? '-' }}
+                                <?php echo e($debt->customer_phone ?? $debt->customer?->phone ?? '-'); ?>
+
                             </td>
                             <td class="py-3.5 text-right text-slate-300 font-mono">
-                                {{ number_format($debt->total_amount, 2, ',', '.') }} MT
+                                <?php echo e(number_format($debt->total_amount, 2, ',', '.')); ?> MT
                             </td>
                             <td class="py-3.5 text-right text-emerald-400 font-mono">
-                                {{ number_format($debt->paid_amount ?? 0, 2, ',', '.') }} MT
+                                <?php echo e(number_format($debt->paid_amount ?? 0, 2, ',', '.')); ?> MT
                             </td>
                             <td class="py-3.5 text-right font-black text-rose-400 font-mono">
-                                {{ number_format($debt->remaining_amount, 2, ',', '.') }} MT
+                                <?php echo e(number_format($debt->remaining_amount, 2, ',', '.')); ?> MT
                             </td>
                             <td class="py-3.5 text-center">
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold {{ $debt->remaining_amount <= 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/30' }}">
-                                    {{ $debt->remaining_amount <= 0 ? 'Liquidado' : 'Pendente' }}
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold <?php echo e($debt->remaining_amount <= 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'); ?>">
+                                    <?php echo e($debt->remaining_amount <= 0 ? 'Liquidado' : 'Pendente'); ?>
+
                                 </span>
                             </td>
                             <td class="py-3.5 text-right">
-                                <a href="{{ route('debts.show', $debt->id) }}" class="inline-flex items-center px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition">
+                                <a href="<?php echo e(route('debts.show', $debt->id)); ?>" class="inline-flex items-center px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition">
                                     Detalhes / Pagar
                                 </a>
                             </td>
                         </tr>
-                    @empty
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                         <tr>
                             <td colspan="8" class="py-12 text-center text-slate-500">
                                 <i class="fa-solid fa-hand-holding-dollar text-3xl mb-2 text-slate-600"></i>
                                 <p>Nenhum fiado pendente.</p>
                             </td>
                         </tr>
-                    @endforelse
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
 
-        @if(method_exists($debts, 'links'))
+        <?php if(method_exists($debts, 'links')): ?>
             <div class="mt-6 pt-4 border-t border-slate-800">
-                {{ $debts->links() }}
+                <?php echo e($debts->links()); ?>
+
             </div>
-        @endif
+        <?php endif; ?>
     </div>
 
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /home/fdev-ms/Filipe/ZBIZ_PLUS/resources/views/debts/index.blade.php ENDPATH**/ ?>
