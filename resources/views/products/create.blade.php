@@ -1,28 +1,40 @@
 @extends('layouts.app')
 
 @section('title', 'Novo Artigo')
-@section('page-title', 'Cadastrar Novo Artigo / Serviço')
+@section('page-title', 'Cadastrar Novo Artigo / Medicamento')
 
 @php
     $theme = tenant_theme();
+    $isPharmacy = current_tenant()?->isPharmacy() ?? false;
 @endphp
 
 @section('content')
-<div class="max-w-3xl mx-auto space-y-6">
+<div class="max-w-3xl mx-auto space-y-6" x-data="{ hasBatch: {{ $isPharmacy ? 'true' : 'false' }} }">
     
     <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
         <form action="{{ route('products.store') }}" method="POST" class="space-y-6">
             @csrf
 
-            <div>
-                <h2 class="text-base font-black text-white font-heading">Informações do Artigo</h2>
-                <p class="text-xs text-slate-400">Preencha os detalhes para disponibilizar no catálogo e POS.</p>
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-base font-black text-white font-heading">Informações Gerais do Artigo</h2>
+                    <p class="text-xs text-slate-400">Preencha os dados de identificação, preço e stock.</p>
+                </div>
+
+                @if($isPharmacy)
+                    <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $theme['badge'] }} flex items-center gap-1.5">
+                        <i class="fa-solid fa-pills"></i> Módulo Farmácia / ANARME
+                    </span>
+                @endif
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="sm:col-span-2">
-                    <label class="block text-xs font-bold text-slate-300 mb-1">Nome do Artigo / Medicamento / Serviço *</label>
-                    <input type="text" name="name" value="{{ old('name') }}" required placeholder="Ex: Paracetamol 500mg"
+                    <label class="block text-xs font-bold text-slate-300 mb-1">
+                        {{ $isPharmacy ? 'Nome Comercial & Dosagem do Medicamento *' : 'Nome do Artigo / Serviço *' }}
+                    </label>
+                    <input type="text" name="name" value="{{ old('name') }}" required 
+                           placeholder="{{ $isPharmacy ? 'Ex: Amoxicilina 500mg Cápsulas' : 'Ex: Produto A' }}"
                            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
                 </div>
 
@@ -50,7 +62,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1">Código Interno (SKU)</label>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Código Interno (SKU / Registo ANARME)</label>
                     <input type="text" name="sku" value="{{ old('sku') }}" placeholder="Ex: MED-001"
                            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
                 </div>
@@ -68,7 +80,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1">Stock Inicial</label>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Stock Inicial (Unidades / Caixas)</label>
                     <input type="number" name="stock_quantity" value="{{ old('stock_quantity', 0) }}"
                            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
                 </div>
@@ -77,6 +89,57 @@
                     <label class="block text-xs font-bold text-slate-300 mb-1">Stock Mínimo para Alerta</label>
                     <input type="number" name="min_stock_level" value="{{ old('min_stock_level', 5) }}"
                            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                </div>
+            </div>
+
+            <!-- SECÇÃO ESPECIALIZADA: CONTROLO DE LOTE & VALIDADE (ANARME / FEFO) -->
+            <div class="pt-4 border-t border-slate-800 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-check text-emerald-400"></i> Controlo de Lote & Data de Validade
+                        </h3>
+                        <p class="text-[11px] text-slate-400">Essencial para medicamentos, perecíveis e rastreabilidade FEFO.</p>
+                    </div>
+
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" x-model="hasBatch" class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                </div>
+
+                <div x-show="hasBatch" x-transition class="p-5 rounded-2xl bg-slate-950/80 border border-emerald-500/20 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-emerald-400 mb-1">
+                            Número do Lote (Batch Number) *
+                        </label>
+                        <input type="text" name="batch_number" value="{{ old('batch_number') }}"
+                               placeholder="Ex: LT-2026/09A"
+                               class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-emerald-400 mb-1">
+                            Data de Validade (Expiry Date) *
+                        </label>
+                        <input type="date" name="expiry_date" value="{{ old('expiry_date') }}"
+                               class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-1">
+                            Data de Fabrico (Opcional)
+                        </label>
+                        <input type="date" name="manufacture_date" value="{{ old('manufacture_date') }}"
+                               class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                    </div>
+
+                    <div class="flex items-center pt-5">
+                        <div class="text-[11px] text-slate-400 leading-tight">
+                            <i class="fa-solid fa-shield-halved text-emerald-400 mr-1"></i>
+                            O ZBIZ+ alertará automaticamente quando faltarem <strong>90, 60 e 30 dias</strong> para o vencimento.
+                        </div>
+                    </div>
                 </div>
             </div>
 

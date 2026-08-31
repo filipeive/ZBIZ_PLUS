@@ -6,6 +6,12 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
+## [1.0.4] - 2026-08-31 - Gestão Integrada de Lotes & Validades (ANARME / FEFO)
+### Added
+- **Registo Especializado de Medicamentos:** Adicionados campos de Número de Lote (`batch_number`), Data de Validade (`expiry_date`), Data de Fabrico (`manufacture_date`), Dosagem (`dosage`) e Princípio Ativo (`active_ingredient`) ao formulário de cadastro de produtos.
+- **Indicadores Visuais de Validade no Catálogo:** Exibição da data de expiração do lote mais próximo (FEFO) com badges coloridas de alerta (verde para seguro, âmbar para vencimento próximo < 60 dias e vermelho para expirado).
+- **Migration `2026_08_31_000007_add_sku_and_dosage_to_products_table.php`:** Suporte a SKU, dosagem e princípio ativo na tabela `products`.
+
 ## [1.0.3] - 2026-08-31 - Correção de Coluna de Despesas & Categorias Setoriais Rigorosas
 ### Fixed
 - **Coluna `receipt_number` na tabela `expenses`:** Adicionada migration `2026_08_31_000006_add_receipt_number_to_expenses_table.php` resolvendo a exceção SQLSTATE ao consultar despesas e relatórios.

@@ -83,6 +83,11 @@ class ProductController extends Controller
                 'type' => 'required|in:product,service',
                 'selling_price' => 'required|numeric|min:0',
                 'purchase_price' => 'nullable|numeric|min:0',
+                'barcode' => 'nullable|string|max:60',
+                'sku' => 'nullable|string|max:60',
+                'batch_number' => 'nullable|string|max:60',
+                'expiry_date' => 'nullable|date',
+                'manufacture_date' => 'nullable|date',
                 'unit' => 'nullable|string|max:20',
                 'description' => 'nullable|string|max:500',
                 'is_active' => 'boolean'
@@ -100,7 +105,7 @@ class ProductController extends Controller
 
             $data = collect($validated)->only([
                 'name', 'category_id', 'linked_product_id', 'type', 'selling_price',
-                'purchase_price', 'unit', 'description'
+                'purchase_price', 'barcode', 'sku', 'unit', 'description'
             ])->toArray();
 
             $data['is_active'] = $request->boolean('is_active', true);
@@ -115,6 +120,27 @@ class ProductController extends Controller
             }
 
             $product = Product::create($data);
+
+            // Se for medicamento/produto com lote e validade, registar lote no PharmacyBatchService
+            $batchNumber = $request->input('batch_number');
+            $expiryDate = $request->input('expiry_date');
+
+            if (!empty($expiryDate) || !empty($batchNumber)) {
+                $batchNum = !empty($batchNumber) ? $batchNumber : ('LOTE-' . date('Ymd') . '-' . $product->id);
+                $expDate = !empty($expiryDate) ? $expiryDate : now()->addYear()->toDateString();
+                
+                \App\Models\ProductBatch::create([
+                    'tenant_id'        => current_tenant_id(),
+                    'branch_id'        => current_branch_id(),
+                    'product_id'       => $product->id,
+                    'batch_number'     => $batchNum,
+                    'expiry_date'      => $expDate,
+                    'manufacture_date' => $request->input('manufacture_date'),
+                    'quantity'         => (int) $request->input('stock_quantity', 0),
+                    'cost_price'       => (float) $request->input('purchase_price', 0),
+                    'status'           => 'active',
+                ]);
+            }
 
             // Criar movimento inicial de estoque se necessário
             if ($product->type === 'product' && $product->stock_quantity > 0) {
@@ -191,6 +217,11 @@ class ProductController extends Controller
                 'linked_product_id' => 'nullable|exists:products,id',
                 'selling_price' => 'required|numeric|min:0',
                 'purchase_price' => 'nullable|numeric|min:0',
+                'barcode' => 'nullable|string|max:60',
+                'sku' => 'nullable|string|max:60',
+                'batch_number' => 'nullable|string|max:60',
+                'expiry_date' => 'nullable|date',
+                'manufacture_date' => 'nullable|date',
                 'unit' => 'nullable|string|max:20',
                 'description' => 'nullable|string|max:500',
                 'is_active' => 'boolean'
