@@ -47,7 +47,7 @@ class ProductController extends Controller
         $products = $query->orderBy('name')->paginate(12)->withQueryString();
 
         // Buscar categorias para filtros
-        $categories = Category::where('status', 'active')->orderBy('name')->get();
+        $categories = Category::where('is_active', true)->orderBy('name')->get();
 
         // Calcular estatísticas básicas
         $allProducts = Product::all();
@@ -64,7 +64,7 @@ class ProductController extends Controller
      */
     public function create(Request $request)
     {
-        $categories = Category::where('status', 'active')->orderBy('name')->get();
+        $categories = Category::where('is_active', true)->orderBy('name')->get();
         // Produtos físicos que podem ser vinculados a serviços (ex: Papel A4)
         $physicalProducts = Product::where('type', 'product')->where('is_active', true)->orderBy('name')->get();
         return view('products.create', compact('categories', 'physicalProducts'));
@@ -158,7 +158,7 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        $categories = Category::where('status', 'active')->orderBy('name')->get();
+        $categories = Category::where('is_active', true)->orderBy('name')->get();
         // Produtos físicos que podem ser vinculados (exceto o próprio para evitar loops)
         $physicalProducts = Product::where('type', 'product')
                                    ->where('is_active', true)
@@ -411,7 +411,7 @@ class ProductController extends Controller
 
         $products = $query->get();
         $reportStats = $this->calculateReportStats($products);
-        $categories = Category::where('status', 'active')->orderBy('name')->get();
+        $categories = Category::where('is_active', true)->orderBy('name')->get();
 
         return view('products.report', compact('products', 'categories', 'reportStats'));
     }
@@ -454,7 +454,7 @@ class ProductController extends Controller
             'total_services' => $totalServices,
             'total_value' => $totalValue,
             'low_stock_count' => $lowStockCount,
-            'active_categories' => Category::where('status', 'active')->count(),
+            'active_categories' => Category::where('is_active', true)->count(),
             'inactive_products' => $products->where('is_active', false)->count(),
             'by_category' => $byCategory,
             'stock_analysis' => $stockAnalysis,
@@ -482,7 +482,7 @@ class ProductController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        $categories = Category::where('status', 'active')->orderBy('name')->get();
+        $categories = Category::where('is_active', true)->orderBy('name')->get();
         $allProducts = Product::all();
         $lowStockCount = Product::where('type', 'product')
                                 ->whereRaw('stock_quantity <= min_stock_level')

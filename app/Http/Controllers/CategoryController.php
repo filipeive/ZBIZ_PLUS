@@ -208,7 +208,7 @@ class CategoryController extends Controller
     {
         try {
             $category = Category::findOrFail($id);
-            $category->status = $category->status === 'active' ? 'inactive' : 'active';
+            $category->status = $category->is_active ? 'inactive' : 'active';
             $category->save();
 
             return redirect()->back()

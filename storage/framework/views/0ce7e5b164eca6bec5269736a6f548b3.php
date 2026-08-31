@@ -1,13 +1,11 @@
-@extends('layouts.app')
+<?php $__env->startSection('title', 'Categorias'); ?>
+<?php $__env->startSection('page-title', 'Gestão de Categorias'); ?>
 
-@section('title', 'Categorias')
-@section('page-title', 'Gestão de Categorias')
-
-@php
+<?php
     $theme = tenant_theme();
-@endphp
+?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="space-y-6" x-data="{ showModal: false, editMode: false, categoryId: null, categoryName: '', categoryDesc: '', categoryActive: true }">
     
     <!-- Top Controls Bar -->
@@ -18,43 +16,44 @@
         </div>
 
         <button @click="editMode = false; categoryName = ''; categoryDesc = ''; categoryActive = true; showModal = true" 
-                class="px-5 py-3 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
+                class="px-5 py-3 rounded-2xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
             <i class="fa-solid fa-plus"></i> Nova Categoria
         </button>
     </div>
 
     <!-- Categories Grid / Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        @forelse($categories as $category)
+        <?php $__empty_1 = true; $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
             <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl flex flex-col justify-between hover:border-slate-700 transition group">
                 <div>
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-10 h-10 rounded-2xl bg-slate-800 text-slate-300 flex items-center justify-center text-sm font-bold border border-slate-700">
-                            <i class="fa-solid fa-tag {{ $theme['text_accent'] }}"></i>
+                            <i class="fa-solid fa-tag <?php echo e($theme['text_accent']); ?>"></i>
                         </div>
-                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border {{ $category->is_active ? $theme['badge'] : 'bg-rose-500/10 text-rose-400 border-rose-500/30' }}">
-                            {{ $category->is_active ? 'Ativa' : 'Inativa' }}
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border <?php echo e($category->is_active ? $theme['badge'] : 'bg-rose-500/10 text-rose-400 border-rose-500/30'); ?>">
+                            <?php echo e($category->is_active ? 'Ativa' : 'Inativa'); ?>
+
                         </span>
                     </div>
 
-                    <h3 class="text-base font-black text-white font-heading">{{ $category->name }}</h3>
-                    <p class="text-xs text-slate-400 mt-1 line-clamp-2">{{ $category->description ?? 'Sem descrição adicional.' }}</p>
+                    <h3 class="text-base font-black text-white font-heading"><?php echo e($category->name); ?></h3>
+                    <p class="text-xs text-slate-400 mt-1 line-clamp-2"><?php echo e($category->description ?? 'Sem descrição adicional.'); ?></p>
                 </div>
 
                 <div class="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between">
                     <span class="text-xs text-slate-500">
-                        {{ $category->products_count ?? 0 }} produtos
+                        <?php echo e($category->products_count ?? 0); ?> produtos
                     </span>
 
                     <div class="flex items-center gap-2">
-                        <button @click="editMode = true; categoryId = {{ $category->id }}; categoryName = '{{ addslashes($category->name) }}'; categoryDesc = '{{ addslashes($category->description ?? '') }}'; categoryActive = {{ $category->is_active ? 'true' : 'false' }}; showModal = true"
+                        <button @click="editMode = true; categoryId = <?php echo e($category->id); ?>; categoryName = '<?php echo e(addslashes($category->name)); ?>'; categoryDesc = '<?php echo e(addslashes($category->description ?? '')); ?>'; categoryActive = <?php echo e($category->is_active ? 'true' : 'false'); ?>; showModal = true"
                                 class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition" title="Editar">
                             <i class="fa-solid fa-pen-to-square text-xs"></i>
                         </button>
                         
-                        <form method="POST" action="{{ route('categories.destroy', $category->id) }}" onsubmit="return confirm('Tem certeza que deseja apagar esta categoria?');">
-                            @csrf
-                            @method('DELETE')
+                        <form method="POST" action="<?php echo e(route('categories.destroy', $category->id)); ?>" onsubmit="return confirm('Tem certeza que deseja apagar esta categoria?');">
+                            <?php echo csrf_field(); ?>
+                            <?php echo method_field('DELETE'); ?>
                             <button type="submit" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-rose-400 flex items-center justify-center transition" title="Apagar">
                                 <i class="fa-solid fa-trash text-xs"></i>
                             </button>
@@ -62,12 +61,12 @@
                     </div>
                 </div>
             </div>
-        @empty
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
             <div class="col-span-full py-16 text-center text-slate-500">
                 <i class="fa-solid fa-tags text-4xl mb-3 text-slate-600"></i>
                 <p class="text-sm">Nenhuma categoria registada ainda.</p>
             </div>
-        @endforelse
+        <?php endif; ?>
     </div>
 
     <!-- Modal Criar/Editar Categoria -->
@@ -78,8 +77,8 @@
                 <button @click="showModal = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <form :action="editMode ? '{{ url('categories') }}/' + categoryId : '{{ route('categories.store') }}'" method="POST" class="space-y-4">
-                @csrf
+            <form :action="editMode ? '<?php echo e(url('categories')); ?>/' + categoryId : '<?php echo e(route('categories.store')); ?>'" method="POST" class="space-y-4">
+                <?php echo csrf_field(); ?>
                 <template x-if="editMode">
                     <input type="hidden" name="_method" value="PUT">
                 </template>
@@ -87,13 +86,13 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-300 mb-1">Nome da Categoria *</label>
                     <input type="text" name="name" x-model="categoryName" required
-                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-300 mb-1">Descrição</label>
                     <textarea name="description" x-model="categoryDesc" rows="3"
-                              class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none"></textarea>
+                              class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none"></textarea>
                 </div>
 
                 <div class="flex items-center gap-2">
@@ -103,11 +102,13 @@
 
                 <div class="flex gap-3 pt-2">
                     <button type="button" @click="showModal = false" class="w-1/3 py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs">Cancelar</button>
-                    <button type="submit" class="w-2/3 py-2.5 rounded-xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg transition">Guardar</button>
+                    <button type="submit" class="w-2/3 py-2.5 rounded-xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-black text-xs shadow-lg transition">Guardar</button>
                 </div>
             </form>
         </div>
     </div>
 
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /home/fdev-ms/Filipe/ZBIZ_PLUS/resources/views/categories/index.blade.php ENDPATH**/ ?>

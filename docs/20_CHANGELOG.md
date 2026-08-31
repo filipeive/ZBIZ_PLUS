@@ -6,6 +6,20 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
+## [1.0.2] - 2026-08-31 - Migração Total para TailwindCSS & Temas Setoriais Dinâmicos
+### Fixed
+- **Inconsistência de Coluna `status` vs `is_active`:** Corrigidas todas as consultas SQL em `Category`, `ProductController`, `OrderController`, `CategoryController` e `SearchController`, adicionando o scope `scopeActive()` no model `Category`.
+- **Rotas e Parâmetros de Finanças:** Correção de chamadas de rota em `layouts/app.blade.php`.
+
+### Added
+- **Helper de Temas Setoriais (`tenant_theme`):** Suporte nativo a paletas de cores automáticas por ramo de atividade:
+  - 🟢 **Farmácia & Saúde (`pharmacy`):** Verde Esmeralda & Teal (`emerald-500` / `teal-600`)
+  - 🔵 **Retalho & Comércio (`retail`):** Azul Céu & Indigo (`sky-500` / `indigo-600`)
+  - 🟠 **Restaurante & Bar (`restaurant`):** Laranja & Rosa Quente (`orange-500` / `rose-600`)
+  - 🟣 **Gráfica & Reprografia (`reprography`):** Violeta & Púrpura (`violet-500` / `purple-600`)
+  - 🔷 **Prestação de Serviços (`services`):** Ciano & Teal (`teal-500` / `cyan-600`)
+- **Migração Completa de Layout para TailwindCSS + Alpine.js:** Substituição do Bootstrap no `layouts/app.blade.php`, `dashboard/index.blade.php`, `categories/index.blade.php` e `products/index.blade.php` no mesmo design moderno, escuro e responsivo do ZBIZ POS 2.0.
+
 ## [1.0.1] - 2026-08-31 - Modernização de Views & Onboarding SaaS Interativo
 ### Added
 - **Landing Page Oficial (`welcome.blade.php`):** Design moderno com TailwindCSS e Alpine.js, seletor de setor interativo (Retalho, Farmácia, Gráfica, Serviços), planos em Meticais (MZN) e chamada para trial de 30 dias.

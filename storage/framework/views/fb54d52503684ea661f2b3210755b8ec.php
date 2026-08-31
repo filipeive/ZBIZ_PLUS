@@ -1,13 +1,11 @@
-@extends('layouts.app')
+<?php $__env->startSection('title', 'Produtos & Serviços'); ?>
+<?php $__env->startSection('page-title', 'Catálogo de Produtos & Serviços'); ?>
 
-@section('title', 'Produtos & Serviços')
-@section('page-title', 'Catálogo de Produtos & Serviços')
-
-@php
+<?php
     $theme = tenant_theme();
-@endphp
+?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="space-y-6" x-data="{ search: '', categoryFilter: 'all' }">
     
     <!-- Top Action Bar -->
@@ -17,11 +15,11 @@
                 <i class="fa-solid fa-magnifying-glass"></i>
             </span>
             <input type="text" x-model="search" placeholder="Buscar por nome, código de barras ou SKU..."
-                   class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-600 focus:ring-2 {{ $theme['ring'] }} outline-none">
+                   class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-600 focus:ring-2 <?php echo e($theme['ring']); ?> outline-none">
         </div>
 
         <div class="flex items-center gap-3 w-full md:w-auto">
-            <a href="{{ route('products.create') }}" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
+            <a href="<?php echo e(route('products.create')); ?>" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
                 <i class="fa-solid fa-plus"></i> Novo Artigo
             </a>
         </div>
@@ -43,60 +41,67 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-800/60">
-                    @forelse($products as $product)
+                    <?php $__empty_1 = true; $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                         <tr class="hover:bg-slate-800/30 transition">
                             <td class="py-3.5 font-mono text-slate-400">
-                                {{ $product->barcode ?? $product->sku ?? ('PRD-' . $product->id) }}
+                                <?php echo e($product->barcode ?? $product->sku ?? ('PRD-' . $product->id)); ?>
+
                             </td>
                             <td class="py-3.5 font-bold text-white">
-                                {{ $product->name }}
+                                <?php echo e($product->name); ?>
+
                             </td>
                             <td class="py-3.5">
                                 <span class="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-slate-800 text-slate-300 border border-slate-700">
-                                    {{ $product->category?->name ?? 'Geral' }}
+                                    <?php echo e($product->category?->name ?? 'Geral'); ?>
+
                                 </span>
                             </td>
                             <td class="py-3.5 text-slate-400 capitalize">
-                                {{ $product->type === 'service' ? 'Serviço' : 'Produto Físico' }}
+                                <?php echo e($product->type === 'service' ? 'Serviço' : 'Produto Físico'); ?>
+
                             </td>
                             <td class="py-3.5 text-right font-black text-white font-mono">
-                                {{ number_format($product->selling_price, 2, ',', '.') }} MT
+                                <?php echo e(number_format($product->selling_price, 2, ',', '.')); ?> MT
                             </td>
                             <td class="py-3.5 text-center">
-                                @if($product->type === 'service')
+                                <?php if($product->type === 'service'): ?>
                                     <span class="text-slate-500 text-[10px] font-bold">N/A</span>
-                                @else
-                                    <span class="px-2.5 py-1 rounded-xl text-[10px] font-black {{ $product->stock_quantity <= $product->min_stock_level ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' }}">
-                                        {{ $product->stock_quantity }} un
+                                <?php else: ?>
+                                    <span class="px-2.5 py-1 rounded-xl text-[10px] font-black <?php echo e($product->stock_quantity <= $product->min_stock_level ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'); ?>">
+                                        <?php echo e($product->stock_quantity); ?> un
                                     </span>
-                                @endif
+                                <?php endif; ?>
                             </td>
                             <td class="py-3.5 text-right">
                                 <div class="flex items-center justify-end gap-2">
-                                    <a href="{{ route('products.edit', $product->id) }}" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition" title="Editar">
+                                    <a href="<?php echo e(route('products.edit', $product->id)); ?>" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition" title="Editar">
                                         <i class="fa-solid fa-pen-to-square text-xs"></i>
                                     </a>
                                 </div>
                             </td>
                         </tr>
-                    @empty
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                         <tr>
                             <td colspan="7" class="py-12 text-center text-slate-500">
                                 <i class="fa-solid fa-box-open text-3xl mb-2 text-slate-600"></i>
                                 <p>Nenhum produto cadastrado no catálogo.</p>
                             </td>
                         </tr>
-                    @endforelse
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
 
-        @if(method_exists($products, 'links'))
+        <?php if(method_exists($products, 'links')): ?>
             <div class="mt-6 pt-4 border-t border-slate-800">
-                {{ $products->links() }}
+                <?php echo e($products->links()); ?>
+
             </div>
-        @endif
+        <?php endif; ?>
     </div>
 
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /home/fdev-ms/Filipe/ZBIZ_PLUS/resources/views/products/index.blade.php ENDPATH**/ ?>

@@ -61,7 +61,7 @@ class OrderController extends Controller
                 ->count()
         ];
         $products = Product::where('is_active', true)->get();
-        $categories = Category::where('status', 'active')->get();
+        $categories = Category::where('is_active', true)->get();
 
         return view('orders.index', compact('orders', 'stats', 'products', 'categories'));
     }
@@ -70,7 +70,7 @@ class OrderController extends Controller
     public function create()
     {
         $products = Product::where('is_active', true)->orderBy('name')->get();
-        $categories = Category::where('status', 'active')->get();
+        $categories = Category::where('is_active', true)->get();
         return view('orders.create', compact('products', 'categories'));
     }
 
@@ -624,7 +624,7 @@ class OrderController extends Controller
     public function duplicate(Order $order)
     {
         $products = Product::where('is_active', true)->get();
-        $categories = Category::where('status', 'active')->get();
+        $categories = Category::where('is_active', true)->get();
         $order->load('items');
 
         // Passamos o pedido a ser duplicado para a view de criação

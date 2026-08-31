@@ -1,1186 +1,297 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard')
-@section('page-title', 'Dashboard')
-@section('title-icon', 'fa-chart-line')
+@section('title', 'Painel Principal')
+@section('page-title', 'Painel de Controlo')
+
+@php
+    $theme = tenant_theme();
+@endphp
 
 @section('content')
-@push('styles')
-<style>
-    /* ===== DASHBOARD CARDS OTIMIZADOS ===== */
-    .dashboard-card {
-        border: 1px solid var(--border-color);
-        border-radius: var(--border-radius-lg);
-        box-shadow: var(--shadow-sm);
-        transition: var(--transition);
-        background: var(--card-bg);
-    }
+<div class="space-y-6" x-data="{ timeRange: 'today' }">
     
-    .dashboard-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow);
-    }
-    
-    /* ===== METRIC CARDS COMPACTOS ===== */
-    .metric-card {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: var(--border-radius-lg);
-        padding: 1.25rem;
-        position: relative;
-        overflow: hidden;
-        transition: var(--transition);
-        box-shadow: var(--shadow-sm);
-    }
-    
-    .metric-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, var(--primary-blue), #4A90E2);
-    }
-    
-    .metric-card.success::before {
-        background: linear-gradient(90deg, var(--success-green), #22C55E);
-    }
-    
-    .metric-card.warning::before {
-        background: linear-gradient(90deg, var(--warning-orange), #F59E0B);
-    }
-    
-    .metric-card.danger::before {
-        background: linear-gradient(90deg, var(--danger-red), #EF4444);
-    }
-    
-    .metric-card.info::before {
-        background: linear-gradient(90deg, var(--info-blue), #3B82F6);
-    }
-    
-    .metric-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow);
-    }
-    
-    .metric-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: var(--border-radius);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        color: white;
-        flex-shrink: 0;
-    }
-    
-    .metric-icon.primary {
-        background: linear-gradient(135deg, var(--primary-blue), #4A90E2);
-    }
-    
-    .metric-icon.success {
-        background: linear-gradient(135deg, var(--success-green), #22C55E);
-    }
-    
-    .metric-icon.warning {
-        background: linear-gradient(135deg, var(--warning-orange), #F59E0B);
-    }
-    
-    .metric-icon.danger {
-        background: linear-gradient(135deg, var(--danger-red), #EF4444);
-    }
-    
-    .metric-icon.info {
-        background: linear-gradient(135deg, var(--info-blue), #3B82F6);
-    }
-    
-    .metric-value {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 0.25rem;
-        line-height: 1;
-    }
-    
-    .metric-label {
-        font-size: 0.875rem;
-        color: var(--text-secondary);
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-    }
-    
-    .metric-change {
-        font-size: 0.75rem;
-        font-weight: 600;
-        padding: 2px 8px;
-        border-radius: 12px;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-    }
-    
-    .metric-change.positive {
-        background: rgba(40, 167, 69, 0.1);
-        color: var(--success-green);
-    }
-    
-    .metric-change.negative {
-        background: rgba(220, 53, 69, 0.1);
-        color: var(--danger-red);
-    }
-    
-    .metric-change.neutral {
-        background: rgba(108, 117, 125, 0.1);
-        color: var(--text-secondary);
-    }
-    
-    /* ===== QUICK ACTIONS COMPACTAS ===== */
-    .quick-action-card {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: var(--border-radius);
-        padding: 1rem;
-        text-align: center;
-        transition: var(--transition);
-        text-decoration: none;
-        color: var(--text-primary);
-        display: block;
-        box-shadow: var(--shadow-sm);
-    }
-    
-    .quick-action-card:hover {
-        border-color: var(--primary-blue);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow);
-        color: var(--primary-blue);
-        text-decoration: none;
-    }
-    
-    .quick-action-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: var(--border-radius);
-        background: linear-gradient(135deg, var(--primary-blue), #4A90E2);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 0.75rem;
-        font-size: 1.25rem;
-    }
-    
-    .quick-action-card h6 {
-        font-size: 0.875rem;
-        font-weight: 600;
-        margin-bottom: 0.25rem;
-    }
-    
-    .quick-action-card small {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-    }
-    
-    /* ===== ALERT CARDS ===== */
-    .alert-card {
-        border-left: 3px solid;
-        border-radius: var(--border-radius);
-        background: var(--card-bg);
-        padding: 1rem;
-        margin-bottom: 1rem;
-    }
-    
-    .alert-warning {
-        border-left-color: var(--warning-orange);
-        background-color: rgba(255, 165, 0, 0.05);
-    }
-    
-    .alert-success {
-        border-left-color: var(--success-green);
-        background-color: rgba(40, 167, 69, 0.05);
-    }
-    
-    /* ===== CHART CONTAINERS ===== */
-    .chart-container {
-        position: relative;
-        height: 300px;
-        padding: 0.5rem;
-    }
-    
-    .chart-container.small {
-        height: 200px;
-    }
-    
-    /* ===== ACTIVITY ITEMS ===== */
-    .activity-item {
-        padding: 0.75rem;
-        border-bottom: 1px solid var(--border-color);
-        transition: var(--transition);
-    }
-    
-    .activity-item:hover {
-        background-color: var(--content-bg);
-    }
-    
-    .activity-item:last-child {
-        border-bottom: none;
-    }
-    
-    /* ===== STATS GRID ===== */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    /* ===== HEADER SECTION COMPACTO ===== */
-    .dashboard-header {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: var(--border-radius-lg);
-        padding: 1.25rem;
-        margin-bottom: 1.5rem;
-        box-shadow: var(--shadow-sm);
-    }
-    
-    /* ===== LOADING SKELETON ===== */
-    .skeleton-loading {
-        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-        background-size: 200% 100%;
-        animation: loading 1.5s infinite;
-        border-radius: 4px;
-    }
-    
-    @keyframes loading {
-        0% { background-position: 200% 0; }
-        100% { background-position: -200% 0; }
-    }
-    
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 768px) {
-        .metric-value {
-            font-size: 1.5rem;
-        }
-        
-        .chart-container {
-            height: 220px;
-        }
-        
-        .stats-grid {
-            grid-template-columns: 1fr;
-            gap: 0.75rem;
-        }
-        
-        .metric-card {
-            padding: 1rem;
-        }
-        
-        .quick-action-card {
-            padding: 0.875rem;
-        }
-    }
-    
-    @media (max-width: 576px) {
-        .metric-icon {
-            width: 40px;
-            height: 40px;
-            font-size: 18px;
-        }
-        
-        .quick-action-icon {
-            width: 40px;
-            height: 40px;
-            font-size: 1.125rem;
-        }
-    }
-</style>
-@endpush
-
-@section('breadcrumbs')
-    <li class="breadcrumb-item active">Dashboard Executivo</li>
-@endsection
-
-@section('content')
-<div class="container-fluid">
-    <!-- Header Compacto -->
-    <div class="dashboard-header">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h5 class="mb-1" id="welcome-greeting">
-                    Bom dia, {{ explode(' ', auth()->user()->name)[0] }}! 👋
-                </h5>
-                <p class="text-muted mb-0 small">
-                    Resumo completo do seu negócio em tempo real
+    <!-- Top Row: Welcome Banner & Sector Metrics -->
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-slate-900/90 to-slate-800 border border-slate-800 p-6 sm:p-8 shadow-2xl">
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border {{ $theme['badge'] }} mb-3">
+                    <i class="fa-solid {{ $theme['icon'] }}"></i> {{ $theme['sector_name'] }}
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-black font-heading text-white">
+                    Olá, {{ auth()->user()->name }}! 👋
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-400 mt-1 max-w-xl">
+                    Acompanhe o desempenho das suas vendas, stock em tempo real e saúde financeira da sua loja.
                 </p>
             </div>
-            <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                <div class="d-flex align-items-center justify-content-md-end">
-                    <i class="fas fa-clock text-primary me-2"></i>
-                    <div>
-                        <div class="fw-bold" id="current-time">{{ now()->format('H:i') }}</div>
-                        <small class="text-muted">{{ now()->translatedFormat('l') }}</small>
-                    </div>
-                </div>
+
+            <!-- Quick Action Buttons -->
+            <div class="flex items-center gap-3">
+                <a href="{{ route('pos.index') }}" class="px-5 py-3 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-xl shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
+                    <i class="fa-solid fa-cash-register text-sm"></i> Abrir Caixa POS
+                </a>
+                <a href="{{ route('products.create') }}" class="px-4 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Novo Produto
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Quick Actions Compactas -->
-    @if(userCanAny(['create_sales', 'create_products', 'view_reports', 'view_expenses']))
-    <div class="row g-2 mb-3">
-        @if(userCan('create_sales'))
-        <div class="col-6 col-md-3 col-lg-2">
-            <a href="{{ route('sales.create') }}" class="quick-action-card">
-                <div class="quick-action-icon">
-                    <i class="fas fa-cash-register"></i>
-                </div>
-                <h6>Nova Venda</h6>
-                <small>PDV Rápido</small>
-            </a>
-        </div>
-        @endif
+    <!-- 4 KPI Stat Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         
-        @if(userCan('create_products'))
-        <div class="col-6 col-md-3 col-lg-2">
-            <a href="{{ route('products.create') }}" class="quick-action-card">
-                <div class="quick-action-icon" style="background: linear-gradient(135deg, var(--success-green), #22C55E);">
-                    <i class="fas fa-plus-circle"></i>
+        <!-- Card 1: Vendas de Hoje -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl relative overflow-hidden group hover:border-slate-700 transition">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Vendas de Hoje</span>
+                <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-base">
+                    <i class="fa-solid fa-sack-dollar"></i>
                 </div>
-                <h6>Novo Produto</h6>
-                <small>Cadastrar</small>
-            </a>
+            </div>
+            <div class="mt-4">
+                <div class="text-2xl sm:text-3xl font-black font-heading text-white">
+                    {{ number_format($todaySales ?? 0, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
+                </div>
+                <div class="flex items-center gap-2 mt-2 text-xs">
+                    <span class="font-bold text-emerald-400 flex items-center">
+                        <i class="fa-solid {{ $salesChangeIcon ?? 'fa-arrow-trend-up' }} mr-1"></i> {{ $salesChangePercent ?? 0 }}%
+                    </span>
+                    <span class="text-slate-500">vs ontem</span>
+                </div>
+            </div>
         </div>
-        @endif
+
+        <!-- Card 2: Faturação Mensal -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl relative overflow-hidden group hover:border-slate-700 transition">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total do Mês</span>
+                <div class="w-10 h-10 rounded-2xl bg-sky-500/10 text-sky-400 flex items-center justify-center text-base">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+            </div>
+            <div class="mt-4">
+                <div class="text-2xl sm:text-3xl font-black font-heading text-white">
+                    {{ number_format($monthSales ?? 0, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
+                </div>
+                <div class="flex items-center gap-2 mt-2 text-xs">
+                    <span class="font-bold text-sky-400">
+                        {{ number_format($monthReceived ?? 0, 2, ',', '.') }} MT recebidos
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Lucro Bruto Estimado -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl relative overflow-hidden group hover:border-slate-700 transition">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Lucro Real</span>
+                <div class="w-10 h-10 rounded-2xl bg-teal-500/10 text-teal-400 flex items-center justify-center text-base">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                </div>
+            </div>
+            <div class="mt-4">
+                <div class="text-2xl sm:text-3xl font-black font-heading text-white">
+                    {{ number_format($monthRealProfit ?? 0, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
+                </div>
+                <div class="flex items-center gap-2 mt-2 text-xs">
+                    <span class="text-slate-400">Margem Líquida:</span>
+                    <span class="font-bold text-teal-400">{{ $monthNetMargin ?? 0 }}%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Contas a Receber (Fiados) -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl relative overflow-hidden group hover:border-slate-700 transition">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">A Receber (Fiado)</span>
+                <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-base">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
+            </div>
+            <div class="mt-4">
+                <div class="text-2xl sm:text-3xl font-black font-heading text-white">
+                    {{ number_format($accountsReceivable ?? 0, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
+                </div>
+                <div class="flex items-center gap-2 mt-2 text-xs text-slate-500">
+                    <span>Capital de Giro: {{ number_format($currentCapital ?? 0, 0) }} MT</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Charts & Analytics Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        @if(userCan('view_reports'))
-        <div class="col-6 col-md-3 col-lg-2">
-            <a href="{{ route('reports.index') }}" class="quick-action-card">
-                <div class="quick-action-icon" style="background: linear-gradient(135deg, var(--warning-orange), #F59E0B);">
-                    <i class="fas fa-chart-line"></i>
+        <!-- Left: Sales Evolution Chart (2 Cols) -->
+        <div class="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-base font-black font-heading text-white">Evolução de Vendas</h3>
+                    <p class="text-xs text-slate-400">Desempenho diário de faturação</p>
                 </div>
-                <h6>Relatórios</h6>
-                <small>Análises</small>
-            </a>
-        </div>
-        @endif
-        
-        @if(userCan('view_expenses'))
-        <div class="col-6 col-md-3 col-lg-2">
-            <a href="{{ route('expenses.create') }}" class="quick-action-card">
-                <div class="quick-action-icon" style="background: linear-gradient(135deg, var(--danger-red), #EF4444);">
-                    <i class="fas fa-receipt"></i>
-                </div>
-                <h6>Nova Despesa</h6>
-                <small>Registrar</small>
-            </a>
-        </div>
-        @endif
-        
-        <div class="col-6 col-md-3 col-lg-2">
-            <a href="{{ route('orders.create') }}" class="quick-action-card">
-                <div class="quick-action-icon" style="background: linear-gradient(135deg, var(--info-blue), #3B82F6);">
-                    <i class="fas fa-truck"></i>
-                </div>
-                <h6>Novo Pedido</h6>
-                <small>Criar</small>
-            </a>
-        </div>
-        {{-- Registar Dívida --}}
-        <div class="col-6 col-md-3 col-lg-2">
-            <a href="{{ route('debts.create') }}" class="quick-action-card">
-            <div class="quick-action-icon" style="background: linear-gradient(135deg, #FF6B6B, #EE5A6F);">
-                <i class="fas fa-hand-holding-usd"></i>
+                <span class="text-xs font-bold px-3 py-1 bg-slate-800 text-slate-300 rounded-xl">Últimos 7 Dias</span>
             </div>
-            <h6>Nova Dívida</h6>
-            <small>Registar</small>
-            </a>
-        </div>
-    </div>
-    @endif
-
-    <!-- Métricas Principais Compactas -->
-    <div class="stats-grid">
-        <div class="metric-card">
-            <div class="d-flex align-items-center">
-                <div class="metric-icon primary me-3">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="flex-grow-1">
-                    <div class="metric-value" id="today-sales">
-                        {{ number_format($todaySales, 2, ',', '.') }}
-                    </div>
-                    <div class="metric-label">Vendas de Hoje</div>
-                    <div class="metric-change {{ $salesChangeDirection }}" id="today-sales-change">
-                        <i class="fas {{ $salesChangeIcon }}"></i>
-                        <span id="today-sales-change-percent">{{ $salesChangePercent }}</span>%
-                    </div>
-                </div>
+            <div class="h-64">
+                <canvas id="salesChart"></canvas>
             </div>
         </div>
 
-        <div class="metric-card danger">
-            <div class="d-flex align-items-center">
-                <div class="metric-icon danger me-3">
-                    <i class="fas fa-receipt"></i>
+        <!-- Right: Low Stock Alerts (1 Col) -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base font-black font-heading text-white flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Stock Baixo
+                    </h3>
+                    <span class="text-xs font-bold text-amber-400 px-2 py-0.5 bg-amber-500/10 rounded-lg border border-amber-500/30">
+                        {{ count($lowStockProducts ?? []) }} Alertas
+                    </span>
                 </div>
-                <div class="flex-grow-1">
-                    <div class="metric-value" id="today-outflows">
-                        {{ number_format($todayOutflows, 2, ',', '.') }}
-                    </div>
-                    <div class="metric-label">Saídas de Hoje</div>
-                    <div class="metric-change {{ $outflowsChangeDirection }}" id="today-outflows-change">
-                        <i class="fas {{ $outflowsChangeIcon }}"></i>
-                        <span id="today-outflows-change-percent">{{ $outflowsChangePercent }}</span>%
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <div class="metric-card info">
-            <div class="d-flex align-items-center">
-                <div class="metric-icon info me-3">
-                    <i class="fas fa-calendar-alt"></i>
-                </div>
-                <div class="flex-grow-1">
-                    <div class="metric-value">
-                        {{ number_format($monthReceived, 2, ',', '.') }}
-                    </div>
-                    <div class="metric-label">Recebido no Mês</div>
-                    <div class="metric-change {{ $monthReceivedChangeDirection }}">
-                        <i class="fas {{ $monthReceivedChangeIcon }}"></i>
-                        {{ $monthReceivedChangePercent }}%
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="metric-card warning">
-            <div class="d-flex align-items-center">
-            <div class="metric-icon warning me-3">
-                <i class="fas fa-boxes"></i>
-            </div>
-            <div class="flex-grow-1">
-                <div class="metric-value" id="low-stock-count">
-                {{ $lowStockProducts->count() }}
-                </div>
-                <div class="metric-label">Estoque Baixo</div>
-                <div class="metric-change">
-                @if($lowStockProducts->count() > 0)
-                    <i class="fas fa-exclamation-triangle"></i>
-                    Atenção
-                @else
-                    <i class="fas fa-check-circle"></i>
-                    OK
-                @endif
-                </div>
-            </div>
-            </div>
-        </div>
-
-        {{-- Alerta da Sessão (vindo do checkAndSetAlerts) --}}
-        @if(session('dashboard_alert'))
-            <div class="alert-item metric-card">
-            <div class="alert-icon" style="background: 
-                @if(session('dashboard_alert')['type'] === 'success') var(--success-green)
-                @elseif(session('dashboard_alert')['type'] === 'warning') var(--warning-orange)
-                @elseif(session('dashboard_alert')['type'] === 'error') var(--danger-red)
-                @else var(--info-blue) @endif">
-                <i class="fas fa-
-                @if(session('dashboard_alert')['type'] === 'success') check
-                @elseif(session('dashboard_alert')['type'] === 'warning') exclamation-triangle
-                @elseif(session('dashboard_alert')['type'] === 'error') exclamation-circle
-                @else info @endif"></i>
-            </div>
-            <div class="flex-grow-1">
-                <div class="fw-semibold">{{ session('dashboard_alert')['message'] }}</div>
-                <small class="text-muted">Agora mesmo</small>
-            </div>
-            </div>
-        @endif
-
-        {{-- Alerta de Estoque Baixo (sempre visível se houver) --}}
-        @if($lowStockProducts->count() > 0)
-            <div class="alert-item metric-card">
-            <div class="alert-icon pulse" style="background: var(--danger-red);">
-                <i class="fas fa-box-open"></i>
-            </div>
-            <div class="flex-grow-1">
-                <div class="fw-semibold">Estoque Baixo Detectado</div>
-                <small class="text-muted">
-                {{ $lowStockProducts->count() }} produto(s) precisam de reposição:
-                {{ $lowStockProducts->take(3)->pluck('name')->join(', ') }}
-                @if($lowStockProducts->count() > 3) e outros... @endif
-                </small>
-            </div>
-            <a href="{{ route('products.index', ['filter' => 'low_stock']) }}" class="btn btn-sm btn-outline-danger">
-                Ver Produtos
-            </a>
-            </div>
-        @endif
-    </div>
-
-    <!-- Alertas -->
-    @if(session('dashboard_alert') || $lowStockProducts->count() > 0)
-    <div class="row mb-3">
-        <div class="col-12">
-            @if(session('dashboard_alert'))
-            <div class="alert-card alert-{{ session('dashboard_alert')['type'] }}">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-info-circle me-2"></i>
-                    <strong>{{ session('dashboard_alert')['message'] }}</strong>
-                </div>
-            </div>
-            @endif
-            
-            @if($lowStockProducts->count() > 0)
-            <div class="alert-card alert-warning">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <div>
-                            <strong>{{ $lowStockProducts->count() }} produto(s)</strong> com estoque baixo
-                        </div>
-                    </div>
-                    <a href="{{ route('products.index') }}" class="btn btn-warning btn-sm">
-                        Ver Produtos
-                    </a>
-                </div>
-            </div>
-            @endif
-        </div>
-    </div>
-    @endif
-
-    <!-- Métricas Adicionais Compactas -->
-    <div class="row g-2 mb-3">
-        <div class="col-6 col-md-3">
-            <div class="dashboard-card p-3 text-center">
-                <i class="fas fa-coins text-success mb-2" style="font-size: 1.5rem;"></i>
-                <h5 class="text-success mb-1">MT {{ number_format($monthRealProfit, 2, ',', '.') }}</h5>
-                <small class="text-muted">Lucro Real do Mês</small>
-            </div>
-        </div>
-        
-        <div class="col-6 col-md-3">
-            <div class="dashboard-card p-3 text-center">
-                <i class="fas fa-users text-info mb-2" style="font-size: 1.5rem;"></i>
-                <h5 class="text-info mb-1">{{ $monthActiveCustomers }}</h5>
-                <small class="text-muted">Clientes Ativos</small>
-            </div>
-        </div>
-        
-        <div class="col-6 col-md-3">
-            <div class="dashboard-card p-3 text-center">
-                <i class="fas fa-shopping-cart text-primary mb-2" style="font-size: 1.5rem;"></i>
-                <h5 class="text-primary mb-1">{{ $todayProductsSold }}</h5>
-                <small class="text-muted">Vendidos Hoje</small>
-            </div>
-        </div>
-        
-        <div class="col-6 col-md-3">
-            <div class="dashboard-card p-3 text-center">
-                <i class="fas fa-percentage text-warning mb-2" style="font-size: 1.5rem;"></i>
-                <h5 class="text-warning mb-1">{{ number_format($monthNetMargin, 1) }}%</h5>
-                <small class="text-muted">Margem Líquida</small>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-2 mb-3">
-        <div class="col-6 col-md-3">
-            <div class="dashboard-card p-3 text-center border-primary" style="background: rgba(59, 130, 246, 0.05);">
-                <i class="fas fa-university text-primary mb-2" style="font-size: 1.5rem;"></i>
-                <h5 class="text-primary mb-1">MT {{ number_format($totalRealValue, 2, ',', '.') }}</h5>
-                <small class="text-dark fw-bold">VALOR REAL DO NEGÓCIO</small>
-                <div class="x-small text-muted" style="font-size: 0.65rem;">Capital + Dívidas a Receber</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="dashboard-card p-3 text-center">
-                <i class="fas fa-wallet text-success mb-2" style="font-size: 1.5rem;"></i>
-                <h5 class="text-success mb-1">MT {{ number_format($currentCapital, 2, ',', '.') }}</h5>
-                <small class="text-muted">Capital em Caixa</small>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="dashboard-card p-3 text-center">
-                <i class="fas fa-file-invoice-dollar text-warning mb-2" style="font-size: 1.5rem;"></i>
-                <h5 class="text-warning mb-1">MT {{ number_format($accountsReceivable, 2, ',', '.') }}</h5>
-                <small class="text-muted">A Receber (Dívidas)</small>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="dashboard-card p-3 text-center">
-                <i class="fas fa-exchange-alt {{ $monthNetCashFlow >= 0 ? 'text-success' : 'text-danger' }} mb-2" style="font-size: 1.5rem;"></i>
-                <h5 class="{{ $monthNetCashFlow >= 0 ? 'text-success' : 'text-danger' }} mb-1">
-                    MT {{ number_format($monthNetCashFlow, 2, ',', '.') }}
-                </h5>
-                <small class="text-muted">Fluxo Líquido do Mês</small>
-            </div>
-        </div>
-    </div>
-
-    <div class="dashboard-card mb-3">
-        <div class="card-header bg-transparent border-0 py-3">
-            <h6 class="mb-0">
-                <i class="fas fa-heartbeat text-danger me-2"></i>
-                Saúde do Negócio
-            </h6>
-        </div>
-        <div class="card-body pt-0">
-            <div class="row g-2">
-                <div class="col-6 col-lg-3">
-                    <div class="dashboard-card p-3 h-100" style="background: rgba(59, 130, 246, 0.06);">
-                        <small class="text-muted d-block mb-1">Lucro Bruto</small>
-                        <h5 class="text-primary mb-1">MT {{ number_format($monthGrossProfit, 2, ',', '.') }}</h5>
-                        <small class="text-muted">{{ number_format($monthGrossMargin, 1) }}% das vendas do mês</small>
-                    </div>
-                </div>
-                <div class="col-6 col-lg-3">
-                    <div class="dashboard-card p-3 h-100" style="background: rgba(16, 185, 129, 0.06);">
-                        <small class="text-muted d-block mb-1">Lucro Real</small>
-                        <h5 class="mb-1 {{ $monthRealProfit >= 0 ? 'text-success' : 'text-danger' }}">
-                            MT {{ number_format($monthRealProfit, 2, ',', '.') }}
-                        </h5>
-                        <small class="text-muted">Após custo dos produtos e despesas</small>
-                    </div>
-                </div>
-                <div class="col-6 col-lg-3">
-                    <div class="dashboard-card p-3 h-100" style="background: rgba(239, 68, 68, 0.06);">
-                        <small class="text-muted d-block mb-1">Despesas</small>
-                        <h5 class="text-danger mb-1">MT {{ number_format($monthExpenses, 2, ',', '.') }}</h5>
-                        <small class="text-muted">Custos operacionais do mês</small>
-                    </div>
-                </div>
-                <div class="col-6 col-lg-3">
-                    <div class="dashboard-card p-3 h-100" style="background: rgba(245, 158, 11, 0.06);">
-                        <small class="text-muted d-block mb-1">ROI</small>
-                        <h5 class="mb-1 {{ $monthRoi >= 0 ? 'text-warning' : 'text-danger' }}">
-                            {{ number_format($monthRoi, 1) }}%
-                        </h5>
-                        <small class="text-muted">Retorno sobre investimento do mês</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Gráficos -->
-    <div class="row g-3 mb-3">
-        <!-- Gráfico Principal -->
-        <div class="col-lg-8">
-            <div class="dashboard-card">
-                <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center py-3">
-                    <h6 class="mb-0">
-                        <i class="fas fa-chart-line text-primary me-2"></i>
-                        Vendido vs Despesas (7 dias)
-                    </h6>
-                    <div class="btn-group btn-group-sm">
-                        <button type="button" class="btn btn-outline-primary active" onclick="updateChartPeriod(7)">7d</button>
-                        <button type="button" class="btn btn-outline-primary" onclick="updateChartPeriod(30)">30d</button>
-                    </div>
-                </div>
-                <div class="card-body py-2">
-                    <div class="chart-container">
-                        <canvas id="salesChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Fluxo de Caixa -->
-        <div class="col-lg-4">
-            <div class="dashboard-card">
-                <div class="card-header bg-transparent border-0 py-3">
-                    <h6 class="mb-0">
-                        <i class="fas fa-exchange-alt text-success me-2"></i>
-                        Fluxo de Caixa Real
-                    </h6>
-                </div>
-                <div class="card-body py-2">
-                    <div class="chart-container small">
-                        <canvas id="cashFlowChart"></canvas>
-                    </div>
-                    
-                    <div class="row mt-2 text-center">
-                        <div class="col-4">
-                            <small class="text-success d-block">Entradas</small>
-                            <strong class="small">{{ number_format(array_sum($cashFlowChartData['inflowsData']), 0) }}</strong>
-                        </div>
-                        <div class="col-4">
-                            <small class="text-danger d-block">Saídas</small>
-                            <strong class="small">{{ number_format(array_sum($cashFlowChartData['outflowsData']), 0) }}</strong>
-                        </div>
-                        <div class="col-4">
-                            <small class="text-info d-block">Líquido</small>
-                            <strong class="small">{{ number_format(array_sum($cashFlowChartData['netFlowData']), 0) }}</strong>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Seção Inferior -->
-    <div class="row g-3">
-        <!-- Atividades Recentes -->
-        <div class="col-lg-6">
-            <div class="dashboard-card">
-                <div class="card-header bg-transparent border-0 py-3">
-                    <h6 class="mb-0">
-                        <i class="fas fa-history text-info me-2"></i>
-                        Atividades Recentes
-                    </h6>
-                </div>
-                <div class="card-body p-0">
-                    @forelse($recentSales as $sale)
-                    <div class="activity-item">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-shopping-cart text-success me-2"></i>
-                            <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <strong class="small">Venda #{{ $sale->id }}</strong>
-                                        <div class="text-muted" style="font-size: 0.75rem;">
-                                            {{ $sale->user->name ?? 'Sistema' }} • MT {{ number_format($sale->total_amount, 2, ',', '.') }}
-                                        </div>
-                                    </div>
-                                    <small class="text-muted">{{ $sale->created_at->diffForHumans() }}</small>
-                                </div>
+                <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
+                    @forelse($lowStockProducts ?? [] as $prod)
+                        <div class="p-3 bg-slate-950/60 border border-slate-800 rounded-2xl flex items-center justify-between text-xs">
+                            <div class="min-w-0 pr-2">
+                                <div class="font-bold text-white truncate">{{ $prod->name }}</div>
+                                <div class="text-[10px] text-slate-400">Mínimo: {{ $prod->min_stock_level }} un</div>
                             </div>
+                            <span class="font-black text-xs px-2 py-1 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                                {{ $prod->stock_quantity }} un
+                            </span>
                         </div>
-                    </div>
                     @empty
-                    <div class="activity-item text-center py-4">
-                        <i class="fas fa-inbox text-muted mb-2" style="font-size: 2rem;"></i>
-                        <p class="text-muted mb-0 small">Nenhuma atividade recente</p>
-                    </div>
+                        <div class="text-center py-10 text-slate-500 text-xs">
+                            <i class="fa-solid fa-circle-check text-2xl text-emerald-500/40 mb-2"></i>
+                            <p>Todos os produtos estão com níveis saudáveis de stock!</p>
+                        </div>
                     @endforelse
-                    
-                    @if($recentSales->count() > 0)
-                    <div class="card-footer bg-transparent border-0 text-center py-2">
-                        <a href="{{ route('sales.index') }}" class="btn btn-outline-primary btn-sm">
-                            Ver todas
-                        </a>
-                    </div>
-                    @endif
                 </div>
             </div>
+
+            <a href="{{ route('products.index') }}" class="mt-4 block text-center py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
+                Gerir Catálogo Completo
+            </a>
         </div>
 
-        <!-- Comparativo Mensal -->
-        <div class="col-lg-6">
-            <div class="dashboard-card">
-                <div class="card-header bg-transparent border-0 py-3">
-                    <h6 class="mb-0">
-                        <i class="fas fa-chart-bar text-warning me-2"></i>
-                        Comparativo Mensal
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3 p-3 bg-light rounded">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <small class="text-muted d-block">Faturamento Vendido</small>
-                                <h6 class="text-success mb-0">MT {{ number_format($monthSales, 2, ',', '.') }}</h6>
-                            </div>
-                            <span class="badge bg-success">
-                                <i class="fas fa-arrow-up"></i> {{ $monthSalesChangePercent }}%
-                            </span>
-                        </div>
-                    </div>
+    </div>
 
-                    <div class="mb-3 p-3 bg-light rounded">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <small class="text-muted d-block">Recebido</small>
-                                <h6 class="text-primary mb-0">MT {{ number_format($monthReceived, 2, ',', '.') }}</h6>
-                            </div>
-                            <small class="text-muted">Saídas: {{ number_format($monthOutflows, 0) }}</small>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3 p-3 bg-light rounded">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <small class="text-muted d-block">Despesas</small>
-                                <h6 class="text-danger mb-0">MT {{ number_format($monthExpenses, 2, ',', '.') }}</h6>
-                            </div>
-                            <small class="text-muted">vs {{ number_format($prevMonthExpenses, 0) }}</small>
-                        </div>
-                    </div>
-                    
-                    <div class="p-3 rounded" style="background: rgba(91, 155, 213, 0.1);">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <small class="text-muted d-block">Lucro Real</small>
-                                <h6 class="text-primary mb-0">MT {{ number_format($monthRealProfit, 2, ',', '.') }}</h6>
-                            </div>
-                            <span class="badge {{ $monthProfitChangePercent > 0 ? 'bg-success' : 'bg-danger' }}">
-                                {{ $monthProfitChangePercent > 0 ? '+' : '' }}{{ $monthProfitChangePercent }}%
-                            </span>
-                        </div>
-                    </div>
-                </div>
+    <!-- Recent Sales Table -->
+    <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="text-base font-black font-heading text-white">Vendas Recentes</h3>
+                <p class="text-xs text-slate-400">Últimas transações registadas</p>
             </div>
+            <a href="{{ route('sales.index') }}" class="text-xs font-bold text-emerald-400 hover:underline">Ver Todas</a>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider">
+                        <th class="pb-3">Data / Hora</th>
+                        <th class="pb-3">Cliente</th>
+                        <th class="pb-3">Operador</th>
+                        <th class="pb-3">Pagamento</th>
+                        <th class="pb-3 text-right">Total (MT)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                    @forelse($recentSales ?? [] as $sale)
+                        <tr class="hover:bg-slate-800/30 transition">
+                            <td class="py-3.5 text-slate-300 font-mono">
+                                {{ $sale->created_at ? $sale->created_at->format('d/m H:i') : '-' }}
+                            </td>
+                            <td class="py-3.5 text-white font-semibold">
+                                {{ $sale->customer_name ?? 'Consumidor Final' }}
+                            </td>
+                            <td class="py-3.5 text-slate-400">
+                                {{ $sale->user?->name ?? 'Caixa' }}
+                            </td>
+                            <td class="py-3.5">
+                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase bg-slate-800 text-slate-300 border border-slate-700">
+                                    {{ $sale->payment_method ?? 'Dinheiro' }}
+                                </span>
+                            </td>
+                            <td class="py-3.5 text-right font-black text-white font-mono">
+                                {{ number_format($sale->total_amount, 2, ',', '.') }} MT
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="py-8 text-center text-slate-500">
+                                Nenhuma venda registada hoje.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
+
 </div>
 @endsection
 
 @push('scripts')
 <script>
-let salesChart, cashFlowChart;
-let chartUpdateInterval;
+document.addEventListener('DOMContentLoaded', () => {
+    const ctx = document.getElementById('salesChart');
+    if (!ctx) return;
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Inicializando Dashboard...');
-    
-    // Saudação dinâmica
-    function updateGreeting() {
-        const hour = new Date().getHours();
-        const greetingElement = document.getElementById('welcome-greeting');
-        if (!greetingElement) return;
-        
-        const name = '{{ explode(" ", auth()->user()->name)[0] }}';
-        let greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
-        
-        greetingElement.innerHTML = `${greeting}, ${name}! 👋`;
-    }
-    
-    // Relógio
-    function updateClock() {
-        const now = new Date();
-        const timeString = now.toLocaleTimeString('pt-PT', { 
-            hour: '2-digit', 
-            minute: '2-digit'
-        });
-        const clockElement = document.getElementById('current-time');
-        if (clockElement) clockElement.textContent = timeString;
-    }
-    
-    // Configuração dos gráficos
-    const chartColors = {
-        primary: getComputedStyle(document.documentElement).getPropertyValue('--primary-blue').trim() || '#5B9BD5',
-        success: getComputedStyle(document.documentElement).getPropertyValue('--success-green').trim() || '#28A745',
-        danger: getComputedStyle(document.documentElement).getPropertyValue('--danger-red').trim() || '#DC3545',
-        info: getComputedStyle(document.documentElement).getPropertyValue('--info-blue').trim() || '#17A2B8'
-    };
+    const chartData = @json($salesChartData ?? ['labels' => [], 'data' => []]);
 
-    const defaultChartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-            intersect: false,
-            mode: 'index'
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.labels || ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+            datasets: [{
+                label: 'Vendas (MT)',
+                data: chartData.data || [0, 0, 0, 0, 0, 0, 0],
+                borderColor: '{{ $theme["hex"] }}',
+                backgroundColor: '{{ $theme["glow"] }}',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.3,
+                pointBackgroundColor: '#0f172a',
+                pointBorderColor: '{{ $theme["hex"] }}',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+            }]
         },
-        plugins: {
-            legend: {
-                position: 'top',
-                labels: {
-                    color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary'),
-                    font: { family: 'Segoe UI, Inter, sans-serif', size: 11, weight: '500' },
-                    padding: 15,
-                    usePointStyle: true,
-                    pointStyle: 'circle'
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0f172a',
+                    titleColor: '#f8fafc',
+                    bodyColor: '#34d399',
+                    borderColor: '#334155',
+                    borderWidth: 1,
+                    padding: 10,
+                    callbacks: {
+                        label: (ctx) => `${ctx.parsed.y.toLocaleString('pt-MZ', { minimumFractionDigits: 2 })} MT`
+                    }
                 }
             },
-            tooltip: {
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                padding: 10,
-                titleFont: { size: 13, weight: 'bold' },
-                bodyFont: { size: 12 },
-                borderColor: 'rgba(255, 255, 255, 0.1)',
-                borderWidth: 1,
-                displayColors: true,
-                callbacks: {
-                    label: function(context) {
-                        return context.dataset.label + ': MT ' + context.parsed.y.toLocaleString('pt-PT', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        });
+            scales: {
+                x: {
+                    grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                    ticks: { color: '#94a3b8', font: { size: 11 } }
+                },
+                y: {
+                    grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                    ticks: { 
+                        color: '#94a3b8', 
+                        font: { size: 11 },
+                        callback: (val) => val.toLocaleString('pt-MZ') + ' MT'
                     }
                 }
             }
-        },
-        scales: {
-            x: {
-                grid: { display: false },
-                ticks: {
-                    color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary'),
-                    font: { family: 'Segoe UI, Inter, sans-serif', size: 10, weight: '500' }
-                }
-            },
-            y: {
-                beginAtZero: true,
-                grid: {
-                    color: 'rgba(0, 0, 0, 0.05)',
-                    drawBorder: false
-                },
-                ticks: {
-                    color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary'),
-                    font: { family: 'Segoe UI, Inter, sans-serif', size: 10 },
-                    callback: function(value) {
-                        return 'MT ' + value.toLocaleString('pt-PT');
-                    }
-                }
-            }
-        }
-    };
-
-    // Gráfico de Vendas
-    function initSalesChart() {
-        const salesCtx = document.getElementById('salesChart');
-        if (!salesCtx) return;
-
-        if (salesChart) salesChart.destroy();
-
-        try {
-            salesChart = new Chart(salesCtx, {
-                type: 'line',
-                data: {
-                    labels: @json($salesChartData['labels']),
-                    datasets: [{
-                        label: 'Vendas',
-                        data: @json($salesChartData['salesData']),
-                        borderColor: chartColors.primary,
-                        backgroundColor: chartColors.primary + '20',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                        pointBackgroundColor: '#fff',
-                        pointBorderWidth: 2
-                    }, {
-                        label: 'Despesas',
-                        data: @json($salesChartData['expensesData']),
-                        borderColor: chartColors.danger,
-                        backgroundColor: chartColors.danger + '20',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                        pointBackgroundColor: '#fff',
-                        pointBorderWidth: 2
-                    }]
-                },
-                options: defaultChartOptions
-            });
-            
-            console.log('✅ Gráfico de vendas inicializado');
-        } catch (error) {
-            console.error('❌ Erro ao inicializar gráfico de vendas:', error);
-        }
-    }
-
-    // Gráfico de Fluxo de Caixa
-    function initCashFlowChart() {
-        const cashFlowCtx = document.getElementById('cashFlowChart');
-        if (!cashFlowCtx) return;
-
-        if (cashFlowChart) cashFlowChart.destroy();
-
-        try {
-            cashFlowChart = new Chart(cashFlowCtx, {
-                type: 'bar',
-                data: {
-                    labels: @json($cashFlowChartData['labels']),
-                    datasets: [{
-                        label: 'Entradas',
-                        data: @json($cashFlowChartData['inflowsData']),
-                        backgroundColor: chartColors.success + 'CC',
-                        borderColor: chartColors.success,
-                        borderWidth: 1,
-                        borderRadius: 4
-                    }, {
-                        label: 'Saídas',
-                        data: @json($cashFlowChartData['outflowsData']),
-                        backgroundColor: chartColors.danger + 'CC',
-                        borderColor: chartColors.danger,
-                        borderWidth: 1,
-                        borderRadius: 4
-                    }, {
-                        label: 'Líquido',
-                        data: @json($cashFlowChartData['netFlowData']),
-                        type: 'line',
-                        borderColor: chartColors.info,
-                        backgroundColor: chartColors.info + '20',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 3,
-                        pointHoverRadius: 5
-                    }]
-                },
-                options: {
-                    ...defaultChartOptions,
-                    scales: {
-                        ...defaultChartOptions.scales,
-                        y: {
-                            ...defaultChartOptions.scales.y,
-                            beginAtZero: false
-                        }
-                    }
-                }
-            });
-            
-            console.log('✅ Gráfico de fluxo de caixa inicializado');
-        } catch (error) {
-            console.error('❌ Erro ao inicializar gráfico de fluxo:', error);
-        }
-    }
-
-    // Atualização de Métricas
-    function updateDashboardMetrics() {
-        fetch('{{ route("dashboard.metrics") }}', {
-            method: 'GET',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => {
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return response.json();
-        })
-        .then(data => {
-            console.log('📊 Métricas atualizadas:', data);
-
-            // Atualizar métricas principais
-            updateMetricCard('today-sales', data.todaySales, data.salesChangePercent, data.salesChangeDirection, data.salesChangeIcon);
-            updateMetricCard('today-outflows', data.todayOutflows, data.outflowsChangePercent, data.outflowsChangeDirection, data.outflowsChangeIcon);
-
-            // Atualizar estoque baixo
-            const lowStockElement = document.getElementById('low-stock-count');
-            if (lowStockElement && parseInt(lowStockElement.textContent) !== data.lowStockCount) {
-                lowStockElement.textContent = data.lowStockCount;
-                lowStockElement.style.transform = 'scale(1.1)';
-                setTimeout(() => lowStockElement.style.transform = 'scale(1)', 300);
-            }
-            
-            // Atualizar gráficos se necessário
-            if (salesChart && data.salesChartData) {
-                const currentLabels = JSON.stringify(salesChart.data.labels);
-                const newLabels = JSON.stringify(data.salesChartData.labels);
-                
-                if (currentLabels !== newLabels) {
-                    salesChart.data.labels = data.salesChartData.labels;
-                    salesChart.data.datasets[0].data = data.salesChartData.salesData;
-                    salesChart.data.datasets[1].data = data.salesChartData.expensesData;
-                    salesChart.update('none');
-                }
-            }
-            
-            if (cashFlowChart && data.cashFlowChartData) {
-                cashFlowChart.data.labels = data.cashFlowChartData.labels;
-                cashFlowChart.data.datasets[0].data = data.cashFlowChartData.inflowsData;
-                cashFlowChart.data.datasets[1].data = data.cashFlowChartData.outflowsData;
-                cashFlowChart.data.datasets[2].data = data.cashFlowChartData.netFlowData;
-                cashFlowChart.update('none');
-            }
-            
-            // Alertas dinâmicos
-            if (data.dynamicAlerts && data.dynamicAlerts.length > 0 && window.FDSMULTSERVICES?.Toast) {
-                data.dynamicAlerts.forEach(alert => {
-                    window.FDSMULTSERVICES.Toast.show(alert.message, alert.type);
-                });
-            }
-        })
-        .catch(error => {
-            console.warn('⚠️ Erro ao atualizar métricas:', error);
-        });
-    }
-
-    // Função auxiliar para atualizar cards
-    function updateMetricCard(idPrefix, value, percent, direction, icon) {
-        const valueElement = document.getElementById(idPrefix);
-        const changeElement = document.getElementById(idPrefix + '-change');
-        
-        if (!valueElement || !changeElement) return;
-
-        const newValueFormatted = formatCurrency(value, false);
-        
-        if (valueElement.textContent !== newValueFormatted) {
-            valueElement.classList.add('skeleton-loading');
-            
-            setTimeout(() => {
-                valueElement.textContent = newValueFormatted;
-                
-                const percentElement = document.getElementById(idPrefix + '-change-percent');
-                const iconElement = changeElement.querySelector('i');
-                
-                if (percentElement) percentElement.textContent = percent;
-                if (iconElement) iconElement.className = 'fas ' + icon;
-                
-                changeElement.className = 'metric-change ' + direction;
-                
-                valueElement.classList.remove('skeleton-loading');
-                valueElement.style.transform = 'scale(1.05)';
-                setTimeout(() => valueElement.style.transform = 'scale(1)', 300);
-            }, 500);
-        }
-    }
-
-    // Função auxiliar de formatação
-    function formatCurrency(value, usePrefix = true) {
-        const formatted = (value || 0).toLocaleString('pt-PT', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-        return usePrefix ? 'MT ' + formatted : formatted;
-    }
-
-    // Função para atualizar período do gráfico
-    window.updateChartPeriod = function(days) {
-        document.querySelectorAll('.btn-group .btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        event.target.classList.add('active');
-        
-        console.log(`Atualizando gráfico para ${days} dias`);
-    };
-
-    // Inicialização
-    updateGreeting();
-    updateClock();
-    
-    setTimeout(() => {
-        initSalesChart();
-        initCashFlowChart();
-    }, 100);
-    
-    // Atualizar relógio a cada minuto
-    setInterval(updateClock, 60000);
-    
-    // Atualizar métricas a cada 30 segundos
-    chartUpdateInterval = setInterval(updateDashboardMetrics, 30000);
-    
-    // Primeira atualização após 5 segundos
-    setTimeout(updateDashboardMetrics, 5000);
-
-    // Pausar atualizações quando a aba não está visível
-    document.addEventListener("visibilitychange", () => {
-        if (document.hidden) {
-            if (chartUpdateInterval) clearInterval(chartUpdateInterval);
-        } else {
-            updateDashboardMetrics();
-            chartUpdateInterval = setInterval(updateDashboardMetrics, 30000);
         }
     });
-
-    console.log('✅ Dashboard inicializado com sucesso!');
-});
-
-// Limpeza ao sair da página
-window.addEventListener('beforeunload', function() {
-    if (chartUpdateInterval) clearInterval(chartUpdateInterval);
-    if (salesChart) salesChart.destroy();
-    if (cashFlowChart) cashFlowChart.destroy();
 });
 </script>
 @endpush
