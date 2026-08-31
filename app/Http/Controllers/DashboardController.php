@@ -145,6 +145,7 @@ class DashboardController extends Controller
         return view('dashboard.index', compact(
             'todaySales', 'todayOutflows', 'lowStockProducts', 'recentSales', 
             'monthSales', 'monthReceived', 'monthOutflows', 'monthExpenses', 'monthProfit', 'todayProductsSold',
+            'prevMonthExpenses', 'prevMonthSales', 'prevMonthProfit',
             'monthActiveCustomers', 'salesChartData', 'cashFlowChartData',
             'monthCostOfGoods', 'monthGrossProfit', 'monthRealProfit', 'monthRoi',
             'monthGrossMargin', 'monthNetMargin',

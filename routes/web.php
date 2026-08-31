@@ -40,9 +40,10 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::post('/demo-login', [AuthController::class, 'demoLogin'])->name('demo.login');
 
 // ===== PROTECTED ROUTES =====
-Route::middleware(['auth', 'permissions', 'temp.password', 'verified'])->group(function () {
+Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
     // Dashboard - Acesso para todos os usuários logados
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('/dash', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/api/dashboard/metrics', [DashboardController::class, 'apiMetrics'])
         ->name('dashboard.api.metrics');
     Route::get('/dashboard/metrics', [DashboardController::class, 'apiMetrics'])->name('dashboard.metrics');

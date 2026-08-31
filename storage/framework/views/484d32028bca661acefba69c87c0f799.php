@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 
-    <title><?php echo e(config('app.name', 'FDSMULTSERVICES+')); ?> - <?php echo $__env->yieldContent('title', 'Sistema de Reprografia'); ?></title>
+    <title>ZBIZ+ Moçambique - <?php echo $__env->yieldContent('title', 'Sistema de Reprografia'); ?></title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -1436,12 +1436,12 @@
     <nav class="app-sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="brand-container">
-                <div class="brand-logo" id="brand-logo" style="background: linear-gradient(45deg, #5B9BD5, #4A90E2); margin-left: -8px !important ">
-                    <i class="fas fa-print m-0"></i>
+                <div class="brand-logo" id="brand-logo" style="background: linear-gradient(135deg, #10b981, #059669); margin-left: -8px !important ">
+                    <i class="fas fa-bolt m-0 text-white"></i>
                 </div>
                 <div class="brand-text" id="brand-text">
-                    <div class="brand-title" style="margin-left: -2px !important">FDS+</div>
-                    <div class="brand-subtitle">MULTSERVICES</div>
+                    <div class="brand-title text-white font-black" style="margin-left: -2px !important">ZBIZ<span style="color: #34d399">+</span></div>
+                    <div class="brand-subtitle text-truncate" style="max-width: 140px;"><?php echo e(current_tenant()?->name ?? 'ERP MOÇAMBIQUE'); ?></div>
                 </div>
             </div>
         </div>
@@ -1814,6 +1814,18 @@
             </div>
 
             <div class="header-right">
+                <!-- Tenant / Branch / Plan Badge -->
+                <div class="d-none d-md-flex align-items-center me-3" style="gap: 8px;">
+                    <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 11px; padding: 5px 10px; border-radius: 8px;">
+                        <i class="fas fa-store me-1"></i> <?php echo e(current_branch()?->name ?? 'Loja Principal'); ?>
+
+                    </span>
+                    <span class="badge" style="background: rgba(99, 102, 241, 0.1); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); font-size: 11px; padding: 5px 10px; border-radius: 8px;">
+                        <i class="fas fa-crown me-1"></i> <?php echo e(current_tenant()?->activeSubscription()?->plan?->name ?? 'Trial 30 Dias'); ?>
+
+                    </span>
+                </div>
+
                 <div class="header-search">
                     <input type="text" class="search-input" id="global-search-input" placeholder="Pesquisar produtos, clientes, vendas..." autocomplete="off">
                     <i class="fas fa-search search-icon"></i>

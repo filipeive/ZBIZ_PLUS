@@ -19,15 +19,15 @@ class TemporaryPassword extends Model
         'token',
         'password_hash',
         'expires_at',
-        'used',
+        'is_used',
         'used_at',
-        'created_by_user_id',
+        'created_by',
     ];
 
     protected $casts = [
         'expires_at' => 'datetime',
         'used_at' => 'datetime',
-        'used' => 'boolean',
+        'is_used' => 'boolean',
     ];
 
     // ===== RELACIONAMENTOS =====
@@ -38,13 +38,13 @@ class TemporaryPassword extends Model
 
     public function createdBy(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by_user_id');
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     // ===== SCOPES =====
     public function scopeActive($query)
     {
-        return $query->where('used', false)
+        return $query->where('is_used', false)
                     ->where('expires_at', '>', now());
     }
 
@@ -55,7 +55,7 @@ class TemporaryPassword extends Model
 
     public function scopeUsed($query)
     {
-        return $query->where('used', true);
+        return $query->where('is_used', true);
     }
 
     // ===== MÉTODOS ESTÁTICOS =====
@@ -63,22 +63,22 @@ class TemporaryPassword extends Model
     {
         // Invalidar senhas temporárias anteriores
         self::where('user_id', $user->id)
-            ->where('used', false)
-            ->update(['used' => true, 'used_at' => now()]);
+            ->where('is_used', false)
+            ->update(['is_used' => true, 'used_at' => now()]);
 
         return self::create([
             'user_id' => $user->id,
             'token' => Str::random(64),
             'password_hash' => Hash::make($plainPassword),
             'expires_at' => now()->addHours($expirationHours),
-            'created_by_user_id' => auth()->id(),
+            'created_by' => auth()->id(),
         ]);
     }
 
     // ===== MÉTODOS DE INSTÂNCIA =====
     public function isValid(): bool
     {
-        return !$this->used && $this->expires_at->isFuture();
+        return !$this->is_used && $this->expires_at->isFuture();
     }
 
     public function isExpired(): bool
@@ -89,14 +89,14 @@ class TemporaryPassword extends Model
     public function markAsUsed(): void
     {
         $this->update([
-            'used' => true,
+            'is_used' => true,
             'used_at' => now(),
         ]);
     }
 
     public function getExpirationStatusAttribute(): string
     {
-        if ($this->used) {
+        if ($this->is_used) {
             return 'Usada em ' . $this->used_at->format('d/m/Y H:i');
         }
 

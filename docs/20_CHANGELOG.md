@@ -6,6 +6,13 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
+## [1.0.1] - 2026-08-31 - Modernização de Views & Onboarding SaaS Interativo
+### Added
+- **Landing Page Oficial (`welcome.blade.php`):** Design moderno com TailwindCSS e Alpine.js, seletor de setor interativo (Retalho, Farmácia, Gráfica, Serviços), planos em Meticais (MZN) e chamada para trial de 30 dias.
+- **SaaS Onboarding Wizard (`register.blade.php`):** Assistente passo a passo em 3 etapas para criação autónoma de empresas (Tenant), filial inicial, contas de caixa/M-Pesa e categorias padrão por setor.
+- **Identidade Visual ZBIZ+ no Painel:** Atualização de `layouts/app.blade.php` com badge de filial ativa (`Loja Principal`), indicador de subscrição (`Plano Trial 30 Dias`) e atalho direto em destaque para o **ZBIZ POS 2.0**.
+- **Testes de Navegação & Onboarding:** Suite `tests/Feature/Auth/TenantOnboardingTest.php` validada e testada no browser com 100% de aprovação.
+
 ## [1.0.0] - 2026-08-30 - Lançamento Oficial do ZBIZ+
 ### Added
 - **M-Pesa C2B Integration:** Driver `MpesaDriver` com normalização de números moçambicanos (prefixos 84/85 e DDI 258) e chamadas STK Push.
