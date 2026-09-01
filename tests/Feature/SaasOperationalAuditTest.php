@@ -167,4 +167,34 @@ class SaasOperationalAuditTest extends TestCase
         $editResp = $this->actingAs($stockManager)->get(route('products.edit', $product->id));
         $editResp->assertStatus(200);
     }
+
+    public function test_all_core_system_views_render_successfully()
+    {
+        $this->seed(\Database\Seeders\OperationalMultiBranchSeeder::class);
+
+        $admin = User::where('email', 'admin@farmaciamuzinga.com')->firstOrFail();
+
+        // 1. Orders
+        $this->actingAs($admin)->get(route('orders.index'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('orders.report'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('orders.create'))->assertStatus(200);
+
+        // 2. Debts
+        $this->actingAs($admin)->get(route('debts.index'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('debts.debtors-report'))->assertStatus(200);
+
+        // 3. Finances & Stock Movements
+        $this->actingAs($admin)->get(route('finances.index'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('stock-movements.index'))->assertStatus(200);
+
+        // 4. Reports Hub & Specialized Reports
+        $this->actingAs($admin)->get(route('reports.index'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('reports.daily-sales'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('reports.monthly-sales'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('reports.profit-loss'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('reports.inventory'))->assertStatus(200);
+
+        // 5. Users
+        $this->actingAs($admin)->get(route('users.index'))->assertStatus(200);
+    }
 }

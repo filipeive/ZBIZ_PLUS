@@ -1,294 +1,107 @@
 @extends('layouts.app')
 
 @section('title', 'Vendas Mensais')
-@section('page-title', 'Vendas Mensais')
-@section('title-icon', 'fa-calendar-alt')
-@section('breadcrumbs')
-    <li class="breadcrumb-item"><a href="{{ route('reports.index') }}">Relatórios</a></li>
-    <li class="breadcrumb-item active">Vendas Mensais</li>
-@endsection
+@section('page-title', 'Relatório de Vendas Mensais')
+
+@php
+    $theme = tenant_theme();
+@endphp
 
 @section('content')
-    <!-- Header com botões de ação -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="space-y-6">
+    
+    <!-- Top Action Bar -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
         <div>
-            <h2 class="h3 mb-1 text-primary fw-bold">
-                <i class="fas fa-calendar-alt me-2"></i>
-                Relatório de Vendas Mensais
+            <h2 class="text-lg font-black font-heading text-white flex items-center gap-2">
+                <i class="fa-solid fa-calendar-days text-sky-400"></i> Relatório de Vendas Mensais
             </h2>
-            <p class="text-muted mb-0">Análise do desempenho de vendas por mês</p>
+            <p class="text-xs text-slate-400">Análise da evolução de faturamento e sazonalidade mês a mês.</p>
         </div>
-        <a href="{{ route('reports.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-2"></i> Voltar
-        </a>
-    </div>
 
-    <!-- Cards de Resumo -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
-            <div class="card stats-card primary h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="text-muted mb-2 fw-semibold">Meses Analisados</h6>
-                            <h3 class="mb-0 text-primary fw-bold">{{ $sales->count() }}</h3>
-                            <small class="text-muted">no histórico</small>
-                        </div>
-                        <div class="text-primary">
-                            <i class="fas fa-calendar-alt fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
-            <div class="card stats-card success h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="text-muted mb-2 fw-semibold">Receita Total</h6>
-                            <h3 class="mb-0 text-success fw-bold">{{ number_format($sales->sum('total'), 2, ',', '.') }} MT</h3>
-                            <small class="text-muted">vendas brutas</small>
-                        </div>
-                        <div class="text-success">
-                            <i class="fas fa-dollar-sign fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
-            <div class="card stats-card warning h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="text-muted mb-2 fw-semibold">Média Mensal</h6>
-                            <h3 class="mb-0 text-warning fw-bold">{{ number_format($sales->avg('total'), 2, ',', '.') }} MT</h3>
-                            <small class="text-muted">por mês</small>
-                        </div>
-                        <div class="text-warning">
-                            <i class="fas fa-chart-line fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
-            <div class="card stats-card danger h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="text-muted mb-2 fw-semibold">Melhor Mês</h6>
-                            <h3 class="mb-0 text-danger fw-bold">{{ number_format($sales->max('total'), 2, ',', '.') }} MT</h3>
-                            <small class="text-muted">
-                                {{ \Carbon\Carbon::parse($sales->where('total', $sales->max('total'))->first()->month . '-01')->format('M/Y') }}
-                            </small>
-                        </div>
-                        <div class="text-danger">
-                            <i class="fas fa-trophy fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="flex items-center gap-2.5">
+            <a href="{{ route('reports.index') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
+                <i class="fa-solid fa-arrow-left"></i> Central de Relatórios
+            </a>
+            <button type="button" onclick="window.print()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-2">
+                <i class="fa-solid fa-print"></i> Imprimir / PDF
+            </button>
         </div>
     </div>
 
-    <!-- Gráfico de Evolução -->
-    <div class="card fade-in mb-4">
-        <div class="card-header bg-white">
-            <h5 class="card-title mb-0 d-flex align-items-center">
-                <i class="fas fa-chart-line me-2 text-success"></i>
-                Evolução das Vendas Mensais
-            </h5>
+    <!-- 4 Summary KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Meses com Registo</span>
+            <div class="text-2xl font-black font-heading text-white mt-2">{{ $sales->count() }} <span class="text-xs font-normal text-slate-400">meses</span></div>
+            <div class="text-xs text-slate-500 mt-1">no histórico</div>
         </div>
-        <div class="card-body">
-            <canvas id="monthlySalesChart" height="100"></canvas>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Receita Acumulada</span>
+            <div class="text-2xl font-black font-heading text-emerald-400 font-mono mt-2">{{ number_format($sales->sum('total'), 2, ',', '.') }} <span class="text-xs font-normal text-slate-400">MT</span></div>
+            <div class="text-xs text-slate-500 mt-1">total faturado</div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Média Mensal</span>
+            <div class="text-2xl font-black font-heading text-amber-400 font-mono mt-2">{{ $sales->count() > 0 ? number_format($sales->avg('total'), 2, ',', '.') : '0,00' }} <span class="text-xs font-normal text-slate-400">MT</span></div>
+            <div class="text-xs text-slate-500 mt-1">por mês ativo</div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Melhor Mês</span>
+            <div class="text-2xl font-black font-heading text-sky-400 font-mono mt-2">{{ $sales->count() > 0 ? number_format($sales->max('total'), 2, ',', '.') : '0,00' }} <span class="text-xs font-normal text-slate-400">MT</span></div>
+            <div class="text-xs text-slate-500 mt-1">pico de faturamento</div>
         </div>
     </div>
 
-    <div class="row g-4">
-        <!-- Tabela de Detalhes Mensais -->
-        <div class="col-lg-8">
-            <div class="card fade-in">
-                <div class="card-header bg-white">
-                    <h5 class="card-title mb-0 d-flex align-items-center">
-                        <i class="fas fa-table me-2 text-primary"></i>
-                        Detalhes Mensais
-                    </h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0" id="monthly-table">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Mês/Ano</th>
-                                    <th class="text-end">Receita</th>
-                                    <th class="text-center">Variação</th>
-                                    <th class="text-center">% do Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($sales as $index => $sale)
-                                    @php
-                                        $previousSale = $sales->get($index + 1);
-                                        $variation = $previousSale ? (($sale->total - $previousSale->total) / $previousSale->total * 100) : 0;
-                                    @endphp
-                                    <tr>
-                                        <td><strong>{{ \Carbon\Carbon::parse($sale->month . '-01')->format('M/Y') }}</strong></td>
-                                        <td class="text-end text-success fw-bold">{{ number_format($sale->total, 2, ',', '.') }} MT</td>
-                                        <td class="text-center">
-                                            @if($variation > 0)
-                                                <span class="badge bg-success">
-                                                    <i class="fas fa-arrow-up me-1"></i> {{ number_format($variation, 1) }}%
-                                                </span>
-                                            @elseif($variation < 0)
-                                                <span class="badge bg-danger">
-                                                    <i class="fas fa-arrow-down me-1"></i> {{ number_format(abs($variation), 1) }}%
-                                                </span>
-                                            @else
-                                                <span class="badge bg-secondary">0%</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-center">
-                                            <span class="badge bg-light text-dark">
-                                                {{ number_format(($sale->total / $sales->sum('total')) * 100, 1) }}%
-                                            </span>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+    <!-- Monthly Sales Data Table -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
+            <div>
+                <h3 class="text-base font-black font-heading text-white">Histórico Mensal de Faturamento ({{ $sales->count() }})</h3>
+                <p class="text-xs text-slate-400">Detalhamento dos meses com totais consolidados.</p>
             </div>
         </div>
 
-        <!-- Análise Estatística -->
-        <div class="col-lg-4">
-            <div class="card fade-in h-100">
-                <div class="card-header bg-white">
-                    <h5 class="card-title mb-0 d-flex align-items-center">
-                        <i class="fas fa-calculator me-2 text-info"></i>
-                        Análise Estatística
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex align-items-start mb-3">
-                        <div class="text-info me-3">
-                            <i class="fas fa-chart-bar fa-lg"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-1">Média Mensal</h6>
-                            <p class="text-success fw-bold mb-0">{{ number_format($sales->avg('total'), 2, ',', '.') }} MT</p>
-                        </div>
-                    </div>
-
-                    <div class="d-flex align-items-start mb-3">
-                        <div class="text-success me-3">
-                            <i class="fas fa-trophy fa-lg"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-1">Melhor Mês</h6>
-                            <p class="text-success fw-bold mb-0">{{ number_format($sales->max('total'), 2, ',', '.') }} MT</p>
-                            <small class="text-muted">
-                                {{ \Carbon\Carbon::parse($sales->where('total', $sales->max('total'))->first()->month . '-01')->format('M/Y') }}
-                            </small>
-                        </div>
-                    </div>
-
-                    <div class="d-flex align-items-start">
-                        <div class="text-warning me-3">
-                            <i class="fas fa-chart-line fa-lg"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-1">Pior Mês</h6>
-                            <p class="text-danger fw-bold mb-0">{{ number_format($sales->min('total'), 2, ',', '.') }} MT</p>
-                            <small class="text-muted">
-                                {{ \Carbon\Carbon::parse($sales->where('total', $sales->min('total'))->first()->month . '-01')->format('M/Y') }}
-                            </small>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider">
+                        <th class="pb-3">Mês / Ano</th>
+                        <th class="pb-3 text-right">Faturamento Consolidado</th>
+                        <th class="pb-3 text-right">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60 font-medium">
+                    @forelse($sales as $sale)
+                        <tr class="hover:bg-slate-800/30 transition">
+                            <td class="py-3.5 font-bold text-white">
+                                <i class="fa-solid fa-calendar mr-2 text-slate-500"></i>
+                                {{ ucfirst(\Carbon\Carbon::createFromFormat('Y-m', $sale->month ?? date('Y-m'))->locale('pt_BR')->translatedFormat('F / Y')) }}
+                            </td>
+                            <td class="py-3.5 text-right font-black text-emerald-400 font-mono text-sm">
+                                {{ number_format($sale->total, 2, ',', '.') }} MT
+                            </td>
+                            <td class="py-3.5 text-right">
+                                <a href="{{ route('sales.index') }}" class="inline-flex items-center px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-xs font-bold transition">
+                                    <i class="fa-solid fa-eye text-xs mr-1"></i> Faturas
+                                </a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="3" class="py-12 text-center text-slate-500">
+                                <i class="fa-solid fa-calendar-days text-3xl mb-2 text-slate-600"></i>
+                                <p>Nenhum registo mensal encontrado.</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
+
+</div>
 @endsection
-
-@push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const ctx = document.getElementById('monthlySalesChart').getContext('2d');
-            const labels = @json($sales->pluck('month')->map(fn($m) => \Carbon\Carbon::parse($m . '-01')->format('M/Y')));
-            const data = @json($sales->pluck('total'));
-
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Receita Mensal (MT)',
-                        data: data,
-                        borderColor: '#198754',
-                        backgroundColor: 'rgba(25, 135, 84, 0.1)',
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => `Receita: ${context.parsed.y.toLocaleString('pt-BR', { style: 'currency', currency: 'AOA' })}`
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: value => 'MT ' + value.toLocaleString('pt-BR')
-                            }
-                        }
-                    }
-                }
-            });
-        });
-    </script>
-@endpush
-
-@push('styles')
-    <style>
-        .stats-card {
-            transition: all 0.3s ease;
-            border-left: 4px solid transparent;
-        }
-        .stats-card.primary { border-left-color: #1e3a8a; }
-        .stats-card.success { border-left-color: #059669; }
-        .stats-card.warning { border-left-color: #ea580c; }
-        .stats-card.danger { border-left-color: #dc2626; }
-        .stats-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        .fade-in {
-            animation: fadeIn 0.6s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .table-hover tbody tr:hover {
-            background-color: rgba(13, 110, 253, 0.05);
-        }
-
-        .loading-spinner {
-            width: 30px; height: 30px; border: 3px solid #f3f4f6; border-top: 3px solid #0d6efd; border-radius: 50%; animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
-@endpush

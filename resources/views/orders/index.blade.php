@@ -11,13 +11,29 @@
 <div class="space-y-6">
     
     <!-- Top Action Bar -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
-        <div>
-            <h2 class="text-lg font-black font-heading text-white">Pedidos e Ordens de Serviço</h2>
-            <p class="text-xs text-slate-400">Controle o fluxo de produção gráfica, encomendas de balcão e prazos de entrega.</p>
-        </div>
+    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
+        <form method="GET" action="{{ route('orders.index') }}" class="flex flex-col sm:flex-row items-center gap-3 w-full lg:max-w-xl">
+            <div class="relative flex-1 w-full">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 text-sm">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Buscar por cliente, telefone ou nº pedido..."
+                       class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-600 focus:ring-2 {{ $theme['ring'] }} outline-none">
+            </div>
 
-        <div class="flex items-center gap-3">
+            <select name="status" onchange="this.form.submit()" class="w-full sm:w-44 px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                <option value="">Todos os Estados</option>
+                <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pendente</option>
+                <option value="in_progress" {{ request('status') === 'in_progress' ? 'selected' : '' }}>Em Produção</option>
+                <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Concluído</option>
+                <option value="delivered" {{ request('status') === 'delivered' ? 'selected' : '' }}>Entregue</option>
+            </select>
+        </form>
+
+        <div class="flex items-center gap-2.5 w-full lg:w-auto justify-end">
+            <a href="{{ route('orders.report') }}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs border border-slate-700/80 transition flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie text-sky-400"></i> Relatórios
+            </a>
             <a href="{{ route('orders.create') }}" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
                 <i class="fa-solid fa-plus"></i> Nova Encomenda
             </a>
@@ -33,7 +49,7 @@
                         <th class="pb-3">Nº Pedido</th>
                         <th class="pb-3">Cliente</th>
                         <th class="pb-3">Data Pedido</th>
-                        <th class="pb-3">Prazo de Entrega</th>
+                        <th class="pb-3">Prazo Entrega</th>
                         <th class="pb-3 text-center">Estado</th>
                         <th class="pb-3 text-right">Total (MT)</th>
                         <th class="pb-3 text-right">Ações</th>
@@ -46,10 +62,12 @@
                                 #{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
                             </td>
                             <td class="py-3.5 font-bold text-white">
-                                {{ $order->customer_name ?? $order->customer?->name ?? 'Cliente' }}
+                                <a href="{{ route('orders.show', $order->id) }}" class="hover:text-emerald-400 transition">
+                                    {{ $order->customer_name ?? $order->customer?->name ?? 'Cliente' }}
+                                </a>
                             </td>
                             <td class="py-3.5 text-slate-400 font-mono">
-                                {{ $order->order_date ? \Carbon\Carbon::parse($order->order_date)->format('d/m/Y') : '-' }}
+                                {{ $order->order_date ? \Carbon\Carbon::parse($order->order_date)->format('d/m/Y') : ($order->created_at ? $order->created_at->format('d/m/Y') : '-') }}
                             </td>
                             <td class="py-3.5 font-mono text-slate-300">
                                 {{ $order->delivery_date ? \Carbon\Carbon::parse($order->delivery_date)->format('d/m/Y') : 'Imediato' }}
@@ -63,9 +81,17 @@
                                 {{ number_format($order->total_amount, 2, ',', '.') }} MT
                             </td>
                             <td class="py-3.5 text-right">
-                                <a href="{{ route('orders.show', $order->id) }}" class="inline-flex items-center px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition">
-                                    Ver Detalhes
-                                </a>
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <a href="{{ route('orders.show', $order->id) }}" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 flex items-center justify-center transition" title="Ver Detalhes">
+                                        <i class="fa-solid fa-eye text-xs"></i>
+                                    </a>
+                                    <a href="{{ route('orders.edit', $order->id) }}" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 flex items-center justify-center transition" title="Editar Pedido">
+                                        <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                    </a>
+                                    <a href="{{ route('orders.duplicate', $order->id) }}" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-sky-400 hover:bg-slate-700 flex items-center justify-center transition" title="Duplicar Encomenda">
+                                        <i class="fa-solid fa-clone text-xs"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     @empty

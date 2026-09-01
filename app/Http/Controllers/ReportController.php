@@ -114,8 +114,12 @@ class ReportController extends Controller
     }
     public function monthlySales()
     {
+        $monthRaw = DB::connection()->getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m', sale_date) as month"
+            : "DATE_FORMAT(sale_date, '%Y-%m') as month";
+
         $sales = Sale::select(
-            DB::raw("DATE_FORMAT(sale_date, '%Y-%m') as month"),
+            DB::raw($monthRaw),
             DB::raw("SUM(total_amount) as total")
         )
         ->groupBy('month')

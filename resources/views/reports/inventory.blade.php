@@ -1,334 +1,137 @@
 @extends('layouts.app')
 
-@section('title', 'Relatório de Inventário')
-@section('page-title', 'Inventário')
-@section('title-icon', 'fa-warehouse')
-@section('breadcrumbs')
-    <li class="breadcrumb-item"><a href="{{ route('reports.index') }}">Relatórios</a></li>
-    <li class="breadcrumb-item active">Inventário</li>
-@endsection
+@section('title', 'Inventário & Stock')
+@section('page-title', 'Relatório Geral de Inventário & Stock')
+
+@php
+    $theme = tenant_theme();
+@endphp
 
 @section('content')
-    <!-- Header com botões de ação -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="space-y-6">
+    
+    <!-- Top Action Bar -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
         <div>
-            <h2 class="h3 mb-1 text-primary fw-bold">
-                <i class="fas fa-warehouse me-2"></i>
-                Relatório de Inventário
+            <h2 class="text-lg font-black font-heading text-white flex items-center gap-2">
+                <i class="fa-solid fa-boxes-stacked text-emerald-400"></i> Relatório de Inventário Físico
             </h2>
-            <p class="text-muted mb-0">Visão geral completa do estoque de produtos</p>
+            <p class="text-xs text-slate-400">Visão consolidada de quantidades em armazém, custos médios e valores totais de venda.</p>
         </div>
-        <a href="{{ route('reports.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-2"></i> Voltar
-        </a>
-    </div>
 
-    <!-- Cards de Resumo -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
-            <div class="card stats-card primary h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="text-muted mb-2 fw-semibold">Total de Produtos</h6>
-                            <h3 class="mb-0 text-primary fw-bold">{{ $products->count() }}</h3>
-                            <small class="text-muted">registrados no sistema</small>
-                        </div>
-                        <div class="text-primary">
-                            <i class="fas fa-boxes fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
-            <div class="card stats-card success h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="text-muted mb-2 fw-semibold">Em Stock</h6>
-                            <h3 class="mb-0 text-success fw-bold">{{ $products->where('stock_quantity', '>', 0)->count() }}</h3>
-                            <small class="text-muted">produtos disponíveis</small>
-                        </div>
-                        <div class="text-success">
-                            <i class="fas fa-check-circle fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
-            <div class="card stats-card warning h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="text-muted mb-2 fw-semibold">Stock Baixo</h6>
-                            <h3 class="mb-0 text-warning fw-bold">
-                                {{ $products->filter(fn($p) => $p->stock_quantity > 0 && $p->stock_quantity <= $p->min_stock_level)->count() }}
-                            </h3>
-                            <small class="text-muted">estoque insuficiente</small>
-                        </div>
-                        <div class="text-warning">
-                            <i class="fas fa-exclamation-triangle fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
-            <div class="card stats-card danger h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="text-muted mb-2 fw-semibold">Esgotados</h6>
-                            <h3 class="mb-0 text-danger fw-bold">{{ $products->where('stock_quantity', '<=', 0)->count() }}</h3>
-                            <small class="text-muted">sem estoque</small>
-                        </div>
-                        <div class="text-danger">
-                            <i class="fas fa-times-circle fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="flex items-center gap-2.5">
+            <a href="{{ route('reports.index') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
+                <i class="fa-solid fa-arrow-left"></i> Central de Relatórios
+            </a>
+            <button type="button" onclick="window.print()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-2">
+                <i class="fa-solid fa-print"></i> Imprimir / PDF
+            </button>
         </div>
     </div>
 
-    <!-- Filtros -->
-    <div class="card mb-4 fade-in">
-        <div class="card-header bg-white">
-            <h5 class="card-title mb-0 d-flex align-items-center">
-                <i class="fas fa-filter me-2 text-primary"></i>
-                Filtros de Inventário
-            </h5>
+    <!-- 4 Summary KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total de Artigos</span>
+            <div class="text-2xl font-black font-heading text-white mt-2">{{ $products->count() }} <span class="text-xs font-normal text-slate-400">itens</span></div>
+            <div class="text-xs text-slate-500 mt-1">no catálogo geral</div>
         </div>
-        <div class="card-body">
-            <form method="GET" action="{{ route('reports.inventory') }}" id="filters-form">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label class="form-label fw-semibold">Status do Stock</label>
-                        <select class="form-select" name="status">
-                            <option value="">Todos</option>
-                            <option value="in_stock" {{ request('status') == 'in_stock' ? 'selected' : '' }}>Em Stock</option>
-                            <option value="low_stock" {{ request('status') == 'low_stock' ? 'selected' : '' }}>Stock Baixo</option>
-                            <option value="out_of_stock" {{ request('status') == 'out_of_stock' ? 'selected' : '' }}>Esgotado</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label fw-semibold">Categoria</label>
-                        <select class="form-select" name="category">
-                            <option value="">Todas</option>
-                            @foreach($products->pluck('category.name')->unique()->filter() as $category)
-                                <option value="{{ $category }}" {{ request('category') == $category ? 'selected' : '' }}>
-                                    {{ $category }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">&nbsp;</label>
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-search me-1"></i> Filtrar
-                        </button>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">&nbsp;</label>
-                        <button type="button" class="btn btn-success w-100" onclick="exportInventory()">
-                            <i class="fas fa-file-excel me-1"></i> Exportar
-                        </button>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">&nbsp;</label>
-                        <button type="button" class="btn btn-info w-100" onclick="printInventory()">
-                            <i class="fas fa-print me-1"></i> Imprimir
-                        </button>
-                    </div>
-                </div>
-            </form>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Artigos Disponíveis</span>
+            <div class="text-2xl font-black font-heading text-emerald-400 font-mono mt-2">{{ $products->where('stock_quantity', '>', 0)->count() }}</div>
+            <div class="text-xs text-slate-500 mt-1">com stock positivo</div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Stock Crítico / Ruptura</span>
+            <div class="text-2xl font-black font-heading text-rose-400 font-mono mt-2">
+                {{ $products->filter(function($p) { return $p->stock_quantity <= $p->min_stock_level; })->count() }}
+            </div>
+            <div class="text-xs text-rose-500/80 mt-1 font-semibold">abaixo do limite mínimo</div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Valor em Inventário</span>
+            <div class="text-2xl font-black font-heading text-sky-400 font-mono mt-2">
+                {{ number_format($products->sum(function($p) { return $p->selling_price * $p->stock_quantity; }), 2, ',', '.') }} MT
+            </div>
+            <div class="text-xs text-slate-500 mt-1">valor estimado de venda</div>
         </div>
     </div>
 
-    <!-- Tabela de Inventário -->
-    <div class="card fade-in">
-        <div class="card-header bg-white">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0 d-flex align-items-center">
-                    <i class="fas fa-warehouse me-2 text-primary"></i>
-                    Inventário de Produtos
-                </h5>
-                <span class="badge bg-primary">Total: {{ $products->count() }}</span>
+    <!-- Inventory Data Table -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
+            <div>
+                <h3 class="text-base font-black font-heading text-white">Listagem Geral de Inventário ({{ $products->count() }})</h3>
+                <p class="text-xs text-slate-400">Detalhamento de artigos com preços, quantidades e valor total.</p>
             </div>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" id="inventory-table">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Produto</th>
-                            <th>Categoria</th>
-                            <th>Código</th>
-                            <th class="text-center">Stock Atual</th>
-                            <th class="text-center">Mínimo</th>
-                            <th class="text-center">Status</th>
-                            <th class="text-end">Preço Compra</th>
-                            <th class="text-end">Preço Venda</th>
-                            <th class="text-end">Valor Stock</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($products as $product)
-                            <tr>
-                                <td>
-                                    <div class="d-flex flex-column">
-                                        <strong>{{ $product->name }}</strong>
-                                        @if($product->description)
-                                            <small class="text-muted">{{ Str::limit($product->description, 40) }}</small>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge bg-light text-dark">{{ $product->category?->name ?? 'N/A' }}</span>
-                                </td>
-                                <td><code>{{ $product->code ?? 'N/A' }}</code></td>
-                                <td class="text-center">
-                                    <span class="badge bg-{{ $product->stock_quantity > 0 ? 'success' : 'danger' }}">
-                                        {{ $product->stock_quantity }} {{ $product->unit }}
-                                    </span>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-secondary">{{ $product->min_stock_level }}</span>
-                                </td>
-                                <td class="text-center">
-                                    @if($product->stock_quantity <= 0)
-                                        <span class="badge bg-danger">Esgotado</span>
-                                    @elseif($product->stock_quantity <= $product->min_stock_level)
-                                        <span class="badge bg-warning">Baixo</span>
-                                    @else
-                                        <span class="badge bg-success">OK</span>
-                                    @endif
-                                </td>
-                                <td class="text-end">
-                                    {{ number_format($product->purchase_price, 2, ',', '.') }} MT
-                                </td>
-                                <td class="text-end text-success fw-bold">
-                                    {{ number_format($product->selling_price, 2, ',', '.') }} MT
-                                </td>
-                                <td class="text-end">
-                                    {{ number_format($product->stock_quantity * $product->purchase_price, 2, ',', '.') }} MT
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot>
-                        <tr class="table-light fw-bold">
-                            <td colspan="8" class="text-end">Total Valor do Stock:</td>
-                            <td class="text-end">
-                                {{ number_format($products->sum(fn($p) => $p->stock_quantity * $p->purchase_price), 2, ',', '.') }} MT
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider">
+                        <th class="pb-3">Código / SKU</th>
+                        <th class="pb-3">Artigo / Medicamento</th>
+                        <th class="pb-3">Categoria</th>
+                        <th class="pb-3 text-right">Preço Compra</th>
+                        <th class="pb-3 text-right">Preço Venda</th>
+                        <th class="pb-3 text-center">Stock Atual</th>
+                        <th class="pb-3 text-right">Valor Total (MT)</th>
+                        <th class="pb-3 text-right">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60 font-medium">
+                    @forelse($products as $p)
+                        @php
+                            $totalVal = $p->selling_price * $p->stock_quantity;
+                        @endphp
+                        <tr class="hover:bg-slate-800/30 transition">
+                            <td class="py-3 font-mono text-slate-400 text-[11px]">
+                                {{ $p->barcode ?? $p->sku ?? ('PRD-' . $p->id) }}
+                            </td>
+                            <td class="py-3 font-bold text-white">
+                                {{ $p->name }}
+                            </td>
+                            <td class="py-3">
+                                <span class="px-2 py-0.5 rounded-lg text-[10px] bg-slate-800 text-slate-300 border border-slate-700">
+                                    {{ $p->category?->name ?? 'Geral' }}
+                                </span>
+                            </td>
+                            <td class="py-3 text-right font-mono text-slate-400">
+                                {{ number_format($p->purchase_price, 2, ',', '.') }} MT
+                            </td>
+                            <td class="py-3 text-right font-mono font-bold text-white">
+                                {{ number_format($p->selling_price, 2, ',', '.') }} MT
+                            </td>
+                            <td class="py-3 text-center font-mono">
+                                <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold {{ $p->stock_quantity <= $p->min_stock_level ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-slate-800 text-slate-200' }}">
+                                    {{ $p->stock_quantity }} {{ $p->unit ?? 'un' }}
+                                </span>
+                            </td>
+                            <td class="py-3 text-right font-mono font-bold text-emerald-400">
+                                {{ number_format($totalVal, 2, ',', '.') }} MT
+                            </td>
+                            <td class="py-3 text-right">
+                                <a href="{{ route('products.show', $p->id) }}" class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition" title="Ver Ficha">
+                                    <i class="fa-solid fa-eye text-xs"></i>
+                                </a>
                             </td>
                         </tr>
-                    </tfoot>
-                </table>
-            </div>
+                    @empty
+                        <tr>
+                            <td colspan="8" class="py-12 text-center text-slate-500">
+                                <i class="fa-solid fa-boxes-stacked text-3xl mb-2 text-slate-600"></i>
+                                <p>Nenhum produto cadastrado no inventário.</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- Produtos com Stock Baixo -->
-    @if($products->filter(fn($p) => $p->stock_quantity > 0 && $p->stock_quantity <= $p->min_stock_level)->count() > 0)
-        <div class="card mt-4 fade-in">
-            <div class="card-header bg-warning text-white">
-                <h5 class="card-title mb-0 d-flex align-items-center">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    Produtos com Stock Baixo
-                </h5>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Produto</th>
-                                <th class="text-center">Stock Atual</th>
-                                <th class="text-center">Stock Mínimo</th>
-                                <th class="text-center">Sugestão de Reposição</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($products->filter(fn($p) => $p->stock_quantity > 0 && $p->stock_quantity <= $p->min_stock_level) as $product)
-                                <tr>
-                                    <td><strong>{{ $product->name }}</strong></td>
-                                    <td class="text-center">
-                                        <span class="badge bg-warning">{{ $product->stock_quantity }}</span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-secondary">{{ $product->min_stock_level }}</span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-info">
-                                            {{ $product->min_stock_level - $product->stock_quantity + 10 }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    @endif
+</div>
 @endsection
-
-@push('scripts')
-    <script>
-        function exportInventory() {
-            const params = new URLSearchParams(window.location.search);
-            params.set('export', 'excel');
-            window.open('{{ route("reports.inventory") }}?' + params.toString(), '_blank');
-        }
-
-        function printInventory() {
-            window.print();
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            // Auto-submit nos filtros
-            const form = document.getElementById('filters-form');
-            const selects = form.querySelectorAll('select');
-            selects.forEach(select => {
-                select.addEventListener('change', () => form.submit());
-            });
-        });
-    </script>
-@endpush
-
-@push('styles')
-    <style>
-        .stats-card {
-            transition: all 0.3s ease;
-            border-left: 4px solid transparent;
-        }
-        .stats-card.primary { border-left-color: #1e3a8a; }
-        .stats-card.success { border-left-color: #059669; }
-        .stats-card.warning { border-left-color: #ea580c; }
-        .stats-card.danger { border-left-color: #dc2626; }
-        .stats-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        .fade-in {
-            animation: fadeIn 0.6s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .table-hover tbody tr:hover {
-            background-color: rgba(13, 110, 253, 0.05);
-        }
-
-        .loading-spinner {
-            width: 30px; height: 30px; border: 3px solid #f3f4f6; border-top: 3px solid #0d6efd; border-radius: 50%; animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
-@endpush

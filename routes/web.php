@@ -257,13 +257,21 @@ Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
     // ===== DÍVIDAS =====
     Route::prefix('debts')->name('debts.')->group(function () {
 
-          // Criar dívidas - create_debts permission
+        // Relatórios - view_reports permission (STATIC ROUTES FIRST)
+        Route::middleware('permissions:view_reports')->group(function () {
+            Route::get('/debtors-report', [DebtController::class, 'debtorsReport'])->name('debtors-report');
+            Route::get('/reports/debtors', [DebtController::class, 'debtorsReport'])->name('report');
+            Route::get('/reports/export', [DebtController::class, 'exportDebtorsReport'])->name('export-debtors');
+        });
+
+        // Criar dívidas - create_debts permission
         Route::middleware('permissions:create_debts')->group(function () {
             Route::get('/create', [DebtController::class, 'create'])->name('create');
             Route::post('/', [DebtController::class, 'store'])->name('store');
             // Criar dívida diretamente de uma venda
             Route::post('/from-sale', [DebtController::class, 'storeFromSale'])->name('store-from-sale');
         });
+
         // Visualizar dívidas - todos podem ver
         Route::get('/', [DebtController::class, 'index'])->name('index');
         Route::get('/{debt}', [DebtController::class, 'show'])->name('show');
@@ -292,12 +300,6 @@ Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
         // Criar venda manual de dívida paga
         Route::middleware('permissions:create_debts')->group(function () {
             Route::post('/{debt}/create-manual-sale', [DebtController::class, 'createManualSale'])->name('create-manual-sale');
-        });
-
-        // Relatórios - view_reports permission
-        Route::middleware('permissions:view_reports')->group(function () {
-            Route::get('/reports/debtors', [DebtController::class, 'debtorsReport'])->name('report');
-            Route::get('/reports/export', [DebtController::class, 'exportDebtorsReport'])->name('export-debtors');
         });
 
         // Utilitários

@@ -6,6 +6,24 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
+## [1.0.7] - 2026-09-01 - Controle de Acesso por Perfis (RBAC), Restrição de Filiais & Modernização Integral de Views
+### Added
+- **Controle de Acesso por Papéis (RBAC) & Filtragem de Menus:**
+  - **Operador de Caixa (`cashier`):** Menu focado exclusivamente em Frente de Caixa POS 2.0, Vendas, Fiados, Pedidos e Consulta de Artigos. Seletor de filiais renderizado como badge estático.
+  - **Gestor de Stock (`stock_manager`):** Menu focado em Artigos, Categorias, Movimentos de Stock e Despesas/Compras. Sem acesso a POS e sem relatórios financeiros confidenciais.
+  - **Administrador & Gerente:** Visão consolidada de todas as lojas, relatórios DRE, salários, gestão de equipa e alternância de filial ativa.
+- **Proteção na Troca de Filial (`BranchController::switchBranch` & `IdentifyTenant`):**
+  - Restringida a troca de filial no backend exclusivamente para utilizadores com `canSwitchBranch()` (`isAdmin()`, `isSuperAdmin()`, `isManager()`).
+- **Modernização e Interligação Integral de Views do Sistema:**
+  - **Módulo de Produtos (`products/`):** Listagem com 3 mini-KPIs, busca em tempo real, filtro por categoria, atalho para o relatório analítico (`products.report`) e botões diretos para Ficha Técnica (`show`), Edição (`edit`) e Exclusão. Relatório migrado de Bootstrap para Tailwind Dark Mode.
+  - **Módulo de Encomendas (`orders/`):** Modernização de `edit.blade.php` e `report.blade.php`, com resumo de adiantamentos, saldo pendente e tabela dinâmica de artigos. Listagem com atalhos para `show`, `edit` e `duplicate`.
+  - **Módulo de Fiados & Devedores (`debts/`):** Listagem interligada com `debtors-report`, extrato e modal/página direta de quitação e amortização.
+  - **Central de Relatórios (`reports/`):** Modernização de Vendas Diárias (`daily_sales`), Vendas Mensais (`monthly_sales`), DRE / Lucro & Prejuízo (`profit_loss`) e Inventário Geral (`inventory`).
+  - **Compatibilidade Multi-Driver de Banco de Dados:** Tratamento de funções de data agnósticas (SQLite `strftime` e MySQL `DATE_FORMAT`) no `ReportController`.
+- **Suite de Testes de Auditoria SaaS (`SaasOperationalAuditTest.php`):** Expandida para 7 testes automatizados com 39 asserções cobrindo isolamento de tenants, isolamento de filiais, restrições de RBAC e integridade de renderização de todas as views.
+
+---
+
 ## [1.0.6] - 2026-09-01 - Segunda Auditoria Funcional, Isolamento de Filiais, Enriquecimento do Histórico de Vendas & Arquitetura SaaS Control Center
 ### Fixed
 - **Precedência de Filial no Middleware `IdentifyTenant`:** Corrigida a lógica de resolução de filial para priorizar a sessão ativa (`session('current_branch_id')`), permitindo que administradores e gestores alternem dinamicamente entre filiais no Topbar Switcher sem conflito com o `user->branch_id`.
