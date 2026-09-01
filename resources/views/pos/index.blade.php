@@ -330,8 +330,17 @@
                 },
 
                 addToCart(product) {
+                    const stockAvail = (product.stock_quantity !== undefined) ? product.stock_quantity : (product.stock || 0);
+                    if (product.type === 'product' && stockAvail <= 0) {
+                        alert('⚠️ Atenção: O artigo "' + product.name + '" está ESGOTADO no stock!');
+                        return;
+                    }
                     const existing = this.cart.find(item => item.product_id === product.id);
                     if (existing) {
+                        if (product.type === 'product' && (existing.quantity + 1) > stockAvail) {
+                            alert('⚠️ Quantidade solicitada excede o stock disponível (Máx: ' + stockAvail + ' un)!');
+                            return;
+                        }
                         existing.quantity += 1;
                     } else {
                         this.cart.push({
@@ -339,14 +348,21 @@
                             name: product.name,
                             unit_price: product.selling_price,
                             quantity: 1,
-                            discount: 0
+                            discount: 0,
+                            type: product.type,
+                            max_stock: stockAvail
                         });
                     }
                     this.$refs.searchInput.focus();
                 },
 
                 increaseQty(index) {
-                    this.cart[index].quantity += 1;
+                    const item = this.cart[index];
+                    if (item.type === 'product' && (item.quantity + 1) > item.max_stock) {
+                        alert('⚠️ Quantidade máxima disponível em stock atingida (' + item.max_stock + ' un)!');
+                        return;
+                    }
+                    item.quantity += 1;
                 },
 
                 decreaseQty(index) {

@@ -6,6 +6,21 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
+## [1.0.5] - 2026-09-01 - Modernização Total de Relatórios, Stock, Encomendas, Detalhes Show e Bloqueio de Stock no POS
+### Fixed
+- **Fluxo e Sentido Financeiro no Livro-Razão:** Corrigida a condição de exibição em `finances/index.blade.php` para validar o campo `direction === 'in'` (Entrada verde com `+`), garantindo que vendas no POS constem sempre como receita e entrada de caixa.
+- **Bloqueio Rigoroso de Stock no POS:** Implementado bloqueio visual e lógico no frontend (`pos/index.blade.php`), impedindo o clique e a adição de artigos com stock zero/esgotado ou quantidades superiores ao stock disponível (permitido apenas para serviços).
+
+### Added
+- **Modernização das Telas de Operação em TailwindCSS:**
+  - **Relatórios & Analítica (`reports/index.blade.php`):** Painel unificado com acesso aos 6 hubs analíticos (Vendas, Fluxo de Caixa, DRE/Lucros, Curva ABC, Despesas, Ruptura de Stock).
+  - **Movimentações de Stock (`stock_movements/index.blade.php`):** Tabela completa com badges de Entrada, Saída e Ajuste, além de modal para novos registos.
+  - **Encomendas & Pedidos (`orders/index.blade.php`):** Gestão de estados de produção, prazos de entrega e especificações.
+  - **Ficha do Artigo / Medicamento (`products/show.blade.php`):** Visualização completa com margem bruta, stock e tabela FEFO de lotes.
+  - **Detalhes da Fatura / Venda (`sales/show.blade.php`):** Detalhes da venda, cliente, operador e atalho para reimpressão térmica.
+  - **Extrato do Fiado (`debts/show.blade.php`):** Histórico de amortizações e modal de quitação parcial/total.
+  - **Detalhes da Encomenda (`orders/show.blade.php`):** Acompanhamento técnico e comercial do pedido.
+
 ## [1.0.4] - 2026-08-31 - Gestão Integrada de Lotes & Validades (ANARME / FEFO)
 ### Added
 - **Registo Especializado de Medicamentos:** Adicionados campos de Número de Lote (`batch_number`), Data de Validade (`expiry_date`), Data de Fabrico (`manufacture_date`), Dosagem (`dosage`) e Princípio Ativo (`active_ingredient`) ao formulário de cadastro de produtos.

@@ -51,13 +51,16 @@
                         <th class="pb-3">Data</th>
                         <th class="pb-3">Descrição / Operação</th>
                         <th class="pb-3">Conta</th>
-                        <th class="pb-3">Tipo</th>
+                        <th class="pb-3">Fluxo</th>
                         <th class="pb-3 text-right">Montante (MT)</th>
                         <th class="pb-3 text-right">Saldo Após (MT)</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-800/60">
                     <?php $__empty_1 = true; $__currentLoopData = $transactions ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $tx): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <?php
+                            $isIn = ($tx->direction === 'in');
+                        ?>
                         <tr class="hover:bg-slate-800/30 transition">
                             <td class="py-3.5 font-mono text-slate-400">
                                 <?php echo e($tx->created_at ? $tx->created_at->format('d/m/Y H:i') : '-'); ?>
@@ -68,17 +71,18 @@
 
                             </td>
                             <td class="py-3.5 text-slate-400">
-                                <?php echo e($tx->account?->name ?? 'Geral'); ?>
+                                <?php echo e($tx->account?->name ?? 'Caixa Principal'); ?>
 
                             </td>
                             <td class="py-3.5">
-                                <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase <?php echo e($tx->type === 'in' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'); ?>">
-                                    <?php echo e($tx->type === 'in' ? 'Entrada' : 'Saída'); ?>
+                                <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase <?php echo e($isIn ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'); ?>">
+                                    <i class="fa-solid <?php echo e($isIn ? 'fa-arrow-down-left mr-1' : 'fa-arrow-up-right mr-1'); ?>"></i>
+                                    <?php echo e($isIn ? 'Entrada' : 'Saída'); ?>
 
                                 </span>
                             </td>
-                            <td class="py-3.5 text-right font-black font-mono <?php echo e($tx->type === 'in' ? 'text-emerald-400' : 'text-rose-400'); ?>">
-                                <?php echo e($tx->type === 'in' ? '+' : '-'); ?><?php echo e(number_format($tx->amount, 2, ',', '.')); ?> MT
+                            <td class="py-3.5 text-right font-black font-mono <?php echo e($isIn ? 'text-emerald-400' : 'text-rose-400'); ?>">
+                                <?php echo e($isIn ? '+' : '-'); ?><?php echo e(number_format($tx->amount, 2, ',', '.')); ?> MT
                             </td>
                             <td class="py-3.5 text-right font-mono text-slate-300">
                                 <?php echo e(number_format($tx->balance_after ?? 0, 2, ',', '.')); ?> MT
