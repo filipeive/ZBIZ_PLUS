@@ -149,6 +149,10 @@ class BranchController extends Controller
     {
         $this->authorizeBranch($branch);
 
+        if (!auth()->user()->canSwitchBranch()) {
+            return back()->with('error', 'O seu perfil de acesso não possui permissão para alternar entre filiais.');
+        }
+
         if (!$branch->is_active) {
             return back()->with('error', 'Não é possível alternar para uma filial inativa.');
         }

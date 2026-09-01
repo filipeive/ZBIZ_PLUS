@@ -111,15 +111,15 @@ Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
         });
     });
 
-    // ===== CATEGORIAS - manage_categories permission =====
-    Route::prefix('categories')->name('categories.')->middleware('permissions:manage_categories')->group(function () {
+    // ===== CATEGORIAS =====
+    Route::prefix('categories')->name('categories.')->middleware('permissions:view_categories')->group(function () {
         Route::get('/', [CategoryController::class, 'index'])->name('index');
-        Route::get('/create', [CategoryController::class, 'create'])->name('create');
-        Route::post('/', [CategoryController::class, 'store'])->name('store');
+        Route::get('/create', [CategoryController::class, 'create'])->name('create')->middleware('permissions:create_categories');
+        Route::post('/', [CategoryController::class, 'store'])->name('store')->middleware('permissions:create_categories');
         Route::get('/{id}', [CategoryController::class, 'show'])->name('show');
-        Route::put('/{id}', [CategoryController::class, 'update'])->name('update');
-        Route::delete('/{id}', [CategoryController::class, 'destroy'])->name('destroy');
-        Route::patch('/{id}/toggle-status', [CategoryController::class, 'toggleStatus'])->name('toggle-status');
+        Route::put('/{id}', [CategoryController::class, 'update'])->name('update')->middleware('permissions:edit_categories');
+        Route::delete('/{id}', [CategoryController::class, 'destroy'])->name('destroy')->middleware('permissions:delete_categories');
+        Route::patch('/{id}/toggle-status', [CategoryController::class, 'toggleStatus'])->name('toggle-status')->middleware('permissions:edit_categories');
     });
 
     // ===== PEDIDOS =====

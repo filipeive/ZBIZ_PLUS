@@ -39,6 +39,16 @@ class PermissionHelper
         return self::hasRole('manager');
     }
 
+    public static function isStockManager(): bool
+    {
+        return self::hasRole('stock_manager');
+    }
+
+    public static function isCashier(): bool
+    {
+        return self::hasRole('cashier');
+    }
+
     public static function isStaff(): bool
     {
         return self::hasRole('staff');
@@ -53,9 +63,11 @@ class PermissionHelper
     public static function checkPermissionFallback($role, string $permission): bool
     {
         $permissions = [
-            'admin'   => ['manage_users', 'manage_products', 'view_reports'],
-            'manager' => ['manage_products', 'view_reports'],
-            'staff'   => ['view_reports'],
+            'admin'         => ['manage_users', 'manage_products', 'manage_categories', 'view_reports'],
+            'manager'       => ['manage_products', 'manage_categories', 'view_categories', 'view_reports'],
+            'stock_manager' => ['manage_products', 'manage_categories', 'view_categories', 'create_categories', 'edit_categories'],
+            'cashier'       => ['view_products', 'view_sales', 'create_sales'],
+            'staff'         => ['view_products', 'view_sales', 'create_sales'],
         ];
 
         $roleName = is_object($role) ? $role->name : $role;

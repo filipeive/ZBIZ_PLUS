@@ -104,4 +104,35 @@ class SaasOperationalAuditTest extends TestCase
         $response->assertStatus(200);
         $response->assertSeeText('Fatura / Venda #' . str_pad($sale->id, 5, '0', STR_PAD_LEFT));
     }
+
+    public function test_stock_manager_can_access_categories()
+    {
+        $this->seed(\Database\Seeders\OperationalMultiBranchSeeder::class);
+
+        $stockManager = User::where('email', 'estoque.maputo@farmaciamuzinga.com')->firstOrFail();
+
+        $response = $this->actingAs($stockManager)->get(route('categories.index'));
+        $response->assertStatus(200);
+        $response->assertSeeText('Categorias');
+    }
+
+    public function test_cashier_cannot_switch_branch_and_sees_clean_restricted_menu()
+    {
+        $this->seed(\Database\Seeders\OperationalMultiBranchSeeder::class);
+
+        $cashier = User::where('email', 'caixa.matola@farmaciamuzinga.com')->firstOrFail();
+        $otherBranch = Branch::where('code', 'MAP-01')->firstOrFail();
+
+        $this->assertFalse($cashier->canSwitchBranch());
+
+        $response = $this->actingAs($cashier)->post(route('branches.switch', $otherBranch->id));
+        $response->assertSessionHas('error', 'O seu perfil de acesso não possui permissão para alternar entre filiais.');
+
+        $dashboardResponse = $this->actingAs($cashier)->get(route('dashboard.index'));
+        $dashboardResponse->assertStatus(200);
+        $dashboardResponse->assertDontSeeText('Relatórios & DRE');
+        $dashboardResponse->assertDontSeeText('Folha de Salários');
+        $dashboardResponse->assertDontSeeText('Colaboradores & Acessos');
+        $dashboardResponse->assertDontSeeText('Alternar Filial Ativa');
+    }
 }
