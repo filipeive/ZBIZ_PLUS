@@ -6,6 +6,17 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
+## [1.0.12] - 2026-09-01 - Correção da Listagem de Dívidas & Ajuste do Layout Responsivo da Sidebar para Firefox
+### Fixed
+- **Listagem e Escopo de Fiados & Dívidas (`DebtController.php`, `SaleController.php` & `debts/index.blade.php`):**
+  - Corrigido `createDebtFromCreditSale` para injetar `tenant_id`, `branch_id` e `customer_id` nos registros de `Debt` e `DebtItem`.
+  - Atualizada a consulta `DebtController::index` com fallback para exibir todas as dívidas legítimas do tenant ativo e cálculo preciso de KPIs.
+  - Adicionada barra de pesquisa rápida e 4 cartões de indicadores (Total Pendente, Vencidas, Contas Ativas e Liquidadas) na tela de Dívidas.
+- **Sobreposição da Barra Lateral no Firefox & Desktop (`layouts/app.blade.php`):**
+  - Ajustado o elemento `<aside>` para usar posicionamento relativo em telas desktop (`lg:relative lg:z-30`), eliminando qualquer sobreposição ou ocultação de conteúdo no Firefox e em monitores com escalonamento de DPI.
+
+---
+
 ## [1.0.11] - 2026-09-01 - Redesign Moderno de Venda Manual & Motor de Descontos Promocionais Automáticos e Manuais
 ### Added
 - **Design Moderno e Responsivo da Venda Manual (`sales/manual-create.blade.php`):**

@@ -692,10 +692,15 @@ class SaleController extends Controller
     private function createDebtFromCreditSale(Sale $sale): Debt
     {
         $saleDate = $sale->sale_date ? Carbon::parse($sale->sale_date) : now();
+        $tenantId = $sale->tenant_id ?? current_tenant_id();
+        $branchId = $sale->branch_id ?? current_branch_id();
 
         $debt = Debt::create([
+            'tenant_id' => $tenantId,
+            'branch_id' => $branchId,
             'debt_type' => 'product',
             'user_id' => $sale->user_id,
+            'customer_id' => $sale->customer_id,
             'customer_name' => $sale->customer_name,
             'customer_phone' => $sale->customer_phone,
             'original_amount' => $sale->total_amount,
@@ -710,6 +715,8 @@ class SaleController extends Controller
 
         foreach ($sale->items as $item) {
             DebtItem::create([
+                'tenant_id' => $tenantId,
+                'branch_id' => $branchId,
                 'debt_id' => $debt->id,
                 'product_id' => $item->product_id,
                 'quantity' => $item->quantity,

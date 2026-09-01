@@ -506,8 +506,8 @@
              class="fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-sm lg:hidden transition-opacity"></div>
 
         <!-- Sidebar Navigation -->
-        <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
-               class="fixed inset-y-0 left-0 z-50 w-72 h-full flex-shrink-0 bg-slate-900/95 border-r border-slate-800/80 backdrop-blur-xl flex flex-col justify-between transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 shadow-2xl overflow-hidden">
+        <aside :class="sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'"
+               class="fixed inset-y-0 left-0 z-50 w-72 h-full flex-shrink-0 bg-slate-900/95 border-r border-slate-800/80 backdrop-blur-xl flex flex-col justify-between transition-transform duration-300 ease-in-out lg:relative lg:z-30 shadow-xl overflow-hidden">
             
             <!-- Sidebar Top: Brand & Tenant Info -->
             <div class="flex flex-col flex-1 min-h-0 overflow-y-auto">

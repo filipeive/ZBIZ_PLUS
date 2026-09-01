@@ -12,18 +12,81 @@
     
     <!-- Top Controls Bar -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
-        <div>
-            <h2 class="text-lg font-black font-heading text-white">Controle de Fiados & Clientes Devedores</h2>
-            <p class="text-xs text-slate-400">Acompanhe saldos pendentes, prazos de vencimento e pagamentos amortizados.</p>
-        </div>
+        <form method="GET" action="{{ route('debts.index') }}" class="flex flex-col sm:flex-row items-center gap-3 w-full sm:max-w-xl">
+            <div class="relative flex-1 w-full">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 text-sm">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" name="customer" value="{{ request('customer') }}" placeholder="Buscar por cliente ou telefone..."
+                       class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-600 focus:ring-2 {{ $theme['ring'] }} outline-none">
+            </div>
 
-        <div class="flex items-center gap-2.5">
+            <select name="status" onchange="this.form.submit()" class="w-full sm:w-36 px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                <option value="">Todos Estados</option>
+                <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Pendentes</option>
+                <option value="paid" {{ request('status') === 'paid' ? 'selected' : '' }}>Liquidados</option>
+            </select>
+
+            <button type="submit" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition">
+                Filtrar
+            </button>
+            @if(request()->hasAny(['customer', 'status', 'debt_type']))
+                <a href="{{ route('debts.index') }}" class="px-3 py-2.5 bg-slate-800/60 hover:bg-slate-800 text-slate-400 rounded-xl text-xs flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </a>
+            @endif
+        </form>
+
+        <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
             <a href="{{ route('debts.debtors-report') }}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs border border-slate-700/80 transition flex items-center gap-2">
                 <i class="fa-solid fa-chart-pie text-amber-400"></i> Relatório Devedores
             </a>
             <a href="{{ route('debts.create') }}" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
                 <i class="fa-solid fa-plus"></i> Novo Fiado
             </a>
+        </div>
+    </div>
+
+    <!-- 4 KPI Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+            <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Pendente a Cobrar</span>
+                <div class="text-xl font-black text-rose-400 font-mono mt-1">{{ number_format($stats['total_active'] ?? 0, 2, ',', '.') }} MT</div>
+            </div>
+            <div class="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center text-sm">
+                <i class="fa-solid fa-hand-holding-dollar"></i>
+            </div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+            <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Dívidas Vencidas / Alerta</span>
+                <div class="text-xl font-black {{ ($stats['total_overdue'] ?? 0) > 0 ? 'text-amber-400' : 'text-slate-500' }} font-mono mt-1">{{ number_format($stats['total_overdue'] ?? 0, 2, ',', '.') }} MT</div>
+            </div>
+            <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-sm">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+            <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Contas Ativas</span>
+                <div class="text-xl font-black text-white mt-1">{{ $stats['count_active'] ?? 0 }}</div>
+            </div>
+            <div class="w-9 h-9 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center text-sm">
+                <i class="fa-solid fa-users"></i>
+            </div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+            <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Liquidadas Este Mês</span>
+                <div class="text-xl font-black text-emerald-400 mt-1">{{ $stats['count_paid_this_month'] ?? 0 }}</div>
+            </div>
+            <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-sm">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
         </div>
     </div>
 
@@ -36,7 +99,7 @@
                         <th class="pb-3">Data</th>
                         <th class="pb-3">Cliente</th>
                         <th class="pb-3">Contacto</th>
-                        <th class="pb-3 text-right">Valor Total</th>
+                        <th class="pb-3 text-right">Valor Original</th>
                         <th class="pb-3 text-right">Valor Pago</th>
                         <th class="pb-3 text-right">Saldo Devedor</th>
                         <th class="pb-3 text-center">Estado</th>
@@ -58,7 +121,7 @@
                                 {{ $debt->customer_phone ?? $debt->customer?->phone ?? '-' }}
                             </td>
                             <td class="py-3.5 text-right text-slate-300 font-mono">
-                                {{ number_format($debt->total_amount, 2, ',', '.') }} MT
+                                {{ number_format($debt->original_amount ?? $debt->total_amount, 2, ',', '.') }} MT
                             </td>
                             <td class="py-3.5 text-right text-emerald-400 font-mono">
                                 {{ number_format($debt->paid_amount ?? 0, 2, ',', '.') }} MT

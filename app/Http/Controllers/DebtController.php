@@ -25,12 +25,21 @@ class DebtController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Debt::query()->latest('created_at');
+            $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+            $branchId = current_branch_id() ?? auth()->user()?->branch_id;
 
-            // Filtrar por filial ativa
-            $branchId = current_branch_id();
-            if ($branchId) {
-                $query->where('branch_id', $branchId);
+            $query = Debt::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->latest('created_at');
+
+            // Filtrar por filial se solicitado ou para operadores não-gestores
+            if ($request->filled('branch_id')) {
+                $query->where('branch_id', $request->branch_id);
+            } elseif ($branchId && !(auth()->user()?->isAdmin() || auth()->user()?->isManager())) {
+                $query->where(function ($q) use ($branchId) {
+                    $q->where('branch_id', $branchId)
+                      ->orWhereNull('branch_id');
+                });
             }
 
             // Filtros
@@ -61,36 +70,67 @@ class DebtController extends Controller
             $debts = $query->paginate(15)->withQueryString();
             $debts->load(['user', 'employee']);
 
+            $tenantScope = function($q) use ($tenantId, $branchId) {
+                $q->withoutGlobalScopes()->where('tenant_id', $tenantId);
+                if ($branchId) {
+                    $q->where(function($sub) use ($branchId) {
+                        $sub->where('branch_id', $branchId)->orWhereNull('branch_id');
+                    });
+                }
+            };
+
             // Estatísticas
             $stats = [
-                'total_active' => Debt::where('status', 'active')->sum('remaining_amount') ?? 0,
-                'total_overdue' => Debt::where('status', 'active')
+                'total_active' => Debt::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->where('status', 'active')
+                    ->sum('remaining_amount') ?? 0,
+                'total_overdue' => Debt::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->where('status', 'active')
                     ->where('due_date', '<', now()->toDateString())
                     ->sum('remaining_amount') ?? 0,
-                'count_active' => Debt::where('status', 'active')->count(),
-                'count_paid_this_month' => Debt::where('status', 'paid')
+                'count_active' => Debt::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->where('status', 'active')
+                    ->count(),
+                'count_paid_this_month' => Debt::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->where('status', 'paid')
                     ->whereMonth('updated_at', now()->month)
                     ->count(),
                 'product_debts' => [
-                    'total_active' => Debt::where('debt_type', 'product')
+                    'total_active' => Debt::withoutGlobalScopes()
+                        ->where('tenant_id', $tenantId)
+                        ->where('debt_type', 'product')
                         ->where('status', 'active')
                         ->sum('remaining_amount') ?? 0,
-                    'count_active' => Debt::where('debt_type', 'product')
+                    'count_active' => Debt::withoutGlobalScopes()
+                        ->where('tenant_id', $tenantId)
+                        ->where('debt_type', 'product')
                         ->where('status', 'active')
                         ->count(),
-                    'total_overdue' => Debt::where('debt_type', 'product')
+                    'total_overdue' => Debt::withoutGlobalScopes()
+                        ->where('tenant_id', $tenantId)
+                        ->where('debt_type', 'product')
                         ->where('status', 'active')
                         ->where('due_date', '<', now()->toDateString())
                         ->sum('remaining_amount') ?? 0,
                 ],
                 'money_debts' => [
-                    'total_active' => Debt::where('debt_type', 'money')
+                    'total_active' => Debt::withoutGlobalScopes()
+                        ->where('tenant_id', $tenantId)
+                        ->where('debt_type', 'money')
                         ->where('status', 'active')
                         ->sum('remaining_amount') ?? 0,
-                    'count_active' => Debt::where('debt_type', 'money')
+                    'count_active' => Debt::withoutGlobalScopes()
+                        ->where('tenant_id', $tenantId)
+                        ->where('debt_type', 'money')
                         ->where('status', 'active')
                         ->count(),
-                    'total_overdue' => Debt::where('debt_type', 'money')
+                    'total_overdue' => Debt::withoutGlobalScopes()
+                        ->where('tenant_id', $tenantId)
+                        ->where('debt_type', 'money')
                         ->where('status', 'active')
                         ->where('due_date', '<', now()->toDateString())
                         ->sum('remaining_amount') ?? 0,
