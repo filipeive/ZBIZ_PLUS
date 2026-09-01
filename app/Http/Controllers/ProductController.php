@@ -20,8 +20,10 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+
         // Construir query com filtros
-        $query = Product::with('category');
+        $query = Product::where('tenant_id', $tenantId)->with('category');
 
         // Aplicar filtros se fornecidos
         if ($request->filled('search')) {
@@ -46,12 +48,16 @@ class ProductController extends Controller
         // Ordenar e paginar
         $products = $query->orderBy('name')->paginate(12)->withQueryString();
 
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+
         // Buscar categorias para filtros
-        $categories = Category::where('is_active', true)->orderBy('name')->get();
+        $categories = Category::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('is_active', true)->orderBy('name')->get();
 
         // Calcular estatísticas básicas
-        $allProducts = Product::all();
-        $lowStockCount = Product::where('type', 'product')
+        $allProducts = Product::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
+        $lowStockCount = Product::withoutGlobalScopes()
+                                ->where('tenant_id', $tenantId)
+                                ->whereIn('type', ['product', 'physical'])
                                 ->whereRaw('stock_quantity <= min_stock_level')
                                 ->where('is_active', true)
                                 ->count();
@@ -537,17 +543,24 @@ class ProductController extends Controller
             return redirect()->route('products.index');
         }
 
-        $products = Product::with('category')
-            ->where('name', 'like', '%' . $term . '%')
-            ->orWhere('description', 'like', '%' . $term . '%')
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+
+        $products = Product::where('tenant_id', $tenantId)
+            ->with('category')
+            ->where(function ($q) use ($term) {
+                $q->where('name', 'like', '%' . $term . '%')
+                  ->orWhere('description', 'like', '%' . $term . '%');
+            })
             ->where('is_active', true)
             ->orderBy('name')
             ->paginate(12)
             ->withQueryString();
 
-        $categories = Category::where('is_active', true)->orderBy('name')->get();
-        $allProducts = Product::all();
-        $lowStockCount = Product::where('type', 'product')
+        $categories = Category::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('is_active', true)->orderBy('name')->get();
+        $allProducts = Product::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
+        $lowStockCount = Product::withoutGlobalScopes()
+                                ->where('tenant_id', $tenantId)
+                                ->whereIn('type', ['product', 'physical'])
                                 ->whereRaw('stock_quantity <= min_stock_level')
                                 ->where('is_active', true)
                                 ->count();

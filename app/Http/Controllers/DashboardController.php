@@ -120,7 +120,12 @@ class DashboardController extends Controller
         // --- DADOS DO GRÁFICO E LISTAS ---
         $salesChartData = $this->getSalesChartData($userIdFilter);
         $cashFlowChartData = $this->financialService->getCashFlowChartData(7, $userIdFilter);
-        $lowStockProducts = Product::whereRaw('stock_quantity <= min_stock_level')->where('type', 'product')->where('is_active', true)->get();
+        $lowStockProducts = Product::withoutGlobalScopes()
+            ->where('tenant_id', current_tenant_id() ?? auth()->user()?->tenant_id)
+            ->whereRaw('stock_quantity <= min_stock_level')
+            ->whereIn('type', ['product', 'physical'])
+            ->where('is_active', true)
+            ->get();
         $recentSalesQuery = Sale::with('user', 'items.product');
         if ($userIdFilter) $recentSalesQuery->where('user_id', $userIdFilter);
         $recentSales = $recentSalesQuery->latest()->limit(5)->get();
@@ -177,8 +182,10 @@ class DashboardController extends Controller
 
         $todayOutflows = $this->financialService->sumTransactions($todayStr, $todayStr, 'out', true, $userIdFilter);
         
-        $lowStockCount = Product::whereRaw('stock_quantity <= min_stock_level')
-            ->where('type', 'product')
+        $lowStockCount = Product::withoutGlobalScopes()
+            ->where('tenant_id', current_tenant_id() ?? auth()->user()?->tenant_id)
+            ->whereRaw('stock_quantity <= min_stock_level')
+            ->whereIn('type', ['product', 'physical'])
             ->where('is_active', true)
             ->count();
             

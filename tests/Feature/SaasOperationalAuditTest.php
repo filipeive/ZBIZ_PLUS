@@ -229,11 +229,20 @@ class SaasOperationalAuditTest extends TestCase
         $posResp->assertSeeText('Reprografia & Cópia');
         $posResp->assertDontSeeText('Medicamentos e Antibióticos');
 
-        // 4. API de busca rápida no POS para FDS: Apenas retorna produtos da FDS
+        // 4. API de busca rápida no POS para FDS: Apenas retorna produtos da FDS (inclusive no filtro Todos com params vazios)
         $searchResp = $this->actingAs($caixaFds)->getJson(route('pos.search'));
         $searchResp->assertStatus(200);
         $searchResp->assertJsonFragment(['name' => 'Fotocópias A4 P&B (Simples/Frente e Verso)']);
         $searchResp->assertJsonMissing(['name' => 'Amoxicilina 500mg ANARME']);
+        $searchResp->assertJsonMissing(['name' => 'Paracetamol 500mg (Cx 20 Comp)']);
+
+        // 4b. Teste específico do botão 'Todos' (/pos/search?q=&category_id=)
+        $searchTodosResp = $this->actingAs($caixaFds)->getJson(route('pos.search', ['q' => '', 'category_id' => '']));
+        $searchTodosResp->assertStatus(200);
+        $searchTodosResp->assertJsonFragment(['name' => 'Fotocópias A4 P&B (Simples/Frente e Verso)']);
+        $searchTodosResp->assertJsonMissing(['name' => 'Amoxicilina 500mg ANARME']);
+        $searchTodosResp->assertJsonMissing(['name' => 'Paracetamol 500mg (Cx 20 Comp)']);
+        $searchTodosResp->assertJsonMissing(['name' => 'Lael Silva']);
 
         // 5. API de busca rápida no POS para Farmácia: Apenas retorna remédios da Farmácia
         $searchFarmacia = $this->actingAs($caixaFarmacia)->getJson(route('pos.search'));

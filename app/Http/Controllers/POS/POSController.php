@@ -53,6 +53,8 @@ class POSController extends Controller
             ->where('tenant_id', $tenantId)
             ->get();
 
+        $initialProducts = $this->fetchProductsList('', null, $tenantId, $branchId);
+
         // Verificar turno de caixa aberto
         $activeShift = null;
         if ($branchId) {
@@ -63,7 +65,7 @@ class POSController extends Controller
                 ->first();
         }
 
-        return view('pos.index', compact('categories', 'customers', 'accounts', 'activeShift'));
+        return view('pos.index', compact('categories', 'customers', 'accounts', 'activeShift', 'initialProducts'));
     }
 
     /**
@@ -76,6 +78,22 @@ class POSController extends Controller
         $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
         $branchId = current_branch_id() ?? auth()->user()?->branch_id;
 
+        $mapped = $this->fetchProductsList($query, $categoryId, $tenantId, $branchId);
+
+        return response()->json([
+            'success'   => true,
+            'tenant_id' => $tenantId,
+            'user_id'   => auth()->id(),
+            'user_email'=> auth()->user()?->email,
+            'products'  => $mapped,
+        ]);
+    }
+
+    /**
+     * Helper centralizado para obter produtos mapeados com isolamento total de tenant.
+     */
+    protected function fetchProductsList(?string $query, $categoryId, $tenantId, $branchId): array
+    {
         $productsQuery = Product::withoutGlobalScopes()
             ->where('is_active', true)
             ->where('tenant_id', $tenantId);
@@ -88,13 +106,13 @@ class POSController extends Controller
             });
         }
 
-        if ($categoryId) {
+        if (!empty($categoryId)) {
             $productsQuery->where('category_id', $categoryId);
         }
 
         $products = $productsQuery->with('category')->limit(50)->get();
 
-        $mapped = $products->map(function ($product) use ($branchId) {
+        return $products->map(function ($product) use ($branchId) {
             $stock = $this->stockService->getStock($product->id, $branchId);
             return [
                 'id'             => $product->id,
@@ -107,14 +125,9 @@ class POSController extends Controller
                 'purchase_price' => (float)$product->purchase_price,
                 'stock_quantity' => $stock,
                 'min_stock_level'=> $product->min_stock_level ?? 5,
-                'is_low_stock'   => $product->type === 'product' && $stock <= ($product->min_stock_level ?? 5),
+                'is_low_stock'   => in_array($product->type, ['product', 'physical']) && $stock <= ($product->min_stock_level ?? 5),
             ];
-        });
-
-        return response()->json([
-            'success'   => true,
-            'products'  => $mapped,
-        ]);
+        })->values()->all();
     }
 
     /**

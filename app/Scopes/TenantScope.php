@@ -17,7 +17,7 @@ class TenantScope implements Scope
             return;
         }
 
-        $tenantId = $context->getTenantId();
+        $tenantId = $context->getTenantId() ?? (auth()->check() ? auth()->user()->tenant_id : null);
 
         if ($tenantId !== null) {
             $builder->where($model->qualifyColumn('tenant_id'), $tenantId);
