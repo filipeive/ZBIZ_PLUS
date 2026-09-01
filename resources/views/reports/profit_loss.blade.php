@@ -81,6 +81,39 @@
         </div>
     </div>
 
+    <!-- DRE Chart & Breakdown -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- DRE Structure Waterfall / Bar Chart -->
+        <div class="lg:col-span-2 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
+                <div>
+                    <h3 class="text-sm font-black font-heading text-white">Composição do Resultado Financeiro</h3>
+                    <p class="text-xs text-slate-400">Decomposição de Receita Bruta até o Lucro Operacional</p>
+                </div>
+            </div>
+            <div class="h-64 sm:h-72 w-full">
+                <canvas id="dreBreakdownChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Margin Guage / Donut -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
+                    <h3 class="text-sm font-black font-heading text-white">Distribuição dos Custos</h3>
+                </div>
+                <div class="h-52 w-full relative flex items-center justify-center">
+                    <canvas id="costsDoughnutChart"></canvas>
+                </div>
+            </div>
+            <div class="pt-3 border-t border-slate-800 text-[11px] text-slate-400 text-center">
+                Proporção: CMV vs Despesas vs Lucro
+            </div>
+        </div>
+
+    </div>
+
     <!-- DRE Structured Table -->
     <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-xl">
         <div class="border-b border-slate-800 pb-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -145,4 +178,82 @@
     </div>
 
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const revenue = {{ $salesRevenue }};
+    const cogs = {{ $costOfGoodsSold }};
+    const expenses = {{ $totalOperatingExpenses }};
+    const profit = {{ $operatingProfit }};
+
+    // 1. DRE Structure Bar Chart
+    const dreCtx = document.getElementById('dreBreakdownChart');
+    if (dreCtx) {
+        new Chart(dreCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Receita Bruta', 'Custo (CMV)', 'Lucro Bruto', 'Despesas', 'Lucro Líquido'],
+                datasets: [{
+                    label: 'Montante (MT)',
+                    data: [revenue, cogs, {{ $grossProfit }}, expenses, profit],
+                    backgroundColor: [
+                        'rgba(14, 165, 233, 0.8)',
+                        'rgba(245, 158, 11, 0.8)',
+                        'rgba(20, 184, 166, 0.8)',
+                        'rgba(244, 63, 94, 0.8)',
+                        profit >= 0 ? 'rgba(16, 185, 129, 0.8)' : 'rgba(239, 68, 68, 0.8)'
+                    ],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                        ticks: { color: '#94a3b8', font: { size: 10 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                        ticks: { color: '#64748b', font: { size: 10 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Costs Doughnut Chart
+    const costsCtx = document.getElementById('costsDoughnutChart');
+    if (costsCtx && revenue > 0) {
+        new Chart(costsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['CMV', 'Despesas', 'Lucro Líquido'],
+                datasets: [{
+                    data: [cogs, expenses, Math.max(0, profit)],
+                    backgroundColor: ['#f59e0b', '#f43f5e', '#10b981'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#94a3b8', font: { size: 10 } }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    }
+});
+</script>
+@endpush
 @endsection

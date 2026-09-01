@@ -75,6 +75,19 @@
         </div>
     </div>
 
+    <!-- Interactive Evolution Chart -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
+            <div>
+                <h3 class="text-sm font-black font-heading text-white">Evolução do Faturamento Diário</h3>
+                <p class="text-xs text-slate-400">Curva de receita bruta ao longo do tempo</p>
+            </div>
+        </div>
+        <div class="h-64 sm:h-72 w-full">
+            <canvas id="dailySalesChart"></canvas>
+        </div>
+    </div>
+
     <!-- Daily Sales Data Table -->
     <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden">
         <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
@@ -126,4 +139,59 @@
     </div>
 
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const rawSales = @json($sales);
+    const chartCtx = document.getElementById('dailySalesChart');
+    
+    if (chartCtx && rawSales.length > 0) {
+        // Ordenar cronologicamente para o gráfico
+        const sortedSales = [...rawSales].sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        new Chart(chartCtx, {
+            type: 'line',
+            data: {
+                labels: sortedSales.map(s => {
+                    const parts = s.date.split('-');
+                    return parts[2] + '/' + parts[1];
+                }),
+                datasets: [{
+                    label: 'Faturamento Diário (MT)',
+                    data: sortedSales.map(s => parseFloat(s.total)),
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.35,
+                    pointBackgroundColor: '#10b981',
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#94a3b8', font: { size: 11, family: 'Inter' } }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                        ticks: { color: '#64748b', font: { size: 10 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                        ticks: { color: '#64748b', font: { size: 10 } }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+@endpush
 @endsection

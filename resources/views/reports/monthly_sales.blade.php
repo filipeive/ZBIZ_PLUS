@@ -56,6 +56,19 @@
         </div>
     </div>
 
+    <!-- Monthly Bar Chart -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
+            <div>
+                <h3 class="text-sm font-black font-heading text-white">Comparativo Mensal de Receita</h3>
+                <p class="text-xs text-slate-400">Histórico de volume financeiro por mês</p>
+            </div>
+        </div>
+        <div class="h-64 sm:h-72 w-full">
+            <canvas id="monthlySalesChart"></canvas>
+        </div>
+    </div>
+
     <!-- Monthly Sales Data Table -->
     <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden">
         <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
@@ -104,4 +117,49 @@
     </div>
 
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const rawSales = @json($sales);
+    const chartCtx = document.getElementById('monthlySalesChart');
+    
+    if (chartCtx && rawSales.length > 0) {
+        const sortedSales = [...rawSales].sort((a, b) => (a.month > b.month ? 1 : -1));
+        
+        new Chart(chartCtx, {
+            type: 'bar',
+            data: {
+                labels: sortedSales.map(s => s.month),
+                datasets: [{
+                    label: 'Faturamento Mensal (MT)',
+                    data: sortedSales.map(s => parseFloat(s.total)),
+                    backgroundColor: 'rgba(14, 165, 233, 0.8)',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#94a3b8', font: { size: 11, family: 'Inter' } }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                        ticks: { color: '#64748b', font: { size: 10 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                        ticks: { color: '#64748b', font: { size: 10 } }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+@endpush
 @endsection

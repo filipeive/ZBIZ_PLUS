@@ -137,6 +137,39 @@
 
     </div>
 
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Top 10 Products Horizontal Bar Chart -->
+        <div class="lg:col-span-2 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
+                <div>
+                    <h3 class="text-sm font-black font-heading text-white">Top Artigos por Faturamento</h3>
+                    <p class="text-xs text-slate-400">Produtos que mais contribuem para a receita</p>
+                </div>
+            </div>
+            <div class="h-64 sm:h-72 w-full">
+                <canvas id="abcTopProductsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- ABC Doughnut Distribution -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
+                    <h3 class="text-sm font-black font-heading text-white">Distribuição da Receita ABC</h3>
+                </div>
+                <div class="h-52 w-full relative flex items-center justify-center">
+                    <canvas id="abcClassesDoughnutChart"></canvas>
+                </div>
+            </div>
+            <div class="pt-3 border-t border-slate-800 text-[11px] text-slate-400 text-center">
+                Participação de cada classe na receita total
+            </div>
+        </div>
+
+    </div>
+
     <!-- ABC Table -->
     <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden">
         <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
@@ -215,4 +248,79 @@
     </div>
 
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const abcProducts = @json($abcProducts);
+    const revA = {{ $abcStats['A']->sum('total_revenue') }};
+    const revB = {{ $abcStats['B']->sum('total_revenue') }};
+    const revC = {{ $abcStats['C']->sum('total_revenue') }};
+
+    // 1. Top 10 Horizontal Bar Chart
+    const barCtx = document.getElementById('abcTopProductsChart');
+    if (barCtx && abcProducts.length > 0) {
+        const top10 = abcProducts.slice(0, 10);
+        new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: top10.map(p => p.name.length > 20 ? p.name.substr(0, 20) + '...' : p.name),
+                datasets: [{
+                    label: 'Faturamento (MT)',
+                    data: top10.map(p => parseFloat(p.total_revenue)),
+                    backgroundColor: top10.map(p => p.abc_classification === 'A' ? 'rgba(16, 185, 129, 0.8)' : (p.abc_classification === 'B' ? 'rgba(245, 158, 11, 0.8)' : 'rgba(148, 163, 184, 0.8)')),
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                        ticks: { color: '#64748b', font: { size: 10 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                        ticks: { color: '#94a3b8', font: { size: 10 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. ABC Doughnut Distribution
+    const doughnutCtx = document.getElementById('abcClassesDoughnutChart');
+    if (doughnutCtx) {
+        const hasData = (revA + revB + revC) > 0;
+        new Chart(doughnutCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Classe A (80%)', 'Classe B (15%)', 'Classe C (5%)'],
+                datasets: [{
+                    data: hasData ? [revA, revB, revC] : [1, 0, 0],
+                    backgroundColor: ['#10b981', '#f59e0b', '#64748b'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#94a3b8', font: { size: 10 } }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    }
+});
+</script>
+@endpush
 @endsection

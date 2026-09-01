@@ -101,6 +101,39 @@
 
     </div>
 
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Main Line/Bar Chart: Entradas vs Saídas Diárias -->
+        <div class="lg:col-span-2 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
+                <div>
+                    <h3 class="text-sm font-black font-heading text-white">Evolução do Fluxo de Caixa Diário</h3>
+                    <p class="text-xs text-slate-400">Comparativo de entradas vs saídas ao longo do período</p>
+                </div>
+            </div>
+            <div class="h-64 sm:h-72 w-full">
+                <canvas id="cashFlowDailyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Doughnut Chart: Composição das Entradas -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
+                    <h3 class="text-sm font-black font-heading text-white">Meios de Recebimento</h3>
+                </div>
+                <div class="h-52 w-full relative flex items-center justify-center">
+                    <canvas id="cashInflowsDoughnutChart"></canvas>
+                </div>
+            </div>
+            <div class="pt-3 border-t border-slate-800 text-[11px] text-slate-400 text-center">
+                Distribuição de entradas por canais de pagamento
+            </div>
+        </div>
+
+    </div>
+
     <!-- Breakdown Grid: Entradas por Canal & Saídas por Categoria -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         
@@ -197,4 +230,89 @@
     </div>
 
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dailyData = @json($dailyCashFlow);
+    const inflowsData = @json($cashInflows);
+
+    // 1. Daily Inflows vs Outflows Chart
+    const dailyCtx = document.getElementById('cashFlowDailyChart');
+    if (dailyCtx && dailyData.length > 0) {
+        new Chart(dailyCtx, {
+            type: 'bar',
+            data: {
+                labels: dailyData.map(d => d.date),
+                datasets: [
+                    {
+                        label: 'Entradas (MT)',
+                        data: dailyData.map(d => d.inflow),
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Saídas (MT)',
+                        data: dailyData.map(d => d.outflow),
+                        backgroundColor: 'rgba(244, 63, 94, 0.8)',
+                        borderRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#94a3b8', font: { size: 11, family: 'Inter' } }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                        ticks: { color: '#64748b', font: { size: 10 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                        ticks: { color: '#64748b', font: { size: 10 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Inflows by Channel Doughnut
+    const doughnutCtx = document.getElementById('cashInflowsDoughnutChart');
+    if (doughnutCtx) {
+        const labels = Object.keys(inflowsData).map(k => k.toUpperCase());
+        const values = Object.values(inflowsData);
+        
+        new Chart(doughnutCtx, {
+            type: 'doughnut',
+            data: {
+                labels: labels.length > 0 ? labels : ['Sem Dados'],
+                datasets: [{
+                    data: values.length > 0 ? values : [1],
+                    backgroundColor: [
+                        '#10b981', '#0ea5e9', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#94a3b8', font: { size: 10 } }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    }
+});
+</script>
+@endpush
 @endsection
