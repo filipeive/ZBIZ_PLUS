@@ -27,12 +27,23 @@
 
             <!-- Quick Action Buttons -->
             <div class="flex items-center gap-3">
+                @if(auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin())
                 <a href="{{ route('pos.index') }}" class="px-5 py-3 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-xl shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
                     <i class="fa-solid fa-cash-register text-sm"></i> Abrir Caixa POS
                 </a>
+                @endif
+
+                @if(auth()->user()->isStockManager() || auth()->user()->isManager() || auth()->user()->isAdmin())
                 <a href="{{ route('products.create') }}" class="px-4 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 transition flex items-center gap-2">
                     <i class="fa-solid fa-plus"></i> Novo Produto
                 </a>
+                @endif
+
+                @if(auth()->user()->isStockManager())
+                <a href="{{ route('stock-movements.index') }}" class="px-4 py-3 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs border border-emerald-500/30 transition flex items-center gap-2">
+                    <i class="fa-solid fa-boxes-stacked"></i> Movimento Stock
+                </a>
+                @endif
             </div>
         </div>
     </div>

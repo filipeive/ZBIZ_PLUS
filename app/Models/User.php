@@ -223,6 +223,21 @@ class User extends Authenticatable
         return $this->hasRole('staff');
     }
 
+    public function isCashier(): bool
+    {
+        return $this->hasRole('cashier');
+    }
+
+    public function isStockManager(): bool
+    {
+        return $this->hasRole('stock_manager');
+    }
+
+    public function canSwitchBranch(): bool
+    {
+        return $this->isAdmin() || $this->isSuperAdmin() || $this->isManager();
+    }
+
     // ===== AUTORIZAÇÃO DE RECURSOS =====
     public function canEdit($resource): bool
     {

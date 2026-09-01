@@ -532,10 +532,11 @@
                     </span>
                 </div>
 
-                <!-- Fast POS Access Button (Featured) -->
-                <div class="px-4 pt-4">
+                <!-- POS Quick Shortcut Button (Frente de Caixa) -->
+                @if(auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin() || auth()->user()->hasPermission('create_sales'))
+                <div class="px-4 py-3 border-b border-slate-800/80">
                     <a href="{{ route('pos.index') }}" 
-                       class="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-sm shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition group">
+                       class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-gradient-to-r {{ $theme['gradient'] }} hover:opacity-95 text-slate-950 font-bold transition shadow-lg">
                         <div class="flex items-center space-x-2.5">
                             <i class="fa-solid fa-cash-register text-base"></i>
                             <span>ZBIZ POS 2.0</span>
@@ -545,6 +546,7 @@
                         </span>
                     </a>
                 </div>
+                @endif
 
                 <!-- Navigation Links -->
                 <nav class="p-4 space-y-5 text-xs font-medium">
@@ -562,6 +564,7 @@
                     </div>
 
                     <!-- Vendas & Comercial -->
+                    @if(auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isCashier() || auth()->user()->isStaff())
                     <div>
                         <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Vendas & Comercial</div>
                         <div class="space-y-1">
@@ -571,11 +574,13 @@
                                 <span>Vendas & Faturação</span>
                             </a>
 
+                            @if(auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isCashier())
                             <a href="{{ route('debts.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('debts.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-hand-holding-dollar w-4 text-center {{ request()->routeIs('debts.*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Fiados & Dívidas</span>
                             </a>
+                            @endif
 
                             <a href="{{ route('orders.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('orders.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
@@ -584,8 +589,10 @@
                             </a>
                         </div>
                     </div>
+                    @endif
 
                     <!-- Catálogo & Stock -->
+                    @if(auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isStockManager() || auth()->user()->isCashier() || auth()->user()->isStaff())
                     <div>
                         <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Catálogo & Stock</div>
                         <div class="space-y-1">
@@ -595,6 +602,7 @@
                                 <span>Artigos & Medicamentos</span>
                             </a>
 
+                            @if(auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isStockManager())
                             <a href="{{ route('categories.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('categories.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-tags w-4 text-center {{ request()->routeIs('categories.*') ? $theme['text_accent'] : '' }}"></i>
@@ -606,37 +614,49 @@
                                 <i class="fa-solid fa-boxes-stacked w-4 text-center {{ request()->routeIs('stock-movements.*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Movimentos de Stock</span>
                             </a>
+                            @endif
                         </div>
                     </div>
+                    @endif
 
                     <!-- Financeiro & Despesas -->
+                    @if(auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isStockManager())
                     <div>
                         <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Financeiro & Caixa</div>
                         <div class="space-y-1">
+                            @if(auth()->user()->isAdmin() || auth()->user()->isManager())
                             <a href="{{ route('finances.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('finances.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-scale-balanced w-4 text-center {{ request()->routeIs('finances.*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Livro-Razão & Contas</span>
                             </a>
+                            @endif
 
+                            @if(auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isStockManager())
                             <a href="{{ route('expenses.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('expenses.*') || request()->routeIs('expense-categories.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-money-bill-transfer w-4 text-center {{ request()->routeIs('expenses.*') || request()->routeIs('expense-categories.*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Despesas & Gastos</span>
                             </a>
+                            @endif
 
+                            @if(auth()->user()->isAdmin() || auth()->user()->isManager())
                             <a href="{{ route('reports.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('reports.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-file-waveform w-4 text-center {{ request()->routeIs('reports.*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Relatórios & DRE</span>
                             </a>
+                            @endif
                         </div>
                     </div>
+                    @endif
 
                     <!-- Administração & Equipa -->
+                    @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin() || auth()->user()->isManager())
                     <div>
                         <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Administração & Equipa</div>
                         <div class="space-y-1">
+                            @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
                             <a href="{{ route('users.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('users.*') && !request()->routeIs('users.activity') && !request()->routeIs('users.payroll') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-users-gear w-4 text-center {{ request()->routeIs('users.*') && !request()->routeIs('users.activity') && !request()->routeIs('users.payroll') ? $theme['text_accent'] : '' }}"></i>
@@ -654,6 +674,7 @@
                                 <i class="fa-solid fa-store w-4 text-center {{ request()->routeIs('branches.*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Filiais & Lojas</span>
                             </a>
+                            @endif
 
                             <a href="{{ route('document-templates.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('document-templates.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
@@ -674,6 +695,7 @@
                             </a>
                         </div>
                     </div>
+                    @endif
 
                 </nav>
             </div>
@@ -687,7 +709,10 @@
                         </div>
                         <div class="min-w-0">
                             <div class="text-xs font-bold text-white truncate">{{ auth()->user()?->name ?? 'Utilizador' }}</div>
-                            <div class="text-[10px] text-slate-500 truncate">{{ $branch?->name ?? 'Loja Principal' }}</div>
+                            <div class="text-[10px] text-slate-500 truncate flex items-center gap-1">
+                                <span class="px-1.5 py-0.2 rounded bg-slate-800 text-[9px] text-slate-400 font-semibold">{{ auth()->user()?->role?->name ?? 'Utilizador' }}</span>
+                                <span>{{ $branch?->name ?? 'Loja Principal' }}</span>
+                            </div>
                         </div>
                     </div>
 
@@ -730,7 +755,8 @@
                         <i x-show="!isDarkMode" class="fa-solid fa-moon text-indigo-500 text-xs sm:text-sm"></i>
                     </button>
 
-                    <!-- Branch Selector Dropdown -->
+                    <!-- Branch Selector: Interactive for Admin/Manager, Static for Cashier/Operators -->
+                    @if(auth()->user()->canSwitchBranch())
                     <div class="relative" x-data="{ branchDropdown: false }">
                         <button @click="branchDropdown = !branchDropdown" 
                                 type="button"
@@ -758,13 +784,21 @@
                             @empty
                                 <div class="px-3 py-2 text-xs text-slate-500">Nenhuma filial registada</div>
                             @endforelse
+                            @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
                             <div class="border-t border-slate-800 mt-1 pt-1">
                                 <a href="{{ route('branches.index') }}" class="block px-3 py-1.5 rounded-xl text-[11px] text-slate-400 hover:text-white hover:bg-slate-800 transition font-bold">
                                     <i class="fa-solid fa-gear text-[10px] mr-1"></i> Gerir Filiais
                                 </a>
                             </div>
+                            @endif
                         </div>
                     </div>
+                    @else
+                    <div class="hidden sm:flex items-center space-x-1.5 bg-slate-950/80 border border-slate-800/80 px-3 py-1.5 rounded-xl text-xs" title="Filial atribuída">
+                        <i class="fa-solid fa-store {{ $theme['text_accent'] }}"></i>
+                        <span class="text-slate-300 font-semibold">{{ $branch?->name ?? 'Loja Principal' }}</span>
+                    </div>
+                    @endif
 
                     <!-- Subscription Trial / Plan Badge -->
                     <div class="flex items-center space-x-1.5 border {{ $theme['badge'] }} px-3 py-1.5 rounded-xl text-xs font-bold">
@@ -773,10 +807,12 @@
                     </div>
 
                     <!-- Direct POS Quick Action -->
+                    @if(auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin() || auth()->user()->hasPermission('create_sales'))
                     <a href="{{ route('pos.index') }}" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white border border-slate-700 transition">
                         <i class="fa-solid fa-cash-register {{ $theme['text_accent'] }}"></i>
                         <span>POS</span>
                     </a>
+                    @endif
                 </div>
 
             </header>
