@@ -34,6 +34,10 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
         
         if ($user instanceof User) {
+            // Sincronizar Tenant e Filial do Usuário na Sessão
+            $request->session()->put('current_tenant_id', $user->tenant_id);
+            $request->session()->put('current_branch_id', $user->branch_id);
+
             // Registrar login
             $user->recordLogin();
             

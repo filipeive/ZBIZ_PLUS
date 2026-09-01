@@ -465,6 +465,8 @@ Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
 
     // ===== ADMINISTRAÇÃO - Permissões específicas =====
     Route::middleware('permissions:manage_settings')->group(function () {
+        Route::get('/settings', [AdminController::class, 'settingsView'])->name('admin.settings');
+        Route::post('/settings', [AdminController::class, 'updateSettings'])->name('admin.settings.update');
         Route::get('/api/admin/settings', [AdminController::class, 'getSettings'])->name('admin.settings.get');
         Route::post('/admin/settings', [AdminController::class, 'saveSettings'])->name('admin.settings.save');
         Route::prefix('documents/templates')->name('documents.templates.')->group(function () {
@@ -492,17 +494,16 @@ Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
     Route::delete('/notifications/clear-all', [NotificationController::class, 'clearAll']);
-    // ... outras rotas ...
-});
 
+    // ===== ZBIZ POS 2.0 (FRENTE DE CAIXA RÁPIDA DENTRO DO ESCOPO DO TENANT) =====
+    Route::prefix('pos')->name('pos.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\POS\POSController::class, 'index'])->name('index');
+        Route::get('/search', [\App\Http\Controllers\POS\POSController::class, 'searchProducts'])->name('search');
+        Route::post('/sale', [\App\Http\Controllers\POS\POSController::class, 'storeSale'])->name('sale');
+        Route::get('/receipt/{sale}', [\App\Http\Controllers\POS\POSController::class, 'printReceipt'])->name('receipt');
+        Route::post('/sync-offline', [\App\Http\Controllers\POS\POSController::class, 'syncOfflineSales'])->name('sync-offline');
+    });
 
-// ===== ZBIZ POS 2.0 (FRENTE DE CAIXA RÁPIDA) =====
-Route::middleware(['auth'])->prefix('pos')->name('pos.')->group(function () {
-    Route::get('/', [\App\Http\Controllers\POS\POSController::class, 'index'])->name('index');
-    Route::get('/search', [\App\Http\Controllers\POS\POSController::class, 'searchProducts'])->name('search');
-    Route::post('/sale', [\App\Http\Controllers\POS\POSController::class, 'storeSale'])->name('sale');
-    Route::get('/receipt/{sale}', [\App\Http\Controllers\POS\POSController::class, 'printReceipt'])->name('receipt');
-    Route::post('/sync-offline', [\App\Http\Controllers\POS\POSController::class, 'syncOfflineSales'])->name('sync-offline');
 });
 
 require __DIR__ . '/auth.php';

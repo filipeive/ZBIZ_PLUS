@@ -32,12 +32,26 @@ class POSController extends Controller
      */
     public function index(): View
     {
-        $tenantId = current_tenant_id();
-        $branchId = current_branch_id();
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+        $branchId = current_branch_id() ?? auth()->user()?->branch_id;
 
-        $categories = Category::where('is_active', true)->orderBy('name')->get();
-        $customers = Customer::where('is_active', true)->orderBy('name')->limit(50)->get();
-        $accounts = FinancialAccount::where('is_active', true)->get();
+        $categories = Category::withoutGlobalScopes()
+            ->where('is_active', true)
+            ->where('tenant_id', $tenantId)
+            ->orderBy('name')
+            ->get();
+
+        $customers = Customer::withoutGlobalScopes()
+            ->where('is_active', true)
+            ->where('tenant_id', $tenantId)
+            ->orderBy('name')
+            ->limit(50)
+            ->get();
+
+        $accounts = FinancialAccount::withoutGlobalScopes()
+            ->where('is_active', true)
+            ->where('tenant_id', $tenantId)
+            ->get();
 
         // Verificar turno de caixa aberto
         $activeShift = null;
@@ -59,9 +73,12 @@ class POSController extends Controller
     {
         $query = $request->input('q', '');
         $categoryId = $request->input('category_id');
-        $branchId = current_branch_id();
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+        $branchId = current_branch_id() ?? auth()->user()?->branch_id;
 
-        $productsQuery = Product::where('is_active', true);
+        $productsQuery = Product::withoutGlobalScopes()
+            ->where('is_active', true)
+            ->where('tenant_id', $tenantId);
 
         if (!empty($query)) {
             $productsQuery->where(function ($q) use ($query) {
@@ -75,7 +92,7 @@ class POSController extends Controller
             $productsQuery->where('category_id', $categoryId);
         }
 
-        $products = $productsQuery->with('category')->limit(30)->get();
+        $products = $productsQuery->with('category')->limit(50)->get();
 
         $mapped = $products->map(function ($product) use ($branchId) {
             $stock = $this->stockService->getStock($product->id, $branchId);
@@ -95,8 +112,8 @@ class POSController extends Controller
         });
 
         return response()->json([
-            'success'  => true,
-            'products' => $mapped,
+            'success'   => true,
+            'products'  => $mapped,
         ]);
     }
 

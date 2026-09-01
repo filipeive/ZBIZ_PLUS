@@ -196,8 +196,9 @@ class SaasOperationalAuditTest extends TestCase
         $this->actingAs($admin)->get(route('reports.abc-analysis'))->assertStatus(200);
         $this->actingAs($admin)->get(route('reports.cash-flow'))->assertStatus(200);
 
-        // 5. Users
+        // 5. Users & Settings
         $this->actingAs($admin)->get(route('users.index'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('admin.settings'))->assertStatus(200);
     }
 
     public function test_fds_multiservices_reprography_tenant_operates_correctly()
@@ -206,6 +207,7 @@ class SaasOperationalAuditTest extends TestCase
 
         $filipeOwner = User::where('email', 'filipe.santos@fdsmultiservices.com')->firstOrFail();
         $caixaFds = User::where('email', 'caixa@fdsmultiservices.com')->firstOrFail();
+        $caixaFarmacia = User::where('email', 'caixa.matola@farmaciamuzinga.com')->firstOrFail();
 
         // 1. Dashboard com Tema Gráfica & Reprografia
         $dashResp = $this->actingAs($filipeOwner)->get(route('dashboard.index'));
@@ -220,15 +222,57 @@ class SaasOperationalAuditTest extends TestCase
         $prodResp->assertSeeText('Camiseta Algodão Básica Branca');
         $prodResp->assertSeeText('Caneca Cerâmica Branca Resinada');
 
-        // 3. Frente de Caixa POS para Operadora de Caixa FDS
+        // 3. Frente de Caixa POS para Operadora de Caixa FDS (Não exibe remédios de outra empresa)
         $posResp = $this->actingAs($caixaFds)->get(route('pos.index'));
         $posResp->assertStatus(200);
         $posResp->assertSeeText('FDS Multiservices');
         $posResp->assertSeeText('Reprografia & Cópia');
+        $posResp->assertDontSeeText('Medicamentos e Antibióticos');
 
-        // 4. API de busca rápida no POS retorna os serviços e artigos de reprografia
-        $searchResp = $this->actingAs($caixaFds)->getJson(route('pos.search', ['q' => 'Fotocópias']));
+        // 4. API de busca rápida no POS para FDS: Apenas retorna produtos da FDS
+        $searchResp = $this->actingAs($caixaFds)->getJson(route('pos.search'));
         $searchResp->assertStatus(200);
         $searchResp->assertJsonFragment(['name' => 'Fotocópias A4 P&B (Simples/Frente e Verso)']);
+        $searchResp->assertJsonMissing(['name' => 'Amoxicilina 500mg ANARME']);
+
+        // 5. API de busca rápida no POS para Farmácia: Apenas retorna remédios da Farmácia
+        $searchFarmacia = $this->actingAs($caixaFarmacia)->getJson(route('pos.search'));
+        $searchFarmacia->assertStatus(200);
+        $searchFarmacia->assertJsonFragment(['name' => 'Amoxicilina 500mg ANARME']);
+        $searchFarmacia->assertJsonMissing(['name' => 'Fotocópias A4 P&B (Simples/Frente e Verso)']);
+    }
+
+    public function test_system_settings_view_and_update_operates_correctly()
+    {
+        $this->seed(\Database\Seeders\OperationalMultiBranchSeeder::class);
+
+        $filipeOwner = User::where('email', 'filipe.santos@fdsmultiservices.com')->firstOrFail();
+
+        // 1. Acessa tela de configurações
+        $settingsView = $this->actingAs($filipeOwner)->get(route('admin.settings'));
+        $settingsView->assertStatus(200);
+        $settingsView->assertSeeText('Configurações Gerais da Empresa');
+        $settingsView->assertSeeText('FDS Multiservices');
+
+        // 2. Atualiza dados da empresa
+        $updateResp = $this->actingAs($filipeOwner)->post(route('admin.settings.update'), [
+            'company_name'          => 'FDS Multiservices Lda.',
+            'business_type'         => 'reprography',
+            'company_nuit'          => '0049983822',
+            'company_phone'         => '+258 84 724 0296',
+            'company_email'         => 'geral@fdsmultiservices.com',
+            'company_address'       => 'Av. Samora Machel nº 120, Quelimane',
+            'default_currency'      => 'MT',
+            'tax_rate'              => '16',
+            'stock_alert_threshold' => '10',
+            'receipt_footer'        => 'Obrigado pela preferência na FDS!',
+            'enable_notifications'  => '1',
+        ]);
+
+        $updateResp->assertRedirect(route('admin.settings'));
+        $this->assertDatabaseHas('tenants', [
+            'id'   => $filipeOwner->tenant_id,
+            'name' => 'FDS Multiservices Lda.',
+        ]);
     }
 }

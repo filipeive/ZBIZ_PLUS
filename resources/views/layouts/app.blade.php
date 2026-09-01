@@ -688,6 +688,12 @@
                                 <span>Auditoria & Atividade</span>
                             </a>
 
+                            <a href="{{ route('admin.settings') }}"
+                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('admin.settings*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
+                                <i class="fa-solid fa-gears w-4 text-center {{ request()->routeIs('admin.settings*') ? $theme['text_accent'] : '' }}"></i>
+                                <span>Configurações do Sistema</span>
+                            </a>
+
                             <a href="{{ route('profile.edit') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('profile.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-user-gear w-4 text-center {{ request()->routeIs('profile.*') ? $theme['text_accent'] : '' }}"></i>

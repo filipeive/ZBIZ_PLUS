@@ -6,7 +6,6 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>ZBIZ+ POS 2.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -30,8 +29,7 @@
     </style>
 </head>
 <body class="bg-gray-100 h-screen flex flex-col overflow-hidden select-none"
-      x-data="posApp()"
-      x-init="init()"
+      x-data="posApp"
       @keydown.window="handleShortcuts($event)">
 
     <!-- Top Bar -->
@@ -107,6 +105,20 @@
 
             <!-- Products Grid -->
             <div class="flex-1 overflow-y-auto p-3 grid grid-cols-3 gap-2.5 content-start">
+                <template x-if="isLoading">
+                    <div class="col-span-3 flex items-center justify-center py-12 text-slate-400 gap-2">
+                        <i class="fa-solid fa-circle-notch animate-spin text-emerald-500 text-lg"></i>
+                        <span class="text-xs font-semibold">Carregando catálogo da loja...</span>
+                    </div>
+                </template>
+
+                <template x-if="!isLoading && products.length === 0">
+                    <div class="col-span-3 flex flex-col items-center justify-center py-12 text-slate-400">
+                        <i class="fa-solid fa-box-open text-3xl mb-2 text-slate-300"></i>
+                        <p class="text-xs font-semibold">Nenhum artigo encontrado para esta seleção.</p>
+                    </div>
+                </template>
+
                 <template x-for="product in products" :key="product.id">
                     <div @click="addToCart(product)"
                          class="bg-white border border-gray-200 hover:border-emerald-500 hover:shadow-md p-3 rounded-lg cursor-pointer transition flex flex-col justify-between h-28 group relative">
@@ -117,8 +129,8 @@
                         <div class="flex items-end justify-between mt-2">
                             <span class="text-sm font-black text-slate-900" x-text="formatCurrency(product.selling_price)"></span>
                             <span class="text-[10px] px-1.5 py-0.5 rounded font-bold"
-                                  :class="product.stock_quantity > product.min_stock_level ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'"
-                                  x-text="'Qtd: ' + product.stock_quantity"></span>
+                                  :class="product.type === 'service' ? 'bg-violet-100 text-violet-700' : (product.stock_quantity > product.min_stock_level ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700')"
+                                  x-text="product.type === 'service' ? 'Serviço' : 'Qtd: ' + product.stock_quantity"></span>
                         </div>
                     </div>
                 </template>
@@ -283,8 +295,8 @@
 
     <!-- Alpine POS Logic -->
     <script>
-        function posApp() {
-            return {
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('posApp', () => ({
                 isOnline: navigator.onLine,
                 searchQuery: '',
                 selectedCategory: null,
@@ -297,6 +309,7 @@
                 showCheckoutModal: false,
                 showCustomerModal: false,
                 isSubmitting: false,
+                isLoading: false,
                 offlineQueue: JSON.parse(localStorage.getItem('zbiz_pos_offline_queue') || '[]'),
 
                 init() {
@@ -319,6 +332,7 @@
                 },
 
                 async searchProducts() {
+                    this.isLoading = true;
                     try {
                         const params = new URLSearchParams({
                             q: this.searchQuery,
@@ -331,6 +345,8 @@
                         }
                     } catch (e) {
                         console.warn('Busca offline ou falha:', e);
+                    } finally {
+                        this.isLoading = false;
                     }
                 },
 
@@ -532,8 +548,9 @@
                         this.notifyError('Erro de Sync', 'Não foi possível sincronizar as vendas offline no momento.');
                     }
                 }
-            };
-        }
+            }));
+        });
     </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
 </body>
 </html>

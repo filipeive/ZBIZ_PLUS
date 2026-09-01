@@ -6,6 +6,31 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
+## [1.0.8] - 2026-09-01 - Isolamento Rigoroso de Tenants no POS 2.0, Tenant FDS Multiservices & Central de Configurações do Sistema
+### Added
+- **Central de Configurações Gerais do Sistema (`settings/index.blade.php`):**
+  - Tela completa e moderna para parametrização dos dados comerciais da empresa (Nome Comercial, NUIT fiscal, Telefone, E-mail, Endereço da Sede).
+  - Seletor de setor de atividade (`business_type`: Reprografia, Farmácia, Retalho, Restaurante, Serviços) com adaptação dinâmica de tema e regras de negócio.
+  - Configurações fiscais e de moeda padrão (MZN / MT, Taxa de IVA).
+  - Parâmetros operacionais para Frente de Caixa POS e talão térmico de 80mm (Mensagem de Rodapé, Limite de Alerta de Estoque Mínimo, Ativação de Notificações).
+  - Atalhos diretos para Modelos de Documentos e Registos de Auditoria.
+  - Rota nomeada `admin.settings` e action `AdminController::updateSettings` com sincronização no model `Tenant` e chave-valor `Setting`.
+- **Tenant FDS Multiservices (Gráfica, Reprografia & Serigrafia em Quelimane):**
+  - Registado e configurado no seeder mestre (`OperationalMultiBranchSeeder.php`):
+    - **Empresa:** FDS Multiservices (`reprography`, NUIT: `0049983822`, Tel: `+258 84 724 0296`, Quelimane).
+    - **Filiais:** Sede Quelimane (`FDS-QUE-01`) e Oficina de Serigrafia & Estamparia (`FDS-OFI-02`).
+    - **Equipa:** Filipe Domingos dos Santos (`filipe.santos@fdsmultiservices.com`), Armando Mabote (Gerente), Sónia Mucavele (Caixa), Paulo Nhantumbo (Stock).
+    - **Catálogo:** Serviços (Fotocópias A4 P&B, Impressão A4 Cores, Encadernação, Serigrafia em Camisetas) e Artigos Físicos com estoque controlado por loja (Camisetas Básicas Brancas/Pretas, Camisas Pólo Piquet, Canecas Resinadas para Sublimação, Resmas de Papel A4).
+
+### Fixed
+- **Isolamento de Tenants na Frente de Caixa POS 2.0:**
+  - Inclusão das rotas `/pos/*` dentro da camada de middleware de tenant (`IdentifyTenant`), garantindo que `TenantContext` seja sempre resolvido para chamadas de API e navegação.
+  - Aplicação de cláusula explícita `where('tenant_id', $tenantId)` e `withoutGlobalScopes` em `POSController::searchProducts`, `index` e `storeSale`, impedindo vazamento de artigos ou categorias entre diferentes empresas (ex: medicamentos de farmácia aparecendo em gráficas).
+  - Sincronização e expurgo de sessão de filial anterior durante o login (`AuthenticatedSessionController::store` e `IdentifyTenant`), garantindo consistência no chaveamento de empresas.
+  - Correção na inicialização do Alpine.js no POS 2.0 para registrar o componente `Alpine.data('posApp')` antes do carregamento da biblioteca, prevenindo atrasos de renderização de catálogo.
+
+---
+
 ## [1.0.7] - 2026-09-01 - Controle de Acesso por Perfis (RBAC), Restrição de Filiais & Modernização Integral de Views
 ### Added
 - **Controle de Acesso por Papéis (RBAC) & Filtragem de Menus:**

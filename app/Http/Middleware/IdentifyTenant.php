@@ -56,6 +56,9 @@ class IdentifyTenant
                 $branch = Branch::where('tenant_id', $tenant->id)
                     ->where('is_active', true)
                     ->find(session()->get('current_branch_id'));
+                if (!$branch) {
+                    session()->forget('current_branch_id');
+                }
             }
 
             // 2. User assigned branch (default for the user if not switched via session)
@@ -72,6 +75,7 @@ class IdentifyTenant
 
             if ($branch) {
                 $context->setBranch($branch);
+                session()->put('current_branch_id', $branch->id);
             }
         }
 
