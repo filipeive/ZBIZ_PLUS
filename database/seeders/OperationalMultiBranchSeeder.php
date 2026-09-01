@@ -383,6 +383,410 @@ class OperationalMultiBranchSeeder extends Seeder
                 ]
             );
 
+            // ==========================================
+            // EMPRESA C: FDS MULTISERVICES (REPROGRAFIA & SERIGRAFIA)
+            // ==========================================
+            echo "5. Criando Empresa C: FDS Multiservices (Reprografia & Serigrafia)...\n";
+            $tenantC = Tenant::firstOrCreate(
+                ['slug' => 'fds-multiservices'],
+                [
+                    'name' => 'FDS Multiservices',
+                    'subdomain' => 'fds',
+                    'business_type' => 'reprography',
+                    'nuit' => '0049983822',
+                    'email' => 'contacto@fdsmultiservices.com',
+                    'phone' => '+258 84 724 0296',
+                    'address' => 'Av. Samora Machel nº 120, Cidade de Quelimane',
+                    'currency' => 'MZN',
+                    'status' => 'active',
+                    'trial_ends_at' => now()->addDays(30),
+                    'subscription_ends_at' => now()->addYear(),
+                ]
+            );
+
+            Subscription::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'plan_id' => $plan->id],
+                [
+                    'status' => 'active',
+                    'current_period_starts_at' => now(),
+                    'current_period_ends_at' => now()->addYear(),
+                ]
+            );
+
+            // Filiais da FDS Multiservices
+            $branchC1 = Branch::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'code' => 'FDS-QUE-01'],
+                [
+                    'name' => 'FDS Multiservices - Sede Quelimane',
+                    'address' => 'Av. Samora Machel nº 120, Quelimane',
+                    'phone' => '+258 84 724 0296',
+                    'email' => 'quelimane@fdsmultiservices.com',
+                    'is_main' => true,
+                    'is_active' => true,
+                ]
+            );
+
+            $branchC2 = Branch::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'code' => 'FDS-OFI-02'],
+                [
+                    'name' => 'FDS - Oficina de Serigrafia & Estamparia',
+                    'address' => 'Bairro Coalane, Zona Técnica, Quelimane',
+                    'phone' => '+258 84 724 0296',
+                    'email' => 'oficina@fdsmultiservices.com',
+                    'is_main' => false,
+                    'is_active' => true,
+                ]
+            );
+
+            // Usuários da FDS Multiservices
+            $adminC = User::firstOrCreate(
+                ['email' => 'filipe.santos@fdsmultiservices.com'],
+                [
+                    'tenant_id' => $tenantC->id,
+                    'branch_id' => $branchC1->id,
+                    'name' => 'Filipe Domingos dos Santos',
+                    'phone' => '+258 84 724 0296',
+                    'password' => Hash::make('password123'),
+                    'role_id' => $createdRoles['admin']->id,
+                    'is_active' => true,
+                    'job_title' => 'Proprietário & Diretor Geral',
+                ]
+            );
+
+            $gerenteC = User::firstOrCreate(
+                ['email' => 'gerente@fdsmultiservices.com'],
+                [
+                    'tenant_id' => $tenantC->id,
+                    'branch_id' => $branchC1->id,
+                    'name' => 'Armando Mabote',
+                    'phone' => '+258 84 700 1122',
+                    'password' => Hash::make('password123'),
+                    'role_id' => $createdRoles['manager']->id,
+                    'is_active' => true,
+                    'job_title' => 'Gerente Operacional Quelimane',
+                ]
+            );
+
+            $caixaC = User::firstOrCreate(
+                ['email' => 'caixa@fdsmultiservices.com'],
+                [
+                    'tenant_id' => $tenantC->id,
+                    'branch_id' => $branchC1->id,
+                    'name' => 'Sónia Mucavele',
+                    'phone' => '+258 84 733 4455',
+                    'password' => Hash::make('password123'),
+                    'role_id' => $createdRoles['cashier']->id,
+                    'is_active' => true,
+                    'job_title' => 'Operadora de Balcão & Caixa',
+                ]
+            );
+
+            $stockC = User::firstOrCreate(
+                ['email' => 'stock@fdsmultiservices.com'],
+                [
+                    'tenant_id' => $tenantC->id,
+                    'branch_id' => $branchC2->id,
+                    'name' => 'Paulo Nhantumbo',
+                    'phone' => '+258 84 766 7788',
+                    'password' => Hash::make('password123'),
+                    'role_id' => $createdRoles['stock_manager']->id,
+                    'is_active' => true,
+                    'job_title' => 'Gestor de Materiais & Oficina',
+                ]
+            );
+
+            // Contas Financeiras
+            FinancialAccount::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'name' => 'Caixa Balcão Quelimane'],
+                [
+                    'branch_id' => $branchC1->id,
+                    'slug' => 'caixa-balcao-quelimane',
+                    'type' => 'cash',
+                    'opening_balance' => 5000.00,
+                    'current_balance' => 15400.00,
+                    'is_active' => true,
+                ]
+            );
+
+            FinancialAccount::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'name' => 'M-Pesa FDS (847240296)'],
+                [
+                    'branch_id' => $branchC1->id,
+                    'slug' => 'mpesa-fds-847240296',
+                    'type' => 'mobile_money',
+                    'opening_balance' => 10000.00,
+                    'current_balance' => 28750.00,
+                    'is_active' => true,
+                ]
+            );
+
+            FinancialAccount::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'name' => 'Conta Millennium BIM - FDS'],
+                [
+                    'branch_id' => $branchC1->id,
+                    'slug' => 'conta-millennium-bim-fds',
+                    'type' => 'bank',
+                    'opening_balance' => 50000.00,
+                    'current_balance' => 95000.00,
+                    'is_active' => true,
+                ]
+            );
+
+            // Categorias
+            $catRepro = Category::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'name' => 'Reprografia & Cópia'],
+                ['description' => 'Serviços de cópia, impressão e encadernação', 'is_active' => true]
+            );
+
+            $catSerigrafia = Category::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'name' => 'Serigrafia & Estamparia Têxtil'],
+                ['description' => 'Estamparia, bordados e serigrafia em tecidos', 'is_active' => true]
+            );
+
+            $catVestuario = Category::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'name' => 'Camisetas & Vestuário para Estampar'],
+                ['description' => 'Camisetas básicas, pólos e vestuário', 'is_active' => true]
+            );
+
+            $catPapelaria = Category::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'name' => 'Papelaria & Materiais Diversos'],
+                ['description' => 'Papéis, canetas, pastas e consumíveis', 'is_active' => true]
+            );
+
+            $catBrindes = Category::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'name' => 'Brindes & Sublimação'],
+                ['description' => 'Canecas, porta-chaves, bonés e brindes corporativos', 'is_active' => true]
+            );
+
+            // Produtos e Serviços da FDS
+            $servCopias = Product::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'barcode' => 'SRV-COP-01'],
+                [
+                    'category_id' => $catRepro->id,
+                    'name' => 'Fotocópias A4 P&B (Simples/Frente e Verso)',
+                    'sku' => 'SRV-COP-A4',
+                    'purchase_price' => 1.20,
+                    'selling_price' => 5.00,
+                    'stock_quantity' => 9999,
+                    'min_stock_level' => 10,
+                    'type' => 'service',
+                    'unit' => 'pag',
+                    'is_active' => true,
+                ]
+            );
+
+            $servImprCor = Product::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'barcode' => 'SRV-IMP-COR'],
+                [
+                    'category_id' => $catRepro->id,
+                    'name' => 'Impressão / Fotocópia A4 a Cores',
+                    'sku' => 'SRV-IMP-COR',
+                    'purchase_price' => 8.00,
+                    'selling_price' => 25.00,
+                    'stock_quantity' => 9999,
+                    'min_stock_level' => 10,
+                    'type' => 'service',
+                    'unit' => 'pag',
+                    'is_active' => true,
+                ]
+            );
+
+            $servEncadernacao = Product::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'barcode' => 'SRV-ENC-A4'],
+                [
+                    'category_id' => $catRepro->id,
+                    'name' => 'Encadernação com Espiral & Capas A4',
+                    'sku' => 'SRV-ENC-A4',
+                    'purchase_price' => 25.00,
+                    'selling_price' => 75.00,
+                    'stock_quantity' => 9999,
+                    'min_stock_level' => 10,
+                    'type' => 'service',
+                    'unit' => 'un',
+                    'is_active' => true,
+                ]
+            );
+
+            $servSerigrafia = Product::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'barcode' => 'SRV-SER-01'],
+                [
+                    'category_id' => $catSerigrafia->id,
+                    'name' => 'Serviço de Serigrafia / Estamparia em Camiseta (1 Cor)',
+                    'sku' => 'SRV-SER-TSHIRT',
+                    'purchase_price' => 35.00,
+                    'selling_price' => 150.00,
+                    'stock_quantity' => 9999,
+                    'min_stock_level' => 10,
+                    'type' => 'service',
+                    'unit' => 'un',
+                    'is_active' => true,
+                ]
+            );
+
+            $prodCamisetaBranca = Product::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'barcode' => 'FDS-TSH-WHT-G'],
+                [
+                    'category_id' => $catVestuario->id,
+                    'name' => 'Camiseta Algodão Básica Branca (G) 100% Algodão',
+                    'sku' => 'TSH-WHT-G',
+                    'purchase_price' => 250.00,
+                    'selling_price' => 450.00,
+                    'stock_quantity' => 50,
+                    'min_stock_level' => 10,
+                    'type' => 'physical',
+                    'unit' => 'un',
+                    'is_active' => true,
+                ]
+            );
+
+            $prodCamisetaPreta = Product::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'barcode' => 'FDS-TSH-BLK-M'],
+                [
+                    'category_id' => $catVestuario->id,
+                    'name' => 'Camiseta Algodão Básica Preta (M) 100% Algodão',
+                    'sku' => 'TSH-BLK-M',
+                    'purchase_price' => 250.00,
+                    'selling_price' => 450.00,
+                    'stock_quantity' => 40,
+                    'min_stock_level' => 10,
+                    'type' => 'physical',
+                    'unit' => 'un',
+                    'is_active' => true,
+                ]
+            );
+
+            $prodPolo = Product::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'barcode' => 'FDS-POL-NVY-L'],
+                [
+                    'category_id' => $catVestuario->id,
+                    'name' => 'Camisa Pólo Piquet Unissexo Azul-Marinho (L)',
+                    'sku' => 'POL-NVY-L',
+                    'purchase_price' => 450.00,
+                    'selling_price' => 750.00,
+                    'stock_quantity' => 25,
+                    'min_stock_level' => 5,
+                    'type' => 'physical',
+                    'unit' => 'un',
+                    'is_active' => true,
+                ]
+            );
+
+            $prodPapelA4 = Product::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'barcode' => 'FDS-PPL-A4-500'],
+                [
+                    'category_id' => $catPapelaria->id,
+                    'name' => 'Resma Papel A4 Chamex 75g (500 Folhas)',
+                    'sku' => 'PPL-CHX-A4',
+                    'purchase_price' => 380.00,
+                    'selling_price' => 550.00,
+                    'stock_quantity' => 35,
+                    'min_stock_level' => 10,
+                    'type' => 'physical',
+                    'unit' => 'resma',
+                    'is_active' => true,
+                ]
+            );
+
+            $prodCaneca = Product::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'barcode' => 'FDS-MUG-SUB-01'],
+                [
+                    'category_id' => $catBrindes->id,
+                    'name' => 'Caneca Cerâmica Branca Resinada para Sublimação (325ml)',
+                    'sku' => 'MUG-SUB-WHT',
+                    'purchase_price' => 120.00,
+                    'selling_price' => 250.00,
+                    'stock_quantity' => 60,
+                    'min_stock_level' => 15,
+                    'type' => 'physical',
+                    'unit' => 'un',
+                    'is_active' => true,
+                ]
+            );
+
+            // Distribuição de Stock por Filial
+            ProductBranch::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'product_id' => $prodCamisetaBranca->id, 'branch_id' => $branchC1->id],
+                ['stock_quantity' => 20, 'min_stock_level' => 5]
+            );
+            ProductBranch::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'product_id' => $prodCamisetaBranca->id, 'branch_id' => $branchC2->id],
+                ['stock_quantity' => 30, 'min_stock_level' => 5]
+            );
+
+            ProductBranch::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'product_id' => $prodPapelA4->id, 'branch_id' => $branchC1->id],
+                ['stock_quantity' => 25, 'min_stock_level' => 5]
+            );
+            ProductBranch::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'product_id' => $prodPapelA4->id, 'branch_id' => $branchC2->id],
+                ['stock_quantity' => 10, 'min_stock_level' => 5]
+            );
+
+            // Clientes FDS
+            $clienteLicungo = Customer::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'email' => 'compras@unilicungo.ac.mz'],
+                [
+                    'name' => 'Universidade Licungo - Delegação de Quelimane',
+                    'phone' => '+258 84 111 2233',
+                    'nuit' => '500123456',
+                    'address' => 'Campus Universitário, Quelimane',
+                    'is_active' => true,
+                ]
+            );
+
+            $clienteMunicipio = Customer::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'email' => 'financas@municipioquelimane.gov.mz'],
+                [
+                    'name' => 'Conselho Municipal da Cidade de Quelimane',
+                    'phone' => '+258 82 333 4455',
+                    'nuit' => '400555666',
+                    'address' => 'Praça dos Heróis, Quelimane',
+                    'is_active' => true,
+                ]
+            );
+
+            // Venda Registrada na Sede Quelimane
+            $vendaFDS1 = Sale::firstOrCreate(
+                ['tenant_id' => $tenantC->id, 'branch_id' => $branchC1->id, 'customer_name' => 'Universidade Licungo'],
+                [
+                    'user_id' => $caixaC->id,
+                    'customer_id' => $clienteLicungo->id,
+                    'customer_phone' => '+258 84 111 2233',
+                    'subtotal' => 1850.00,
+                    'discount_amount' => 0.00,
+                    'total_amount' => 1850.00,
+                    'payment_method' => 'mpesa',
+                    'sale_date' => now(),
+                    'notes' => 'Fotocópias de exames e resmas de papel A4',
+                ]
+            );
+
+            SaleItem::firstOrCreate(
+                ['sale_id' => $vendaFDS1->id, 'product_id' => $prodPapelA4->id],
+                [
+                    'tenant_id' => $tenantC->id,
+                    'branch_id' => $branchC1->id,
+                    'quantity' => 2,
+                    'original_unit_price' => 550.00,
+                    'unit_price' => 550.00,
+                    'total_price' => 1100.00,
+                    'discount_amount' => 0.00,
+                ]
+            );
+
+            SaleItem::firstOrCreate(
+                ['sale_id' => $vendaFDS1->id, 'product_id' => $servCopias->id],
+                [
+                    'tenant_id' => $tenantC->id,
+                    'branch_id' => $branchC1->id,
+                    'quantity' => 150,
+                    'original_unit_price' => 5.00,
+                    'unit_price' => 5.00,
+                    'total_price' => 750.00,
+                    'discount_amount' => 0.00,
+                ]
+            );
+
             echo "✓ Seeder Multi-Branch e Multi-Tenant concluído com sucesso!\n";
         });
     }

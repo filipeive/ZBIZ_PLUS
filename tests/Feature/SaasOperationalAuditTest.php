@@ -199,4 +199,36 @@ class SaasOperationalAuditTest extends TestCase
         // 5. Users
         $this->actingAs($admin)->get(route('users.index'))->assertStatus(200);
     }
+
+    public function test_fds_multiservices_reprography_tenant_operates_correctly()
+    {
+        $this->seed(\Database\Seeders\OperationalMultiBranchSeeder::class);
+
+        $filipeOwner = User::where('email', 'filipe.santos@fdsmultiservices.com')->firstOrFail();
+        $caixaFds = User::where('email', 'caixa@fdsmultiservices.com')->firstOrFail();
+
+        // 1. Dashboard com Tema Gráfica & Reprografia
+        $dashResp = $this->actingAs($filipeOwner)->get(route('dashboard.index'));
+        $dashResp->assertStatus(200);
+        $dashResp->assertSeeText('FDS Multiservices');
+        $dashResp->assertSeeText('Gráfica & Reprografia');
+
+        // 2. Catálogo de Produtos e Serviços da FDS
+        $prodResp = $this->actingAs($filipeOwner)->get(route('products.index'));
+        $prodResp->assertStatus(200);
+        $prodResp->assertSeeText('Fotocópias A4 P&B');
+        $prodResp->assertSeeText('Camiseta Algodão Básica Branca');
+        $prodResp->assertSeeText('Caneca Cerâmica Branca Resinada');
+
+        // 3. Frente de Caixa POS para Operadora de Caixa FDS
+        $posResp = $this->actingAs($caixaFds)->get(route('pos.index'));
+        $posResp->assertStatus(200);
+        $posResp->assertSeeText('FDS Multiservices');
+        $posResp->assertSeeText('Reprografia & Cópia');
+
+        // 4. API de busca rápida no POS retorna os serviços e artigos de reprografia
+        $searchResp = $this->actingAs($caixaFds)->getJson(route('pos.search', ['q' => 'Fotocópias']));
+        $searchResp->assertStatus(200);
+        $searchResp->assertJsonFragment(['name' => 'Fotocópias A4 P&B (Simples/Frente e Verso)']);
+    }
 }
