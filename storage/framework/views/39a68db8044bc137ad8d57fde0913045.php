@@ -1,9 +1,7 @@
-@extends('layouts.app')
+<?php $__env->startSection('title', 'Registar Venda Manual'); ?>
+<?php $__env->startSection('page-title', 'Registar Venda Manual & Faturação'); ?>
 
-@section('title', 'Registar Venda Manual')
-@section('page-title', 'Registar Venda Manual & Faturação')
-
-@php
+<?php
     $theme = tenant_theme();
     $mappedProducts = $products->map(function($p) {
         return [
@@ -21,9 +19,9 @@
             'stock'              => $p->getStockForBranch(),
         ];
     });
-@endphp
+?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="space-y-6" x-data="manualSale()">
     
     <!-- Top Action Bar -->
@@ -31,34 +29,35 @@
         <div>
             <div class="flex items-center gap-2">
                 <h2 class="text-lg font-black font-heading text-white">Formulário de Venda Manual</h2>
-                @if(current_branch())
+                <?php if(current_branch()): ?>
                     <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-800 border border-slate-700 text-slate-300">
-                        <i class="fa-solid fa-store text-emerald-400 me-1"></i> {{ current_branch()->name }}
+                        <i class="fa-solid fa-store text-emerald-400 me-1"></i> <?php echo e(current_branch()->name); ?>
+
                     </span>
-                @endif
+                <?php endif; ?>
             </div>
             <p class="text-xs text-slate-400 mt-0.5">Registe vendas com personalização livre de artigos, quantidades, descontos automáticos e manuais.</p>
         </div>
 
         <div class="flex items-center gap-3">
-            <a href="{{ route('sales.index') }}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs border border-slate-700 transition flex items-center gap-2">
+            <a href="<?php echo e(route('sales.index')); ?>" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs border border-slate-700 transition flex items-center gap-2">
                 <i class="fa-solid fa-arrow-left"></i> Voltar ao Histórico
             </a>
-            <a href="{{ route('pos.index') }}" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
+            <a href="<?php echo e(route('pos.index')); ?>" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
                 <i class="fa-solid fa-cash-register"></i> Frente de Caixa POS
             </a>
         </div>
     </div>
 
-    @if(session('error'))
+    <?php if(session('error')): ?>
         <div class="p-4 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-rose-400 text-xs font-bold flex items-center gap-2">
             <i class="fa-solid fa-triangle-exclamation text-base"></i>
-            <span>{{ session('error') }}</span>
+            <span><?php echo e(session('error')); ?></span>
         </div>
-    @endif
+    <?php endif; ?>
 
-    <form action="{{ route('sales.store') }}" method="POST" @submit.prevent="submitForm">
-        @csrf
+    <form action="<?php echo e(route('sales.store')); ?>" method="POST" @submit.prevent="submitForm">
+        <?php echo csrf_field(); ?>
         <input type="hidden" name="items" :value="JSON.stringify(itemsPayload)">
         <input type="hidden" name="general_discount" :value="generalDiscountAmount">
         <input type="hidden" name="general_discount_type" :value="generalDiscountType">
@@ -286,7 +285,7 @@
 
                     <div class="pt-2">
                         <button type="submit" :disabled="items.length === 0"
-                                class="w-full py-3.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} disabled:opacity-50 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2">
+                                class="w-full py-3.5 rounded-2xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> disabled:opacity-50 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2">
                             <i class="fa-solid fa-check-to-slot"></i> Concluir Venda Manual
                         </button>
                     </div>
@@ -302,9 +301,9 @@
 <script>
 document.addEventListener('alpine:init', () => {
     Alpine.data('manualSale', () => ({
-        catalogProducts: @json($mappedProducts, JSON_UNESCAPED_UNICODE),
+        catalogProducts: <?php echo json_encode($mappedProducts, JSON_UNESCAPED_UNICODE, 512) ?>,
         selectedCatalogProductId: '',
-        saleDate: '{{ now()->format("Y-m-d\TH:i") }}',
+        saleDate: '<?php echo e(now()->format("Y-m-d\TH:i")); ?>',
         customerName: 'Cliente Avulso',
         customerPhone: '',
         notes: '',
@@ -423,4 +422,6 @@ document.addEventListener('alpine:init', () => {
     }));
 });
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /home/fdev-ms/Filipe/ZBIZ_PLUS/resources/views/sales/manual-create.blade.php ENDPATH**/ ?>

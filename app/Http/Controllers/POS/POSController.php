@@ -121,18 +121,28 @@ class POSController extends Controller
 
         return $products->map(function ($product) use ($branchId) {
             $stock = $this->stockService->getStock($product->id, $branchId);
+            $isOnPromo = $product->isOnPromotion();
+            $effectivePrice = (float)$product->effective_price;
+            $originalPrice = (float)$product->selling_price;
+            $autoDiscount = (float)$product->automatic_unit_discount;
+            $discountPct = (float)$product->automatic_discount_percent;
+
             return [
-                'id'             => $product->id,
-                'name'           => $product->name,
-                'barcode'        => $product->barcode,
-                'sku'            => $product->sku,
-                'category_name'  => $product->category?->name ?? 'Geral',
-                'type'           => $product->type,
-                'selling_price'  => (float)$product->selling_price,
-                'purchase_price' => (float)$product->purchase_price,
-                'stock_quantity' => $stock,
-                'min_stock_level'=> $product->min_stock_level ?? 5,
-                'is_low_stock'   => in_array($product->type, ['product', 'physical']) && $stock <= ($product->min_stock_level ?? 5),
+                'id'                 => $product->id,
+                'name'               => $product->name,
+                'barcode'            => $product->barcode,
+                'sku'                => $product->sku,
+                'category_name'      => $product->category?->name ?? 'Geral',
+                'type'               => $product->type,
+                'selling_price'      => $effectivePrice,
+                'original_price'     => $originalPrice,
+                'is_on_promotion'    => $isOnPromo,
+                'automatic_discount' => $autoDiscount,
+                'discount_percent'   => $discountPct,
+                'purchase_price'     => (float)$product->purchase_price,
+                'stock_quantity'     => $stock,
+                'min_stock_level'    => $product->min_stock_level ?? 5,
+                'is_low_stock'       => in_array($product->type, ['product', 'physical']) && $stock <= ($product->min_stock_level ?? 5),
             ];
         })->values()->all();
     }

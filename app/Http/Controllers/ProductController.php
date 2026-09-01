@@ -99,6 +99,10 @@ class ProductController extends Controller
                 'type' => 'required|in:product,service',
                 'selling_price' => 'required|numeric|min:0',
                 'purchase_price' => 'nullable|numeric|min:0',
+                'promotional_price' => 'nullable|numeric|min:0',
+                'is_on_promotion' => 'nullable|boolean',
+                'promotion_discount_percent' => 'nullable|numeric|min:0|max:100',
+                'promotion_ends_at' => 'nullable|date',
                 'barcode' => 'nullable|string|max:60',
                 'sku' => 'nullable|string|max:60',
                 'batch_number' => 'nullable|string|max:60',
@@ -121,9 +125,11 @@ class ProductController extends Controller
 
             $data = collect($validated)->only([
                 'name', 'category_id', 'linked_product_id', 'type', 'selling_price',
-                'purchase_price', 'barcode', 'sku', 'unit', 'description'
+                'purchase_price', 'promotional_price', 'promotion_discount_percent',
+                'promotion_ends_at', 'barcode', 'sku', 'unit', 'description'
             ])->toArray();
 
+            $data['is_on_promotion'] = $request->boolean('is_on_promotion');
             $data['is_active'] = $request->boolean('is_active', true);
 
             if ($request->type === 'product') {
@@ -235,6 +241,10 @@ class ProductController extends Controller
                 'linked_product_id' => 'nullable|exists:products,id',
                 'selling_price' => 'required|numeric|min:0',
                 'purchase_price' => 'nullable|numeric|min:0',
+                'promotional_price' => 'nullable|numeric|min:0',
+                'is_on_promotion' => 'nullable|boolean',
+                'promotion_discount_percent' => 'nullable|numeric|min:0|max:100',
+                'promotion_ends_at' => 'nullable|date',
                 'barcode' => 'nullable|string|max:60',
                 'sku' => 'nullable|string|max:60',
                 'batch_number' => 'nullable|string|max:60',
@@ -253,9 +263,11 @@ class ProductController extends Controller
 
             $data = collect($validated)->only([
                 'name', 'category_id', 'linked_product_id', 'selling_price',
-                'purchase_price', 'barcode', 'sku', 'unit', 'description'
+                'purchase_price', 'promotional_price', 'promotion_discount_percent',
+                'promotion_ends_at', 'barcode', 'sku', 'unit', 'description'
             ])->toArray();
 
+            $data['is_on_promotion'] = $request->boolean('is_on_promotion');
             $data['is_active'] = $request->boolean('is_active', true);
 
             if ($product->type === 'product') {

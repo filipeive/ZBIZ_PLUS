@@ -513,8 +513,12 @@
             <div class="flex flex-col flex-1 min-h-0 overflow-y-auto">
                 <div class="p-5 border-b border-slate-800/80 flex items-center justify-between">
                     <a href="<?php echo e(route('dashboard.index')); ?>" class="flex items-center space-x-3 group">
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br <?php echo e($theme['gradient']); ?> flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition">
-                            <i class="fa-solid fa-bolt text-slate-950 text-lg font-black"></i>
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br <?php echo e($theme['gradient']); ?> flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition overflow-hidden">
+                            <?php if(!empty($theme['logo_url'])): ?>
+                                <img src="<?php echo e($theme['logo_url']); ?>" alt="Logo" class="w-full h-full object-contain p-1 bg-white/10">
+                            <?php else: ?>
+                                <i class="fa-solid fa-bolt text-slate-950 text-lg font-black"></i>
+                            <?php endif; ?>
                         </div>
                         <div>
                             <div class="text-xl font-black font-heading tracking-tight text-white flex items-center gap-1">
@@ -528,7 +532,7 @@
                     </a>
 
                     <!-- Sector Pill Badge -->
-                    <span class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full border <?php echo e($theme['badge']); ?> flex items-center gap-1">
+                    <span class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full border <?php echo e($theme['badge']); ?> flex items-center gap-1" title="<?php echo e($theme['sector_name']); ?>">
                         <i class="fa-solid <?php echo e($theme['icon']); ?> text-[9px]"></i>
                     </span>
                 </div>
@@ -600,7 +604,7 @@
                             <a href="<?php echo e(route('products.index')); ?>"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition <?php echo e(request()->routeIs('products.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'); ?>">
                                 <i class="fa-solid fa-box-open w-4 text-center <?php echo e(request()->routeIs('products.*') ? $theme['text_accent'] : ''); ?>"></i>
-                                <span>Artigos & Medicamentos</span>
+                                <span><?php echo e($theme['catalog_title'] ?? 'Artigos & Produtos'); ?></span>
                             </a>
 
                             <?php if(auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isStockManager()): ?>
@@ -687,6 +691,12 @@
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition <?php echo e(request()->routeIs('users.activity') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'); ?>">
                                 <i class="fa-solid fa-clock-rotate-left w-4 text-center <?php echo e(request()->routeIs('users.activity') ? $theme['text_accent'] : ''); ?>"></i>
                                 <span>Auditoria & Atividade</span>
+                            </a>
+
+                            <a href="<?php echo e(route('admin.settings')); ?>"
+                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition <?php echo e(request()->routeIs('admin.settings*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'); ?>">
+                                <i class="fa-solid fa-gears w-4 text-center <?php echo e(request()->routeIs('admin.settings*') ? $theme['text_accent'] : ''); ?>"></i>
+                                <span>Configurações do Sistema</span>
                             </a>
 
                             <a href="<?php echo e(route('profile.edit')); ?>"

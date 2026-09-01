@@ -162,7 +162,16 @@
 
                 <template x-for="product in products" :key="product.id">
                     <div @click="addToCart(product)"
-                         class="bg-white border border-gray-200 hover:border-emerald-500 hover:shadow-md p-3 rounded-lg cursor-pointer transition flex flex-col justify-between h-28 group relative">
+                         class="bg-white border border-gray-200 hover:border-emerald-500 hover:shadow-md p-3 rounded-lg cursor-pointer transition flex flex-col justify-between h-28 group relative overflow-hidden">
+                        
+                        <!-- Promo Ribbon Badge -->
+                        <template x-if="product.is_on_promotion">
+                            <span class="absolute top-0 right-0 bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-bl shadow-sm flex items-center gap-0.5">
+                                <i class="fa-solid fa-tag text-[7px]"></i>
+                                <span x-text="product.discount_percent > 0 ? '-' + product.discount_percent + '%' : 'PROMO'"></span>
+                            </span>
+                        </template>
+
                         <div>
                             <div class="text-xs font-bold text-gray-800 line-clamp-2 group-hover:text-emerald-600" x-text="product.name"></div>
                             <div class="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
@@ -171,7 +180,12 @@
                             </div>
                         </div>
                         <div class="flex items-end justify-between mt-2">
-                            <span class="text-sm font-black text-slate-900" x-text="formatCurrency(product.selling_price)"></span>
+                            <div class="flex flex-col">
+                                <template x-if="product.is_on_promotion">
+                                    <span class="text-[10px] text-gray-400 line-through leading-none font-semibold" x-text="formatCurrency(product.original_price)"></span>
+                                </template>
+                                <span class="text-sm font-black" :class="product.is_on_promotion ? 'text-rose-600' : 'text-slate-900'" x-text="formatCurrency(product.selling_price)"></span>
+                            </div>
                             <span class="text-[10px] px-1.5 py-0.5 rounded font-bold"
                                   :class="product.type === 'service' ? 'bg-violet-100 text-violet-700' : (product.stock_quantity > product.min_stock_level ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700')"
                                   x-text="product.type === 'service' ? 'Serviço' : 'Qtd: ' + product.stock_quantity"></span>

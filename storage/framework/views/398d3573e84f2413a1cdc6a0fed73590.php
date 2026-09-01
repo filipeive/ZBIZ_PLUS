@@ -1,16 +1,14 @@
-@extends('layouts.app')
+<?php $__env->startSection('title', 'Editar: ' . $product->name); ?>
+<?php $__env->startSection('page-title', 'Editar Artigo / Medicamento'); ?>
 
-@section('title', 'Editar: ' . $product->name)
-@section('page-title', 'Editar Artigo / Medicamento')
-
-@php
+<?php
     $theme = tenant_theme();
     $isPharmacy = current_tenant()?->isPharmacy() ?? false;
     $hasExistingBatch = !empty($latestBatch) || $isPharmacy;
-@endphp
+?>
 
-@section('content')
-<div class="max-w-4xl mx-auto space-y-6" x-data="{ showStockModal: false, hasBatch: {{ $hasExistingBatch ? 'true' : 'false' }} }">
+<?php $__env->startSection('content'); ?>
+<div class="max-w-4xl mx-auto space-y-6" x-data="{ showStockModal: false, hasBatch: <?php echo e($hasExistingBatch ? 'true' : 'false'); ?> }">
 
     <!-- Top Action Bar -->
     <div class="flex items-center justify-between bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
@@ -19,20 +17,20 @@
                 <i class="fa-solid fa-box-open text-lg"></i>
             </div>
             <div>
-                <h2 class="text-lg font-black font-heading text-white">{{ $product->name }}</h2>
-                <p class="text-xs text-slate-400">{{ $product->type === 'service' ? 'Serviço Prestado' : 'Produto Físico em Stock' }}</p>
+                <h2 class="text-lg font-black font-heading text-white"><?php echo e($product->name); ?></h2>
+                <p class="text-xs text-slate-400"><?php echo e($product->type === 'service' ? 'Serviço Prestado' : 'Produto Físico em Stock'); ?></p>
             </div>
         </div>
         <div class="flex items-center gap-2">
-            @if($isPharmacy)
-                <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $theme['badge'] }} flex items-center gap-1.5 hidden sm:flex">
+            <?php if($isPharmacy): ?>
+                <span class="px-3 py-1 rounded-full text-xs font-bold border <?php echo e($theme['badge']); ?> flex items-center gap-1.5 hidden sm:flex">
                     <i class="fa-solid fa-pills"></i> Módulo Farmácia / ANARME
                 </span>
-            @endif
-            <a href="{{ route('products.show', $product->id) }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
+            <?php endif; ?>
+            <a href="<?php echo e(route('products.show', $product->id)); ?>" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
                 <i class="fa-solid fa-eye"></i> Ver Detalhes
             </a>
-            <a href="{{ route('products.index') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
+            <a href="<?php echo e(route('products.index')); ?>" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
                 <i class="fa-solid fa-arrow-left"></i> Voltar
             </a>
         </div>
@@ -40,9 +38,9 @@
 
     <!-- Edit Form -->
     <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
-        <form method="POST" action="{{ route('products.update', $product->id) }}" class="space-y-6">
-            @csrf
-            @method('PUT')
+        <form method="POST" action="<?php echo e(route('products.update', $product->id)); ?>" class="space-y-6">
+            <?php echo csrf_field(); ?>
+            <?php echo method_field('PUT'); ?>
 
             <div class="flex items-center justify-between border-b border-slate-800 pb-4">
                 <div>
@@ -54,84 +52,93 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="sm:col-span-2">
                     <label class="block text-xs font-bold text-slate-300 mb-1">
-                        {{ $isPharmacy ? 'Nome Comercial & Dosagem do Medicamento *' : 'Nome do Artigo / Serviço *' }}
+                        <?php echo e($isPharmacy ? 'Nome Comercial & Dosagem do Medicamento *' : 'Nome do Artigo / Serviço *'); ?>
+
                     </label>
-                    <input type="text" name="name" value="{{ old('name', $product->name) }}" required
-                           placeholder="{{ $isPharmacy ? 'Ex: Amoxicilina 500mg Cápsulas' : 'Ex: Produto A' }}"
-                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
-                    @error('name') <p class="text-rose-400 text-xs mt-1">{{ $message }}</p> @enderror
+                    <input type="text" name="name" value="<?php echo e(old('name', $product->name)); ?>" required
+                           placeholder="<?php echo e($isPharmacy ? 'Ex: Amoxicilina 500mg Cápsulas' : 'Ex: Produto A'); ?>"
+                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none">
+                    <?php $__errorArgs = ['name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <p class="text-rose-400 text-xs mt-1"><?php echo e($message); ?></p> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-300 mb-1">Categoria *</label>
-                    <select name="category_id" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
-                        @foreach ($categories as $category)
-                            <option value="{{ $category->id }}" {{ old('category_id', $product->category_id) == $category->id ? 'selected' : '' }}>
-                                {{ $category->name }}
+                    <select name="category_id" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none">
+                        <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($category->id); ?>" <?php echo e(old('category_id', $product->category_id) == $category->id ? 'selected' : ''); ?>>
+                                <?php echo e($category->name); ?>
+
                             </option>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-300 mb-1">Tipo de Artigo</label>
-                    <select name="type" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
-                        <option value="product" {{ old('type', $product->type) === 'product' ? 'selected' : '' }}>Produto Físico (com stock)</option>
-                        <option value="service" {{ old('type', $product->type) === 'service' ? 'selected' : '' }}>Serviço / Mão de Obra</option>
+                    <select name="type" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none">
+                        <option value="product" <?php echo e(old('type', $product->type) === 'product' ? 'selected' : ''); ?>>Produto Físico (com stock)</option>
+                        <option value="service" <?php echo e(old('type', $product->type) === 'service' ? 'selected' : ''); ?>>Serviço / Mão de Obra</option>
                     </select>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-300 mb-1">Código de Barras / EAN</label>
-                    <input type="text" name="barcode" value="{{ old('barcode', $product->barcode) }}" placeholder="Ex: 5601234567890"
-                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                    <input type="text" name="barcode" value="<?php echo e(old('barcode', $product->barcode)); ?>" placeholder="Ex: 5601234567890"
+                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-300 mb-1">Código Interno (SKU / Registo ANARME)</label>
-                    <input type="text" name="sku" value="{{ old('sku', $product->sku) }}" placeholder="Ex: MED-001"
-                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                    <input type="text" name="sku" value="<?php echo e(old('sku', $product->sku)); ?>" placeholder="Ex: MED-001"
+                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-300 mb-1">Preço de Compra / Custo (MT)</label>
-                    <input type="number" step="0.01" min="0" name="purchase_price" value="{{ old('purchase_price', $product->purchase_price) }}"
-                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none font-mono">
+                    <input type="number" step="0.01" min="0" name="purchase_price" value="<?php echo e(old('purchase_price', $product->purchase_price)); ?>"
+                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none font-mono">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-300 mb-1">Preço de Venda Normal (MT) *</label>
-                    <input type="number" step="0.01" min="0" name="selling_price" value="{{ old('selling_price', $product->selling_price) }}" required
-                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none font-mono font-bold">
+                    <input type="number" step="0.01" min="0" name="selling_price" value="<?php echo e(old('selling_price', $product->selling_price)); ?>" required
+                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none font-mono font-bold">
                 </div>
 
-                @if ($product->type === 'product')
+                <?php if($product->type === 'product'): ?>
                     <div>
                         <label class="block text-xs font-bold text-slate-300 mb-1">Unidade de Medida</label>
-                        <input type="text" name="unit" value="{{ old('unit', $product->unit ?? 'un') }}" placeholder="un, comprimido, frasco, cx..."
-                               class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                        <input type="text" name="unit" value="<?php echo e(old('unit', $product->unit ?? 'un')); ?>" placeholder="un, comprimido, frasco, cx..."
+                               class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none">
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-slate-300 mb-1">Stock Mínimo para Alerta *</label>
-                        <input type="number" name="min_stock_level" value="{{ old('min_stock_level', $product->min_stock_level) }}" min="0" required
-                               class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none font-mono">
+                        <input type="number" name="min_stock_level" value="<?php echo e(old('min_stock_level', $product->min_stock_level)); ?>" min="0" required
+                               class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none font-mono">
                     </div>
 
                     <div class="sm:col-span-2 p-4 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
                         <div>
                             <div class="text-xs text-slate-400 font-bold uppercase tracking-wider">Stock Disponível Atual</div>
-                            <div class="text-xl font-black font-mono text-emerald-400 mt-0.5">{{ $product->stock_quantity }} {{ $product->unit ?? 'un' }}</div>
+                            <div class="text-xl font-black font-mono text-emerald-400 mt-0.5"><?php echo e($product->stock_quantity); ?> <?php echo e($product->unit ?? 'un'); ?></div>
                         </div>
                         <button type="button" @click="showStockModal = true" class="px-4 py-2 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-400 font-bold text-xs hover:bg-amber-500/30 transition flex items-center gap-1.5">
                             <i class="fa-solid fa-boxes-packing"></i> Ajustar Inventário
                         </button>
                     </div>
-                @endif
+                <?php endif; ?>
             </div>
 
             <!-- SECÇÃO ESPECIALIZADA: PROMOÇÃO & DESCONTO AUTOMÁTICO -->
-            <div class="pt-4 border-t border-slate-800 space-y-4" x-data="{ isOnPromo: {{ old('is_on_promotion', $product->is_on_promotion) ? 'true' : 'false' }} }">
+            <div class="pt-4 border-t border-slate-800 space-y-4" x-data="{ isOnPromo: <?php echo e(old('is_on_promotion', $product->is_on_promotion) ? 'true' : 'false'); ?> }">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-sm font-bold text-white flex items-center gap-2">
@@ -151,7 +158,7 @@
                         <label class="block text-xs font-bold text-rose-400 mb-1">
                             Preço Promocional com Desconto (MT)
                         </label>
-                        <input type="number" step="0.01" name="promotional_price" value="{{ old('promotional_price', $product->promotional_price) }}"
+                        <input type="number" step="0.01" name="promotional_price" value="<?php echo e(old('promotional_price', $product->promotional_price)); ?>"
                                placeholder="Ex: 380.00"
                                class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:ring-2 focus:ring-rose-500 outline-none font-mono">
                     </div>
@@ -160,7 +167,7 @@
                         <label class="block text-xs font-bold text-rose-400 mb-1">
                             Ou % de Desconto Automático
                         </label>
-                        <input type="number" step="0.1" min="0" max="100" name="promotion_discount_percent" value="{{ old('promotion_discount_percent', $product->promotion_discount_percent) }}"
+                        <input type="number" step="0.1" min="0" max="100" name="promotion_discount_percent" value="<?php echo e(old('promotion_discount_percent', $product->promotion_discount_percent)); ?>"
                                placeholder="Ex: 15.0"
                                class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:ring-2 focus:ring-rose-500 outline-none font-mono">
                     </div>
@@ -169,7 +176,7 @@
                         <label class="block text-xs font-bold text-slate-400 mb-1">
                             Data Término da Promoção (Opcional)
                         </label>
-                        <input type="datetime-local" name="promotion_ends_at" value="{{ old('promotion_ends_at', $product->promotion_ends_at?->format('Y-m-d\TH:i')) }}"
+                        <input type="datetime-local" name="promotion_ends_at" value="<?php echo e(old('promotion_ends_at', $product->promotion_ends_at?->format('Y-m-d\TH:i'))); ?>"
                                class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:ring-2 focus:ring-rose-500 outline-none">
                     </div>
                 </div>
@@ -196,25 +203,25 @@
                         <label class="block text-xs font-bold text-emerald-400 mb-1">
                             Número do Lote (Batch Number) *
                         </label>
-                        <input type="text" name="batch_number" value="{{ old('batch_number', $latestBatch?->batch_number) }}"
+                        <input type="text" name="batch_number" value="<?php echo e(old('batch_number', $latestBatch?->batch_number)); ?>"
                                placeholder="Ex: LT-2026/09A"
-                               class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                               class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none">
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-emerald-400 mb-1">
                             Data de Validade (Expiry Date) *
                         </label>
-                        <input type="date" name="expiry_date" value="{{ old('expiry_date', $latestBatch?->expiry_date?->format('Y-m-d')) }}"
-                               class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                        <input type="date" name="expiry_date" value="<?php echo e(old('expiry_date', $latestBatch?->expiry_date?->format('Y-m-d'))); ?>"
+                               class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none">
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-slate-400 mb-1">
                             Data de Fabrico (Opcional)
                         </label>
-                        <input type="date" name="manufacture_date" value="{{ old('manufacture_date', $latestBatch?->manufacture_date?->format('Y-m-d')) }}"
-                               class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                        <input type="date" name="manufacture_date" value="<?php echo e(old('manufacture_date', $latestBatch?->manufacture_date?->format('Y-m-d'))); ?>"
+                               class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none">
                     </div>
 
                     <div class="flex items-center pt-5">
@@ -234,30 +241,30 @@
                     </label>
                     <select name="linked_product_id" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-white text-xs">
                         <option value="">Nenhum vínculo (reduz o próprio item)</option>
-                        @foreach ($physicalProducts as $p)
-                            <option value="{{ $p->id }}" {{ old('linked_product_id', $product->linked_product_id) == $p->id ? 'selected' : '' }}>
-                                {{ $p->name }} (Stock: {{ $p->stock_quantity }} {{ $p->unit }})
+                        <?php $__currentLoopData = $physicalProducts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $p): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($p->id); ?>" <?php echo e(old('linked_product_id', $product->linked_product_id) == $p->id ? 'selected' : ''); ?>>
+                                <?php echo e($p->name); ?> (Stock: <?php echo e($p->stock_quantity); ?> <?php echo e($p->unit); ?>)
                             </option>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Descrição / Posologia / Detalhes</label>
-                    <textarea name="description" rows="3" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500">{{ old('description', $product->description) }}</textarea>
+                    <textarea name="description" rows="3" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500"><?php echo e(old('description', $product->description)); ?></textarea>
                 </div>
 
                 <div>
                     <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
-                        <input type="checkbox" name="is_active" value="1" {{ old('is_active', $product->is_active) ? 'checked' : '' }} class="rounded bg-slate-950 border-slate-800 text-emerald-500">
+                        <input type="checkbox" name="is_active" value="1" <?php echo e(old('is_active', $product->is_active) ? 'checked' : ''); ?> class="rounded bg-slate-950 border-slate-800 text-emerald-500">
                         <span>Item Ativo para Vendas e Prescrições</span>
                     </label>
                 </div>
             </div>
 
             <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
-                <a href="{{ route('products.index') }}" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">Cancelar</a>
-                <button type="submit" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition">
+                <a href="<?php echo e(route('products.index')); ?>" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">Cancelar</a>
+                <button type="submit" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition">
                     Guardar Alterações
                 </button>
             </div>
@@ -265,16 +272,16 @@
     </div>
 
     <!-- Modal Ajustar Stock -->
-    @if ($product->type === 'product')
+    <?php if($product->type === 'product'): ?>
         <div x-cloak x-show="showStockModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
             <div @click.away="showStockModal = false" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <h3 class="text-sm font-black text-white font-heading">Ajustar Inventário: {{ $product->name }}</h3>
+                    <h3 class="text-sm font-black text-white font-heading">Ajustar Inventário: <?php echo e($product->name); ?></h3>
                     <button @click="showStockModal = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
                 </div>
 
-                <form method="POST" action="{{ route('products.adjust-stock', $product->id) }}" class="space-y-4">
-                    @csrf
+                <form method="POST" action="<?php echo e(route('products.adjust-stock', $product->id)); ?>" class="space-y-4">
+                    <?php echo csrf_field(); ?>
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Operação *</label>
                         <select name="adjustment_type" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs">
@@ -295,12 +302,14 @@
 
                     <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
                         <button type="button" @click="showStockModal = false" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold">Cancelar</button>
-                        <button type="submit" class="px-5 py-2 rounded-xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs">Confirmar Ajuste</button>
+                        <button type="submit" class="px-5 py-2 rounded-xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-black text-xs">Confirmar Ajuste</button>
                     </div>
                 </form>
             </div>
         </div>
-    @endif
+    <?php endif; ?>
 
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /home/fdev-ms/Filipe/ZBIZ_PLUS/resources/views/products/edit.blade.php ENDPATH**/ ?>

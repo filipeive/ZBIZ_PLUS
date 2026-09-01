@@ -6,6 +6,7 @@ use App\Models\Sale;
 use App\Models\Debt;
 use App\Models\DebtItem;
 use App\Models\Product;
+use App\Models\Customer;
 use App\Models\SaleItem;
 use App\Models\StockMovement;
 use App\Services\DiscountService;
@@ -79,22 +80,33 @@ class SaleController extends Controller
 
     public function create()
     {
-        $products = Product::where('is_active', true)
-                          ->with('category')
-                          ->orderBy('name')
-                          ->get();
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+        $products = Product::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('is_active', true)
+            ->with('category')
+            ->orderBy('name')
+            ->get();
+        $customers = Customer::where('tenant_id', $tenantId)->orderBy('name')->get();
         
-        return view('sales.create', compact('products'));
+        return view('sales.create', compact('products', 'customers'));
     }
 
     public function manualCreate()
     {
-        $products = Product::where('is_active', true)
-                          ->with('category')
-                          ->orderBy('name')
-                          ->get();
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+        $branchId = current_branch_id() ?? auth()->user()?->branch_id;
+
+        $products = Product::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('is_active', true)
+            ->with('category')
+            ->orderBy('name')
+            ->get();
+
+        $customers = Customer::where('tenant_id', $tenantId)->orderBy('name')->get();
         
-        return view('sales.manual-create', compact('products'));
+        return view('sales.manual-create', compact('products', 'customers'));
     }
    
     /**
@@ -105,7 +117,7 @@ class SaleController extends Controller
         $validated = $request->validate([
             'customer_name' => 'nullable|string|max:100',
             'customer_phone' => 'nullable|string|max:20',
-            'payment_method' => 'required|in:cash,card,transfer,credit',
+            'payment_method' => 'required|in:cash,card,transfer,credit,mpesa,emola,split',
             'notes' => 'nullable|string|max:500',
             'items' => 'required|string',
             'sale_date' => 'nullable|date',

@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     <title>ZBIZ+ POS 2.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -29,8 +29,7 @@
     </style>
 </head>
 <body class="bg-gray-100 h-screen flex flex-col overflow-hidden select-none"
-      x-data="posApp()"
-      x-init="init()"
+      x-data="posApp"
       @keydown.window="handleShortcuts($event)">
 
     <!-- Top Bar -->
@@ -75,18 +74,54 @@
         <div class="w-3/5 flex flex-col border-r border-gray-300 bg-white">
             
             <!-- Search & Filter Bar -->
-            <div class="p-3 border-b border-gray-200 bg-slate-50 flex items-center gap-2">
-                <div class="relative flex-1">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                        <i class="fa-solid fa-barcode"></i>
-                    </span>
-                    <input type="text"
-                           x-ref="searchInput"
-                           x-model="searchQuery"
-                           @input.debounce.250ms="searchProducts()"
-                           @keydown.enter="handleBarcodeScan()"
-                           placeholder="[F2] Ler Código de Barras ou Buscar Produto..."
-                           class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none shadow-sm">
+            <div class="p-3 border-b border-gray-200 bg-slate-50 flex flex-col gap-2">
+                <div class="flex items-center gap-2">
+                    <div class="relative flex-1">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                            <i class="fa-solid fa-barcode"></i>
+                        </span>
+                        <input type="text"
+                               x-ref="searchInput"
+                               x-model="searchQuery"
+                               @input.debounce.250ms="searchProducts()"
+                               @keydown.enter="handleBarcodeScan()"
+                               placeholder="[F2] Ler Código de Barras, SKU ou Nome do Artigo..."
+                               class="w-full pl-10 pr-9 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none shadow-sm font-medium">
+                        <button x-show="searchQuery.length > 0"
+                                @click="searchQuery = ''; searchProducts(); $refs.searchInput.focus()"
+                                type="button"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
+                            <i class="fa-solid fa-circle-xmark text-sm"></i>
+                        </button>
+                    </div>
+
+                    <!-- Type Filter Tabs (Inspirado no ReproSys) -->
+                    <div class="flex items-center bg-gray-200/80 p-1 rounded-lg text-xs font-bold space-x-1">
+                        <button @click="selectedType = 'all'; searchProducts()"
+                                :class="selectedType === 'all' ? 'bg-slate-900 text-white shadow' : 'text-gray-600 hover:text-gray-900'"
+                                class="px-2.5 py-1.5 rounded-md transition flex items-center gap-1">
+                            <i class="fa-solid fa-border-all text-[10px]"></i>
+                            <span>Todos</span>
+                        </button>
+                        <button @click="selectedType = 'physical'; searchProducts()"
+                                :class="selectedType === 'physical' ? 'bg-emerald-600 text-white shadow' : 'text-gray-600 hover:text-gray-900'"
+                                class="px-2.5 py-1.5 rounded-md transition flex items-center gap-1">
+                            <i class="fa-solid fa-box text-[10px]"></i>
+                            <span>Produtos</span>
+                        </button>
+                        <button @click="selectedType = 'service'; searchProducts()"
+                                :class="selectedType === 'service' ? 'bg-violet-600 text-white shadow' : 'text-gray-600 hover:text-gray-900'"
+                                class="px-2.5 py-1.5 rounded-md transition flex items-center gap-1">
+                            <i class="fa-solid fa-screwdriver-wrench text-[10px]"></i>
+                            <span>Serviços</span>
+                        </button>
+                        <button @click="selectedType = 'low-stock'; searchProducts()"
+                                :class="selectedType === 'low-stock' ? 'bg-rose-600 text-white shadow' : 'text-gray-600 hover:text-gray-900'"
+                                class="px-2.5 py-1.5 rounded-md transition flex items-center gap-1">
+                            <i class="fa-solid fa-triangle-exclamation text-[10px]"></i>
+                            <span>Stock Baixo</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -94,8 +129,9 @@
             <div class="flex overflow-x-auto p-2 bg-gray-100 gap-1 border-b border-gray-200 scrollbar-thin">
                 <button @click="selectedCategory = null; searchProducts()"
                         :class="selectedCategory === null ? 'bg-slate-900 text-white' : 'bg-white text-gray-700 hover:bg-gray-200'"
-                        class="px-3 py-1.5 rounded text-xs font-semibold whitespace-nowrap transition shadow-sm">
-                    Todos
+                        class="px-3 py-1.5 rounded text-xs font-semibold whitespace-nowrap transition shadow-sm flex items-center gap-1">
+                    <i class="fa-solid fa-layer-group text-[10px]"></i>
+                    <span>Todas Categorias</span>
                 </button>
                 <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <button @click="selectedCategory = <?php echo e($cat->id); ?>; searchProducts()"
@@ -109,21 +145,71 @@
 
             <!-- Products Grid -->
             <div class="flex-1 overflow-y-auto p-3 grid grid-cols-3 gap-2.5 content-start">
+                <template x-if="isLoading">
+                    <div class="col-span-3 flex items-center justify-center py-12 text-slate-400 gap-2">
+                        <i class="fa-solid fa-circle-notch animate-spin text-emerald-500 text-lg"></i>
+                        <span class="text-xs font-semibold">Carregando catálogo da loja...</span>
+                    </div>
+                </template>
+
+                <template x-if="!isLoading && products.length === 0">
+                    <div class="col-span-3 flex flex-col items-center justify-center py-12 text-slate-400">
+                        <i class="fa-solid fa-box-open text-3xl mb-2 text-slate-300"></i>
+                        <p class="text-xs font-semibold">Nenhum artigo ou serviço encontrado para esta seleção.</p>
+                        <button @click="selectedType = 'all'; selectedCategory = null; searchQuery = ''; searchProducts()"
+                                class="mt-2 text-xs text-emerald-600 font-bold hover:underline">
+                            Limpar Filtros e Ver Todos
+                        </button>
+                    </div>
+                </template>
+
                 <template x-for="product in products" :key="product.id">
                     <div @click="addToCart(product)"
-                         class="bg-white border border-gray-200 hover:border-emerald-500 hover:shadow-md p-3 rounded-lg cursor-pointer transition flex flex-col justify-between h-28 group relative">
+                         class="bg-white border border-gray-200 hover:border-emerald-500 hover:shadow-md p-3 rounded-lg cursor-pointer transition flex flex-col justify-between h-28 group relative overflow-hidden">
+                        
+                        <!-- Promo Ribbon Badge -->
+                        <template x-if="product.is_on_promotion">
+                            <span class="absolute top-0 right-0 bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-bl shadow-sm flex items-center gap-0.5">
+                                <i class="fa-solid fa-tag text-[7px]"></i>
+                                <span x-text="product.discount_percent > 0 ? '-' + product.discount_percent + '%' : 'PROMO'"></span>
+                            </span>
+                        </template>
+
                         <div>
                             <div class="text-xs font-bold text-gray-800 line-clamp-2 group-hover:text-emerald-600" x-text="product.name"></div>
-                            <div class="text-[10px] text-gray-400" x-text="product.category_name"></div>
+                            <div class="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
+                                <i :class="product.type === 'service' ? 'fa-solid fa-tools text-violet-500' : 'fa-solid fa-box text-sky-500'" class="text-[9px]"></i>
+                                <span x-text="product.category_name"></span>
+                            </div>
                         </div>
                         <div class="flex items-end justify-between mt-2">
-                            <span class="text-sm font-black text-slate-900" x-text="formatCurrency(product.selling_price)"></span>
+                            <div class="flex flex-col">
+                                <template x-if="product.is_on_promotion">
+                                    <span class="text-[10px] text-gray-400 line-through leading-none font-semibold" x-text="formatCurrency(product.original_price)"></span>
+                                </template>
+                                <span class="text-sm font-black" :class="product.is_on_promotion ? 'text-rose-600' : 'text-slate-900'" x-text="formatCurrency(product.selling_price)"></span>
+                            </div>
                             <span class="text-[10px] px-1.5 py-0.5 rounded font-bold"
-                                  :class="product.stock_quantity > product.min_stock_level ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'"
-                                  x-text="'Qtd: ' + product.stock_quantity"></span>
+                                  :class="product.type === 'service' ? 'bg-violet-100 text-violet-700' : (product.stock_quantity > product.min_stock_level ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700')"
+                                  x-text="product.type === 'service' ? 'Serviço' : 'Qtd: ' + product.stock_quantity"></span>
                         </div>
                     </div>
                 </template>
+            </div>
+
+            <!-- Footer Catalog Summary Bar (Inspirado no ReproSys) -->
+            <div class="p-2.5 bg-slate-100 border-t border-gray-200 flex items-center justify-between text-[11px] text-gray-600 font-medium">
+                <div class="flex items-center gap-3">
+                    <span>Total listado: <strong class="text-slate-900 font-bold" x-text="products.length"></strong></span>
+                    <span class="text-gray-300">|</span>
+                    <span>Produtos: <strong class="text-emerald-700 font-bold" x-text="products.filter(p => p.type !== 'service').length"></strong></span>
+                    <span class="text-gray-300">|</span>
+                    <span>Serviços: <strong class="text-violet-700 font-bold" x-text="products.filter(p => p.type === 'service').length"></strong></span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-[10px] font-bold text-slate-500">Catálogo Sincronizado</span>
+                </div>
             </div>
         </div>
 
@@ -176,14 +262,41 @@
             </div>
 
             <!-- Cart Summary & Actions -->
-            <div class="bg-white p-4 border-t border-gray-200 shadow-lg space-y-3">
-                <div class="space-y-1 text-xs">
+            <!-- Cart Summary & Actions -->
+            <div class="bg-white p-4 border-t border-gray-200 shadow-lg space-y-3" x-data="{ showDiscountBox: false }">
+                
+                <!-- Quick Discount Toggle -->
+                <div class="flex items-center justify-between">
+                    <button type="button" @click="showDiscountBox = !showDiscountBox" class="text-xs font-bold text-slate-600 hover:text-emerald-600 flex items-center gap-1">
+                        <i class="fa-solid fa-percent text-[10px]"></i>
+                        <span>Aplicar Desconto</span>
+                        <i class="fa-solid fa-chevron-down text-[9px] ml-0.5" :class="showDiscountBox ? 'rotate-180' : ''"></i>
+                    </button>
+                    <span x-show="discountAmount > 0" class="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded" x-text="'- ' + formatCurrency(discountAmount)"></span>
+                </div>
+
+                <!-- Discount Box (Inspirado no ReproSys) -->
+                <div x-show="showDiscountBox" x-cloak class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" @click="discountAmount = Math.round(subtotal * 0.05)" class="px-2 py-1 bg-white hover:bg-slate-200 border rounded text-[11px] font-bold">5%</button>
+                        <button type="button" @click="discountAmount = Math.round(subtotal * 0.10)" class="px-2 py-1 bg-white hover:bg-slate-200 border rounded text-[11px] font-bold">10%</button>
+                        <button type="button" @click="discountAmount = Math.round(subtotal * 0.15)" class="px-2 py-1 bg-white hover:bg-slate-200 border rounded text-[11px] font-bold">15%</button>
+                        <button type="button" @click="discountAmount = 0" class="px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 rounded text-[11px] font-bold">Zerar</button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="text-[11px] font-bold text-gray-500 whitespace-nowrap">Valor Fixo (MT):</label>
+                        <input type="number" step="5" min="0" :max="subtotal" x-model.number="discountAmount"
+                               class="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs font-bold text-right outline-none">
+                    </div>
+                </div>
+
+                <div class="space-y-1 text-xs pt-1 border-t border-gray-100">
                     <div class="flex justify-between text-gray-500">
                         <span>Subtotal:</span>
                         <span class="font-bold" x-text="formatCurrency(subtotal)"></span>
                     </div>
                     <div class="flex justify-between text-gray-500" x-show="discountAmount > 0">
-                        <span>Desconto [F7]:</span>
+                        <span>Desconto Aplicado:</span>
                         <span class="font-bold text-rose-600" x-text="'- ' + formatCurrency(discountAmount)"></span>
                     </div>
                     <div class="flex justify-between text-base font-black text-slate-900 pt-1 border-t border-gray-200">
@@ -218,7 +331,7 @@
             </div>
 
             <div class="text-center py-2 bg-emerald-50 rounded-lg border border-emerald-200">
-                <div class="text-xs text-emerald-800 font-semibold">Valor Total a Pagar</div>
+                <div class="text-xs text-emerald-800 font-semibold">Valor Total Líquido</div>
                 <div class="text-2xl font-black text-emerald-600" x-text="formatCurrency(totalAmount)"></div>
             </div>
 
@@ -227,23 +340,58 @@
                 <label class="text-xs font-bold text-gray-700">Forma de Pagamento:</label>
                 <div class="grid grid-cols-4 gap-2">
                     <button type="button" @click="paymentMethod = 'cash'; amountPaid = totalAmount"
-                            :class="paymentMethod === 'cash' ? 'bg-slate-900 text-white' : 'bg-gray-100 text-gray-700'"
+                            :class="paymentMethod === 'cash' ? 'bg-slate-900 text-white shadow' : 'bg-gray-100 text-gray-700'"
                             class="py-2 rounded text-xs font-bold border transition">Dinheiro</button>
                     <button type="button" @click="paymentMethod = 'mpesa'; amountPaid = totalAmount"
-                            :class="paymentMethod === 'mpesa' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'"
+                            :class="paymentMethod === 'mpesa' ? 'bg-red-600 text-white shadow' : 'bg-gray-100 text-gray-700'"
                             class="py-2 rounded text-xs font-bold border transition">M-Pesa</button>
                     <button type="button" @click="paymentMethod = 'card'; amountPaid = totalAmount"
-                            :class="paymentMethod === 'card' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'"
+                            :class="paymentMethod === 'card' ? 'bg-blue-600 text-white shadow' : 'bg-gray-100 text-gray-700'"
                             class="py-2 rounded text-xs font-bold border transition">Cartão</button>
                     <button type="button" @click="paymentMethod = 'credit'; amountPaid = 0"
-                            :class="paymentMethod === 'credit' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700'"
-                            class="py-2 rounded text-xs font-bold border transition">Fiado</button>
+                            :class="paymentMethod === 'credit' ? 'bg-amber-600 text-white shadow' : 'bg-gray-100 text-gray-700'"
+                            class="py-2 rounded text-xs font-bold border transition">Fiado (Dívida)</button>
                 </div>
             </div>
 
-            <!-- Amount Paid / Change -->
+            <!-- Credit / Fiado Validation & Downpayment -->
+            <div x-show="paymentMethod === 'credit'" class="p-3 bg-amber-50 border border-amber-200 rounded-lg space-y-2">
+                <div class="flex items-center gap-2 text-xs font-bold text-amber-900">
+                    <i class="fa-solid fa-hand-holding-dollar text-amber-600"></i>
+                    <span>Venda a Crédito / Fiado</span>
+                </div>
+                
+                <template x-if="!customer">
+                    <div class="space-y-1.5">
+                        <p class="text-[11px] text-amber-800 font-semibold">⚠️ É obrigatório associar um cliente registrado para conceder crédito.</p>
+                        <button type="button" @click="showCheckoutModal = false; showCustomerModal = true"
+                                class="w-full py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs font-bold">
+                            [F4] Selecionar Cliente Agora
+                        </button>
+                    </div>
+                </template>
+
+                <template x-if="customer">
+                    <div class="space-y-2">
+                        <div class="text-[11px] text-gray-700">
+                            Cliente: <strong class="text-slate-900" x-text="customer.name"></strong>
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600">Entrada / Valor Pago Agora (MT):</label>
+                            <input type="number" step="10" min="0" :max="totalAmount" x-model.number="amountPaid"
+                                   class="w-full px-2.5 py-1.5 bg-white border border-amber-300 rounded text-sm font-bold text-right outline-none">
+                        </div>
+                        <div class="flex justify-between text-xs font-bold text-amber-900 pt-1">
+                            <span>Saldo Restante a Cobrar:</span>
+                            <span x-text="formatCurrency(Math.max(0, totalAmount - amountPaid))"></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Amount Paid / Change (Cash) -->
             <div class="space-y-2" x-show="paymentMethod === 'cash'">
-                <label class="text-xs font-bold text-gray-700">Valor Entregue (MT):</label>
+                <label class="text-xs font-bold text-gray-700">Valor Entregue pelo Cliente (MT):</label>
                 <input type="number" step="10" x-model.number="amountPaid"
                        class="w-full px-3 py-2 border rounded-lg text-lg font-bold text-right outline-none focus:ring-2 focus:ring-emerald-500">
                 <div class="flex justify-between text-sm font-bold pt-1">
@@ -253,8 +401,8 @@
             </div>
 
             <button @click="submitSale()"
-                    :disabled="isSubmitting"
-                    class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-black text-base shadow-lg transition">
+                    :disabled="isSubmitting || (paymentMethod === 'credit' && !customer)"
+                    class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg font-black text-base shadow-lg transition">
                 <span x-show="!isSubmitting">CONFIRMAR E IMPRIMIR RECIBO</span>
                 <span x-show="isSubmitting"><i class="fa-solid fa-spinner animate-spin mr-2"></i>Processando...</span>
             </button>
@@ -285,12 +433,13 @@
 
     <!-- Alpine POS Logic -->
     <script>
-        function posApp() {
-            return {
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('posApp', () => ({
                 isOnline: navigator.onLine,
                 searchQuery: '',
                 selectedCategory: null,
-                products: [],
+                selectedType: 'all',
+                products: <?php echo json_encode($initialProducts ?? [], 15, 512) ?>,
                 cart: [],
                 customer: null,
                 discountAmount: 0,
@@ -299,6 +448,7 @@
                 showCheckoutModal: false,
                 showCustomerModal: false,
                 isSubmitting: false,
+                isLoading: false,
                 offlineQueue: JSON.parse(localStorage.getItem('zbiz_pos_offline_queue') || '[]'),
 
                 init() {
@@ -321,10 +471,12 @@
                 },
 
                 async searchProducts() {
+                    this.isLoading = true;
                     try {
                         const params = new URLSearchParams({
                             q: this.searchQuery,
-                            category_id: this.selectedCategory || ''
+                            category_id: this.selectedCategory || '',
+                            type: this.selectedType || 'all'
                         });
                         const res = await fetch(`/pos/search?${params}`);
                         const data = await res.json();
@@ -333,6 +485,8 @@
                         }
                     } catch (e) {
                         console.warn('Busca offline ou falha:', e);
+                    } finally {
+                        this.isLoading = false;
                     }
                 },
 
@@ -534,9 +688,10 @@
                         this.notifyError('Erro de Sync', 'Não foi possível sincronizar as vendas offline no momento.');
                     }
                 }
-            };
-        }
+            }));
+        });
     </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
 </body>
 </html>
 <?php /**PATH /home/fdev-ms/Filipe/ZBIZ_PLUS/resources/views/pos/index.blade.php ENDPATH**/ ?>

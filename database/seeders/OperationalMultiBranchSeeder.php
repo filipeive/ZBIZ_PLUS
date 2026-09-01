@@ -631,6 +631,9 @@ class OperationalMultiBranchSeeder extends Seeder
                     'sku' => 'TSH-WHT-G',
                     'purchase_price' => 250.00,
                     'selling_price' => 450.00,
+                    'promotional_price' => 380.00,
+                    'is_on_promotion' => true,
+                    'promotion_discount_percent' => 15.56,
                     'stock_quantity' => 50,
                     'min_stock_level' => 10,
                     'type' => 'physical',
@@ -730,17 +733,6 @@ class OperationalMultiBranchSeeder extends Seeder
                     'phone' => '+258 84 111 2233',
                     'nuit' => '500123456',
                     'address' => 'Campus Universitário, Quelimane',
-                    'is_active' => true,
-                ]
-            );
-
-            $clienteMunicipio = Customer::firstOrCreate(
-                ['tenant_id' => $tenantC->id, 'email' => 'financas@municipioquelimane.gov.mz'],
-                [
-                    'name' => 'Conselho Municipal da Cidade de Quelimane',
-                    'phone' => '+258 82 333 4455',
-                    'nuit' => '400555666',
-                    'address' => 'Praça dos Heróis, Quelimane',
                     'is_active' => true,
                 ]
             );

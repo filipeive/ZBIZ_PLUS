@@ -6,6 +6,21 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
+## [1.0.11] - 2026-09-01 - Redesign Moderno de Venda Manual & Motor de Descontos Promocionais Automáticos e Manuais
+### Added
+- **Design Moderno e Responsivo da Venda Manual (`sales/manual-create.blade.php`):**
+  - Interface construída com Tailwind CSS + Alpine.js, alinhada ao visual dark-mode e branding setorial do ZBIZ+.
+  - Seletor rápido de catálogo com busca, estoque em tempo real e detecção de promoções ativas.
+  - Edição de linhas livres, preços customizados, descontos por linha e desconto global (% ou valor fixo em MT).
+  - Suporte completo a múltiplos meios de pagamento (Dinheiro, M-Pesa, Cartão POS e Venda a Crédito/Fiado com validação).
+- **Motor de Descontos Promocionais Automáticos (`Product.php`, `ProductController.php` & `POSController.php`):**
+  - Adicionadas colunas `promotional_price`, `is_on_promotion`, `promotion_discount_percent` e `promotion_ends_at` na tabela `products`.
+  - Novos métodos no Model `Product`: `isOnPromotion()`, `effective_price`, `automatic_unit_discount` e `automatic_discount_percent`.
+  - Exibição de badge `PROMO -X%` e preço de tabela riscado nos cards do POS 2.0 e dropdown da Venda Manual.
+  - Aplicação automática do desconto promocional no carrinho do POS e no formulário de Venda Manual, mantendo a flexibilidade de aplicar descontos adicionais manualmente.
+
+---
+
 ## [1.0.10] - 2026-09-01 - Menu Lateral Dinâmico por Setor, Upload de Logotipo e Cor da Marca, Filtro de Serviços no Catálogo e Venda Manual
 ### Added
 - **Menu Lateral Adaptativo por Setor (`layouts/app.blade.php` & `tenancy.php`):**

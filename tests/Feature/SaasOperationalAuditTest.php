@@ -284,4 +284,51 @@ class SaasOperationalAuditTest extends TestCase
             'name' => 'FDS Multiservices Lda.',
         ]);
     }
+
+    public function test_manual_sale_and_promotional_discount_operates_correctly()
+    {
+        $this->seed(\Database\Seeders\OperationalMultiBranchSeeder::class);
+
+        $filipeOwner = User::where('email', 'filipe.santos@fdsmultiservices.com')->firstOrFail();
+
+        // 1. Acessa tela de Venda Manual estilizada
+        $manualSaleView = $this->actingAs($filipeOwner)->get(route('sales.manual-create'));
+        $manualSaleView->assertStatus(200);
+        $manualSaleView->assertSeeText('Formulário de Venda Manual');
+        $manualSaleView->assertSee('Camiseta Algodão Básica Branca');
+
+        // 2. Produto com promoção ativa
+        $promoProduct = Product::where('barcode', 'FDS-TSH-WHT-G')->firstOrFail();
+        $this->assertTrue($promoProduct->isOnPromotion());
+        $this->assertEquals(380.00, $promoProduct->effective_price);
+        $this->assertEquals(70.00, $promoProduct->automatic_unit_discount);
+
+        // 3. Submeter Venda Manual com desconto promocional e pagamento M-Pesa
+        $itemsPayload = json_encode([
+            [
+                'product_id'   => $promoProduct->id,
+                'product_name' => $promoProduct->name,
+                'quantity'     => 2,
+                'unit_price'   => 380.00,
+                'discount'     => 140.00,
+                'total_price'  => 760.00,
+            ]
+        ]);
+
+        $saleResp = $this->actingAs($filipeOwner)->post(route('sales.store'), [
+            'customer_name'  => 'Cliente Empresa Especial',
+            'customer_phone' => '+258 84 111 2222',
+            'payment_method' => 'mpesa',
+            'notes'          => 'Venda manual com desconto de promoção aplicado',
+            'items'          => $itemsPayload,
+            'sale_date'      => now()->format('Y-m-d H:i:s'),
+        ]);
+
+        $saleResp->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('sales', [
+            'tenant_id'      => $filipeOwner->tenant_id,
+            'customer_name'  => 'Cliente Empresa Especial',
+            'payment_method' => 'mpesa',
+        ]);
+    }
 }

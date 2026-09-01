@@ -73,7 +73,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1">Preço de Venda ao Público (MT) *</label>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Preço de Venda Normal (MT) *</label>
                     <input type="number" step="0.01" name="selling_price" value="<?php echo e(old('selling_price')); ?>" required
                            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none">
                 </div>
@@ -88,6 +88,51 @@
                     <label class="block text-xs font-bold text-slate-300 mb-1">Stock Mínimo para Alerta</label>
                     <input type="number" name="min_stock_level" value="<?php echo e(old('min_stock_level', 5)); ?>"
                            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none">
+                </div>
+            </div>
+
+            <!-- SECÇÃO ESPECIALIZADA: PROMOÇÃO & DESCONTO AUTOMÁTICO -->
+            <div class="pt-4 border-t border-slate-800 space-y-4" x-data="{ isOnPromo: <?php echo e(old('is_on_promotion') ? 'true' : 'false'); ?> }">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-tags text-rose-400"></i> Campanha Promocional & Desconto Automático
+                        </h3>
+                        <p class="text-[11px] text-slate-400">O sistema aplicará o desconto automaticamente nas frentes de caixa e vendas manuais.</p>
+                    </div>
+
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="is_on_promotion" value="1" x-model="isOnPromo" class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-500"></div>
+                    </label>
+                </div>
+
+                <div x-show="isOnPromo" x-transition class="p-5 rounded-2xl bg-slate-950/80 border border-rose-500/20 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-rose-400 mb-1">
+                            Preço Promocional com Desconto (MT)
+                        </label>
+                        <input type="number" step="0.01" name="promotional_price" value="<?php echo e(old('promotional_price')); ?>"
+                               placeholder="Ex: 380.00"
+                               class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:ring-2 focus:ring-rose-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-rose-400 mb-1">
+                            Ou % de Desconto Automático
+                        </label>
+                        <input type="number" step="0.1" min="0" max="100" name="promotion_discount_percent" value="<?php echo e(old('promotion_discount_percent')); ?>"
+                               placeholder="Ex: 15.0"
+                               class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:ring-2 focus:ring-rose-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-1">
+                            Data Término da Promoção (Opcional)
+                        </label>
+                        <input type="datetime-local" name="promotion_ends_at" value="<?php echo e(old('promotion_ends_at')); ?>"
+                               class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:ring-2 focus:ring-rose-500 outline-none">
+                    </div>
                 </div>
             </div>
 

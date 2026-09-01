@@ -18,16 +18,73 @@ class Product extends Model
     protected $fillable = [
         'tenant_id', 'branch_id',
         'category_id', 'linked_product_id', 'barcode', 'sku', 'name', 'description', 'type', 
-        'purchase_price', 'selling_price', 'stock_quantity',
-        'min_stock_level', 'unit', 'is_active',
-        'deleted_at','original_name',
+        'purchase_price', 'selling_price', 'promotional_price', 'is_on_promotion', 'promotion_discount_percent', 'promotion_ends_at',
+        'stock_quantity', 'min_stock_level', 'unit', 'is_active',
+        'deleted_at', 'original_name',
     ];
 
     protected $casts = [
-        'purchase_price' => 'decimal:2',
-        'selling_price' => 'decimal:2',
-        'is_active' => 'boolean',
+        'purchase_price'              => 'decimal:2',
+        'selling_price'               => 'decimal:2',
+        'promotional_price'           => 'decimal:2',
+        'is_on_promotion'             => 'boolean',
+        'promotion_discount_percent'  => 'decimal:2',
+        'promotion_ends_at'           => 'datetime',
+        'is_active'                   => 'boolean',
     ];
+
+    /**
+     * Verifica se o produto está atualmente com promoção ativa.
+     */
+    public function isOnPromotion(): bool
+    {
+        if (!$this->is_on_promotion) {
+            return false;
+        }
+
+        if ($this->promotion_ends_at && $this->promotion_ends_at->isPast()) {
+            return false;
+        }
+
+        return ($this->promotional_price !== null && $this->promotional_price < $this->selling_price)
+            || ($this->promotion_discount_percent !== null && $this->promotion_discount_percent > 0);
+    }
+
+    /**
+     * Retorna o preço de venda efetivo (com promoção se ativa).
+     */
+    public function getEffectivePriceAttribute(): float
+    {
+        if ($this->isOnPromotion()) {
+            if ($this->promotional_price !== null && $this->promotional_price > 0) {
+                return (float)$this->promotional_price;
+            }
+            if ($this->promotion_discount_percent !== null && $this->promotion_discount_percent > 0) {
+                $discount = (float)$this->selling_price * ((float)$this->promotion_discount_percent / 100);
+                return max(0, (float)$this->selling_price - $discount);
+            }
+        }
+        return (float)$this->selling_price;
+    }
+
+    /**
+     * Retorna o valor do desconto unitário automático em MT.
+     */
+    public function getAutomaticUnitDiscountAttribute(): float
+    {
+        return max(0, (float)$this->selling_price - (float)$this->effective_price);
+    }
+
+    /**
+     * Retorna a percentagem do desconto promocional.
+     */
+    public function getAutomaticDiscountPercentAttribute(): float
+    {
+        if ((float)$this->selling_price <= 0 || !$this->isOnPromotion()) {
+            return 0;
+        }
+        return round(($this->automatic_unit_discount / (float)$this->selling_price) * 100, 1);
+    }
 
     
     

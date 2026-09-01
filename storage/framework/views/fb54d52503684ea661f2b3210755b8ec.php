@@ -1,29 +1,137 @@
-<?php $__env->startSection('title', 'Produtos & Medicamentos'); ?>
-<?php $__env->startSection('page-title', 'Catálogo de Produtos & Medicamentos'); ?>
+<?php $__env->startSection('title', $theme['catalog_title'] ?? 'Produtos & Catálogo'); ?>
+<?php $__env->startSection('page-title', $theme['catalog_title'] ?? 'Catálogo de Produtos & Serviços'); ?>
 
 <?php
     $theme = tenant_theme();
     $isPharmacy = current_tenant()?->isPharmacy() ?? false;
+    $hasServices = $theme['has_services'] ?? false;
+    $currentType = request('type', 'all');
 ?>
 
 <?php $__env->startSection('content'); ?>
-<div class="space-y-6" x-data="{ search: '' }">
+<div class="space-y-6">
     
-    <!-- Top Action Bar -->
-    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
-        <div class="flex-1 max-w-md w-full relative">
-            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 text-sm">
-                <i class="fa-solid fa-magnifying-glass"></i>
-            </span>
-            <input type="text" x-model="search" placeholder="Buscar por nome, código de barras, SKU ou lote..."
-                   class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-600 focus:ring-2 <?php echo e($theme['ring']); ?> outline-none">
-        </div>
+    <!-- Top Action & Search Bar -->
+    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
+        <form method="GET" action="<?php echo e(route('products.index')); ?>" class="flex flex-col sm:flex-row items-center gap-3 w-full lg:max-w-3xl">
+            <input type="hidden" name="type" value="<?php echo e(request('type')); ?>">
+            <div class="relative flex-1 w-full">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 text-sm">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" name="search" value="<?php echo e(request('search')); ?>" placeholder="Buscar por nome, código de barras, SKU..."
+                       class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-600 focus:ring-2 <?php echo e($theme['ring']); ?> outline-none">
+            </div>
 
-        <div class="flex items-center gap-3 w-full md:w-auto">
+            <select name="category_id" onchange="this.form.submit()" class="w-full sm:w-48 px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none">
+                <option value="">Todas as Categorias</option>
+                <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <option value="<?php echo e($cat->id); ?>" <?php echo e(request('category_id') == $cat->id ? 'selected' : ''); ?>>
+                        <?php echo e($cat->name); ?>
+
+                    </option>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </select>
+
+            <button type="submit" class="w-full sm:w-auto px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition">
+                Filtrar
+            </button>
+            <?php if(request()->hasAny(['search', 'category_id', 'status', 'type'])): ?>
+                <a href="<?php echo e(route('products.index')); ?>" class="px-3 py-2.5 bg-slate-800/60 hover:bg-slate-800 text-slate-400 rounded-xl text-xs flex items-center justify-center" title="Limpar Filtros">
+                    <i class="fa-solid fa-xmark"></i>
+                </a>
+            <?php endif; ?>
+        </form>
+
+        <div class="flex items-center gap-2.5 w-full lg:w-auto justify-end">
+            <a href="<?php echo e(route('products.report')); ?>" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs border border-slate-700/80 transition flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie text-emerald-400"></i> Relatórios
+            </a>
+            <?php if(auth()->user()->isStockManager() || auth()->user()->isManager() || auth()->user()->isAdmin()): ?>
             <a href="<?php echo e(route('products.create')); ?>" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
-                <i class="fa-solid fa-plus"></i> <?php echo e($isPharmacy ? 'Novo Medicamento' : 'Novo Artigo'); ?>
+                <i class="fa-solid fa-plus"></i> <?php echo e($isPharmacy ? 'Novo Medicamento' : ($hasServices ? 'Novo Artigo / Serviço' : 'Novo Artigo')); ?>
 
             </a>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- Quick Type Filter Bar (Inspirado no ReproSys) -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-1">
+        <a href="<?php echo e(route('products.index', array_merge(request()->except('type', 'page'), ['type' => 'all']))); ?>"
+           class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 <?php echo e(in_array($currentType, ['all', '']) ? 'bg-slate-800 text-white border border-slate-700 shadow-md' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'); ?>">
+            <i class="fa-solid fa-border-all text-[11px] <?php echo e(in_array($currentType, ['all', '']) ? $theme['text_accent'] : ''); ?>"></i>
+            <span>Todos os Artigos</span>
+            <span class="px-1.5 py-0.2 rounded-md bg-slate-950 text-[10px] text-slate-300"><?php echo e($allProducts->count()); ?></span>
+        </a>
+
+        <a href="<?php echo e(route('products.index', array_merge(request()->except('type', 'page'), ['type' => 'physical']))); ?>"
+           class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 <?php echo e($currentType === 'physical' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-md' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'); ?>">
+            <i class="fa-solid fa-box text-[11px] text-emerald-400"></i>
+            <span>Produtos Físicos</span>
+            <span class="px-1.5 py-0.2 rounded-md bg-slate-950 text-[10px] text-slate-300"><?php echo e($physicalCount ?? 0); ?></span>
+        </a>
+
+        <?php if($hasServices || ($servicesCount ?? 0) > 0): ?>
+        <a href="<?php echo e(route('products.index', array_merge(request()->except('type', 'page'), ['type' => 'service']))); ?>"
+           class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 <?php echo e($currentType === 'service' ? 'bg-violet-500/20 text-violet-400 border border-violet-500/40 shadow-md' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'); ?>">
+            <i class="fa-solid fa-screwdriver-wrench text-[11px] text-violet-400"></i>
+            <span>Serviços Prestados</span>
+            <span class="px-1.5 py-0.2 rounded-md bg-slate-950 text-[10px] text-slate-300"><?php echo e($servicesCount ?? 0); ?></span>
+        </a>
+        <?php endif; ?>
+
+        <a href="<?php echo e(route('products.index', array_merge(request()->except('type', 'page'), ['type' => 'low-stock']))); ?>"
+           class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 <?php echo e(in_array($currentType, ['low-stock', 'low_stock']) ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-md' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'); ?>">
+            <i class="fa-solid fa-triangle-exclamation text-[11px] text-rose-400"></i>
+            <span>Stock Baixo / Alerta</span>
+            <span class="px-1.5 py-0.2 rounded-md bg-slate-950 text-[10px] text-rose-400 font-bold"><?php echo e($lowStockCount ?? 0); ?></span>
+        </a>
+    </div>
+
+    <!-- 4 Mini KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+            <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total no Catálogo</span>
+                <div class="text-xl font-black text-white mt-1"><?php echo e($allProducts->count()); ?></div>
+            </div>
+            <div class="w-9 h-9 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center text-sm">
+                <i class="fa-solid fa-boxes-stacked"></i>
+            </div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+            <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Produtos com Estoque</span>
+                <div class="text-xl font-black text-emerald-400 mt-1"><?php echo e($physicalCount ?? 0); ?></div>
+            </div>
+            <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-sm">
+                <i class="fa-solid fa-box"></i>
+            </div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+            <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Serviços Disponíveis</span>
+                <div class="text-xl font-black text-violet-400 mt-1"><?php echo e($servicesCount ?? 0); ?></div>
+            </div>
+            <div class="w-9 h-9 rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center text-sm">
+                <i class="fa-solid fa-screwdriver-wrench"></i>
+            </div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+            <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Stock Crítico</span>
+                <div class="text-xl font-black <?php echo e(($lowStockCount ?? 0) > 0 ? 'text-rose-400' : 'text-slate-500'); ?> mt-1">
+                    <?php echo e($lowStockCount ?? 0); ?>
+
+                </div>
+            </div>
+            <div class="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center text-sm">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
         </div>
     </div>
 
@@ -55,8 +163,10 @@
 
                             </td>
                             <td class="py-3.5 font-bold text-white">
-                                <?php echo e($product->name); ?>
+                                <a href="<?php echo e(route('products.show', $product->id)); ?>" class="hover:text-emerald-400 transition">
+                                    <?php echo e($product->name); ?>
 
+                                </a>
                             </td>
                             <td class="py-3.5">
                                 <span class="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-slate-800 text-slate-300 border border-slate-700">
@@ -76,7 +186,7 @@
                                                 <i class="fa-solid fa-calendar-day mr-1"></i> <?php echo e($earliestBatch->expiry_date->format('m/Y')); ?>
 
                                             </span>
-                                            <span class="text-[10px] text-slate-500">(<?php echo e($earliestBatch->batch_number); ?>)</span>
+                                            <span class="text-[10px] text-slate-500 font-mono">(<?php echo e($earliestBatch->batch_number); ?>)</span>
                                         </div>
                                     <?php else: ?>
                                         <span class="text-slate-500 text-[10px]">Sem lote</span>
@@ -88,24 +198,48 @@
                             </td>
                             <td class="py-3.5 text-center">
                                 <?php if($product->type === 'service'): ?>
-                                    <span class="text-slate-500 text-[10px] font-bold">N/A</span>
+                                    <span class="text-slate-500 text-[10px] font-bold">Serviço</span>
                                 <?php else: ?>
                                     <span class="px-2.5 py-1 rounded-xl text-[10px] font-black <?php echo e($product->stock_quantity <= $product->min_stock_level ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'); ?>">
-                                        <?php echo e($product->stock_quantity); ?> un
+                                        <?php echo e($product->stock_quantity); ?> <?php echo e($product->unit ?? 'un'); ?>
+
                                     </span>
                                 <?php endif; ?>
                             </td>
                             <td class="py-3.5 text-right">
-                                <div class="flex items-center justify-end gap-2">
-                                    <a href="<?php echo e(route('products.edit', $product->id)); ?>" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition" title="Editar">
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <!-- Ver Ficha Técnica -->
+                                    <a href="<?php echo e(route('products.show', $product->id)); ?>" 
+                                       class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-emerald-400 hover:bg-slate-700 flex items-center justify-center transition" 
+                                       title="Ver Ficha Técnica">
+                                        <i class="fa-solid fa-eye text-xs"></i>
+                                    </a>
+
+                                    <?php if(auth()->user()->isStockManager() || auth()->user()->isManager() || auth()->user()->isAdmin()): ?>
+                                    <!-- Editar -->
+                                    <a href="<?php echo e(route('products.edit', $product->id)); ?>" 
+                                       class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 flex items-center justify-center transition" 
+                                       title="Editar">
                                         <i class="fa-solid fa-pen-to-square text-xs"></i>
                                     </a>
+                                    <?php endif; ?>
+
+                                    <?php if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin()): ?>
+                                    <!-- Eliminar -->
+                                    <form action="<?php echo e(route('products.destroy', $product->id)); ?>" method="POST" onsubmit="return confirm('Deseja realmente eliminar este artigo do catálogo? O histórico de vendas será preservado.');" class="inline">
+                                        <?php echo csrf_field(); ?>
+                                        <?php echo method_field('DELETE'); ?>
+                                        <button type="submit" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 flex items-center justify-center transition" title="Eliminar">
+                                            <i class="fa-solid fa-trash-can text-xs"></i>
+                                        </button>
+                                    </form>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                         <tr>
-                            <td colspan="7" class="py-12 text-center text-slate-500">
+                            <td colspan="<?php echo e($isPharmacy ? 7 : 6); ?>" class="py-12 text-center text-slate-500">
                                 <i class="fa-solid fa-box-open text-3xl mb-2 text-slate-600"></i>
                                 <p>Nenhum produto cadastrado no catálogo.</p>
                             </td>
