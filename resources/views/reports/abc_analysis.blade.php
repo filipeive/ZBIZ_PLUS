@@ -1,402 +1,218 @@
 @extends('layouts.app')
 
-@section('title', 'Análise ABC')
-@section('page-title', 'Análise ABC de Produtos')
-@section('title-icon', 'fa-chart-pie')
+@section('title', 'Classificação Curva ABC')
+@section('page-title', 'Classificação Curva ABC de Artigos')
 
-@section('breadcrumbs')
-    <li class="breadcrumb-item"><a href="{{ route('reports.index') }}">Relatórios</a></li>
-    <li class="breadcrumb-item active">Análise ABC</li>
-@endsection
+@php
+    $theme = tenant_theme();
+@endphp
 
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="space-y-6">
+    
+    <!-- Top Action Bar -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
         <div>
-            <h2 class="h3 mb-1 text-primary fw-bold">
-                <i class="fas fa-chart-pie me-2"></i>
-                Análise ABC de Produtos
+            <h2 class="text-lg font-black font-heading text-white flex items-center gap-2">
+                <i class="fa-solid fa-ranking-star text-amber-400"></i> Análise Curva ABC (80 / 15 / 5)
             </h2>
-            <p class="text-muted mb-0">Classificação de produtos por importância de receita (80/15/5)</p>
+            <p class="text-xs text-slate-400">Classificação de produtos por relevância de faturamento para priorização de compras e inventário.</p>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-1"></i> Voltar
+
+        <div class="flex items-center gap-2.5">
+            <a href="{{ route('reports.index') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
+                <i class="fa-solid fa-arrow-left"></i> Central de Relatórios
             </a>
-            <button onclick="window.print()" class="btn btn-primary">
-                <i class="fas fa-print me-1"></i> Imprimir
+            <button type="button" onclick="window.print()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-2">
+                <i class="fa-solid fa-print"></i> Imprimir / PDF
             </button>
         </div>
     </div>
 
-    <!-- Filtros -->
-    <div class="card mb-4">
-        <div class="card-header bg-white">
-            <h5 class="card-title mb-0">
-                <i class="fas fa-filter me-2"></i>
-                Período de Análise
-            </h5>
-        </div>
-        <div class="card-body">
-            <form method="GET" action="{{ route('reports.abc-analysis') }}">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Data Inicial</label>
-                        <input type="date" class="form-control" name="date_from" value="{{ $dateFrom }}">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Data Final</label>
-                        <input type="date" class="form-control" name="date_to" value="{{ $dateTo }}">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">&nbsp;</label>
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-search me-1"></i> Atualizar
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
+    <!-- Filters Section -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
+        <form method="GET" action="{{ route('reports.abc-analysis') }}" class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-4 items-end">
+            <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Data Inicial</label>
+                <input type="date" name="date_from" value="{{ $dateFrom }}" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Data Final</label>
+                <input type="date" name="date_to" value="{{ $dateTo }}" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
+            </div>
+            <div>
+                <button type="submit" class="w-full py-2 bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-filter"></i> Analisar Curva ABC
+                </button>
+            </div>
+        </form>
     </div>
 
-    <!-- Resumo por Classe -->
-    <div class="row mb-4">
-        <div class="col-lg-4 mb-3">
-            <div class="card border-success h-100">
-                <div class="card-header bg-success text-white">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-star me-2"></i>
-                        Classe A - Premium
-                    </h5>
-                    <small>80% da receita (produtos mais importantes)</small>
+    <!-- 3 Classes ABC Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        
+        <!-- Classe A -->
+        <div class="bg-slate-900/90 border border-emerald-500/30 rounded-3xl p-6 shadow-xl backdrop-blur-xl relative overflow-hidden">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div>
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        Classe A (Premium)
+                    </span>
+                    <h3 class="text-base font-black text-white mt-2">80% da Receita</h3>
                 </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-6">
-                            <h3 class="text-success mb-1">{{ $abcStats['A']->count() }}</h3>
-                            <p class="text-muted mb-0">Produtos</p>
-                        </div>
-                        <div class="col-6">
-                            <h3 class="text-success mb-1">{{ number_format($abcStats['A']->sum('total_revenue'), 0) }} MT</h3>
-                            <p class="text-muted mb-0">Receita</p>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="small">
-                        <strong>Estratégia:</strong> Manter sempre em estoque, monitoramento constante, foco na satisfação do cliente.
-                    </div>
+                <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-star"></i>
                 </div>
             </div>
-        </div>
-        <div class="col-lg-4 mb-3">
-            <div class="card border-warning h-100">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-medal me-2"></i>
-                        Classe B - Intermédio
-                    </h5>
-                    <small>15% da receita (importância moderada)</small>
+            <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+                <div>
+                    <div class="text-slate-500 text-[10px] uppercase font-bold">Qtd Artigos</div>
+                    <div class="text-xl font-black text-white mt-0.5">{{ $abcStats['A']->count() }}</div>
                 </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-6">
-                            <h3 class="text-warning mb-1">{{ $abcStats['B']->count() }}</h3>
-                            <p class="text-muted mb-0">Produtos</p>
-                        </div>
-                        <div class="col-6">
-                            <h3 class="text-warning mb-1">{{ number_format($abcStats['B']->sum('total_revenue'), 0) }} MT</h3>
-                            <p class="text-muted mb-0">Receita</p>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="small">
-                        <strong>Estratégia:</strong> Controle normal de estoque, revisão periódica, potencial para promoção.
-                    </div>
+                <div>
+                    <div class="text-slate-500 text-[10px] uppercase font-bold">Faturamento</div>
+                    <div class="text-xl font-black text-emerald-400 font-mono mt-0.5">{{ number_format($abcStats['A']->sum('total_revenue'), 0, ',', '.') }} MT</div>
                 </div>
             </div>
+            <p class="text-[11px] text-slate-400 mt-4 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
+                <strong>Estratégia:</strong> Artigos vitais. Manter sempre estoque disponível e monitorar reposição com rigor.
+            </p>
         </div>
-        <div class="col-lg-4 mb-3">
-            <div class="card border-info h-100">
-                <div class="card-header bg-info text-white">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-cube me-2"></i>
-                        Classe C - Básico
-                    </h5>
-                    <small>5% da receita (menor impacto)</small>
+
+        <!-- Classe B -->
+        <div class="bg-slate-900/90 border border-amber-500/30 rounded-3xl p-6 shadow-xl backdrop-blur-xl relative overflow-hidden">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div>
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                        Classe B (Intermédio)
+                    </span>
+                    <h3 class="text-base font-black text-white mt-2">15% da Receita</h3>
                 </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-6">
-                            <h3 class="text-info mb-1">{{ $abcStats['C']->count() }}</h3>
-                            <p class="text-muted mb-0">Produtos</p>
-                        </div>
-                        <div class="col-6">
-                            <h3 class="text-info mb-1">{{ number_format($abcStats['C']->sum('total_revenue'), 0) }} MT</h3>
-                            <p class="text-muted mb-0">Receita</p>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="small">
-                        <strong>Estratégia:</strong> Estoque mínimo, considerar descontinuação, foco em redução de custos.
-                    </div>
+                <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-medal"></i>
                 </div>
             </div>
+            <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+                <div>
+                    <div class="text-slate-500 text-[10px] uppercase font-bold">Qtd Artigos</div>
+                    <div class="text-xl font-black text-white mt-0.5">{{ $abcStats['B']->count() }}</div>
+                </div>
+                <div>
+                    <div class="text-slate-500 text-[10px] uppercase font-bold">Faturamento</div>
+                    <div class="text-xl font-black text-amber-400 font-mono mt-0.5">{{ number_format($abcStats['B']->sum('total_revenue'), 0, ',', '.') }} MT</div>
+                </div>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-4 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
+                <strong>Estratégia:</strong> Artigos moderados. Reposição padrão conforme demanda regular.
+            </p>
         </div>
+
+        <!-- Classe C -->
+        <div class="bg-slate-900/90 border border-slate-700 rounded-3xl p-6 shadow-xl backdrop-blur-xl relative overflow-hidden">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div>
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-slate-800 text-slate-400 border border-slate-700">
+                        Classe C (Cauda Longa)
+                    </span>
+                    <h3 class="text-base font-black text-white mt-2">5% da Receita</h3>
+                </div>
+                <div class="w-10 h-10 rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+            </div>
+            <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+                <div>
+                    <div class="text-slate-500 text-[10px] uppercase font-bold">Qtd Artigos</div>
+                    <div class="text-xl font-black text-white mt-0.5">{{ $abcStats['C']->count() }}</div>
+                </div>
+                <div>
+                    <div class="text-slate-500 text-[10px] uppercase font-bold">Faturamento</div>
+                    <div class="text-xl font-black text-slate-300 font-mono mt-0.5">{{ number_format($abcStats['C']->sum('total_revenue'), 0, ',', '.') }} MT</div>
+                </div>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-4 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
+                <strong>Estratégia:</strong> Baixa rotatividade. Evitar compras em excesso para não imobilizar capital.
+            </p>
+        </div>
+
     </div>
 
-    <!-- Gráfico de Pareto -->
-    <div class="card mb-4">
-        <div class="card-header bg-white">
-            <h5 class="card-title mb-0">
-                <i class="fas fa-chart-area me-2"></i>
-                Gráfico de Pareto - Receita Acumulada
-            </h5>
-        </div>
-        <div class="card-body">
-            <canvas id="paretoChart" height="80"></canvas>
-        </div>
-    </div>
-
-    <!-- Tabela Detalhada -->
-    <div class="card">
-        <div class="card-header bg-white">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-table me-2"></i>
-                    Produtos por Classificação ABC
-                </h5>
-                <div class="btn-group btn-group-sm" role="group">
-                    <input type="radio" class="btn-check" name="classFilter" id="filterAll" checked>
-                    <label class="btn btn-outline-primary" for="filterAll">Todos</label>
-                    
-                    <input type="radio" class="btn-check" name="classFilter" id="filterA">
-                    <label class="btn btn-outline-success" for="filterA">Classe A</label>
-                    
-                    <input type="radio" class="btn-check" name="classFilter" id="filterB">
-                    <label class="btn btn-outline-warning" for="filterB">Classe B</label>
-                    
-                    <input type="radio" class="btn-check" name="classFilter" id="filterC">
-                    <label class="btn btn-outline-info" for="filterC">Classe C</label>
-                </div>
+    <!-- ABC Table -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
+            <div>
+                <h3 class="text-base font-black font-heading text-white">Ranking de Artigos por Relevância ({{ $abcProducts->count() }})</h3>
+                <p class="text-xs text-slate-400">Classificação decrescente por faturamento e percentual acumulado.</p>
             </div>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" id="abcTable">
-                    <thead class="table-light">
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider">
+                        <th class="pb-3 text-center">Posição</th>
+                        <th class="pb-3">Artigo / Medicamento</th>
+                        <th class="pb-3">Categoria</th>
+                        <th class="pb-3 text-center">Classe</th>
+                        <th class="pb-3 text-center">Qtd Vendida</th>
+                        <th class="pb-3 text-right">Faturamento Total</th>
+                        <th class="pb-3 text-right">% Receita</th>
+                        <th class="pb-3 text-right">% Acumulada</th>
+                        <th class="pb-3 text-right">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60 font-medium">
+                    @forelse($abcProducts as $idx => $p)
+                        @php
+                            $clsColor = $p->abc_classification === 'A' ? 'emerald' : ($p->abc_classification === 'B' ? 'amber' : 'slate');
+                        @endphp
+                        <tr class="hover:bg-slate-800/30 transition">
+                            <td class="py-3 text-center font-mono font-bold text-slate-400">
+                                {{ $idx + 1 }}º
+                            </td>
+                            <td class="py-3 font-bold text-white">
+                                {{ $p->name }}
+                            </td>
+                            <td class="py-3 text-slate-300">
+                                <span class="px-2 py-0.5 rounded-lg text-[10px] bg-slate-800 border border-slate-700">
+                                    {{ $p->category_name ?? 'Geral' }}
+                                </span>
+                            </td>
+                            <td class="py-3 text-center">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-{{ $clsColor }}-500/20 text-{{ $clsColor }}-400 border border-{{ $clsColor }}-500/30">
+                                    Classe {{ $p->abc_classification }}
+                                </span>
+                            </td>
+                            <td class="py-3 text-center font-mono font-bold text-white">
+                                {{ $p->total_quantity }} un
+                            </td>
+                            <td class="py-3 text-right font-mono font-bold text-white">
+                                {{ number_format($p->total_revenue, 2, ',', '.') }} MT
+                            </td>
+                            <td class="py-3 text-right font-mono text-slate-300">
+                                {{ number_format($p->revenue_percentage, 1) }}%
+                            </td>
+                            <td class="py-3 text-right font-mono font-bold text-{{ $clsColor }}-400">
+                                {{ number_format($p->cumulative_percentage, 1) }}%
+                            </td>
+                            <td class="py-3 text-right">
+                                <a href="{{ route('products.show', $p->id) }}" class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition" title="Ver Ficha">
+                                    <i class="fa-solid fa-eye text-xs"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    @empty
                         <tr>
-                            <th>Posição</th>
-                            <th>Produto</th>
-                            <th class="text-center">Classe</th>
-                            <th class="text-center">Qtd Vendida</th>
-                            <th class="text-end">Receita</th>
-                            <th class="text-center">% Receita</th>
-                            <th class="text-center">% Acumulado</th>
-                            <th class="text-center">Transações</th>
-                            <th class="text-center">Estratégia</th>
+                            <td colspan="9" class="py-12 text-center text-slate-500">
+                                <i class="fa-solid fa-ranking-star text-3xl mb-2 text-slate-600"></i>
+                                <p>Nenhum dado de vendas para calcular a curva ABC no período.</p>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($abcProducts as $index => $product)
-                            <tr data-class="{{ $product->abc_classification }}">
-                                <td>
-                                    <span class="badge bg-dark">{{ $index + 1 }}º</span>
-                                </td>
-                                <td>
-                                    <div>
-                                        <strong>{{ $product->name }}</strong>
-                                        @if($product->category)
-                                            <br><small class="text-muted">{{ $product->category->name }}</small>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-{{ $product->abc_classification == 'A' ? 'success' : ($product->abc_classification == 'B' ? 'warning' : 'info') }} fs-6">
-                                        {{ $product->abc_classification }}
-                                    </span>
-                                </td>
-                                <td class="text-center">
-                                    <strong>{{ $product->total_quantity }}</strong>
-                                </td>
-                                <td class="text-end">
-                                    <strong class="text-success">{{ number_format($product->total_revenue, 2, ',', '.') }} MT</strong>
-                                </td>
-                                <td class="text-center">
-                                    {{ number_format($product->revenue_percentage, 1) }}%
-                                    <div class="progress mt-1" style="height: 3px;">
-                                        <div class="progress-bar bg-{{ $product->abc_classification == 'A' ? 'success' : ($product->abc_classification == 'B' ? 'warning' : 'info') }}" 
-                                             style="width: {{ min($product->revenue_percentage * 2, 100) }}%"></div>
-                                    </div>
-                                </td>
-                                <td class="text-center">
-                                    <strong>{{ number_format($product->cumulative_percentage, 1) }}%</strong>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-light text-dark">{{ $product->sales_transactions }}</span>
-                                </td>
-                                <td class="text-center">
-                                    @switch($product->abc_classification)
-                                        @case('A')
-                                            <span class="badge bg-success">MANTER</span>
-                                            @break
-                                        @case('B')
-                                            <span class="badge bg-warning">MONITORAR</span>
-                                            @break
-                                        @case('C')
-                                            <span class="badge bg-info">REVISAR</span>
-                                            @break
-                                    @endswitch
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot class="table-light">
-                        <tr class="fw-bold">
-                            <td colspan="3">TOTAIS:</td>
-                            <td class="text-center">{{ $abcProducts->sum('total_quantity') }}</td>
-                            <td class="text-end text-success">{{ number_format($totalRevenue, 2, ',', '.') }} MT</td>
-                            <td class="text-center">100%</td>
-                            <td colspan="3"></td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
+
+</div>
 @endsection
-
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Dados dos produtos
-        const products = @json($abcProducts->values());
-        
-        // Gráfico de Pareto
-        const ctx = document.getElementById('paretoChart').getContext('2d');
-        
-        const labels = products.map((p, i) => `${i + 1}º`);
-        const revenues = products.map(p => p.total_revenue);
-        const cumulativePercentages = products.map(p => p.cumulative_percentage);
-        
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        type: 'bar',
-                        label: 'Receita (MT)',
-                        data: revenues,
-                        backgroundColor: products.map(p => 
-                            p.abc_classification === 'A' ? '#28a745' : 
-                            p.abc_classification === 'B' ? '#ffc107' : '#17a2b8'
-                        ),
-                        yAxisID: 'y'
-                    },
-                    {
-                        type: 'line',
-                        label: 'Acumulado (%)',
-                        data: cumulativePercentages,
-                        borderColor: '#dc3545',
-                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                        tension: 0.1,
-                        yAxisID: 'y1'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top'
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        callbacks: {
-                            title: function(context) {
-                                const index = context[0].dataIndex;
-                                return products[index].name;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
-                        title: {
-                            display: true,
-                            text: 'Receita (MT)'
-                        },
-                        ticks: {
-                            callback: function(value) {
-                                return value.toLocaleString('pt-MZ') + ' MT';
-                            }
-                        }
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        title: {
-                            display: true,
-                            text: 'Percentual Acumulado (%)'
-                        },
-                        grid: {
-                            drawOnChartArea: false,
-                        },
-                        min: 0,
-                        max: 100,
-                        ticks: {
-                            callback: function(value) {
-                                return value + '%';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        // Filtros da tabela
-        const filterButtons = document.querySelectorAll('input[name="classFilter"]');
-        const tableRows = document.querySelectorAll('#abcTable tbody tr');
-
-        filterButtons.forEach(button => {
-            button.addEventListener('change', function() {
-                const filter = this.id.replace('filter', '');
-                
-                tableRows.forEach(row => {
-                    const rowClass = row.dataset.class;
-                    
-                    if (filter === 'All' || rowClass === filter) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-            });
-        });
-    });
-</script>
-@endpush
-
-@push('styles')
-<style>
-    .progress {
-        background-color: #e9ecef;
-    }
-    
-    .btn-check:checked + .btn {
-        background-color: var(--bs-primary);
-        border-color: var(--bs-primary);
-        color: #fff;
-    }
-    
-    @media print {
-        .btn, form, .btn-group { display: none !important; }
-        .card { border: 1px solid #ddd !important; box-shadow: none !important; }
-    }
-</style>
-@endpush

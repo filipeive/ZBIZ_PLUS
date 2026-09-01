@@ -726,15 +726,17 @@ class ReportController extends Controller
 
         // Análise de produtos por receita
         $productAnalysis = \DB::table('products')
+            ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
             ->join('sale_items', 'products.id', '=', 'sale_items.product_id')
             ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
             ->whereBetween('sales.sale_date', [$dateFrom, $dateTo])
             ->where('products.tenant_id', current_tenant_id() ?? 1)
             ->whereNull('products.deleted_at')
-            ->groupBy('products.id', 'products.name', 'products.selling_price', 'products.purchase_price')
+            ->groupBy('products.id', 'products.name', 'products.selling_price', 'products.purchase_price', 'categories.name')
             ->select(
                 'products.id',
                 'products.name',
+                'categories.name as category_name',
                 'products.selling_price as price',
                 'products.purchase_price',
                 \DB::raw('SUM(sale_items.quantity) as total_quantity'),

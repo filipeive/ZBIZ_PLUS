@@ -193,6 +193,7 @@ class SaasOperationalAuditTest extends TestCase
         $this->actingAs($admin)->get(route('reports.monthly-sales'))->assertStatus(200);
         $this->actingAs($admin)->get(route('reports.profit-loss'))->assertStatus(200);
         $this->actingAs($admin)->get(route('reports.inventory'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('reports.abc-analysis'))->assertStatus(200);
 
         // 5. Users
         $this->actingAs($admin)->get(route('users.index'))->assertStatus(200);
