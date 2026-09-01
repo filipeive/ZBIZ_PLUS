@@ -27,6 +27,12 @@ class DebtController extends Controller
         try {
             $query = Debt::query()->latest('created_at');
 
+            // Filtrar por filial ativa
+            $branchId = current_branch_id();
+            if ($branchId) {
+                $query->where('branch_id', $branchId);
+            }
+
             // Filtros
             if ($request->filled('debt_type')) {
                 $query->where('debt_type', $request->debt_type);
@@ -180,7 +186,12 @@ class DebtController extends Controller
             $totalAmount += $p['quantity'] * $p['unit_price'];
         }
 
+        $branchId = current_branch_id();
+        $tenantId = current_tenant_id();
+
         $debt = Debt::create([
+            'tenant_id' => $tenantId,
+            'branch_id' => $branchId,
             'debt_type' => 'product',
             'user_id' => auth()->id(),
             'customer_name' => $request->customer_name,
@@ -203,6 +214,8 @@ class DebtController extends Controller
             }
 
             DebtItem::create([
+                'tenant_id' => $tenantId,
+                'branch_id' => $branchId,
                 'debt_id' => $debt->id,
                 'product_id' => $product->id,
                 'quantity' => $productData['quantity'],
@@ -214,6 +227,8 @@ class DebtController extends Controller
                 $product->decrement('stock_quantity', $productData['quantity']);
 
                 StockMovement::create([
+                    'tenant_id' => $tenantId,
+                    'branch_id' => $branchId,
                     'product_id' => $product->id,
                     'user_id' => auth()->id(),
                     'movement_type' => 'out',
@@ -238,8 +253,12 @@ class DebtController extends Controller
     private function createMoneyDebt(Request $request)
     {
         $employeeId = $request->filled('employee_id') ? $request->employee_id : null;
+        $branchId = current_branch_id();
+        $tenantId = current_tenant_id();
 
         $debt = Debt::create([
+            'tenant_id' => $tenantId,
+            'branch_id' => $branchId,
             'debt_type' => 'money',
             'user_id' => auth()->id(),
             'employee_id' => $employeeId,

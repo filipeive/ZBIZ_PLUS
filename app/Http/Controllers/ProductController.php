@@ -191,7 +191,9 @@ class ProductController extends Controller
                                    ->where('id', '!=', $product->id)
                                    ->orderBy('name')
                                    ->get();
-        return view('products.edit', compact('product', 'categories', 'physicalProducts'));
+        $latestBatch = $product->batches()->latest()->first();
+
+        return view('products.edit', compact('product', 'categories', 'physicalProducts', 'latestBatch'));
     }
 
     /**
@@ -235,7 +237,7 @@ class ProductController extends Controller
 
             $data = collect($validated)->only([
                 'name', 'category_id', 'linked_product_id', 'selling_price',
-                'purchase_price', 'unit', 'description'
+                'purchase_price', 'barcode', 'sku', 'unit', 'description'
             ])->toArray();
 
             $data['is_active'] = $request->boolean('is_active', true);
@@ -245,6 +247,36 @@ class ProductController extends Controller
             }
 
             $product->update($data);
+
+            // Atualizar ou criar lote e validade se fornecidos
+            $batchNumber = $request->input('batch_number');
+            $expiryDate = $request->input('expiry_date');
+
+            if (!empty($expiryDate) || !empty($batchNumber)) {
+                $latestBatch = $product->batches()->latest()->first();
+                $batchNum = !empty($batchNumber) ? $batchNumber : ('LOTE-' . date('Ymd') . '-' . $product->id);
+                $expDate = !empty($expiryDate) ? $expiryDate : now()->addYear()->toDateString();
+
+                if ($latestBatch) {
+                    $latestBatch->update([
+                        'batch_number'     => $batchNum,
+                        'expiry_date'      => $expDate,
+                        'manufacture_date' => $request->input('manufacture_date'),
+                    ]);
+                } else {
+                    \App\Models\ProductBatch::create([
+                        'tenant_id'        => current_tenant_id(),
+                        'branch_id'        => current_branch_id(),
+                        'product_id'       => $product->id,
+                        'batch_number'     => $batchNum,
+                        'expiry_date'      => $expDate,
+                        'manufacture_date' => $request->input('manufacture_date'),
+                        'quantity'         => (int) $product->stock_quantity,
+                        'cost_price'       => (float) $product->purchase_price,
+                        'status'           => 'active',
+                    ]);
+                }
+            }
 
             // ✅ PASSANDO O PARÂMETRO 'product'
             return $this->success('products.show', 'Produto atualizado com sucesso!', [$product]);

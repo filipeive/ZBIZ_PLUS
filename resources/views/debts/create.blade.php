@@ -1,318 +1,292 @@
 @extends('layouts.app')
 
-@section('title', 'Nova Dívida')
-@section('page-title', 'Nova Dívida')
+@section('title', 'Novo Fiado / Dívida')
+@section('page-title', 'Registo de Nova Dívida')
+
+@php
+    $theme = tenant_theme();
+@endphp
 
 @section('content')
+<div class="space-y-6">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
         <div>
-            <h3 class="mb-1">
-                <i class="fas fa-plus-circle me-2 text-primary"></i>
+            <h2 class="text-lg font-black font-heading text-white flex items-center gap-2">
+                <i class="fa-solid fa-plus-circle text-emerald-400"></i>
                 Nova Dívida de {{ $type === 'product' ? 'Produtos' : 'Dinheiro' }}
-            </h3>
-            <p class="text-muted mb-0">Preencha os dados abaixo</p>
+            </h2>
+            <p class="text-xs text-slate-400">Preencha os dados do devedor e os detalhes da conta a receber.</p>
         </div>
-        <a href="{{ route('debts.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-2"></i>
-            Voltar
+        <a href="{{ route('debts.index') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
+            <i class="fa-solid fa-arrow-left"></i> Voltar
         </a>
     </div>
 
     <!-- Formulário -->
-    <form action="{{ route('debts.store') }}" method="POST" id="debt-form">
+    <form action="{{ route('debts.store') }}" method="POST" id="debt-form" class="space-y-6">
         @csrf
         <input type="hidden" name="debt_type" value="{{ $type }}">
 
-        <div class="row">
-            <div class="col-lg-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-6">
 
                 <!-- Informações do Devedor -->
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-primary text-white">
-                        <h6 class="mb-0">
-                            <i class="fas fa-user me-2"></i>
-                            {{ $type === 'product' ? 'Informações do Cliente' : 'Informações do Funcionário' }}
-                        </h6>
+                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
+                    <div class="flex items-center space-x-3 border-b border-slate-800 pb-4 mb-4">
+                        <div class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <h3 class="text-sm font-black text-white font-heading">
+                            {{ $type === 'product' ? 'Informações do Cliente' : 'Informações do Funcionário / Devedor' }}
+                        </h3>
                     </div>
-                    <div class="card-body">
-                        @if ($type === 'product')
-                            <!-- Dívida de Produtos -->
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Nome do Cliente *</label>
-                                    <input type="text" class="form-control @error('customer_name') is-invalid @enderror"
-                                        name="customer_name" value="{{ old('customer_name') }}" required>
-                                    @error('customer_name')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Telefone</label>
-                                    <input type="text" class="form-control @error('customer_phone') is-invalid @enderror"
-                                        name="customer_phone" value="{{ old('customer_phone') }}">
-                                    @error('customer_phone')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Documento</label>
-                                    <input type="text" class="form-control" name="customer_document"
-                                        value="{{ old('customer_document') }}">
-                                </div>
+
+                    @if ($type === 'product')
+                        <!-- Dívida de Produtos -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nome do Cliente *</label>
+                                <input type="text" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                                    name="customer_name" value="{{ old('customer_name') }}" required>
+                                @error('customer_name')
+                                    <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
-                        @else
-                            <!-- Dívida de Dinheiro -->
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <label class="form-label fw-semibold">Selecionar Funcionário</label>
-                                        <div class="form-check form-switch small">
-                                            <input class="form-check-input" type="checkbox" id="is-external" name="is_external">
-                                            <label class="form-check-label" for="is-external">Pessoa Externa</label>
-                                        </div>
-                                    </div>
-                                    <select class="form-select @error('employee_id') is-invalid @enderror"
-                                        name="employee_id" id="employee-select">
-                                        <option value="">Escolha um funcionário...</option>
-                                        @foreach ($employees as $employee)
-                                            <option value="{{ $employee->id }}" data-name="{{ $employee->name }}"
-                                                {{ old('employee_id') == $employee->id ? 'selected' : '' }}>
-                                                {{ $employee->name }} - {{ $employee->email }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('employee_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Nome Completo *</label>
-                                    <input type="text" class="form-control @error('employee_name') is-invalid @enderror"
-                                        name="employee_name" id="employee-name" value="{{ old('employee_name') }}"
-                                        required>
-                                    @error('employee_name')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Telefone</label>
-                                    <input type="text" class="form-control" name="employee_phone"
-                                        value="{{ old('employee_phone') }}">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Documento</label>
-                                    <input type="text" class="form-control" name="employee_document"
-                                        value="{{ old('employee_document') }}">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Valor da Dívida *</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">MT</span>
-                                        <input type="number" step="0.01" min="0.01"
-                                            class="form-control @error('amount') is-invalid @enderror" name="amount"
-                                            value="{{ old('amount') }}" required>
-                                    </div>
-                                    @error('amount')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Telefone</label>
+                                <input type="text" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                                    name="customer_phone" value="{{ old('customer_phone') }}">
+                                @error('customer_phone')
+                                    <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
-                        @endif
-                    </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Documento / NUIT / BI</label>
+                                <input type="text" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition" 
+                                    name="customer_document" value="{{ old('customer_document') }}">
+                            </div>
+                        </div>
+                    @else
+                        <!-- Dívida de Dinheiro -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Selecionar Funcionário</label>
+                                    <label class="flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer">
+                                        <input type="checkbox" id="is-external" name="is_external" class="rounded bg-slate-950 border-slate-800 text-emerald-500">
+                                        <span>Pessoa Externa</span>
+                                    </label>
+                                </div>
+                                <select class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                                    name="employee_id" id="employee-select">
+                                    <option value="">Escolha um funcionário...</option>
+                                    @foreach ($employees as $employee)
+                                        <option value="{{ $employee->id }}" data-name="{{ $employee->name }}"
+                                            {{ old('employee_id') == $employee->id ? 'selected' : '' }}>
+                                            {{ $employee->name }} - {{ $employee->email }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('employee_id')
+                                    <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nome Completo *</label>
+                                <input type="text" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                                    name="employee_name" id="employee-name" value="{{ old('employee_name') }}" required>
+                                @error('employee_name')
+                                    <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Telefone</label>
+                                <input type="text" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition" 
+                                    name="employee_phone" value="{{ old('employee_phone') }}">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Documento</label>
+                                <input type="text" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition" 
+                                    name="employee_document" value="{{ old('employee_document') }}">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Valor da Dívida (MT) *</label>
+                                <input type="number" step="0.01" min="0.01"
+                                    class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-mono font-bold focus:ring-1 focus:ring-emerald-500 transition" 
+                                    name="amount" value="{{ old('amount') }}" required>
+                                @error('amount')
+                                    <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
                 @if ($type === 'product')
                     <!-- Produtos -->
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header bg-primary text-white">
-                            <h6 class="mb-0">
-                                <i class="fas fa-shopping-cart me-2"></i>
-                                Produtos da Dívida
-                            </h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-8">
-                                    <select class="form-select" id="product-select">
-                                        <option value="">Selecione um produto...</option>
-                                        @foreach ($products as $product)
-                                            @if ($product->stock_quantity > 0 || $product->type === 'service')
-                                                <option value="{{ $product->id }}" 
-                                                    data-name="{{ $product->name }}"
-                                                    data-price="{{ $product->selling_price }}"
-                                                    data-stock="{{ $product->stock_quantity ?? 999 }}"
-                                                    data-type="{{ $product->type }}"
-                                                    @if ($product->stock_quantity <= 0 && $product->type === 'product') disabled @endif>
-                                                    {{ $product->name }} - MT
-                                                    {{ number_format($product->selling_price, 2, ',', '.') }}
-                                                    @if ($product->stock_quantity > 0)
-                                                        ({{ $product->stock_quantity }})
-                                                    @elseif ($product->type === 'product')
-                                                        (SEM STOCK)
-                                                    @endif
-                                                </option>
-                                            @endif
-                                        @endforeach
-                                    </select>
-                                    @if ($products->where('type', 'product')->where('stock_quantity', '<=', 0)->count() > 0)
-                                        <div class="form-text text-warning">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>
-                                            {{ $products->where('type', 'product')->where('stock_quantity', '<=', 0)->count() }} produto(s) sem stock não disponíveis
-                                        </div>
-                                    @endif
-                                </div>
-                                <div class="col-md-4 d-flex align-items-end">
-                                    <button type="button" class="btn btn-primary w-100" onclick="addProduct()">
-                                        <i class="fas fa-plus me-2"></i>Adicionar
-                                    </button>
-                                </div>
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
+                        <div class="flex items-center space-x-3 border-b border-slate-800 pb-4 mb-4">
+                            <div class="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-xs">
+                                <i class="fa-solid fa-boxes-stacked"></i>
                             </div>
-
-                            <div class="table-responsive">
-                                <table class="table table-sm" id="products-table">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Produto</th>
-                                            <th width="120">Quantidade</th>
-                                            <th width="120" class="text-end">Preço Unit.</th>
-                                            <th width="120" class="text-end">Total</th>
-                                            <th width="80" class="text-center">Ação</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="products-tbody">
-                                        <!-- Produtos adicionados aqui -->
-                                    </tbody>
-                                    <tfoot>
-                                        <tr class="table-light">
-                                            <td colspan="3" class="text-end fw-bold">Total Geral:</td>
-                                            <td class="text-end fw-bold" id="products-total">MT 0,00</td>
-                                            <td></td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-
-                            <input type="hidden" name="products" id="products-json">
-                            @error('products')
-                                <div class="text-danger small mt-2">{{ $message }}</div>
-                            @enderror
+                            <h3 class="text-sm font-black text-white font-heading">Artigos / Produtos a Fiado</h3>
                         </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 mb-4">
+                            <div class="md:col-span-9">
+                                <select class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition" id="product-select">
+                                    <option value="">Selecione um produto...</option>
+                                    @foreach ($products as $product)
+                                        @if ($product->stock_quantity > 0 || $product->type === 'service')
+                                            <option value="{{ $product->id }}" 
+                                                data-name="{{ $product->name }}"
+                                                data-price="{{ $product->selling_price }}"
+                                                data-stock="{{ $product->stock_quantity ?? 999 }}"
+                                                data-type="{{ $product->type }}"
+                                                @if ($product->stock_quantity <= 0 && $product->type === 'product') disabled @endif>
+                                                {{ $product->name }} - MT {{ number_format($product->selling_price, 2, ',', '.') }}
+                                                @if ($product->stock_quantity > 0)
+                                                    ({{ $product->stock_quantity }} em stock)
+                                                @elseif ($product->type === 'product')
+                                                    (SEM STOCK)
+                                                @endif
+                                            </option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="md:col-span-3">
+                                <button type="button" class="w-full py-2.5 rounded-xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg flex items-center justify-center gap-2" onclick="addProduct()">
+                                    <i class="fa-solid fa-plus"></i> Adicionar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto rounded-2xl border border-slate-800">
+                            <table class="w-full text-left text-xs" id="products-table">
+                                <thead>
+                                    <tr class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider">
+                                        <th class="p-3">Produto</th>
+                                        <th class="p-3 w-28">Quantidade</th>
+                                        <th class="p-3 text-right w-32">Preço Unit.</th>
+                                        <th class="p-3 text-right w-32">Subtotal</th>
+                                        <th class="p-3 text-center w-20">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="products-tbody" class="divide-y divide-slate-800/60 bg-slate-900/60">
+                                    <!-- Produtos via JS -->
+                                </tbody>
+                                <tfoot>
+                                    <tr class="bg-slate-950 border-t border-slate-800">
+                                        <td colspan="3" class="p-3 text-right font-bold text-slate-300 uppercase text-[10px]">Total Geral:</td>
+                                        <td class="p-3 text-right font-black text-emerald-400 font-mono text-sm" id="products-total">MT 0,00</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <input type="hidden" name="products" id="products-json">
+                        @error('products')
+                            <p class="text-rose-400 text-xs mt-2">{{ $message }}</p>
+                        @enderror
                     </div>
                 @endif
 
                 <!-- Detalhes da Dívida -->
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-primary text-white">
-                        <h6 class="mb-0">
-                            <i class="fas fa-info-circle me-2"></i>
-                            Detalhes da Dívida
-                        </h6>
+                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
+                    <div class="flex items-center space-x-3 border-b border-slate-800 pb-4 mb-4">
+                        <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-xs">
+                            <i class="fa-solid fa-info-circle"></i>
+                        </div>
+                        <h3 class="text-sm font-black text-white font-heading">Condições & Prazos</h3>
                     </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Data da Dívida *</label>
-                                <input type="date" class="form-control @error('debt_date') is-invalid @enderror"
-                                    name="debt_date" value="{{ old('debt_date', date('Y-m-d')) }}" required>
-                                @error('debt_date')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Data de Vencimento</label>
-                                <input type="date" class="form-control @error('due_date') is-invalid @enderror"
-                                    name="due_date" value="{{ old('due_date') }}">
-                                @error('due_date')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label fw-semibold">Descrição *</label>
-                                <textarea class="form-control @error('description') is-invalid @enderror" name="description" rows="3" required>{{ old('description') }}</textarea>
-                                @error('description')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label fw-semibold">Observações</label>
-                                <textarea class="form-control" name="notes" rows="2">{{ old('notes') }}</textarea>
-                            </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Data da Dívida *</label>
+                            <input type="date" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                                name="debt_date" value="{{ old('debt_date', date('Y-m-d')) }}" required>
+                            @error('debt_date')
+                                <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Data de Vencimento / Limite</label>
+                            <input type="date" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                                name="due_date" value="{{ old('due_date') }}">
+                            @error('due_date')
+                                <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Descrição / Motivo *</label>
+                            <textarea class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition" name="description" rows="2" required>{{ old('description') }}</textarea>
+                            @error('description')
+                                <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Observações Adicionais</label>
+                            <textarea class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition" name="notes" rows="2">{{ old('notes') }}</textarea>
                         </div>
                     </div>
                 </div>
 
             </div>
 
-            <!-- Sidebar -->
-            <div class="col-lg-4">
-
-                <!-- Resumo -->
-                <div class="card shadow-sm mb-4 sticky-top" style="top: 20px;">
-                    <div class="card-header bg-success text-white">
-                        <h6 class="mb-0">
-                            <i class="fas fa-calculator me-2"></i>
-                            Resumo
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label small text-muted">Tipo de Dívida</label>
-                            <div class="fw-bold">
-                                {{ $type === 'product' ? '📦 Produtos/Serviços' : '💵 Dinheiro' }}
-                            </div>
+            <!-- Resumo Lateral -->
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl sticky top-24">
+                    <div class="flex items-center space-x-3 border-b border-slate-800 pb-4 mb-4">
+                        <div class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs">
+                            <i class="fa-solid fa-calculator"></i>
                         </div>
+                        <h3 class="text-sm font-black text-white font-heading">Resumo da Dívida</h3>
+                    </div>
+
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs text-slate-400">Tipo de Dívida:</span>
+                        <span class="text-xs font-bold text-white">{{ $type === 'product' ? 'Produtos / Serviços' : 'Empréstimo / Dinheiro' }}</span>
+                    </div>
 
                         @if ($type === 'product')
-                            <div class="mb-3">
-                                <label class="form-label small text-muted">Total de Itens</label>
-                                <div class="fw-bold" id="summary-items">0 produtos</div>
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-slate-500 block">Total de Artigos</span>
+                                <span class="text-xs font-bold text-white" id="summary-items">0 produtos</span>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label small text-muted">Valor Total</label>
-                                <div class="h4 mb-0 text-success" id="summary-total">MT 0,00</div>
-                            </div>
-                        @else
-                            <div class="mb-3">
-                                <label class="form-label small text-muted">Valor a Receber</label>
-                                <div class="h4 mb-0 text-success">-</div>
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-slate-500 block">Montante Total</span>
+                                <div class="text-xl font-black font-mono text-emerald-400" id="summary-total">MT 0,00</div>
                             </div>
                         @endif
 
-                        <hr>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Pagamento Inicial (Opcional)</label>
-                            <div class="input-group">
-                                <span class="input-group-text">MT</span>
-                                <input type="number" step="0.01" min="0" class="form-control"
-                                    name="initial_payment" value="{{ old('initial_payment') }}">
-                            </div>
-                            <small class="text-muted">Deixe vazio se não houver entrada</small>
+                        <div class="border-t border-slate-800 pt-4">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Entrada Inicial (MT)</label>
+                            <input type="number" step="0.01" min="0" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-mono"
+                                name="initial_payment" value="{{ old('initial_payment') }}" placeholder="0,00">
+                            <span class="text-[10px] text-slate-500 mt-1 block">Deixar vazio se não houver amortização imediata</span>
                         </div>
-                    </div>
-                    <div class="card-footer">
-                        <button type="submit" class="btn btn-success w-100 btn-lg">
-                            <i class="fas fa-save me-2"></i>
-                            Criar Dívida
+
+                        <button type="submit" class="w-full py-3 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> Confirmar & Criar Dívida
                         </button>
                     </div>
                 </div>
-
             </div>
         </div>
     </form>
+</div>
 @endsection
 
 @push('scripts')
     <script>
         let productsCart = [];
 
-        // Controle de devedor externo
         document.getElementById('is-external')?.addEventListener('change', function() {
             const employeeSelect = document.getElementById('employee-select');
             const employeeName = document.getElementById('employee-name');
-            
             if (this.checked) {
                 employeeSelect.value = '';
                 employeeSelect.disabled = true;
@@ -326,39 +300,19 @@
             }
         });
 
-        // Auto-preencher nome do funcionário
         document.getElementById('employee-select')?.addEventListener('change', function() {
             const selected = this.options[this.selectedIndex];
             const employeeName = document.getElementById('employee-name');
             employeeName.value = selected.dataset.name || '';
         });
 
-        // Initial state
-        if (document.getElementById('is-external')?.checked) {
-            const employeeSelect = document.getElementById('employee-select');
-            if (employeeSelect) employeeSelect.disabled = true;
-            const employeeName = document.getElementById('employee-name');
-            if (employeeName) {
-                employeeName.readOnly = false;
-                employeeName.placeholder = 'Digite o nome da pessoa externa...';
-            }
-        } else {
-            const employeeName = document.getElementById('employee-name');
-            if (employeeName && document.getElementById('employee-select')) {
-                employeeName.readOnly = true;
-            }
-        }
-
-        // Adicionar produto ao carrinho
         function addProduct() {
             const select = document.getElementById('product-select');
             const option = select.options[select.selectedIndex];
-
             if (!option.value) {
                 alert('Selecione um produto');
                 return;
             }
-
             if (option.disabled) {
                 alert('Produto sem stock disponível');
                 return;
@@ -375,7 +329,6 @@
                 quantity: 1
             };
 
-            // Verificar se já existe
             const existing = productsCart.find(p => p.product_id === product.product_id);
             if (existing) {
                 if (existing.quantity < product.stock) {
@@ -392,13 +345,11 @@
             select.value = '';
         }
 
-        // Remover produto
         function removeProduct(index) {
             productsCart.splice(index, 1);
             updateCart();
         }
 
-        // Atualizar quantidade
         function updateQuantity(index, value) {
             const qty = parseInt(value);
             if (qty > 0 && qty <= productsCart[index].stock) {
@@ -407,33 +358,30 @@
             }
         }
 
-        // Atualizar carrinho
         function updateCart() {
             const tbody = document.getElementById('products-tbody');
             let total = 0;
-
             tbody.innerHTML = '';
             productsCart.forEach((item, index) => {
                 const subtotal = item.quantity * item.unit_price;
                 total += subtotal;
-
                 tbody.innerHTML += `
-            <tr>
-                <td>${item.name}</td>
-                <td>
-                    <input type="number" class="form-control form-control-sm" 
-                           value="${item.quantity}" min="1" max="${item.stock}"
-                           onchange="updateQuantity(${index}, this.value)">
-                </td>
-                <td class="text-end">MT ${item.unit_price.toFixed(2)}</td>
-                <td class="text-end fw-bold">MT ${subtotal.toFixed(2)}</td>
-                <td class="text-center">
-                    <button type="button" class="btn btn-danger btn-sm" onclick="removeProduct(${index})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
+                    <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 text-white font-semibold">${item.name}</td>
+                        <td class="p-3">
+                            <input type="number" class="w-20 px-2 py-1 bg-slate-950 border border-slate-800 rounded-lg text-white text-xs font-mono text-center" 
+                                   value="${item.quantity}" min="1" max="${item.stock}"
+                                   onchange="updateQuantity(${index}, this.value)">
+                        </td>
+                        <td class="p-3 text-right font-mono text-slate-300">MT ${item.unit_price.toFixed(2)}</td>
+                        <td class="p-3 text-right font-mono font-bold text-emerald-400">MT ${subtotal.toFixed(2)}</td>
+                        <td class="p-3 text-center">
+                            <button type="button" class="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 text-xs transition" onclick="removeProduct(${index})">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
             });
 
             document.getElementById('products-total').textContent = `MT ${total.toFixed(2)}`;
@@ -442,7 +390,6 @@
             document.getElementById('products-json').value = JSON.stringify(productsCart);
         }
 
-        // Validar antes de enviar
         document.getElementById('debt-form').addEventListener('submit', function(e) {
             @if ($type === 'product')
                 if (productsCart.length === 0) {

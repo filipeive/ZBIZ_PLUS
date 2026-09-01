@@ -36,6 +36,16 @@ class Sale extends Model
         return $this->belongsTo(Customer::class);
     }
 
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
+    public function debt(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Debt::class, 'sale_id');
+    }
+
     public function getCustomerDisplayNameAttribute(): string
     {
         return $this->customer?->name ?? $this->customer_name ?? 'Cliente Avulso';

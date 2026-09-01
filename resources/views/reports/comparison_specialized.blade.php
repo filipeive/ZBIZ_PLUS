@@ -366,7 +366,15 @@
                             
                             @if($comparisons->count() >= 6)
                                 @php
-                                    $consistency = $comparisons->pluck('margin')->std();
+                                    $margins = $comparisons->pluck('margin');
+                                    $mCount = $margins->count();
+                                    if ($mCount > 1) {
+                                        $mMean = $margins->avg();
+                                        $mVariance = $margins->reduce(fn($carry, $item) => $carry + pow($item - $mMean, 2), 0) / ($mCount - 1);
+                                        $consistency = sqrt($mVariance);
+                                    } else {
+                                        $consistency = 0;
+                                    }
                                 @endphp
                                 @if($consistency < 5)
                                     <div class="list-group-item border-0 px-0">

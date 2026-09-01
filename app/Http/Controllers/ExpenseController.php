@@ -39,6 +39,12 @@ class ExpenseController extends Controller
         // Excluir ajustes técnicos da lista de despesas (ajustes não são gastos reais)
         $query->whereNotIn('type', ['cash_adjustment_out']);
 
+        // Filtrar por filial ativa
+        $branchId = current_branch_id();
+        if ($branchId) {
+            $query->where('branch_id', $branchId);
+        }
+
         // Somente Admin e Super Admin veem todas as transações. 
         // Gerentes e outros usuários veem apenas o que registraram.
         if (! auth()->user()->isAdmin()) {
@@ -156,7 +162,12 @@ class ExpenseController extends Controller
 
         try {
             $expense = DB::transaction(function () use ($validated, $productId, $quantity, $receiptPath) {
+                $branchId = current_branch_id();
+                $tenantId = current_tenant_id();
+
                 $expense = Expense::create([
+                    'tenant_id' => $tenantId,
+                    'branch_id' => $branchId,
                     'user_id' => auth()->id(),
                     'expense_category_id' => $validated['expense_category_id'],
                     'financial_account_id' => $validated['financial_account_id'],
@@ -175,6 +186,8 @@ class ExpenseController extends Controller
                     $product->increment('stock_quantity', $quantity);
 
                     StockMovement::create([
+                        'tenant_id' => $tenantId,
+                        'branch_id' => $branchId,
                         'product_id' => $product->id,
                         'user_id' => auth()->id(),
                         'movement_type' => 'in',

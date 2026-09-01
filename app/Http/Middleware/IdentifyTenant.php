@@ -50,14 +50,24 @@ class IdentifyTenant
 
             // Resolve branch
             $branch = null;
-            if (auth()->check() && auth()->user()->branch_id) {
-                $branch = Branch::where('tenant_id', $tenant->id)->find(auth()->user()->branch_id);
+
+            // 1. Session selection has precedence (allows Admin/Manager to switch branches)
+            if (session()->has('current_branch_id')) {
+                $branch = Branch::where('tenant_id', $tenant->id)
+                    ->where('is_active', true)
+                    ->find(session()->get('current_branch_id'));
             }
-            if (!$branch && session()->has('current_branch_id')) {
-                $branch = Branch::where('tenant_id', $tenant->id)->find(session()->get('current_branch_id'));
+
+            // 2. User assigned branch (default for the user if not switched via session)
+            if (!$branch && auth()->check() && auth()->user()->branch_id) {
+                $branch = Branch::where('tenant_id', $tenant->id)
+                    ->where('is_active', true)
+                    ->find(auth()->user()->branch_id);
             }
+
+            // 3. Fallback to main branch or first active branch
             if (!$branch) {
-                $branch = $tenant->mainBranch ?? $tenant->branches()->first();
+                $branch = $tenant->mainBranch ?? $tenant->branches()->where('is_active', true)->first();
             }
 
             if ($branch) {

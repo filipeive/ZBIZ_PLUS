@@ -42,7 +42,7 @@
 </head>
 <body>
     <div class="no-print">
-        <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR RECIBO (80mm)</button>
+        <button class="btn-print" onclick="window.print()">IMPRIMIR RECIBO (80mm)</button>
     </div>
 
     <div class="text-center">

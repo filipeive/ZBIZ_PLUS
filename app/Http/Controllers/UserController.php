@@ -163,7 +163,7 @@ class UserController extends Controller
         $request->validate($rules);
 
         $oldName = $user->name;
-        $data = $request->except('photo', 'password_confirmation');
+        $data = $request->except('photo', 'password_confirmation', 'password');
 
         if ($request->hasFile('photo')) {
             if ($user->photo_path) {
@@ -368,9 +368,11 @@ class UserController extends Controller
     /**
      * Display user activity log.
      */
-    public function activity(User $user)
+    public function activity(?User $user = null)
     {
-        if (!auth()->user()->canView($user)) {
+        $user ??= auth()->user();
+
+        if ($user->id !== auth()->id() && !auth()->user()->canView($user)) {
             return $this->error('users.index', 'Você não tem permissão para visualizar a atividade deste usuário.');
         }
 

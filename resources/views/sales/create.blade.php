@@ -288,10 +288,10 @@
                                 <label for="payment_method" class="form-label">Método de Pagamento *</label>
                                 <select class="form-control" id="payment_method" name="payment_method" required>
                                     <option value="">Selecione...</option>
-                                    <option value="cash">💵 Dinheiro</option>
-                                    <option value="card">💳 Cartão</option>
-                                    <option value="transfer">🏦 Transferência</option>
-                                    <option value="credit">🤝 Crédito</option>
+                                    <option value="cash">Dinheiro</option>
+                                    <option value="card">Cartão</option>
+                                    <option value="transfer">Transferência</option>
+                                    <option value="credit">Crédito</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
@@ -914,12 +914,10 @@
         }
 
         .product-card.popular::after {
-            content: '🔥';
+            content: '';
             position: absolute;
             top: 8px;
             left: 8px;
-            font-size: 16px;
-            animation: bounce 2s infinite;
         }
 
         @keyframes bounce {

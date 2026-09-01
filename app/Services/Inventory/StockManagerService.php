@@ -15,17 +15,33 @@ class StockManagerService
      */
     public function getStock(int $productId, ?int $branchId = null): int
     {
+        $product = Product::find($productId);
+        if (!$product) {
+            return 0;
+        }
+
+        // Se for serviço, stock físico não se aplica (permite venda contínua)
+        if ($product->type === 'service') {
+            return 999999;
+        }
+
+        // Se o produto consome stock de outro produto vinculado
+        if ($product->linked_product_id) {
+            return $this->getStock($product->linked_product_id, $branchId);
+        }
+
         $branchId ??= current_branch_id();
 
         if ($branchId) {
             $pb = ProductBranch::where('product_id', $productId)
                 ->where('branch_id', $branchId)
                 ->first();
-            return $pb ? (int)$pb->stock_quantity : 0;
+            if ($pb) {
+                return (int)$pb->stock_quantity;
+            }
         }
 
-        $product = Product::find($productId);
-        return $product ? (int)$product->stock_quantity : 0;
+        return (int)$product->stock_quantity;
     }
 
     /**
@@ -44,6 +60,12 @@ class StockManagerService
                 return;
             }
 
+            // Se for produto com vínculo de insumo
+            if ($product->linked_product_id) {
+                $this->adjustStock($product->linked_product_id, $quantity, $type, $branchId, $userId, "$reason (via {$product->name})", $referenceId);
+                return;
+            }
+
             // Atualizar stock global do produto
             if ($type === 'out') {
                 $product->decrement('stock_quantity', $quantity);
@@ -55,7 +77,7 @@ class StockManagerService
             if ($branchId) {
                 $pb = ProductBranch::firstOrCreate(
                     ['tenant_id' => current_tenant_id(), 'product_id' => $productId, 'branch_id' => $branchId],
-                    ['stock_quantity' => 0, 'min_stock_level' => $product->min_stock_level ?? 5]
+                    ['stock_quantity' => $product->stock_quantity, 'min_stock_level' => $product->min_stock_level ?? 5]
                 );
 
                 if ($type === 'out') {

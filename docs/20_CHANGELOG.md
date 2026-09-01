@@ -6,6 +6,34 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
+## [1.0.6] - 2026-09-01 - Segunda Auditoria Funcional, Isolamento de Filiais, Enriquecimento do Histórico de Vendas & Arquitetura SaaS Control Center
+### Fixed
+- **Precedência de Filial no Middleware `IdentifyTenant`:** Corrigida a lógica de resolução de filial para priorizar a sessão ativa (`session('current_branch_id')`), permitindo que administradores e gestores alternem dinamicamente entre filiais no Topbar Switcher sem conflito com o `user->branch_id`.
+- **Injeção de `branch_id` e `tenant_id` nos Controllers CRUD:** Garantido que vendas manuais (`SaleController`), despesas (`ExpenseController`), dívidas (`DebtController`), encomendas (`OrderController`) e movimentações de estoque (`StockMovementController`) gravem explicitamente `branch_id = current_branch_id()` e `tenant_id = current_tenant_id()`.
+- **Filtro de Filial nas Listagens Operacionais:** Aplicado escopo de filial em `SaleController::index`, `ExpenseController::index`, `DebtController::index`, `OrderController::index` e `StockMovementController::index` para assegurar isolamento operacional entre estabelecimentos.
+- **Relacionamentos em Models:** Adicionadas relações `User->branch()` e `User->tenant()` no model `User.php`.
+- **Layout Anti-Overlap no Firefox:** Reestruturado o container de `layouts/app.blade.php` para arquitetura `h-screen w-screen overflow-hidden` com cabeçalho fixo `flex-shrink-0` (64px) e `<main>` rolável independente.
+- **Consultas & Cálculos em Relatórios:** Corrigida query de vendas diárias, MySQL `ONLY_FULL_GROUP_BY` na análise ABC e cálculo de desvio padrão nativo em relatórios comparativos.
+- **Gráfico de Vendas no Dashboard:** Corrigido binding de dados para `chartData.salesData` e adicionada série de despesas (`expensesData`).
+
+### Added
+- **Enriquecimento do Histórico & Detalhes da Venda (`sales/show.blade.php`):**
+  - **Identificação & Faturação:** Número da venda, data/hora exata, filial de emissão, operador e cliente completo.
+  - **Artigos & Lotes:** Tabela com SKU/Barras, Lote ANARME e Validade, quantidade, unidade, preço unitário, desconto e subtotal líquido.
+  - **Pagamento & Caixa:** Badge do método de pagamento (Dinheiro, M-Pesa, e-Mola, Cartão POS, Fiado), valor entregue e troco devolvido.
+  - **Auditoria de Estoque:** Rastreamento visual de movimentações de saída associadas (`StockMovement`).
+  - **Ações de Impressão:** Botões diretos para Recibo Térmico (80mm) e Fatura A4 / PDF.
+- **Listagem de Vendas com Contexto (`sales/index.blade.php`):** Badges visuais de filial, badges de método de pagamento e atalho de visualização rápida da fatura.
+- **Seeder Operacional Multi-Tenant & Multi-Filial (`OperationalMultiBranchSeeder.php`):**
+  - Configuração de 2 Empresas (Farmácia Muzinga e Supermercado Zambézia).
+  - 4 Filiais operacionais (Matriz Maputo, Filial Matola, Sede Quelimane, Filial Mocuba).
+  - 6 Perfis com credenciais prontas (`super_admin`, `admin`, `manager`, `cashier`, `stock_manager`, `staff`).
+  - Dados de estoque por filial (`ProductBranch`), vendas e lotes isolados para validação cruzada.
+- **Documentação da Central de Controle SaaS (`docs/05_SAAS_CONTROL_CENTER.md`):**
+  - Especificação detalhada da hierarquia **Plataforma ZBPOS+ (Control Plane) → Tenant / Empresa → Filial / Loja → Utilizador**.
+  - Matriz de conceitos: **Plan**, **Subscription**, **License**, **Entitlement**, **Feature Flags** e **Branch Context**.
+  - Especificação do futuro painel de gestão administrativa do SaaS.
+
 ## [1.0.5] - 2026-09-01 - Modernização Total de Relatórios, Stock, Encomendas, Detalhes Show e Bloqueio de Stock no POS
 ### Fixed
 - **Fluxo e Sentido Financeiro no Livro-Razão:** Corrigida a condição de exibição em `finances/index.blade.php` para validar o campo `direction === 'in'` (Entrada verde com `+`), garantindo que vendas no POS constem sempre como receita e entrada de caixa.

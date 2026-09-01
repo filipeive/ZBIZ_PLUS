@@ -74,7 +74,7 @@ class ReportController extends Controller
         $dateFrom = $request->input('date_from', now()->startOfMonth()->format('Y-m-d'));
         $dateTo = $request->input('date_to', now()->format('Y-m-d'));
 
-        $sales = Sale::select(
+        $query = Sale::select(
                 \DB::raw('DATE(sale_date) as date'),
                 \DB::raw('SUM(total_amount) as total')
             )
@@ -721,17 +721,22 @@ class ReportController extends Controller
         $dateTo = $request->input('date_to', now()->format('Y-m-d'));
 
         // Análise de produtos por receita
-        $productAnalysis = Product::select('products.*')
+        $productAnalysis = \DB::table('products')
             ->join('sale_items', 'products.id', '=', 'sale_items.product_id')
             ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
             ->whereBetween('sales.sale_date', [$dateFrom, $dateTo])
-            ->groupBy('products.id')
-            ->selectRaw('
-                products.*,
-                SUM(sale_items.quantity) as total_quantity,
-                SUM(sale_items.total_price) as total_revenue,
-                COUNT(DISTINCT sales.id) as sales_transactions
-            ')
+            ->where('products.tenant_id', current_tenant_id() ?? 1)
+            ->whereNull('products.deleted_at')
+            ->groupBy('products.id', 'products.name', 'products.selling_price', 'products.purchase_price')
+            ->select(
+                'products.id',
+                'products.name',
+                'products.selling_price as price',
+                'products.purchase_price',
+                \DB::raw('SUM(sale_items.quantity) as total_quantity'),
+                \DB::raw('SUM(sale_items.total_price) as total_revenue'),
+                \DB::raw('COUNT(DISTINCT sales.id) as sales_transactions')
+            )
             ->orderByDesc('total_revenue')
             ->get();
 

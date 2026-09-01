@@ -1,163 +1,114 @@
 @extends('layouts.app')
 
-@section('title', 'Movimento Financeiro')
-@section('page-title', 'Movimento Financeiro')
-@section('title-icon', 'fa-wallet')
+@section('title', 'Movimento Financeiro #' . $transaction->id)
+@section('page-title', 'Movimento Financeiro #' . $transaction->id)
 
-@section('breadcrumbs')
-    <li class="breadcrumb-item"><a href="{{ route('finances.index') }}">Finanças</a></li>
-    <li class="breadcrumb-item active">Movimento #{{ $transaction->id }}</li>
-@endsection
+@php
+    $theme = tenant_theme();
+@endphp
 
 @section('content')
-<div class="container-fluid">
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <h6 class="mb-0">
-                <i class="fas fa-receipt me-2 text-primary"></i>
-                Detalhes do Movimento
-            </h6>
-            <div class="d-flex gap-2">
-                @if(auth()->check() && auth()->user()->isAdmin() && !$transaction->isReversed())
-                    <form action="{{ route('finances.transactions.toggle-metrics', $transaction) }}" method="POST" class="d-inline">
-                        @csrf
-                        @method('PATCH')
-                        <button type="submit" class="btn btn-sm {{ $transaction->include_in_metrics ? 'btn-outline-info' : 'btn-info text-white' }}" title="{{ $transaction->include_in_metrics ? 'Excluir das métricas' : 'Incluir nas métricas' }}">
-                            <i class="fas fa-chart-line me-1"></i>
-                            {{ $transaction->include_in_metrics ? 'Excluir das Métricas' : 'Incluir nas Métricas' }}
-                        </button>
-                    </form>
-                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmReversal({{ $transaction->id }})">
-                        <i class="fas fa-undo me-1"></i>Reverter Movimento
-                    </button>
-                @endif
-                <a href="{{ route('finances.index') }}" class="btn btn-outline-secondary btn-sm">
-                    <i class="fas fa-arrow-left me-1"></i>Voltar
-                </a>
-            </div>
-        </div>
-        <div class="card-body">
-            @if($transaction->isReversed())
-                <div class="alert alert-danger border-0 d-flex align-items-center mb-4">
-                    <i class="fas fa-undo-alt me-2 fa-lg"></i>
-                    <div>
-                        <strong>Este movimento foi revertido.</strong> 
-                        A transação de reversão correspondente é a #{{ $transaction->reversed_by }}.
-                    </div>
-                </div>
-            @endif
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem;">Descrição</small>
-                    <div class="fw-semibold h5">{{ $transaction->description }}</div>
-                </div>
-                <div class="col-md-3">
-                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem;">Status</small>
-                    <div>
-                        <span class="badge {{ $transaction->status === 'confirmed' ? 'bg-success' : 'bg-danger' }}">
-                            {{ strtoupper($transaction->status) }}
-                        </span>
-                        @if(!$transaction->include_in_metrics)
-                            <span class="badge bg-warning text-dark">FORA DAS MÉTRICAS</span>
-                        @endif
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem;">Valor</small>
-                    <div class="fw-bold h5 {{ $transaction->direction === 'in' ? 'text-success' : 'text-danger' }}">
-                        {{ $transaction->direction === 'in' ? '+' : '-' }} MT {{ number_format($transaction->amount, 2, ',', '.') }}
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem;">Data</small>
-                    <div class="fw-medium">{{ $transaction->transaction_date->format('d/m/Y') }}</div>
-                </div>
-                <div class="col-md-4">
-                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem;">Conta Financeira</small>
-                    <div class="fw-medium">{{ $transaction->account->name ?? '-' }}</div>
-                </div>
-                <div class="col-md-4">
-                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem;">Tipo de Operação</small>
-                    <div class="fw-medium">{{ ucfirst(str_replace('_', ' ', $transaction->type)) }}</div>
-                </div>
-                <div class="col-md-4">
-                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem;">Registrado por</small>
-                    <div>{{ $transaction->user->name ?? 'Sistema' }}</div>
-                </div>
-                <div class="col-md-4">
-                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem;">Meio de Pagamento</small>
-                    <div>{{ $transaction->payment_method ?: 'N/A' }}</div>
-                </div>
-                <div class="col-md-4">
-                    <small class="text-muted d-block text-uppercase" style="font-size: 0.7rem;">Referência</small>
-                    <div>
-                        @if($transaction->reference_type)
-                            <span class="badge bg-light text-dark border">
-                                {{ class_basename($transaction->reference_type) }} #{{ $transaction->reference_id }}
-                            </span>
-                        @else
-                            <span class="text-muted">Nenhuma</span>
-                        @endif
-                    </div>
-                </div>
-                <div class="col-12 mt-4">
-                    <div class="bg-light p-3 rounded">
-                        <small class="text-muted d-block text-uppercase mb-2" style="font-size: 0.7rem;">Notas e Observações</small>
-                        <div class="text-dark">{{ $transaction->notes ?: 'Sem observações adicionais.' }}</div>
-                    </div>
-                </div>
-                @if($transaction->reversal_of)
-                    <div class="col-12">
-                        <div class="alert alert-info border-0 mb-0">
-                            <i class="fas fa-link me-1"></i> Esta transação é uma reversão do movimento 
-                            <a href="{{ route('finances.transactions.show', $transaction->reversal_of) }}" class="alert-link">#{{ $transaction->reversal_of }}</a>.
-                        </div>
-                    </div>
-                @endif
-            </div>
-        </div>
-    </div>
-</div>
+<div class="max-w-4xl mx-auto space-y-6" x-data="{ showRevertModal: false }">
 
-@if(auth()->check() && auth()->user()->isAdmin())
-<div class="modal fade" id="revertTransactionModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-white">
-                <h5 class="modal-title">
-                    <i class="fas fa-exclamation-triangle me-2 text-danger"></i>Confirmar Reversão
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-            </div>
-            <div class="modal-body">
-                <p>Tem certeza que deseja reverter/excluir esta transação?</p>
-                <div class="alert alert-warning small mb-0">
-                    <i class="fas fa-info-circle me-1"></i>
-                    Esta ação irá restaurar o saldo da conta e marcar o movimento como revertido. Esta operação não pode ser desfeita.
-                </div>
-            </div>
-            <div class="modal-footer bg-white">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <form id="revertTransactionForm" method="POST">
+    <!-- Top Action Bar -->
+    <div class="flex items-center justify-between bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
+        <a href="{{ route('finances.index') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
+            <i class="fa-solid fa-arrow-left"></i> Voltar ao Livro-Razão
+        </a>
+
+        <div class="flex items-center gap-2">
+            @if(auth()->check() && auth()->user()->isAdmin() && !$transaction->isReversed())
+                <form action="{{ route('finances.transactions.toggle-metrics', $transaction) }}" method="POST" class="inline">
                     @csrf
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-undo me-1"></i>Confirmar Reversão
+                    @method('PATCH')
+                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold border transition {{ $transaction->include_in_metrics ? 'bg-slate-800 border-slate-700 text-slate-300 hover:text-white' : 'bg-amber-500/20 border-amber-500/30 text-amber-400' }}">
+                        <i class="fa-solid fa-chart-line mr-1"></i>
+                        {{ $transaction->include_in_metrics ? 'Excluir das Métricas' : 'Incluir nas Métricas' }}
                     </button>
                 </form>
-            </div>
+                <button type="button" @click="showRevertModal = true" class="px-4 py-2 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold hover:bg-rose-500/30 transition flex items-center gap-1">
+                    <i class="fa-solid fa-rotate-left"></i> Reverter Movimento
+                </button>
+            @endif
         </div>
     </div>
-</div>
-@endif
-@endsection
 
-@push('scripts')
-<script>
-function confirmReversal(transactionId) {
-    const form = document.getElementById('revertTransactionForm');
-    form.action = `{{ url('finances/transactions') }}/${transactionId}/revert`;
-    const modal = new bootstrap.Modal(document.getElementById('revertTransactionModal'));
-    modal.show();
-}
-</script>
-@endpush
+    @if($transaction->isReversed())
+        <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+            <i class="fa-solid fa-rotate-left text-base"></i>
+            <div>
+                <strong>Este movimento financeiro foi revertido/anulado.</strong>
+                @if($transaction->reversed_by)
+                    (Transação de estorno correspondente: #{{ $transaction->reversed_by }})
+                @endif
+            </div>
+        </div>
+    @endif
+
+    <!-- Transaction Summary Card -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+            <div>
+                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase border {{ $transaction->direction === 'in' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border-rose-500/30' }} inline-flex items-center gap-1 mb-2">
+                    <i class="fa-solid {{ $transaction->direction === 'in' ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down' }}"></i>
+                    {{ $transaction->direction === 'in' ? 'Entrada / Crédito' : 'Saída / Débito' }}
+                </span>
+                <h2 class="text-2xl font-black font-heading text-white">{{ $transaction->description }}</h2>
+                <div class="text-xs text-slate-400 mt-1">Conta: <span class="text-slate-200 font-bold">{{ $transaction->account->name ?? 'Geral' }}</span></div>
+            </div>
+
+            <div class="sm:text-right">
+                <div class="text-xs uppercase font-bold text-slate-400">Valor do Movimento</div>
+                <div class="text-3xl font-black font-heading font-mono {{ $transaction->direction === 'in' ? 'text-emerald-400' : 'text-rose-400' }}">
+                    {{ $transaction->direction === 'in' ? '+' : '-' }} {{ number_format($transaction->amount, 2, ',', '.') }} <span class="text-xs text-slate-400">MT</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs">
+            <div>
+                <div class="text-slate-500 font-bold uppercase text-[10px]">Data do Movimento</div>
+                <div class="font-bold text-white mt-0.5">{{ $transaction->transaction_date->format('d/m/Y') }}</div>
+            </div>
+            <div>
+                <div class="text-slate-500 font-bold uppercase text-[10px]">Tipo de Operação</div>
+                <div class="font-bold text-slate-200 mt-0.5">{{ ucfirst(str_replace('_', ' ', $transaction->type)) }}</div>
+            </div>
+            <div>
+                <div class="text-slate-500 font-bold uppercase text-[10px]">Registado Por</div>
+                <div class="font-bold text-slate-200 mt-0.5">{{ $transaction->user->name ?? 'Sistema' }}</div>
+            </div>
+        </div>
+
+        @if($transaction->notes)
+            <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 text-xs">
+                <div class="text-slate-500 font-bold uppercase text-[10px] mb-1">Notas & Observações</div>
+                <p class="text-slate-300 leading-relaxed">{{ $transaction->notes }}</p>
+            </div>
+        @endif
+    </div>
+
+    <!-- Modal Reversão -->
+    <div x-cloak x-show="showRevertModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+        <div @click.away="showRevertModal = false" class="bg-slate-900 border border-rose-900/60 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-sm font-black text-rose-400 flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Confirmar Reversão Financeira
+                </h3>
+                <button @click="showRevertModal = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <p class="text-xs text-slate-300 leading-relaxed">
+                Tem certeza que deseja anular e reverter esta transação? O saldo da conta será ajustado automaticamente para refletir o estorno.
+            </p>
+
+            <form action="{{ route('finances.transactions.revert', $transaction) }}" method="POST" class="pt-2 flex justify-end gap-2">
+                @csrf
+                <button type="button" @click="showRevertModal = false" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold">Cancelar</button>
+                <button type="submit" class="px-4 py-2 bg-rose-500 text-white rounded-xl text-xs font-bold hover:bg-rose-600">Sim, Confirmar Estorno</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+@endsection

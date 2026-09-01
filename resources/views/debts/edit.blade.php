@@ -1,318 +1,191 @@
 @extends('layouts.app')
 
-@section('title', 'Editar Dívida')
-@section('page-title', 'Editar Dívida')
+@section('title', 'Editar Dívida #' . $debt->id)
+@section('page-title', 'Editar Registo de Dívida')
+
+@php
+    $theme = tenant_theme();
+@endphp
 
 @section('content')
+<div class="space-y-6">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
         <div>
-            <h3 class="mb-1">
-                <i class="fas fa-edit me-2 text-warning"></i>
+            <h2 class="text-lg font-black font-heading text-white flex items-center gap-2">
+                <i class="fa-solid fa-pen-to-square text-amber-400"></i>
                 Editar Dívida #{{ $debt->id }}
-            </h3>
-            <p class="text-muted mb-0">
-                {{ $debt->debt_type_text }} - {{ $debt->debtor_name }}
-            </p>
+            </h2>
+            <p class="text-xs text-slate-400">{{ $debt->debt_type_text }} - {{ $debt->debtor_name }}</p>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('debts.show', $debt) }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left me-2"></i>
-                Voltar
+        <div class="flex items-center gap-2">
+            <a href="{{ route('debts.show', $debt) }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
             </a>
         </div>
     </div>
 
-    <!-- Alerta de Informação -->
-    <div class="alert alert-info mb-4">
-        <i class="fas fa-info-circle me-2"></i>
-        <strong>Nota:</strong> Apenas informações básicas podem ser editadas.
-        Produtos e valores não podem ser alterados após a criação.
+    <!-- Alerta Informativo -->
+    <div class="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-base"></i>
+        <span><strong>Nota:</strong> Apenas os dados de identificação, prazos e observações podem ser editados. Valores e artigos faturados não podem ser alterados para manter a integridade fiscal.</span>
     </div>
 
     <!-- Formulário -->
-    <form action="{{ route('debts.update', $debt) }}" method="POST">
+    <form action="{{ route('debts.update', $debt) }}" method="POST" class="space-y-6">
         @csrf
         @method('PUT')
 
-        <div class="row">
-            <div class="col-lg-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-6">
 
                 <!-- Informações do Devedor -->
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-warning text-dark">
-                        <h6 class="mb-0">
-                            <i class="fas fa-user me-2"></i>
+                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
+                    <div class="flex items-center space-x-3 border-b border-slate-800 pb-4 mb-4">
+                        <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-xs">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <h3 class="text-sm font-black text-white font-heading">
                             {{ $debt->isProductDebt() ? 'Informações do Cliente' : 'Informações do Funcionário' }}
-                        </h6>
+                        </h3>
                     </div>
-                    <div class="card-body">
-                        @if ($debt->isProductDebt())
-                            <!-- Dívida de Produtos -->
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Nome do Cliente *</label>
-                                    <input type="text" class="form-control @error('customer_name') is-invalid @enderror"
-                                        name="customer_name" value="{{ old('customer_name', $debt->customer_name) }}"
-                                        required>
-                                    @error('customer_name')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Telefone</label>
-                                    <input type="text" class="form-control @error('customer_phone') is-invalid @enderror"
-                                        name="customer_phone" value="{{ old('customer_phone', $debt->customer_phone) }}">
-                                    @error('customer_phone')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Documento</label>
-                                    <input type="text" class="form-control" name="customer_document"
-                                        value="{{ old('customer_document', $debt->customer_document) }}">
-                                </div>
+
+                    @if ($debt->isProductDebt())
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nome do Cliente *</label>
+                                <input type="text" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                                    name="customer_name" value="{{ old('customer_name', $debt->customer_name) }}" required>
+                                @error('customer_name')
+                                    <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
-                        @else
-                            <!-- Dívida de Dinheiro -->
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Funcionário</label>
-                                    <input type="text" class="form-control"
-                                        value="{{ $debt->employee->name ?? $debt->employee_name }}" disabled>
-                                    <small class="text-muted">Não é possível alterar o funcionário</small>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Nome Completo *</label>
-                                    <input type="text" class="form-control @error('employee_name') is-invalid @enderror"
-                                        name="employee_name" value="{{ old('employee_name', $debt->employee_name) }}"
-                                        required>
-                                    @error('employee_name')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Telefone</label>
-                                    <input type="text" class="form-control" name="employee_phone"
-                                        value="{{ old('employee_phone', $debt->employee_phone) }}">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Documento</label>
-                                    <input type="text" class="form-control" name="employee_document"
-                                        value="{{ old('employee_document', $debt->employee_document) }}">
-                                </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Telefone</label>
+                                <input type="text" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                                    name="customer_phone" value="{{ old('customer_phone', $debt->customer_phone) }}">
+                                @error('customer_phone')
+                                    <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
-                        @endif
-                    </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Documento</label>
+                                <input type="text" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                                    name="customer_document" value="{{ old('customer_document', $debt->customer_document) }}">
+                            </div>
+                        </div>
+                    @else
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Funcionário Vinculado</label>
+                                <input type="text" class="w-full px-4 py-2.5 bg-slate-950/50 border border-slate-800/80 rounded-xl text-slate-400 text-xs cursor-not-allowed"
+                                    value="{{ $debt->employee->name ?? $debt->employee_name }}" disabled>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nome Completo *</label>
+                                <input type="text" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                                    name="employee_name" value="{{ old('employee_name', $debt->employee_name) }}" required>
+                                @error('employee_name')
+                                    <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Telefone</label>
+                                <input type="text" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                                    name="employee_phone" value="{{ old('employee_phone', $debt->employee_phone) }}">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Documento</label>
+                                <input type="text" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                                    name="employee_document" value="{{ old('employee_document', $debt->employee_document) }}">
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
-                @if ($debt->isProductDebt() && $debt->items->count() > 0)
-                    <!-- Produtos (Visualização apenas) -->
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header bg-light">
-                            <h6 class="mb-0">
-                                <i class="fas fa-shopping-cart me-2"></i>
-                                Produtos da Dívida
-                                <span class="badge bg-secondary ms-2">Não editável</span>
-                            </h6>
+                <!-- Detalhes de Prazos -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
+                    <div class="flex items-center space-x-3 border-b border-slate-800 pb-4 mb-4">
+                        <div class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs">
+                            <i class="fa-solid fa-calendar-days"></i>
                         </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-sm">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Produto</th>
-                                            <th width="120" class="text-center">Quantidade</th>
-                                            <th width="120" class="text-end">Preço Unit.</th>
-                                            <th width="120" class="text-end">Total</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($debt->items as $item)
-                                            <tr>
-                                                <td>{{ $item->product->name }}</td>
-                                                <td class="text-center">{{ $item->quantity }}</td>
-                                                <td class="text-end">MT {{ number_format($item->unit_price, 2, ',', '.') }}
-                                                </td>
-                                                <td class="text-end fw-bold">MT
-                                                    {{ number_format($item->total_price, 2, ',', '.') }}</td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                    <tfoot class="table-light">
-                                        <tr>
-                                            <td colspan="3" class="text-end fw-bold">Total:</td>
-                                            <td class="text-end fw-bold">{{ $debt->formatted_original_amount }}</td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-                        </div>
+                        <h3 class="text-sm font-black text-white font-heading">Condições & Prazos</h3>
                     </div>
-                @endif
 
-                <!-- Detalhes da Dívida -->
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-warning text-dark">
-                        <h6 class="mb-0">
-                            <i class="fas fa-info-circle me-2"></i>
-                            Detalhes da Dívida
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Data da Dívida</label>
-                                <input type="date" class="form-control" value="{{ $debt->debt_date->format('Y-m-d') }}"
-                                    disabled>
-                                <small class="text-muted">Não é possível alterar a data de criação</small>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Data de Vencimento</label>
-                                <input type="date" class="form-control @error('due_date') is-invalid @enderror"
-                                    name="due_date" value="{{ old('due_date', $debt->due_date?->format('Y-m-d')) }}">
-                                @error('due_date')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label fw-semibold">Descrição *</label>
-                                <textarea class="form-control @error('description') is-invalid @enderror" name="description" rows="3" required>{{ old('description', $debt->description) }}</textarea>
-                                @error('description')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label fw-semibold">Observações</label>
-                                <textarea class="form-control" name="notes" rows="2">{{ old('notes', $debt->notes) }}</textarea>
-                            </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Data da Dívida</label>
+                            <input type="date" class="w-full px-4 py-2.5 bg-slate-950/50 border border-slate-800/80 rounded-xl text-slate-400 text-xs cursor-not-allowed"
+                                value="{{ $debt->debt_date->format('Y-m-d') }}" disabled>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Data de Vencimento</label>
+                            <input type="date" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                                name="due_date" value="{{ old('due_date', $debt->due_date?->format('Y-m-d')) }}">
+                            @error('due_date')
+                                <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Descrição *</label>
+                            <textarea class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                                name="description" rows="3" required>{{ old('description', $debt->description) }}</textarea>
+                            @error('description')
+                                <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Observações</label>
+                            <textarea class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                                name="notes" rows="2">{{ old('notes', $debt->notes) }}</textarea>
                         </div>
                     </div>
                 </div>
 
             </div>
 
-            <!-- Sidebar -->
-            <div class="col-lg-4">
-
-                <!-- Resumo -->
-                <div class="card shadow-sm mb-4 sticky-top" style="top: 20px;">
-                    <div class="card-header bg-info text-white">
-                        <h6 class="mb-0">
-                            <i class="fas fa-info-circle me-2"></i>
-                            Informações da Dívida
-                        </h6>
+            <!-- Resumo e Ações -->
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl space-y-4">
+                    <div class="flex items-center space-x-3 border-b border-slate-800 pb-4">
+                        <div class="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-xs">
+                            <i class="fa-solid fa-circle-info"></i>
+                        </div>
+                        <h3 class="text-sm font-black text-white font-heading">Estado da Conta</h3>
                     </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label small text-muted">Status</label>
-                            <div>
-                                <span class="badge {{ $debt->status_badge }}">
-                                    {{ $debt->status_text }}
-                                </span>
-                            </div>
+
+                    <div class="space-y-3">
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-500 block">Status</span>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                                {{ $debt->status_text }}
+                            </span>
                         </div>
-
-                        <div class="mb-3">
-                            <label class="form-label small text-muted">Valor Original</label>
-                            <div class="h4 mb-0">{{ $debt->formatted_original_amount }}</div>
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-500 block">Valor Original</span>
+                            <div class="text-base font-bold font-mono text-white">{{ $debt->formatted_original_amount }}</div>
                         </div>
-
-                        <div class="mb-3">
-                            <label class="form-label small text-muted">Já Pago</label>
-                            <div class="h5 mb-0 text-success">{{ $debt->formatted_amount_paid }}</div>
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-500 block">Já Amortizado</span>
+                            <div class="text-base font-bold font-mono text-emerald-400">{{ $debt->formatted_amount_paid }}</div>
                         </div>
-
-                        <div class="mb-3">
-                            <label class="form-label small text-muted">Restante</label>
-                            <div class="h4 mb-0 text-warning">{{ $debt->formatted_remaining_amount }}</div>
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-500 block">Saldo Restante</span>
+                            <div class="text-xl font-black font-mono text-rose-400">{{ $debt->formatted_remaining_amount }}</div>
                         </div>
-
-                        @if ($debt->payments->count() > 0)
-                            <hr>
-                            <div class="mb-3">
-                                <label class="form-label small text-muted">Pagamentos</label>
-                                <div class="fw-bold">{{ $debt->payments->count() }} pagamento(s)</div>
-                            </div>
-                        @endif
-
-                        @if ($debt->due_date)
-                            <hr>
-                            <div class="mb-3">
-                                <label class="form-label small text-muted">Vencimento</label>
-                                <div class="{{ $debt->is_overdue ? 'text-danger fw-bold' : '' }}">
-                                    {{ $debt->due_date->format('d/m/Y') }}
-                                </div>
-                                @if ($debt->is_overdue)
-                                    <small class="text-danger">
-                                        <i class="fas fa-exclamation-triangle"></i>
-                                        {{ $debt->days_overdue }} dias em atraso
-                                    </small>
-                                @endif
-                            </div>
-                        @endif
                     </div>
-                    <div class="card-footer">
-                        <button type="submit" class="btn btn-warning w-100 btn-lg">
-                            <i class="fas fa-save me-2"></i>
-                            Salvar Alterações
+
+                    <div class="pt-4 border-t border-slate-800 space-y-2">
+                        <button type="submit" class="w-full py-3 rounded-2xl bg-amber-500 text-slate-950 font-black text-xs hover:bg-amber-400 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> Salvar Alterações
                         </button>
+                        <a href="{{ route('debts.show', $debt) }}" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs flex items-center justify-center gap-2 transition">
+                            <i class="fa-solid fa-eye"></i> Ver Extrato Completo
+                        </a>
                     </div>
                 </div>
-
-                <!-- Ações Rápidas -->
-                <div class="card shadow-sm">
-                    <div class="card-header bg-light">
-                        <h6 class="mb-0">
-                            <i class="fas fa-lightning me-2"></i>
-                            Ações Rápidas
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-grid gap-2">
-                            <a href="{{ route('debts.show', $debt) }}" class="btn btn-outline-primary">
-                                <i class="fas fa-eye me-2"></i>
-                                Ver Detalhes
-                            </a>
-
-                            @if ($debt->canReceivePayment())
-                                <a href="{{ route('debts.payment', $debt) }}" class="btn btn-outline-success">
-                                    <i class="fas fa-money-bill me-2"></i>
-                                    Registrar Pagamento
-                                </a>
-                            @endif
-
-                            @if ($debt->canBeCancelled())
-                                <form action="{{ route('debts.cancel', $debt) }}" method="POST"
-                                    onsubmit="return confirm('Tem certeza que deseja cancelar esta dívida?')">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" class="btn btn-outline-danger w-100">
-                                        <i class="fas fa-ban me-2"></i>
-                                        Cancelar Dívida
-                                    </button>
-                                </form>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </div>
     </form>
+</div>
 @endsection
-
-@push('styles')
-    <style>
-        .sticky-top {
-            position: sticky;
-            z-index: 1020;
-        }
-
-        @media (max-width: 991px) {
-            .sticky-top {
-                position: relative;
-            }
-        }
-    </style>
-@endpush

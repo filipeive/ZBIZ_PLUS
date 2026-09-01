@@ -1,285 +1,176 @@
 @extends('layouts.app')
 
-@section('title', 'Resultados da Busca')
-@section('page-title')
-    <i class="fas fa-search"></i>
-    Resultados da Busca
-    @if(!empty($query))
-        <small class="text-muted">para "{{ $query }}"</small>
-    @endif
-@endsection
+@section('title', 'Resultados da Pesquisa')
+@section('page-title', 'Pesquisa Global do Sistema')
 
-@section('breadcrumbs')
-    <li class="breadcrumb-item active">
-        <i class="fas fa-search me-1"></i>
-        Busca
-        @if(!empty($query))
-            - "{{ Str::limit($query, 20) }}"
-        @endif
-    </li>
-@endsection
+@php
+    $theme = tenant_theme();
+@endphp
 
 @section('content')
-<div class="row">
-    <div class="col-12">
-        <!-- Barra de busca aprimorada -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <form method="GET" action="{{ route('search.index') }}" class="row g-3">
-                    <div class="col-md-8">
-                        <div class="input-group input-group-lg">
-                            <span class="input-group-text">
-                                <i class="fas fa-search"></i>
-                            </span>
-                            <input type="text" 
-                                   name="q" 
-                                   class="form-control" 
-                                   placeholder="Pesquisar produtos, clientes, vendas, pedidos..."
-                                   value="{{ $query }}"
-                                   autofocus>
-                        </div>
+<div class="space-y-6">
+
+    <!-- Caixa de Pesquisa Principal -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
+        <form method="GET" action="{{ route('search.index') }}" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+            <div class="md:col-span-8 relative">
+                <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 text-sm">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" 
+                       name="q" 
+                       value="{{ $query ?? '' }}"
+                       placeholder="Pesquisar produtos, códigos, faturas, clientes, pedidos..."
+                       class="w-full pl-11 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-white text-sm focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition"
+                       autofocus>
+            </div>
+
+            <div class="md:col-span-3">
+                <select name="type" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition">
+                    <option value="all" {{ ($type ?? 'all') === 'all' ? 'selected' : '' }}>Todos os Módulos</option>
+                    <option value="products" {{ ($type ?? '') === 'products' ? 'selected' : '' }}>Produtos & Stock</option>
+                    @if(userCan('view_sales'))
+                        <option value="sales" {{ ($type ?? '') === 'sales' ? 'selected' : '' }}>Vendas & Faturas</option>
+                    @endif
+                    @if(userCanAny(['view_orders', 'create_orders']))
+                        <option value="orders" {{ ($type ?? '') === 'orders' ? 'selected' : '' }}>Pedidos & Encomendas</option>
+                    @endif
+                    @if(userCan('manage_users'))
+                        <option value="users" {{ ($type ?? '') === 'users' ? 'selected' : '' }}>Utilizadores</option>
+                    @endif
+                </select>
+            </div>
+
+            <div class="md:col-span-1">
+                <button type="submit" class="w-full py-3 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-sm shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center justify-center">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    @if(empty($query))
+        <!-- Estado Inicial Sem Termos -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-12 text-center shadow-xl backdrop-blur-xl">
+            <div class="w-16 h-16 rounded-3xl bg-slate-800 border border-slate-700 flex items-center justify-center mx-auto mb-4 text-slate-500 text-2xl">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <h3 class="text-base font-black font-heading text-white mb-2">Digite o termo de busca acima</h3>
+            <p class="text-xs text-slate-400 max-w-md mx-auto mb-6">
+                Pesquise rapidamente em produtos por nome, código SKU, lote, número de fatura ou cliente associado.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto text-left">
+                <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
+                    <div class="flex items-center space-x-2 text-emerald-400 font-bold text-xs mb-1">
+                        <i class="fa-solid fa-box"></i>
+                        <span>Produtos</span>
                     </div>
-                    <div class="col-md-3">
-                        <select name="type" class="form-select form-select-lg">
-                            <option value="all" {{ ($type ?? 'all') === 'all' ? 'selected' : '' }}>Todos os tipos</option>
-                            <option value="products" {{ ($type ?? '') === 'products' ? 'selected' : '' }}>Produtos</option>
-                            @if(userCan('view_sales'))
-                                <option value="sales" {{ ($type ?? '') === 'sales' ? 'selected' : '' }}>Vendas</option>
-                            @endif
-                            @if(userCanAny(['view_orders', 'create_orders']))
-                                <option value="orders" {{ ($type ?? '') === 'orders' ? 'selected' : '' }}>Pedidos</option>
-                            @endif
-                            @if(userCan('manage_users'))
-                                <option value="users" {{ ($type ?? '') === 'users' ? 'selected' : '' }}>Usuários</option>
-                            @endif
-                        </select>
+                    <p class="text-[11px] text-slate-400">Nome, código de barras e SKU</p>
+                </div>
+                <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
+                    <div class="flex items-center space-x-2 text-blue-400 font-bold text-xs mb-1">
+                        <i class="fa-solid fa-receipt"></i>
+                        <span>Vendas</span>
                     </div>
-                    <div class="col-md-1">
-                        <button type="submit" class="btn btn-primary btn-lg w-100">
-                            <i class="fas fa-search"></i>
-                        </button>
+                    <p class="text-[11px] text-slate-400">Fatura, cliente e data</p>
+                </div>
+                <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
+                    <div class="flex items-center space-x-2 text-indigo-400 font-bold text-xs mb-1">
+                        <i class="fa-solid fa-clipboard-list"></i>
+                        <span>Pedidos</span>
                     </div>
-                </form>
+                    <p class="text-[11px] text-slate-400">Número da encomenda</p>
+                </div>
+                <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
+                    <div class="flex items-center space-x-2 text-amber-400 font-bold text-xs mb-1">
+                        <i class="fa-solid fa-users"></i>
+                        <span>Utilizadores</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Nome ou email de acesso</p>
+                </div>
+            </div>
+        </div>
+    @elseif(($totalResults ?? 0) === 0)
+        <!-- Nenhum Resultado Encontrado -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-12 text-center shadow-xl backdrop-blur-xl">
+            <div class="w-16 h-16 rounded-3xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mx-auto mb-4 text-rose-400 text-2xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="text-base font-black font-heading text-white mb-2">Nenhum resultado encontrado</h3>
+            <p class="text-xs text-slate-400 max-w-md mx-auto">
+                Não encontramos correspondências para "<span class="text-white font-bold">{{ $query }}</span>". Tente termos mais amplos ou verifique a ortografia.
+            </p>
+        </div>
+    @else
+        <!-- Resultados Listados -->
+        <div class="flex items-center justify-between px-2">
+            <div class="text-xs font-bold text-slate-400">
+                Encontrados <span class="text-emerald-400 font-black">{{ $totalResults }}</span> resultado(s) para "<span class="text-white font-bold">{{ $query }}</span>"
             </div>
         </div>
 
-        @if(empty($query))
-            <!-- Estado vazio inicial -->
-            <div class="card">
-                <div class="card-body text-center py-5">
-                    <i class="fas fa-search text-muted mb-4" style="font-size: 4rem; opacity: 0.3;"></i>
-                    <h4 class="text-muted mb-3">Digite sua busca acima</h4>
-                    <p class="text-muted mb-4">
-                        Você pode pesquisar por:
-                    </p>
-                    <div class="row justify-content-center">
-                        <div class="col-md-8">
-                            <div class="row text-start">
-                                <div class="col-md-6">
-                                    <ul class="list-unstyled">
-                                        <li class="mb-2">
-                                            <i class="fas fa-cube text-primary me-2"></i>
-                                            <strong>Produtos:</strong> nome, descrição, SKU
-                                        </li>
-                                        @if(userCan('view_sales'))
-                                            <li class="mb-2">
-                                                <i class="fas fa-shopping-cart text-success me-2"></i>
-                                                <strong>Vendas:</strong> número da fatura, cliente
-                                            </li>
-                                        @endif
-                                    </ul>
-                                </div>
-                                <div class="col-md-6">
-                                    <ul class="list-unstyled">
-                                        @if(userCanAny(['view_orders', 'create_orders']))
-                                            <li class="mb-2">
-                                                <i class="fas fa-clipboard-list text-info me-2"></i>
-                                                <strong>Pedidos:</strong> número do pedido, cliente
-                                            </li>
-                                        @endif
-                                        @if(userCan('manage_users'))
-                                            <li class="mb-2">
-                                                <i class="fas fa-users text-warning me-2"></i>
-                                                <strong>Usuários:</strong> nome, email
-                                            </li>
-                                        @endif
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @elseif($totalResults === 0)
-            <!-- Nenhum resultado encontrado -->
-            <div class="card">
-                <div class="card-body text-center py-5">
-                    <i class="fas fa-search-minus text-muted mb-4" style="font-size: 4rem; opacity: 0.3;"></i>
-                    <h4 class="text-muted mb-3">Nenhum resultado encontrado</h4>
-                    <p class="text-muted mb-4">
-                        Não encontramos nada para <strong>"{{ $query }}"</strong>
-                    </p>
-                    <div class="text-start">
-                        <h6>Dicas para melhorar sua busca:</h6>
-                        <ul class="text-muted">
-                            <li>Verifique a ortografia das palavras</li>
-                            <li>Use termos mais gerais</li>
-                            <li>Tente palavras-chave diferentes</li>
-                            <li>Use apenas uma palavra-chave</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        @else
-            <!-- Resultados encontrados -->
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <span class="badge bg-primary fs-6">{{ $totalResults }}</span>
-                            resultado{{ $totalResults !== 1 ? 's' : '' }} encontrado{{ $totalResults !== 1 ? 's' : '' }}
-                        </h5>
-                        <small class="text-muted">
-                            Busca por: <strong>{{ $query }}</strong>
-                        </small>
-                    </div>
-                </div>
-            </div>
-
-            @foreach($results as $type => $items)
-                <div class="card mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0">
-                            @switch($type)
+        @foreach($results as $resType => $items)
+            @if(count($items) > 0)
+                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center space-x-2 font-black text-sm text-white">
+                            @switch($resType)
                                 @case('products')
-                                    <i class="fas fa-cube text-primary me-2"></i>
-                                    Produtos
+                                    <i class="fa-solid fa-box text-emerald-400"></i>
+                                    <span>Produtos Encontrados</span>
                                     @break
                                 @case('sales')
-                                    <i class="fas fa-shopping-cart text-success me-2"></i>
-                                    Vendas
+                                    <i class="fa-solid fa-receipt text-blue-400"></i>
+                                    <span>Vendas & Faturas</span>
                                     @break
                                 @case('orders')
-                                    <i class="fas fa-clipboard-list text-info me-2"></i>
-                                    Pedidos
+                                    <i class="fa-solid fa-clipboard-list text-indigo-400"></i>
+                                    <span>Pedidos & Encomendas</span>
                                     @break
                                 @case('users')
-                                    <i class="fas fa-users text-warning me-2"></i>
-                                    Usuários
+                                    <i class="fa-solid fa-users text-amber-400"></i>
+                                    <span>Utilizadores</span>
                                     @break
                             @endswitch
-                        </h6>
-                        <span class="badge bg-light text-dark">{{ $items->count() }} itens</span>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="list-group list-group-flush">
-                            @foreach($items as $item)
-                                <a href="{{ $item['url'] }}" class="list-group-item list-group-item-action">
-                                    <div class="d-flex align-items-start">
-                                        <div class="flex-shrink-0 me-3">
-                                            <div class="d-flex align-items-center justify-content-center bg-light rounded" 
-                                                 style="width: 45px; height: 45px;">
-                                                <i class="{{ $item['icon'] }} text-primary"></i>
-                                            </div>
-                                        </div>
-                                        <div class="flex-grow-1 min-w-0">
-                                            <div class="d-flex justify-content-between align-items-start mb-1">
-                                                <h6 class="mb-1 fw-bold">{{ $item['title'] }}</h6>
-                                                @if(isset($item['badge']))
-                                                    <span class="badge {{ $item['badge_class'] }} ms-2">
-                                                        {{ $item['badge'] }}
-                                                    </span>
-                                                @endif
-                                            </div>
-                                            
-                                            @if(isset($item['subtitle']))
-                                                <p class="mb-1 text-muted small">
-                                                    <strong>{{ $item['subtitle'] }}</strong>
-                                                </p>
-                                            @endif
-                                            
-                                            @if(isset($item['description']))
-                                                <p class="mb-1 text-muted small">{{ $item['description'] }}</p>
-                                            @endif
-                                            
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                @if(isset($item['date']))
-                                                    <small class="text-muted">
-                                                        <i class="fas fa-clock me-1"></i>
-                                                        {{ $item['date'] }}
-                                                    </small>
-                                                @endif
-                                                
-                                                @if(isset($item['price']))
-                                                    <small class="fw-bold text-primary">
-                                                        {{ number_format($item['price'], 2) }} MZN
-                                                    </small>
-                                                @endif
-                                                
-                                                @if(isset($item['stock']))
-                                                    <small class="text-muted">
-                                                        Estoque: <span class="fw-bold {{ $item['stock'] > 0 ? 'text-success' : 'text-danger' }}">
-                                                            {{ $item['stock'] }}
-                                                        </span>
-                                                    </small>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        <div class="flex-shrink-0">
-                                            <i class="fas fa-chevron-right text-muted"></i>
-                                        </div>
-                                    </div>
-                                </a>
-                            @endforeach
                         </div>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                            {{ count($items) }} registos
+                        </span>
                     </div>
-                </div>
-            @endforeach
 
-            <!-- Ações rápidas baseadas nos resultados -->
-            @if($results->has('products') && userCan('create_sales'))
-                <div class="card border-primary">
-                    <div class="card-body text-center">
-                        <h6 class="text-primary mb-3">
-                            <i class="fas fa-bolt me-2"></i>
-                            Ação Rápida
-                        </h6>
-                        <p class="text-muted mb-3">
-                            Encontramos produtos relacionados à sua busca. Deseja criar uma venda?
-                        </p>
-                        <a href="{{ route('sales.create') }}" class="btn btn-primary">
-                            <i class="fas fa-cash-register me-2"></i>
-                            Ir para Ponto de Venda
-                        </a>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        @foreach($items as $item)
+                            <a href="{{ $item['url'] }}" class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 hover:bg-slate-800/40 transition flex items-center justify-between group">
+                                <div class="flex items-center space-x-3 min-w-0">
+                                    <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 group-hover:scale-105 transition shrink-0">
+                                        <i class="{{ $item['icon'] ?? 'fa-solid fa-circle-dot' }}"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="text-xs font-bold text-white truncate">{{ $item['title'] }}</div>
+                                        @if(isset($item['subtitle']))
+                                            <div class="text-[11px] text-slate-400 truncate">{{ $item['subtitle'] }}</div>
+                                        @endif
+                                        @if(isset($item['description']))
+                                            <div class="text-[10px] text-slate-500 truncate">{{ $item['description'] }}</div>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-3 shrink-0 pl-3">
+                                    @if(isset($item['price']))
+                                        <span class="text-xs font-mono font-black text-emerald-400">
+                                            {{ number_format($item['price'], 2, ',', '.') }} MT
+                                        </span>
+                                    @endif
+                                    <i class="fa-solid fa-chevron-right text-slate-600 text-xs group-hover:text-white transition"></i>
+                                </div>
+                            </a>
+                        @endforeach
                     </div>
                 </div>
             @endif
-        @endif
-    </div>
+        @endforeach
+    @endif
+
 </div>
-
-<style>
-.list-group-item-action:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    transition: all 0.2s ease;
-}
-
-.min-w-0 {
-    min-width: 0;
-}
-
-.card-header h6 {
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
-
-@media (max-width: 768px) {
-    .d-flex.justify-content-between.align-items-center {
-        flex-direction: column;
-        align-items: start;
-        gap: 0.5rem;
-    }
-}
-</style>
 @endsection

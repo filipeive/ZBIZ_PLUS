@@ -24,10 +24,12 @@ class OrderController extends Controller
     {
         $query = Order::with(['user', 'items'])->latest();
 
-        // Filtros (seu código existente está bom)
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        // Filtrar por filial ativa
+        $branchId = current_branch_id();
+        if ($branchId) {
+            $query->where('branch_id', $branchId);
         }
+
         // Filtros
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -154,8 +156,13 @@ class OrderController extends Controller
                     'estimated_amount' => $estimatedAmount
                 ]);
 
+                $branchId = current_branch_id();
+                $tenantId = current_tenant_id();
+
                 // Criar o pedido
                 $order = Order::create([
+                    'tenant_id' => $tenantId,
+                    'branch_id' => $branchId,
                     'user_id' => auth()->id(),
                     'customer_name' => $request->customer_name,
                     'customer_phone' => $request->customer_phone,
@@ -176,6 +183,8 @@ class OrderController extends Controller
                     $totalPrice = $item['quantity'] * $item['unit_price'];
 
                     OrderItem::create([
+                        'tenant_id' => $tenantId,
+                        'branch_id' => $branchId,
                         'order_id' => $order->id,
                         'product_id' => $item['product_id'] ?? null,
                         'item_name' => $item['item_name'],
@@ -192,6 +201,8 @@ class OrderController extends Controller
                 $remainingAmount = $order->estimated_amount - $order->advance_payment;
                 if ($request->create_debt && $remainingAmount > 0) {
                     Debt::create([
+                        'tenant_id' => $tenantId,
+                        'branch_id' => $branchId,
                         'user_id' => auth()->id(),
                         'customer_name' => $order->customer_name,
                         'customer_phone' => $order->customer_phone,

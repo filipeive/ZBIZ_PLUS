@@ -24,6 +24,7 @@ use App\Http\Controllers\Auth\PasswordChangeController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\DocumentTemplateController;
+use App\Http\Controllers\BranchController;
 
 
 
@@ -322,6 +323,17 @@ Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
         });
     });
 
+    // ===== FILIAIS / LOJAS (MULTI-BRANCH) =====
+    Route::prefix('branches')->name('branches.')->group(function () {
+        Route::get('/', [BranchController::class, 'index'])->name('index');
+        Route::get('/create', [BranchController::class, 'create'])->name('create');
+        Route::post('/', [BranchController::class, 'store'])->name('store');
+        Route::get('/{branch}/edit', [BranchController::class, 'edit'])->name('edit');
+        Route::put('/{branch}', [BranchController::class, 'update'])->name('update');
+        Route::delete('/{branch}', [BranchController::class, 'destroy'])->name('destroy');
+        Route::post('/switch/{branch}', [BranchController::class, 'switchBranch'])->name('switch');
+    });
+
     // ===== CATEGORIAS DE DESPESAS =====
     Route::resource('expense-categories', ExpenseCategoryController::class);
 
@@ -420,15 +432,14 @@ Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
         Route::get('/employees', [UserController::class, 'index'])->name('employees');
         Route::get('/employees/payroll', [UserController::class, 'payroll'])->name('employees.payroll');
+        Route::get('/payroll', [UserController::class, 'payroll'])->name('payroll');
+        Route::get('/activity/{user?}', [UserController::class, 'activity'])->name('activity');
         Route::get('/create', [UserController::class, 'create'])->name('create');
         Route::post('/', [UserController::class, 'store'])->name('store');
         Route::get('/{user}', [UserController::class, 'show'])->name('show');
         Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit');
         Route::put('/{user}', [UserController::class, 'update'])->name('update');
         Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
-
-        // Rotas de atividade
-        Route::get('/{user}/activity', [UserController::class, 'activity'])->name('activity');
 
         // Rotas de ação
         Route::post('/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('toggle-status');
@@ -454,12 +465,15 @@ Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
     Route::middleware('permissions:manage_settings')->group(function () {
         Route::get('/api/admin/settings', [AdminController::class, 'getSettings'])->name('admin.settings.get');
         Route::post('/admin/settings', [AdminController::class, 'saveSettings'])->name('admin.settings.save');
-Route::prefix('documents/templates')->name('documents.templates.')->group(function () {
-    Route::get('/', [DocumentTemplateController::class, 'index'])->name('index');
-    Route::post('/rent-contract', [DocumentTemplateController::class, 'updateRentContract'])->name('rent-contract.update');
-    Route::get('/rent-contract/print', [DocumentTemplateController::class, 'printRentContract'])->name('rent-contract.print');
-    Route::get('/physical-receipt-book/pdf', [DocumentTemplateController::class, 'printPhysicalReceiptBook'])->name('physical-receipt.print');
-});
+        Route::prefix('documents/templates')->name('documents.templates.')->group(function () {
+            Route::get('/', [DocumentTemplateController::class, 'index'])->name('index');
+            Route::post('/rent-contract', [DocumentTemplateController::class, 'updateRentContract'])->name('rent-contract.update');
+            Route::get('/rent-contract/print', [DocumentTemplateController::class, 'printRentContract'])->name('rent-contract.print');
+            Route::get('/physical-receipt-book/pdf', [DocumentTemplateController::class, 'printPhysicalReceiptBook'])->name('physical-receipt.print');
+        });
+        Route::prefix('document-templates')->name('document-templates.')->group(function () {
+            Route::get('/', [DocumentTemplateController::class, 'index'])->name('index');
+        });
     });
 
     Route::middleware('permissions:backup_system')->group(function () {

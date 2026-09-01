@@ -18,7 +18,7 @@
                     <i class="fa-solid {{ $theme['icon'] }}"></i> {{ $theme['sector_name'] }}
                 </span>
                 <h2 class="text-2xl sm:text-3xl font-black font-heading text-white">
-                    Olá, {{ auth()->user()->name }}! 👋
+                    Olá, {{ auth()->user()->name }}!
                 </h2>
                 <p class="text-xs sm:text-sm text-slate-400 mt-1 max-w-xl">
                     Acompanhe o desempenho das suas vendas, stock em tempo real e saúde financeira da sua loja.
@@ -95,7 +95,8 @@
                 </div>
                 <div class="flex items-center gap-2 mt-2 text-xs">
                     <span class="text-slate-400">Margem Líquida:</span>
-                    <span class="font-bold text-teal-400">{{ $monthNetMargin ?? 0 }}%</span>
+                    <!--aredondear a margem líquida para 2 casas decimais e adicionar o símbolo de % -->
+                    <span class="font-bold text-teal-400">{{ number_format($monthNetMargin ?? 0, 2, ',', '.') }}%</span>
                 </div>
             </div>
         </div>
@@ -239,31 +240,59 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctx = document.getElementById('salesChart');
     if (!ctx) return;
 
-    const chartData = @json($salesChartData ?? ['labels' => [], 'data' => []]);
+    const chartData = @json($salesChartData ?? ['labels' => [], 'salesData' => [], 'expensesData' => []]);
+    const salesSeries = chartData.salesData || chartData.data || [0, 0, 0, 0, 0, 0, 0];
+    const expensesSeries = chartData.expensesData || [0, 0, 0, 0, 0, 0, 0];
 
     new Chart(ctx, {
         type: 'line',
         data: {
-            labels: chartData.labels || ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
-            datasets: [{
-                label: 'Vendas (MT)',
-                data: chartData.data || [0, 0, 0, 0, 0, 0, 0],
-                borderColor: '{{ $theme["hex"] }}',
-                backgroundColor: '{{ $theme["glow"] }}',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.3,
-                pointBackgroundColor: '#0f172a',
-                pointBorderColor: '{{ $theme["hex"] }}',
-                pointBorderWidth: 2,
-                pointRadius: 4,
-            }]
+            labels: chartData.labels && chartData.labels.length ? chartData.labels : ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+            datasets: [
+                {
+                    label: 'Vendas (MT)',
+                    data: salesSeries,
+                    borderColor: '{{ $theme["hex"] }}',
+                    backgroundColor: '{{ $theme["glow"] }}',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.35,
+                    pointBackgroundColor: '#0f172a',
+                    pointBorderColor: '{{ $theme["hex"] }}',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                },
+                {
+                    label: 'Despesas (MT)',
+                    data: expensesSeries,
+                    borderColor: '#f43f5e',
+                    backgroundColor: 'rgba(244, 63, 94, 0.05)',
+                    borderWidth: 2,
+                    borderDash: [4, 4],
+                    fill: false,
+                    tension: 0.35,
+                    pointBackgroundColor: '#0f172a',
+                    pointBorderColor: '#f43f5e',
+                    pointBorderWidth: 2,
+                    pointRadius: 3,
+                }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { display: false },
+                legend: { 
+                    display: true, 
+                    position: 'top', 
+                    align: 'end',
+                    labels: { 
+                        color: '#94a3b8', 
+                        font: { size: 10, weight: 'bold' },
+                        boxWidth: 12,
+                        boxHeight: 12
+                    } 
+                },
                 tooltip: {
                     backgroundColor: '#0f172a',
                     titleColor: '#f8fafc',

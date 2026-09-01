@@ -1,353 +1,261 @@
 @extends('layouts.app')
 
-@section('title', 'Editar Produto')
-@section('page-title', 'Editar Produto/Serviço')
-@section('title-icon', 'fa-edit')
+@section('title', 'Editar: ' . $product->name)
+@section('page-title', 'Editar Artigo / Medicamento')
+
 @php
-    $titleIcon = 'fas fa-edit me-2';
+    $theme = tenant_theme();
+    $isPharmacy = current_tenant()?->isPharmacy() ?? false;
+    $hasExistingBatch = !empty($latestBatch) || $isPharmacy;
 @endphp
 
-@section('breadcrumbs')
-    <li class="breadcrumb-item"><a href="{{ route('products.index') }}">Produtos</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('products.show', $product->id) }}">{{ $product->name }}</a></li>
-    <li class="breadcrumb-item active">Editar</li>
-@endsection
-
 @section('content')
-    <div class="row justify-content-center">
-        <div class="content wrapper">
-            <div class="card shadow">
-                <div class="card-header bg-warning text-dark">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="fas fa-edit me-2"></i>
-                            Editar {{ $product->type === 'service' ? 'Serviço' : 'Produto' }}
-                        </h5>
-                        <div>
-                            <a href="{{ route('products.show', $product->id) }}" class="btn btn-sm btn-info me-2">
-                                <i class="fas fa-eye me-1"></i>Ver Detalhes
-                            </a>
-                            <a href="{{ route('products.index') }}" class="btn btn-sm btn-light">
-                                <i class="fas fa-arrow-left me-1"></i>Voltar
-                            </a>
-                        </div>
-                    </div>
-                </div>
+<div class="max-w-4xl mx-auto space-y-6" x-data="{ showStockModal: false, hasBatch: {{ $hasExistingBatch ? 'true' : 'false' }} }">
 
-                <div class="card-body">
-                    <!-- Info atual do produto -->
-                    <div class="alert alert-info mb-4">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <h6 class="mb-1">{{ $product->name }}</h6>
-                                <small class="text-muted">
-                                    {{ $product->type === 'product' ? 'Produto' : 'Serviço' }} •
-                                    Categoria: {{ $product->category->name ?? 'N/A' }}
-                                </small>
-                            </div>
-                            <div class="col-md-4 text-end">
-                                @if ($product->type === 'product')
-                                    <div class="fw-bold">
-                                        Estoque: {{ $product->stock_quantity }} {{ $product->unit }}
-                                    </div>
-                                    @if ($product->isLowStock())
-                                        <span class="badge bg-warning">Estoque Baixo</span>
-                                    @endif
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    <form method="POST" action="{{ route('products.update', $product->id) }}" class="needs-validation"
-                        novalidate>
-                        @csrf
-                        @method('PUT')
-
-                        <div class="row">
-                            <!-- Nome -->
-                            <div class="col-md-8 mb-3">
-                                <label for="name" class="form-label fw-semibold">Nome *</label>
-                                <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                    id="name" name="name" value="{{ old('name', $product->name) }}" maxlength="150"
-                                    required>
-                                @error('name')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <!-- Categoria -->
-                            <div class="col-md-4 mb-3">
-                                <label for="category_id" class="form-label fw-semibold">Categoria *</label>
-                                <select class="form-select @error('category_id') is-invalid @enderror" id="category_id"
-                                    name="category_id" required>
-                                    <option value="">Selecione uma categoria</option>
-                                    @foreach ($categories as $category)
-                                        <option value="{{ $category->id }}"
-                                            {{ old('category_id', $product->category_id) == $category->id ? 'selected' : '' }}>
-                                            {{ $category->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('category_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <!-- Preço de Venda -->
-                            <div class="col-md-6 mb-3">
-                                <label for="selling_price" class="form-label fw-semibold">Preço de Venda *</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control @error('selling_price') is-invalid @enderror"
-                                        id="selling_price" name="selling_price"
-                                        value="{{ old('selling_price', $product->selling_price) }}" step="0.01"
-                                        min="0" required>
-                                    <span class="input-group-text">MT</span>
-                                </div>
-                                @error('selling_price')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <!-- Preço de Compra -->
-                            <div class="col-md-6 mb-3">
-                                <label for="purchase_price" class="form-label fw-semibold">Preço de Compra</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control @error('purchase_price') is-invalid @enderror"
-                                        id="purchase_price" name="purchase_price"
-                                        value="{{ old('purchase_price', $product->purchase_price) }}" step="0.01"
-                                        min="0">
-                                    <span class="input-group-text">MT</span>
-                                </div>
-                                @error('purchase_price')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <!-- Campos específicos para produtos -->
-                        @if ($product->type === 'product')
-                            <div id="product-fields">
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="unit" class="form-label fw-semibold">Unidade</label>
-                                        <input type="text" class="form-control @error('unit') is-invalid @enderror"
-                                            id="unit" name="unit" value="{{ old('unit', $product->unit) }}"
-                                            maxlength="20" placeholder="unid, kg, m...">
-                                        @error('unit')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label for="min_stock_level" class="form-label fw-semibold">Estoque Mínimo *</label>
-                                        <input type="number"
-                                            class="form-control @error('min_stock_level') is-invalid @enderror"
-                                            id="min_stock_level" name="min_stock_level"
-                                            value="{{ old('min_stock_level', $product->min_stock_level) }}" min="0"
-                                            required>
-                                        @error('min_stock_level')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                        <div class="form-text">
-                                            <i class="fas fa-info-circle me-1"></i>
-                                            Para ajustar o estoque atual, use o botão "Ajustar Estoque"
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Botão para ajustar estoque -->
-                                <div class="alert alert-warning">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>Estoque Atual: {{ $product->stock_quantity }}
-                                                {{ $product->unit }}</strong>
-                                            @if ($product->isLowStock())
-                                                <span class="badge bg-danger ms-2">Baixo</span>
-                                            @endif
-                                        </div>
-                                        <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal"
-                                            data-bs-target="#stockModal">
-                                            <i class="fas fa-cubes me-1"></i>Ajustar Estoque
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-
-                        <!-- Consumo de Stock (Vincular a outro produto) -->
-                        <div class="card mb-3 bg-light border-0">
-                            <div class="card-body">
-                                <label for="linked_product_id" class="form-label fw-semibold">
-                                    <i class="fas fa-link me-2 text-primary"></i>Vincular Consumo de Stock
-                                </label>
-                                <select class="form-select @error('linked_product_id') is-invalid @enderror" 
-                                        id="linked_product_id" name="linked_product_id">
-                                    <option value="">Nenhum (Reduz o próprio stock ou nenhum)</option>
-                                    @foreach ($physicalProducts as $p)
-                                        <option value="{{ $p->id }}" {{ old('linked_product_id', $product->linked_product_id) == $p->id ? 'selected' : '' }}>
-                                            {{ $p->name }} (Disponível: {{ $p->stock_quantity }} {{ $p->unit }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <div class="form-text mt-2">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    Se selecionar um produto aqui, sempre que vender este item, o stock será reduzido do <strong>produto vinculado</strong>. 
-                                    (Ex: Vincule "Cópia A4" ao produto "Papel A4").
-                                </div>
-                                @error('linked_product_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <!-- Descrição -->
-                        <div class="mb-3">
-                            <label for="description" class="form-label fw-semibold">Descrição</label>
-                            <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description"
-                                rows="3" maxlength="500">{{ old('description', $product->description) }}</textarea>
-                            <div class="form-text">Máximo 500 caracteres</div>
-                            @error('description')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Status -->
-                        <div class="mb-4">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="is_active" name="is_active"
-                                    value="1" {{ old('is_active', $product->is_active) ? 'checked' : '' }}>
-                                <label class="form-check-label fw-semibold" for="is_active">
-                                    {{ $product->type === 'service' ? 'Serviço' : 'Produto' }} Ativo
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Botões -->
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{{ route('products.show', $product->id) }}" class="btn btn-secondary me-md-2">
-                                <i class="fas fa-times me-2"></i>Cancelar
-                            </a>
-                            <button type="submit" class="btn btn-warning">
-                                <i class="fas fa-save me-2"></i>Salvar Alterações
-                            </button>
-                        </div>
-                    </form>
-                </div>
+    <!-- Top Action Bar -->
+    <div class="flex items-center justify-between bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <i class="fa-solid fa-box-open text-lg"></i>
             </div>
+            <div>
+                <h2 class="text-lg font-black font-heading text-white">{{ $product->name }}</h2>
+                <p class="text-xs text-slate-400">{{ $product->type === 'service' ? 'Serviço Prestado' : 'Produto Físico em Stock' }}</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            @if($isPharmacy)
+                <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $theme['badge'] }} flex items-center gap-1.5 hidden sm:flex">
+                    <i class="fa-solid fa-pills"></i> Módulo Farmácia / ANARME
+                </span>
+            @endif
+            <a href="{{ route('products.show', $product->id) }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
+                <i class="fa-solid fa-eye"></i> Ver Detalhes
+            </a>
+            <a href="{{ route('products.index') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
+            </a>
         </div>
     </div>
 
-    <!-- Modal de Ajuste de Estoque -->
-    @if ($product->type === 'product')
-        <div class="modal fade" id="stockModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <form method="POST" action="{{ route('products.adjust-stock', $product->id) }}">
-                        @csrf
-                        <div class="modal-header bg-success text-white">
-                            <h5 class="modal-title">
-                                <i class="fas fa-cubes me-2"></i>Ajustar Estoque
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="alert alert-light mb-3">
-                                <h6 class="mb-1">{{ $product->name }}</h6>
-                                <small class="text-muted">
-                                    Estoque atual: {{ $product->stock_quantity }} {{ $product->unit }}
-                                </small>
-                            </div>
+    <!-- Edit Form -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+        <form method="POST" action="{{ route('products.update', $product->id) }}" class="space-y-6">
+            @csrf
+            @method('PUT')
 
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Tipo de Ajuste *</label>
-                                <select class="form-select" name="adjustment_type" required>
-                                    <option value="">Selecione</option>
-                                    <option value="increase">Entrada (+)</option>
-                                    <option value="decrease">Saída (-)</option>
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Quantidade *</label>
-                                <input type="number" class="form-control" name="quantity" min="1" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Motivo *</label>
-                                <textarea class="form-control" name="reason" rows="3" maxlength="200" required></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                Cancelar
-                            </button>
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-save me-2"></i>Confirmar Ajuste
-                            </button>
-                        </div>
-                    </form>
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-base font-black text-white font-heading">Informações Gerais do Artigo</h2>
+                    <p class="text-xs text-slate-400">Atualize os dados de identificação, preço, lote e validade.</p>
                 </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold text-slate-300 mb-1">
+                        {{ $isPharmacy ? 'Nome Comercial & Dosagem do Medicamento *' : 'Nome do Artigo / Serviço *' }}
+                    </label>
+                    <input type="text" name="name" value="{{ old('name', $product->name) }}" required
+                           placeholder="{{ $isPharmacy ? 'Ex: Amoxicilina 500mg Cápsulas' : 'Ex: Produto A' }}"
+                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                    @error('name') <p class="text-rose-400 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Categoria *</label>
+                    <select name="category_id" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                        @foreach ($categories as $category)
+                            <option value="{{ $category->id }}" {{ old('category_id', $product->category_id) == $category->id ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Tipo de Artigo</label>
+                    <select name="type" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                        <option value="product" {{ old('type', $product->type) === 'product' ? 'selected' : '' }}>Produto Físico (com stock)</option>
+                        <option value="service" {{ old('type', $product->type) === 'service' ? 'selected' : '' }}>Serviço / Mão de Obra</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Código de Barras / EAN</label>
+                    <input type="text" name="barcode" value="{{ old('barcode', $product->barcode) }}" placeholder="Ex: 5601234567890"
+                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Código Interno (SKU / Registo ANARME)</label>
+                    <input type="text" name="sku" value="{{ old('sku', $product->sku) }}" placeholder="Ex: MED-001"
+                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Preço de Compra / Custo (MT)</label>
+                    <input type="number" step="0.01" min="0" name="purchase_price" value="{{ old('purchase_price', $product->purchase_price) }}"
+                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none font-mono">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Preço de Venda ao Público (MT) *</label>
+                    <input type="number" step="0.01" min="0" name="selling_price" value="{{ old('selling_price', $product->selling_price) }}" required
+                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none font-mono font-bold">
+                </div>
+
+                @if ($product->type === 'product')
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Unidade de Medida</label>
+                        <input type="text" name="unit" value="{{ old('unit', $product->unit ?? 'un') }}" placeholder="un, comprimido, frasco, cx..."
+                               class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Stock Mínimo para Alerta *</label>
+                        <input type="number" name="min_stock_level" value="{{ old('min_stock_level', $product->min_stock_level) }}" min="0" required
+                               class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none font-mono">
+                    </div>
+
+                    <div class="sm:col-span-2 p-4 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+                        <div>
+                            <div class="text-xs text-slate-400 font-bold uppercase tracking-wider">Stock Disponível Atual</div>
+                            <div class="text-xl font-black font-mono text-emerald-400 mt-0.5">{{ $product->stock_quantity }} {{ $product->unit ?? 'un' }}</div>
+                        </div>
+                        <button type="button" @click="showStockModal = true" class="px-4 py-2 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-400 font-bold text-xs hover:bg-amber-500/30 transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-boxes-packing"></i> Ajustar Inventário
+                        </button>
+                    </div>
+                @endif
+            </div>
+
+            <!-- SECÇÃO ESPECIALIZADA: CONTROLO DE LOTE & VALIDADE (ANARME / FEFO) -->
+            <div class="pt-4 border-t border-slate-800 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-check text-emerald-400"></i> Controlo de Lote & Data de Validade
+                        </h3>
+                        <p class="text-[11px] text-slate-400">Essencial para medicamentos, perecíveis e rastreabilidade FEFO.</p>
+                    </div>
+
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" x-model="hasBatch" class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                </div>
+
+                <div x-show="hasBatch" x-transition class="p-5 rounded-2xl bg-slate-950/80 border border-emerald-500/20 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-emerald-400 mb-1">
+                            Número do Lote (Batch Number) *
+                        </label>
+                        <input type="text" name="batch_number" value="{{ old('batch_number', $latestBatch?->batch_number) }}"
+                               placeholder="Ex: LT-2026/09A"
+                               class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-emerald-400 mb-1">
+                            Data de Validade (Expiry Date) *
+                        </label>
+                        <input type="date" name="expiry_date" value="{{ old('expiry_date', $latestBatch?->expiry_date?->format('Y-m-d')) }}"
+                               class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-1">
+                            Data de Fabrico (Opcional)
+                        </label>
+                        <input type="date" name="manufacture_date" value="{{ old('manufacture_date', $latestBatch?->manufacture_date?->format('Y-m-d')) }}"
+                               class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                    </div>
+
+                    <div class="flex items-center pt-5">
+                        <div class="text-[11px] text-slate-400 leading-tight">
+                            <i class="fa-solid fa-shield-halved text-emerald-400 mr-1"></i>
+                            O ZBIZ+ alertará automaticamente quando faltarem <strong>90, 60 e 30 dias</strong> para o vencimento.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vínculo de Consumo -->
+            <div class="pt-4 border-t border-slate-800 space-y-4">
+                <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                        <i class="fa-solid fa-link text-emerald-400 mr-1"></i> Vincular Consumo de Stock Automático (Opcional)
+                    </label>
+                    <select name="linked_product_id" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-white text-xs">
+                        <option value="">Nenhum vínculo (reduz o próprio item)</option>
+                        @foreach ($physicalProducts as $p)
+                            <option value="{{ $p->id }}" {{ old('linked_product_id', $product->linked_product_id) == $p->id ? 'selected' : '' }}>
+                                {{ $p->name }} (Stock: {{ $p->stock_quantity }} {{ $p->unit }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Descrição / Posologia / Detalhes</label>
+                    <textarea name="description" rows="3" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500">{{ old('description', $product->description) }}</textarea>
+                </div>
+
+                <div>
+                    <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                        <input type="checkbox" name="is_active" value="1" {{ old('is_active', $product->is_active) ? 'checked' : '' }} class="rounded bg-slate-950 border-slate-800 text-emerald-500">
+                        <span>Item Ativo para Vendas e Prescrições</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+                <a href="{{ route('products.index') }}" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">Cancelar</a>
+                <button type="submit" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition">
+                    Guardar Alterações
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Modal Ajustar Stock -->
+    @if ($product->type === 'product')
+        <div x-cloak x-show="showStockModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+            <div @click.away="showStockModal = false" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 class="text-sm font-black text-white font-heading">Ajustar Inventário: {{ $product->name }}</h3>
+                    <button @click="showStockModal = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <form method="POST" action="{{ route('products.adjust-stock', $product->id) }}" class="space-y-4">
+                    @csrf
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Operação *</label>
+                        <select name="adjustment_type" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs">
+                            <option value="increase">Entrada / Adicionar Stock (+)</option>
+                            <option value="decrease">Saída / Dar Baixa (-)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Quantidade *</label>
+                        <input type="number" name="quantity" min="1" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-mono">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Motivo / Justificação *</label>
+                        <textarea name="reason" rows="2" required placeholder="Ex: Contagem física, avaria, reposição..." class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs"></textarea>
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+                        <button type="button" @click="showStockModal = false" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold">Cancelar</button>
+                        <button type="submit" class="px-5 py-2 rounded-xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs">Confirmar Ajuste</button>
+                    </div>
+                </form>
             </div>
         </div>
     @endif
+
+</div>
 @endsection
-
-@push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Validação do Bootstrap
-            const forms = document.querySelectorAll('.needs-validation');
-            Array.prototype.slice.call(forms).forEach(function(form) {
-                form.addEventListener('submit', function(event) {
-                    if (!form.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                }, false);
-            });
-
-            // Calcular margem
-            const sellingPrice = document.getElementById('selling_price');
-            const purchasePrice = document.getElementById('purchase_price');
-
-            function showMarginInfo() {
-                const selling = parseFloat(sellingPrice.value) || 0;
-                const purchase = parseFloat(purchasePrice.value) || 0;
-
-                if (selling > 0 && purchase > 0) {
-                    const margin = ((selling - purchase) / selling * 100).toFixed(1);
-                    const profit = (selling - purchase).toFixed(2);
-
-                    // Opcional: mostrar tooltip ou info
-                    sellingPrice.title = `Margem: ${margin}% | Lucro: ${profit} MT`;
-                }
-            }
-
-            sellingPrice.addEventListener('blur', showMarginInfo);
-            purchasePrice.addEventListener('blur', showMarginInfo);
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Exibir mensagens de sessão como Toasts
-            @if (session('success'))
-                FDSMULTSERVICES.Toast.show("{{ session('success') }}", 'success');
-            @endif
-
-            @if (session('error'))
-                FDSMULTSERVICES.Toast.show("{{ session('error') }}", 'error');
-            @endif
-
-            @if (session('warning'))
-                FDSMULTSERVICES.Toast.show("{{ session('warning') }}", 'warning');
-            @endif
-
-            @if (session('info'))
-                FDSMULTSERVICES.Toast.show("{{ session('info') }}", 'info');
-            @endif
-        });
-    </script>
-@endpush

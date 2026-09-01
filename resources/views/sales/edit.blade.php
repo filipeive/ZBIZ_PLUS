@@ -69,16 +69,16 @@
                                     name="payment_method" id="payment_method" required>
                                     <option value="">Selecione...</option>
                                     <option value="cash"
-                                        {{ old('payment_method', $sale->payment_method) == 'cash' ? 'selected' : '' }}>💵
+                                        {{ old('payment_method', $sale->payment_method) == 'cash' ? 'selected' : '' }}>
                                         Dinheiro</option>
                                     <option value="card"
-                                        {{ old('payment_method', $sale->payment_method) == 'card' ? 'selected' : '' }}>💳
+                                        {{ old('payment_method', $sale->payment_method) == 'card' ? 'selected' : '' }}>
                                         Cartão</option>
                                     <option value="transfer"
                                         {{ old('payment_method', $sale->payment_method) == 'transfer' ? 'selected' : '' }}>
-                                        🏦 Transferência</option>
+                                        Transferência</option>
                                     <option value="credit"
-                                        {{ old('payment_method', $sale->payment_method) == 'credit' ? 'selected' : '' }}>🤝
+                                        {{ old('payment_method', $sale->payment_method) == 'credit' ? 'selected' : '' }}>
                                         Crédito</option>
                                 </select>
                                 @error('payment_method')

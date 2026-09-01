@@ -51,6 +51,16 @@ class User extends Authenticatable
     ];
 
     // ===== RELACIONAMENTOS =====
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);

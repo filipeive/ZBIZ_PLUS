@@ -1,93 +1,34 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>419 - Página Expirada | ReproSys</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #3b82f6;
-            --dark-color: #1e293b;
-        }
-        body {
-            background: #f8fafc;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Inter', sans-serif;
-            color: var(--dark-color);
-        }
-        .error-container {
-            text-align: center;
-            max-width: 600px;
-            padding: 2rem;
-            background: white;
-            border-radius: 1.5rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        .error-code {
-            font-size: 8rem;
-            font-weight: 900;
-            color: #6366f1;
-            line-height: 1;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, #6366f1, #a5b4fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .error-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-        }
-        .error-message {
-            color: #64748b;
-            font-size: 1.125rem;
-            margin-bottom: 2.5rem;
-        }
-        .btn-home {
-            background: var(--primary-color);
-            color: white;
-            padding: 0.75rem 2rem;
-            border-radius: 0.75rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .btn-home:hover {
-            background: #2563eb;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
-        }
-        .illustration {
-            font-size: 5rem;
-            color: #e0e7ff;
-            margin-bottom: -1.5rem;
-        }
-    </style>
+    <title>419 - Sessão Expirada | ZBIZ PLUS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
 </head>
-<body>
-    <div class="error-container">
-        <div class="illustration">
-            <i class="fas fa-history"></i>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full text-center bg-slate-900/90 border border-slate-800 rounded-3xl p-8 shadow-2xl backdrop-blur-xl space-y-6">
+        <div class="w-20 h-20 rounded-3xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-3xl mx-auto">
+            <i class="fa-solid fa-clock-rotate-left"></i>
         </div>
-        <div class="error-code">419</div>
-        <h1 class="error-title">Sessão Expirada</h1>
-        <p class="error-message">
-            Opa! Sua sessão expirou devido à inatividade. 
-            Por favor, atualize a página e tente novamente.
-        </p>
-        <a href="{{ url()->previous() ?: url('/dashboard') }}" class="btn-home">
-            <i class="fas fa-sync"></i>
-            Atualizar / Voltar
-        </a>
+        <div>
+            <span class="text-xs font-black font-mono uppercase tracking-widest text-blue-400">Erro 419</span>
+            <h1 class="text-2xl font-black font-heading text-white mt-1">Sessão Expirada</h1>
+            <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                O token de segurança da sessão expirou por inatividade. Atualize a página ou efetue login novamente.
+            </p>
+        </div>
+        <div class="pt-2 flex flex-col gap-2">
+            <a href="{{ route('login') }}" class="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition">
+                <i class="fa-solid fa-right-to-bracket mr-1"></i> Iniciar Sessão
+            </a>
+            <button onclick="window.location.reload()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
+                Recarregar Página
+            </button>
+        </div>
     </div>
 </body>
 </html>

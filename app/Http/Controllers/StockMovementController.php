@@ -17,24 +17,29 @@ class StockMovementController extends Controller
                     $q->where('name', 'like', '%' . $request->product . '%');
                 });
             }
-            if ($request->filled('date_from')) {
-                $query->where('movement_date', '>=', $request->date_from);
-            }
-            if ($request->filled('date_to')) {
-                $query->where('movement_date', '<=', $request->date_to);
-            }
-            if ($request->filled('movement_type')) {
-                $query->where('movement_type', $request->movement_type);
-            }
-
-            $movements = $query->latest('movement_date')->paginate(20);
-
-            return view('stock_movements.index', compact('movements'));
+        $branchId = current_branch_id();
+        if ($branchId) {
+            $query->where('branch_id', $branchId);
         }
+
+        if ($request->filled('date_from')) {
+            $query->where('movement_date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->where('movement_date', '<=', $request->date_to);
+        }
+        if ($request->filled('movement_type')) {
+            $query->where('movement_type', $request->movement_type);
+        }
+
+        $movements = $query->latest('movement_date')->paginate(20);
+
+        return view('stock_movements.index', compact('movements'));
+    }
 
     public function create()
     {
-        $products = Product::all();
+        $products = Product::where('is_active', true)->orderBy('name')->get();
         return view('stock_movements.create', compact('products'));
     }
 
@@ -49,6 +54,8 @@ class StockMovementController extends Controller
         ]);
 
         StockMovement::create([
+            'tenant_id' => current_tenant_id(),
+            'branch_id' => current_branch_id(),
             'product_id' => $request->product_id,
             'user_id' => auth()->id(),
             'movement_type' => $request->movement_type,

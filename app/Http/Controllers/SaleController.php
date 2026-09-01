@@ -28,9 +28,15 @@ class SaleController extends Controller
 
     public function index(Request $request)
     {
-        $query = Sale::with(['user', 'items.product']);
+        $query = Sale::with(['user', 'branch', 'items.product']);
 
-        // Somente Admin e Super Admin veem todas as vendas.
+        // Filtrar por filial ativa
+        $branchId = current_branch_id();
+        if ($branchId) {
+            $query->where('branch_id', $branchId);
+        }
+
+        // Somente Admin e Super Admin veem todas as vendas da filial.
         // Gerentes e Staff veem apenas o que registraram.
         if (! auth()->user()->isAdmin()) {
             $query->where('user_id', auth()->id());
@@ -162,8 +168,13 @@ class SaleController extends Controller
                 $saleDate = $saleDateInput ? Carbon::parse($saleDateInput) : now();
                 $userId = $userIdInput ?? auth()->id();
 
+                $branchId = current_branch_id();
+                $tenantId = current_tenant_id();
+
                 // Criar venda com totais ZERADOS inicialmente
                 $sale = Sale::create([
+                    'tenant_id' => $tenantId,
+                    'branch_id' => $branchId,
                     'user_id' => $userId,
                     'customer_name' => $validated['customer_name'] ?: 'Cliente Avulso',
                     'customer_phone' => $validated['customer_phone'],
@@ -200,6 +211,8 @@ class SaleController extends Controller
                         (($originalUnitPrice - $saleUnitPrice) / $originalUnitPrice) * 100 : 0;
 
                     $saleItem = SaleItem::create([
+                        'tenant_id' => $tenantId,
+                        'branch_id' => $branchId,
                         'sale_id' => $sale->id,
                         'product_id' => $item['product_id'],
                         'quantity' => $quantity,
@@ -398,8 +411,18 @@ class SaleController extends Controller
 
     public function show(Sale $sale)
     {
-        $sale->load(['user', 'items.product.category']);
-        return view('sales.show', compact('sale'));
+        $sale->load(['user', 'branch', 'customer', 'debt', 'items.product.category']);
+        
+        $stockMovements = StockMovement::where('tenant_id', $sale->tenant_id)
+            ->where(function($q) use ($sale) {
+                $q->where('reference_id', $sale->id)
+                  ->orWhere('reason', 'like', "%Venda%#{$sale->id}%")
+                  ->orWhere('reason', 'like', "%Venda%{$sale->id}%");
+            })
+            ->with(['product', 'user', 'branch'])
+            ->get();
+
+        return view('sales.show', compact('sale', 'stockMovements'));
     }
 
     public function edit(Sale $sale)
