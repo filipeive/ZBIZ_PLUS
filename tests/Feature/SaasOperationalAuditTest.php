@@ -135,4 +135,36 @@ class SaasOperationalAuditTest extends TestCase
         $dashboardResponse->assertDontSeeText('Colaboradores & Acessos');
         $dashboardResponse->assertDontSeeText('Alternar Filial Ativa');
     }
+
+    public function test_products_module_views_render_successfully()
+    {
+        $this->seed(\Database\Seeders\OperationalMultiBranchSeeder::class);
+
+        $stockManager = User::where('email', 'estoque.maputo@farmaciamuzinga.com')->firstOrFail();
+        $product = Product::firstOrFail();
+
+        // 1. Index
+        $indexResp = $this->actingAs($stockManager)->get(route('products.index'));
+        $indexResp->assertStatus(200);
+        $indexResp->assertSeeText('Catálogo de Produtos');
+
+        // 2. Show (Ficha Técnica)
+        $showResp = $this->actingAs($stockManager)->get(route('products.show', $product->id));
+        $showResp->assertStatus(200);
+        $showResp->assertSeeText('Ficha Técnica');
+        $showResp->assertSeeText($product->name);
+
+        // 3. Report (Relatório Analítico de Inventário)
+        $reportResp = $this->actingAs($stockManager)->get(route('products.report'));
+        $reportResp->assertStatus(200);
+        $reportResp->assertSeeText('Relatório de Artigos');
+
+        // 4. Create
+        $createResp = $this->actingAs($stockManager)->get(route('products.create'));
+        $createResp->assertStatus(200);
+
+        // 5. Edit
+        $editResp = $this->actingAs($stockManager)->get(route('products.edit', $product->id));
+        $editResp->assertStatus(200);
+    }
 }
