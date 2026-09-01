@@ -6,6 +6,22 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
+## [1.0.9] - 2026-09-01 - Integração de Features POS do ReproSys, Filtros Avançados por Tipo & Isolamento Multi-Tenant na Gestão de Utilizadores
+### Added
+- **Filtros Avançados por Tipo no POS 2.0 (Portado do ReproSys):**
+  - Adicionados botões de filtro rápido por tipo de artigo: **Todos**, **Produtos Físicos**, **Serviços** e **Stock Baixo**.
+  - Barra inferior de estatísticas em tempo real no catálogo do POS: Total de artigos listados, contagem de produtos físicos e contagem de serviços.
+  - Botão de limpeza rápida da caixa de busca (`x-show="searchQuery"`).
+  - Suporte ao parâmetro `type` (`all`, `physical`, `service`, `low-stock`) em `POSController::searchProducts` e `fetchProductsList`.
+
+### Fixed
+- **Isolamento de Utilizadores por Tenant (`UserController.php`):**
+  - Corrigida a listagem `UserController::index` e contadores estatísticos para filtrar estritamente `tenant_id` da empresa do utilizador autenticado (não-superadmin).
+  - Injeção automática de `tenant_id` e `branch_id` em `UserController::store` na criação de novos colaboradores.
+  - Escopo de folha de pagamento (`UserController::payroll`) filtrado pelo `tenant_id` da empresa.
+
+---
+
 ## [1.0.8] - 2026-09-01 - Isolamento Rigoroso de Tenants no POS 2.0, Tenant FDS Multiservices & Central de Configurações do Sistema
 ### Added
 - **Central de Configurações Gerais do Sistema (`settings/index.blade.php`):**

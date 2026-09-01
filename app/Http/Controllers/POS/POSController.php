@@ -53,7 +53,7 @@ class POSController extends Controller
             ->where('tenant_id', $tenantId)
             ->get();
 
-        $initialProducts = $this->fetchProductsList('', null, $tenantId, $branchId);
+        $initialProducts = $this->fetchProductsList('', null, 'all', $tenantId, $branchId);
 
         // Verificar turno de caixa aberto
         $activeShift = null;
@@ -69,30 +69,28 @@ class POSController extends Controller
     }
 
     /**
-     * Busca rápida de produtos por Código de Barras, Nome ou SKU.
+     * Busca rápida de produtos por Código de Barras, Nome ou SKU e filtros por Categoria/Tipo.
      */
     public function searchProducts(Request $request): JsonResponse
     {
         $query = $request->input('q', '');
         $categoryId = $request->input('category_id');
+        $type = $request->input('type', 'all');
         $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
         $branchId = current_branch_id() ?? auth()->user()?->branch_id;
 
-        $mapped = $this->fetchProductsList($query, $categoryId, $tenantId, $branchId);
+        $mapped = $this->fetchProductsList($query, $categoryId, $type, $tenantId, $branchId);
 
         return response()->json([
             'success'   => true,
-            'tenant_id' => $tenantId,
-            'user_id'   => auth()->id(),
-            'user_email'=> auth()->user()?->email,
             'products'  => $mapped,
         ]);
     }
 
     /**
-     * Helper centralizado para obter produtos mapeados com isolamento total de tenant.
+     * Helper centralizado para obter produtos e serviços mapeados com isolamento total de tenant.
      */
-    protected function fetchProductsList(?string $query, $categoryId, $tenantId, $branchId): array
+    protected function fetchProductsList(?string $query, $categoryId, string $type, $tenantId, $branchId): array
     {
         $productsQuery = Product::withoutGlobalScopes()
             ->where('is_active', true)
@@ -110,7 +108,16 @@ class POSController extends Controller
             $productsQuery->where('category_id', $categoryId);
         }
 
-        $products = $productsQuery->with('category')->limit(50)->get();
+        if ($type === 'service') {
+            $productsQuery->where('type', 'service');
+        } elseif ($type === 'physical') {
+            $productsQuery->whereIn('type', ['product', 'physical']);
+        } elseif ($type === 'low-stock') {
+            $productsQuery->whereIn('type', ['product', 'physical'])
+                          ->whereRaw('stock_quantity <= min_stock_level');
+        }
+
+        $products = $productsQuery->with('category')->limit(80)->get();
 
         return $products->map(function ($product) use ($branchId) {
             $stock = $this->stockService->getStock($product->id, $branchId);

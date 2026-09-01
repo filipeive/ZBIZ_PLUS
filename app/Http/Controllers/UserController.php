@@ -23,11 +23,16 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
         $isEmployeesView = $request->routeIs('users.employees');
-        $query = User::with(['role', 'activeTemporaryPasswords'])->orderBy('name');
+        $query = User::with(['role', 'activeTemporaryPasswords', 'branch'])->orderBy('name');
+
+        if (!auth()->user()->isSuperAdmin()) {
+            $query->where('tenant_id', $tenantId);
+        }
 
         if ($isEmployeesView) {
-            $query->whereHas('role', fn ($q) => $q->whereIn('name', ['staff', 'manager']));
+            $query->whereHas('role', fn ($q) => $q->whereIn('name', ['staff', 'manager', 'cashier', 'stock_manager']));
         }
 
         if ($request->filled('search')) {
@@ -57,13 +62,18 @@ class UserController extends Controller
 
         $users = $query->paginate(15)->withQueryString();
 
+        $baseStatQuery = User::query();
+        if (!auth()->user()->isSuperAdmin()) {
+            $baseStatQuery->where('tenant_id', $tenantId);
+        }
+
         $stats = [
-            'total' => User::count(),
-            'active' => User::where('is_active', true)->count(),
-            'admin' => User::whereHas('role', fn($q) => $q->where('name', 'admin'))->count(),
-            'manager' => User::whereHas('role', fn($q) => $q->where('name', 'manager'))->count(),
-            'staff' => User::whereHas('role', fn($q) => $q->where('name', 'staff'))->count(),
-            'with_temp_password' => User::whereHas('activeTemporaryPasswords')->count(),
+            'total' => (clone $baseStatQuery)->count(),
+            'active' => (clone $baseStatQuery)->where('is_active', true)->count(),
+            'admin' => (clone $baseStatQuery)->whereHas('role', fn($q) => $q->where('name', 'admin'))->count(),
+            'manager' => (clone $baseStatQuery)->whereHas('role', fn($q) => $q->where('name', 'manager'))->count(),
+            'staff' => (clone $baseStatQuery)->whereHas('role', fn($q) => $q->whereIn('name', ['staff', 'cashier', 'stock_manager']))->count(),
+            'with_temp_password' => (clone $baseStatQuery)->whereHas('activeTemporaryPasswords')->count(),
         ];
 
         return view('users.index', compact('users', 'stats', 'isEmployeesView'));
@@ -103,6 +113,8 @@ class UserController extends Controller
 
         $data['password'] = Hash::make($request->password);
         $data['is_active'] = $request->boolean('is_active', true);
+        $data['tenant_id'] = current_tenant_id() ?? auth()->user()?->tenant_id;
+        $data['branch_id'] = $request->input('branch_id', current_branch_id() ?? auth()->user()?->branch_id);
 
         $user = User::create($data);
 
@@ -269,11 +281,18 @@ class UserController extends Controller
         $referenceMonth = Carbon::parse($request->input('reference_month', now()->startOfMonth()->format('Y-m-d')))
             ->startOfMonth();
 
-        $employees = User::with(['role'])
-            ->whereHas('role', fn ($query) => $query->where('name', 'staff'))
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+
+        $employeesQuery = User::with(['role'])
+            ->whereHas('role', fn ($query) => $query->whereIn('name', ['staff', 'cashier', 'stock_manager', 'manager']))
             ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
+            ->orderBy('name');
+
+        if (!auth()->user()->isSuperAdmin()) {
+            $employeesQuery->where('tenant_id', $tenantId);
+        }
+
+        $employees = $employeesQuery->get();
 
         $paymentsByUser = SalaryPayment::whereMonth('reference_month', $referenceMonth->month)
             ->whereYear('reference_month', $referenceMonth->year)

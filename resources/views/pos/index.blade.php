@@ -72,18 +72,54 @@
         <div class="w-3/5 flex flex-col border-r border-gray-300 bg-white">
             
             <!-- Search & Filter Bar -->
-            <div class="p-3 border-b border-gray-200 bg-slate-50 flex items-center gap-2">
-                <div class="relative flex-1">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                        <i class="fa-solid fa-barcode"></i>
-                    </span>
-                    <input type="text"
-                           x-ref="searchInput"
-                           x-model="searchQuery"
-                           @input.debounce.250ms="searchProducts()"
-                           @keydown.enter="handleBarcodeScan()"
-                           placeholder="[F2] Ler Código de Barras ou Buscar Produto..."
-                           class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none shadow-sm">
+            <div class="p-3 border-b border-gray-200 bg-slate-50 flex flex-col gap-2">
+                <div class="flex items-center gap-2">
+                    <div class="relative flex-1">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                            <i class="fa-solid fa-barcode"></i>
+                        </span>
+                        <input type="text"
+                               x-ref="searchInput"
+                               x-model="searchQuery"
+                               @input.debounce.250ms="searchProducts()"
+                               @keydown.enter="handleBarcodeScan()"
+                               placeholder="[F2] Ler Código de Barras, SKU ou Nome do Artigo..."
+                               class="w-full pl-10 pr-9 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none shadow-sm font-medium">
+                        <button x-show="searchQuery.length > 0"
+                                @click="searchQuery = ''; searchProducts(); $refs.searchInput.focus()"
+                                type="button"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
+                            <i class="fa-solid fa-circle-xmark text-sm"></i>
+                        </button>
+                    </div>
+
+                    <!-- Type Filter Tabs (Inspirado no ReproSys) -->
+                    <div class="flex items-center bg-gray-200/80 p-1 rounded-lg text-xs font-bold space-x-1">
+                        <button @click="selectedType = 'all'; searchProducts()"
+                                :class="selectedType === 'all' ? 'bg-slate-900 text-white shadow' : 'text-gray-600 hover:text-gray-900'"
+                                class="px-2.5 py-1.5 rounded-md transition flex items-center gap-1">
+                            <i class="fa-solid fa-border-all text-[10px]"></i>
+                            <span>Todos</span>
+                        </button>
+                        <button @click="selectedType = 'physical'; searchProducts()"
+                                :class="selectedType === 'physical' ? 'bg-emerald-600 text-white shadow' : 'text-gray-600 hover:text-gray-900'"
+                                class="px-2.5 py-1.5 rounded-md transition flex items-center gap-1">
+                            <i class="fa-solid fa-box text-[10px]"></i>
+                            <span>Produtos</span>
+                        </button>
+                        <button @click="selectedType = 'service'; searchProducts()"
+                                :class="selectedType === 'service' ? 'bg-violet-600 text-white shadow' : 'text-gray-600 hover:text-gray-900'"
+                                class="px-2.5 py-1.5 rounded-md transition flex items-center gap-1">
+                            <i class="fa-solid fa-screwdriver-wrench text-[10px]"></i>
+                            <span>Serviços</span>
+                        </button>
+                        <button @click="selectedType = 'low-stock'; searchProducts()"
+                                :class="selectedType === 'low-stock' ? 'bg-rose-600 text-white shadow' : 'text-gray-600 hover:text-gray-900'"
+                                class="px-2.5 py-1.5 rounded-md transition flex items-center gap-1">
+                            <i class="fa-solid fa-triangle-exclamation text-[10px]"></i>
+                            <span>Stock Baixo</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -91,8 +127,9 @@
             <div class="flex overflow-x-auto p-2 bg-gray-100 gap-1 border-b border-gray-200 scrollbar-thin">
                 <button @click="selectedCategory = null; searchProducts()"
                         :class="selectedCategory === null ? 'bg-slate-900 text-white' : 'bg-white text-gray-700 hover:bg-gray-200'"
-                        class="px-3 py-1.5 rounded text-xs font-semibold whitespace-nowrap transition shadow-sm">
-                    Todos
+                        class="px-3 py-1.5 rounded text-xs font-semibold whitespace-nowrap transition shadow-sm flex items-center gap-1">
+                    <i class="fa-solid fa-layer-group text-[10px]"></i>
+                    <span>Todas Categorias</span>
                 </button>
                 @foreach($categories as $cat)
                 <button @click="selectedCategory = {{ $cat->id }}; searchProducts()"
@@ -115,7 +152,11 @@
                 <template x-if="!isLoading && products.length === 0">
                     <div class="col-span-3 flex flex-col items-center justify-center py-12 text-slate-400">
                         <i class="fa-solid fa-box-open text-3xl mb-2 text-slate-300"></i>
-                        <p class="text-xs font-semibold">Nenhum artigo encontrado para esta seleção.</p>
+                        <p class="text-xs font-semibold">Nenhum artigo ou serviço encontrado para esta seleção.</p>
+                        <button @click="selectedType = 'all'; selectedCategory = null; searchQuery = ''; searchProducts()"
+                                class="mt-2 text-xs text-emerald-600 font-bold hover:underline">
+                            Limpar Filtros e Ver Todos
+                        </button>
                     </div>
                 </template>
 
@@ -124,7 +165,10 @@
                          class="bg-white border border-gray-200 hover:border-emerald-500 hover:shadow-md p-3 rounded-lg cursor-pointer transition flex flex-col justify-between h-28 group relative">
                         <div>
                             <div class="text-xs font-bold text-gray-800 line-clamp-2 group-hover:text-emerald-600" x-text="product.name"></div>
-                            <div class="text-[10px] text-gray-400" x-text="product.category_name"></div>
+                            <div class="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
+                                <i :class="product.type === 'service' ? 'fa-solid fa-tools text-violet-500' : 'fa-solid fa-box text-sky-500'" class="text-[9px]"></i>
+                                <span x-text="product.category_name"></span>
+                            </div>
                         </div>
                         <div class="flex items-end justify-between mt-2">
                             <span class="text-sm font-black text-slate-900" x-text="formatCurrency(product.selling_price)"></span>
@@ -134,6 +178,21 @@
                         </div>
                     </div>
                 </template>
+            </div>
+
+            <!-- Footer Catalog Summary Bar (Inspirado no ReproSys) -->
+            <div class="p-2.5 bg-slate-100 border-t border-gray-200 flex items-center justify-between text-[11px] text-gray-600 font-medium">
+                <div class="flex items-center gap-3">
+                    <span>Total listado: <strong class="text-slate-900 font-bold" x-text="products.length"></strong></span>
+                    <span class="text-gray-300">|</span>
+                    <span>Produtos: <strong class="text-emerald-700 font-bold" x-text="products.filter(p => p.type !== 'service').length"></strong></span>
+                    <span class="text-gray-300">|</span>
+                    <span>Serviços: <strong class="text-violet-700 font-bold" x-text="products.filter(p => p.type === 'service').length"></strong></span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-[10px] font-bold text-slate-500">Catálogo Sincronizado</span>
+                </div>
             </div>
         </div>
 
@@ -300,7 +359,8 @@
                 isOnline: navigator.onLine,
                 searchQuery: '',
                 selectedCategory: null,
-                products: [],
+                selectedType: 'all',
+                products: @json($initialProducts ?? []),
                 cart: [],
                 customer: null,
                 discountAmount: 0,
@@ -336,7 +396,8 @@
                     try {
                         const params = new URLSearchParams({
                             q: this.searchQuery,
-                            category_id: this.selectedCategory || ''
+                            category_id: this.selectedCategory || '',
+                            type: this.selectedType || 'all'
                         });
                         const res = await fetch(`/pos/search?${params}`);
                         const data = await res.json();
