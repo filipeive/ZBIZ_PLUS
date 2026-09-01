@@ -245,14 +245,41 @@
             </div>
 
             <!-- Cart Summary & Actions -->
-            <div class="bg-white p-4 border-t border-gray-200 shadow-lg space-y-3">
-                <div class="space-y-1 text-xs">
+            <!-- Cart Summary & Actions -->
+            <div class="bg-white p-4 border-t border-gray-200 shadow-lg space-y-3" x-data="{ showDiscountBox: false }">
+                
+                <!-- Quick Discount Toggle -->
+                <div class="flex items-center justify-between">
+                    <button type="button" @click="showDiscountBox = !showDiscountBox" class="text-xs font-bold text-slate-600 hover:text-emerald-600 flex items-center gap-1">
+                        <i class="fa-solid fa-percent text-[10px]"></i>
+                        <span>Aplicar Desconto</span>
+                        <i class="fa-solid fa-chevron-down text-[9px] ml-0.5" :class="showDiscountBox ? 'rotate-180' : ''"></i>
+                    </button>
+                    <span x-show="discountAmount > 0" class="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded" x-text="'- ' + formatCurrency(discountAmount)"></span>
+                </div>
+
+                <!-- Discount Box (Inspirado no ReproSys) -->
+                <div x-show="showDiscountBox" x-cloak class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" @click="discountAmount = Math.round(subtotal * 0.05)" class="px-2 py-1 bg-white hover:bg-slate-200 border rounded text-[11px] font-bold">5%</button>
+                        <button type="button" @click="discountAmount = Math.round(subtotal * 0.10)" class="px-2 py-1 bg-white hover:bg-slate-200 border rounded text-[11px] font-bold">10%</button>
+                        <button type="button" @click="discountAmount = Math.round(subtotal * 0.15)" class="px-2 py-1 bg-white hover:bg-slate-200 border rounded text-[11px] font-bold">15%</button>
+                        <button type="button" @click="discountAmount = 0" class="px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 rounded text-[11px] font-bold">Zerar</button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="text-[11px] font-bold text-gray-500 whitespace-nowrap">Valor Fixo (MT):</label>
+                        <input type="number" step="5" min="0" :max="subtotal" x-model.number="discountAmount"
+                               class="w-full px-2 py-1 bg-white border border-gray-300 rounded text-xs font-bold text-right outline-none">
+                    </div>
+                </div>
+
+                <div class="space-y-1 text-xs pt-1 border-t border-gray-100">
                     <div class="flex justify-between text-gray-500">
                         <span>Subtotal:</span>
                         <span class="font-bold" x-text="formatCurrency(subtotal)"></span>
                     </div>
                     <div class="flex justify-between text-gray-500" x-show="discountAmount > 0">
-                        <span>Desconto [F7]:</span>
+                        <span>Desconto Aplicado:</span>
                         <span class="font-bold text-rose-600" x-text="'- ' + formatCurrency(discountAmount)"></span>
                     </div>
                     <div class="flex justify-between text-base font-black text-slate-900 pt-1 border-t border-gray-200">
@@ -287,7 +314,7 @@
             </div>
 
             <div class="text-center py-2 bg-emerald-50 rounded-lg border border-emerald-200">
-                <div class="text-xs text-emerald-800 font-semibold">Valor Total a Pagar</div>
+                <div class="text-xs text-emerald-800 font-semibold">Valor Total Líquido</div>
                 <div class="text-2xl font-black text-emerald-600" x-text="formatCurrency(totalAmount)"></div>
             </div>
 
@@ -296,23 +323,58 @@
                 <label class="text-xs font-bold text-gray-700">Forma de Pagamento:</label>
                 <div class="grid grid-cols-4 gap-2">
                     <button type="button" @click="paymentMethod = 'cash'; amountPaid = totalAmount"
-                            :class="paymentMethod === 'cash' ? 'bg-slate-900 text-white' : 'bg-gray-100 text-gray-700'"
+                            :class="paymentMethod === 'cash' ? 'bg-slate-900 text-white shadow' : 'bg-gray-100 text-gray-700'"
                             class="py-2 rounded text-xs font-bold border transition">Dinheiro</button>
                     <button type="button" @click="paymentMethod = 'mpesa'; amountPaid = totalAmount"
-                            :class="paymentMethod === 'mpesa' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'"
+                            :class="paymentMethod === 'mpesa' ? 'bg-red-600 text-white shadow' : 'bg-gray-100 text-gray-700'"
                             class="py-2 rounded text-xs font-bold border transition">M-Pesa</button>
                     <button type="button" @click="paymentMethod = 'card'; amountPaid = totalAmount"
-                            :class="paymentMethod === 'card' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'"
+                            :class="paymentMethod === 'card' ? 'bg-blue-600 text-white shadow' : 'bg-gray-100 text-gray-700'"
                             class="py-2 rounded text-xs font-bold border transition">Cartão</button>
                     <button type="button" @click="paymentMethod = 'credit'; amountPaid = 0"
-                            :class="paymentMethod === 'credit' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700'"
-                            class="py-2 rounded text-xs font-bold border transition">Fiado</button>
+                            :class="paymentMethod === 'credit' ? 'bg-amber-600 text-white shadow' : 'bg-gray-100 text-gray-700'"
+                            class="py-2 rounded text-xs font-bold border transition">Fiado (Dívida)</button>
                 </div>
             </div>
 
-            <!-- Amount Paid / Change -->
+            <!-- Credit / Fiado Validation & Downpayment -->
+            <div x-show="paymentMethod === 'credit'" class="p-3 bg-amber-50 border border-amber-200 rounded-lg space-y-2">
+                <div class="flex items-center gap-2 text-xs font-bold text-amber-900">
+                    <i class="fa-solid fa-hand-holding-dollar text-amber-600"></i>
+                    <span>Venda a Crédito / Fiado</span>
+                </div>
+                
+                <template x-if="!customer">
+                    <div class="space-y-1.5">
+                        <p class="text-[11px] text-amber-800 font-semibold">⚠️ É obrigatório associar um cliente registrado para conceder crédito.</p>
+                        <button type="button" @click="showCheckoutModal = false; showCustomerModal = true"
+                                class="w-full py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs font-bold">
+                            [F4] Selecionar Cliente Agora
+                        </button>
+                    </div>
+                </template>
+
+                <template x-if="customer">
+                    <div class="space-y-2">
+                        <div class="text-[11px] text-gray-700">
+                            Cliente: <strong class="text-slate-900" x-text="customer.name"></strong>
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600">Entrada / Valor Pago Agora (MT):</label>
+                            <input type="number" step="10" min="0" :max="totalAmount" x-model.number="amountPaid"
+                                   class="w-full px-2.5 py-1.5 bg-white border border-amber-300 rounded text-sm font-bold text-right outline-none">
+                        </div>
+                        <div class="flex justify-between text-xs font-bold text-amber-900 pt-1">
+                            <span>Saldo Restante a Cobrar:</span>
+                            <span x-text="formatCurrency(Math.max(0, totalAmount - amountPaid))"></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Amount Paid / Change (Cash) -->
             <div class="space-y-2" x-show="paymentMethod === 'cash'">
-                <label class="text-xs font-bold text-gray-700">Valor Entregue (MT):</label>
+                <label class="text-xs font-bold text-gray-700">Valor Entregue pelo Cliente (MT):</label>
                 <input type="number" step="10" x-model.number="amountPaid"
                        class="w-full px-3 py-2 border rounded-lg text-lg font-bold text-right outline-none focus:ring-2 focus:ring-emerald-500">
                 <div class="flex justify-between text-sm font-bold pt-1">
@@ -322,8 +384,8 @@
             </div>
 
             <button @click="submitSale()"
-                    :disabled="isSubmitting"
-                    class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-black text-base shadow-lg transition">
+                    :disabled="isSubmitting || (paymentMethod === 'credit' && !customer)"
+                    class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg font-black text-base shadow-lg transition">
                 <span x-show="!isSubmitting">CONFIRMAR E IMPRIMIR RECIBO</span>
                 <span x-show="isSubmitting"><i class="fa-solid fa-spinner animate-spin mr-2"></i>Processando...</span>
             </button>

@@ -34,7 +34,13 @@ class ProductController extends Controller
         }
 
         if ($request->filled('type')) {
-            $query->where('type', $request->type);
+            if ($request->type === 'service') {
+                $query->where('type', 'service');
+            } elseif (in_array($request->type, ['physical', 'product'])) {
+                $query->whereIn('type', ['product', 'physical']);
+            } elseif (in_array($request->type, ['low-stock', 'low_stock'])) {
+                $query->whereIn('type', ['product', 'physical'])->whereRaw('stock_quantity <= min_stock_level');
+            }
         }
 
         if ($request->filled('category_id')) {
@@ -42,19 +48,23 @@ class ProductController extends Controller
         }
 
         if ($request->filled('status')) {
-            $query->where('is_active', $request->status);
+            if ($request->status === 'low_stock') {
+                $query->whereIn('type', ['product', 'physical'])->whereRaw('stock_quantity <= min_stock_level');
+            } else {
+                $query->where('is_active', $request->status);
+            }
         }
 
         // Ordenar e paginar
         $products = $query->orderBy('name')->paginate(12)->withQueryString();
-
-        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
 
         // Buscar categorias para filtros
         $categories = Category::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('is_active', true)->orderBy('name')->get();
 
         // Calcular estatísticas básicas
         $allProducts = Product::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
+        $physicalCount = $allProducts->whereIn('type', ['product', 'physical'])->count();
+        $servicesCount = $allProducts->where('type', 'service')->count();
         $lowStockCount = Product::withoutGlobalScopes()
                                 ->where('tenant_id', $tenantId)
                                 ->whereIn('type', ['product', 'physical'])
@@ -62,7 +72,7 @@ class ProductController extends Controller
                                 ->where('is_active', true)
                                 ->count();
 
-        return view('products.index', compact('products', 'categories', 'allProducts', 'lowStockCount'));
+        return view('products.index', compact('products', 'categories', 'allProducts', 'physicalCount', 'servicesCount', 'lowStockCount'));
     }
 
     /**

@@ -1,11 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Produtos & Medicamentos')
-@section('page-title', 'Catálogo de Produtos & Medicamentos')
+@section('title', $theme['catalog_title'] ?? 'Produtos & Catálogo')
+@section('page-title', $theme['catalog_title'] ?? 'Catálogo de Produtos & Serviços')
 
 @php
     $theme = tenant_theme();
     $isPharmacy = current_tenant()?->isPharmacy() ?? false;
+    $hasServices = $theme['has_services'] ?? false;
+    $currentType = request('type', 'all');
 @endphp
 
 @section('content')
@@ -13,12 +15,13 @@
     
     <!-- Top Action & Search Bar -->
     <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
-        <form method="GET" action="{{ route('products.index') }}" class="flex flex-col sm:flex-row items-center gap-3 w-full lg:max-w-2xl">
+        <form method="GET" action="{{ route('products.index') }}" class="flex flex-col sm:flex-row items-center gap-3 w-full lg:max-w-3xl">
+            <input type="hidden" name="type" value="{{ request('type') }}">
             <div class="relative flex-1 w-full">
                 <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 text-sm">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </span>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Buscar por nome, código de barras, SKU ou lote..."
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Buscar por nome, código de barras, SKU..."
                        class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-600 focus:ring-2 {{ $theme['ring'] }} outline-none">
             </div>
 
@@ -47,43 +50,86 @@
             </a>
             @if(auth()->user()->isStockManager() || auth()->user()->isManager() || auth()->user()->isAdmin())
             <a href="{{ route('products.create') }}" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
-                <i class="fa-solid fa-plus"></i> {{ $isPharmacy ? 'Novo Medicamento' : 'Novo Artigo' }}
+                <i class="fa-solid fa-plus"></i> {{ $isPharmacy ? 'Novo Medicamento' : ($hasServices ? 'Novo Artigo / Serviço' : 'Novo Artigo') }}
             </a>
             @endif
         </div>
     </div>
 
-    <!-- 3 Mini KPI Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <!-- Quick Type Filter Bar (Inspirado no ReproSys) -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-1">
+        <a href="{{ route('products.index', array_merge(request()->except('type', 'page'), ['type' => 'all'])) }}"
+           class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 {{ in_array($currentType, ['all', '']) ? 'bg-slate-800 text-white border border-slate-700 shadow-md' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800' }}">
+            <i class="fa-solid fa-border-all text-[11px] {{ in_array($currentType, ['all', '']) ? $theme['text_accent'] : '' }}"></i>
+            <span>Todos os Artigos</span>
+            <span class="px-1.5 py-0.2 rounded-md bg-slate-950 text-[10px] text-slate-300">{{ $allProducts->count() }}</span>
+        </a>
+
+        <a href="{{ route('products.index', array_merge(request()->except('type', 'page'), ['type' => 'physical'])) }}"
+           class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 {{ $currentType === 'physical' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-md' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800' }}">
+            <i class="fa-solid fa-box text-[11px] text-emerald-400"></i>
+            <span>Produtos Físicos</span>
+            <span class="px-1.5 py-0.2 rounded-md bg-slate-950 text-[10px] text-slate-300">{{ $physicalCount ?? 0 }}</span>
+        </a>
+
+        @if($hasServices || ($servicesCount ?? 0) > 0)
+        <a href="{{ route('products.index', array_merge(request()->except('type', 'page'), ['type' => 'service'])) }}"
+           class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 {{ $currentType === 'service' ? 'bg-violet-500/20 text-violet-400 border border-violet-500/40 shadow-md' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800' }}">
+            <i class="fa-solid fa-screwdriver-wrench text-[11px] text-violet-400"></i>
+            <span>Serviços Prestados</span>
+            <span class="px-1.5 py-0.2 rounded-md bg-slate-950 text-[10px] text-slate-300">{{ $servicesCount ?? 0 }}</span>
+        </a>
+        @endif
+
+        <a href="{{ route('products.index', array_merge(request()->except('type', 'page'), ['type' => 'low-stock'])) }}"
+           class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 {{ in_array($currentType, ['low-stock', 'low_stock']) ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-md' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800' }}">
+            <i class="fa-solid fa-triangle-exclamation text-[11px] text-rose-400"></i>
+            <span>Stock Baixo / Alerta</span>
+            <span class="px-1.5 py-0.2 rounded-md bg-slate-950 text-[10px] text-rose-400 font-bold">{{ $lowStockCount ?? 0 }}</span>
+        </a>
+    </div>
+
+    <!-- 4 Mini KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
             <div>
-                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Artigos Ativos</span>
-                <div class="text-xl font-black text-white mt-1">{{ $allProducts->where('is_active', true)->count() }}</div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total no Catálogo</span>
+                <div class="text-xl font-black text-white mt-1">{{ $allProducts->count() }}</div>
             </div>
             <div class="w-9 h-9 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center text-sm">
-                <i class="fa-solid fa-box-archive"></i>
+                <i class="fa-solid fa-boxes-stacked"></i>
             </div>
         </div>
 
         <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
             <div>
-                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Stock Crítico / Alerta</span>
-                <div class="text-xl font-black {{ $lowStockCount > 0 ? 'text-rose-400' : 'text-emerald-400' }} mt-1">
-                    {{ $lowStockCount }}
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Produtos com Estoque</span>
+                <div class="text-xl font-black text-emerald-400 mt-1">{{ $physicalCount ?? 0 }}</div>
+            </div>
+            <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-sm">
+                <i class="fa-solid fa-box"></i>
+            </div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+            <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Serviços Disponíveis</span>
+                <div class="text-xl font-black text-violet-400 mt-1">{{ $servicesCount ?? 0 }}</div>
+            </div>
+            <div class="w-9 h-9 rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center text-sm">
+                <i class="fa-solid fa-screwdriver-wrench"></i>
+            </div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+            <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Stock Crítico</span>
+                <div class="text-xl font-black {{ ($lowStockCount ?? 0) > 0 ? 'text-rose-400' : 'text-slate-500' }} mt-1">
+                    {{ $lowStockCount ?? 0 }}
                 </div>
             </div>
             <div class="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center text-sm">
                 <i class="fa-solid fa-triangle-exclamation"></i>
-            </div>
-        </div>
-
-        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
-            <div>
-                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Famílias / Categorias</span>
-                <div class="text-xl font-black text-white mt-1">{{ $categories->count() }}</div>
-            </div>
-            <div class="w-9 h-9 rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center text-sm">
-                <i class="fa-solid fa-tags"></i>
             </div>
         </div>
     </div>

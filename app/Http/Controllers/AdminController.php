@@ -37,8 +37,26 @@ class AdminController extends Controller
             'tax_rate'              => 'nullable|numeric|min:0|max:100',
             'stock_alert_threshold' => 'nullable|integer|min:0',
             'receipt_footer'        => 'nullable|string|max:255',
+            'primary_color'         => 'nullable|string|regex:/^#[a-fA-F0-9]{6}$/',
+            'company_logo'          => 'nullable|image|mimes:jpeg,png,jpg,svg,webp|max:3072',
+            'allow_debt'            => 'nullable|boolean',
+            'allow_discount'        => 'nullable|boolean',
             'enable_notifications'  => 'nullable|boolean',
         ]);
+
+        $settings = $tenant?->settings ?? [];
+
+        if ($request->hasFile('company_logo')) {
+            $logoPath = $request->file('company_logo')->store('tenant-logos', 'public');
+            $settings['logo_path'] = $logoPath;
+        }
+
+        if ($request->filled('primary_color')) {
+            $settings['primary_color'] = $request->primary_color;
+        }
+
+        $settings['allow_debt'] = $request->has('allow_debt') ? '1' : '0';
+        $settings['allow_discount'] = $request->has('allow_discount') ? '1' : '0';
 
         if ($tenant) {
             $tenant->update([
@@ -49,6 +67,7 @@ class AdminController extends Controller
                 'email'         => $validated['company_email'] ?? $tenant->email,
                 'address'       => $validated['company_address'] ?? $tenant->address,
                 'currency'      => $validated['default_currency'] ?? $tenant->currency,
+                'settings'      => $settings,
             ]);
         }
 
@@ -63,6 +82,10 @@ class AdminController extends Controller
             'tax_rate'              => $validated['tax_rate'] ?? '16',
             'stock_alert_threshold' => $validated['stock_alert_threshold'] ?? '5',
             'receipt_footer'        => $validated['receipt_footer'] ?? 'Obrigado pela sua preferência!',
+            'primary_color'         => $settings['primary_color'] ?? '',
+            'logo_path'             => $settings['logo_path'] ?? '',
+            'allow_debt'            => $settings['allow_debt'],
+            'allow_discount'        => $settings['allow_discount'],
             'enable_notifications'  => $request->has('enable_notifications') ? '1' : '0',
         ];
 
@@ -74,7 +97,7 @@ class AdminController extends Controller
         }
 
         return redirect()->route('admin.settings')
-            ->with('success', 'Configurações do sistema e da empresa atualizadas com sucesso!');
+            ->with('success', 'Configurações do sistema, logotipo e identidade visual atualizados com sucesso!');
     }
 
     /**

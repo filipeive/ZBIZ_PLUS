@@ -513,8 +513,12 @@
             <div class="flex flex-col flex-1 min-h-0 overflow-y-auto">
                 <div class="p-5 border-b border-slate-800/80 flex items-center justify-between">
                     <a href="{{ route('dashboard.index') }}" class="flex items-center space-x-3 group">
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br {{ $theme['gradient'] }} flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition">
-                            <i class="fa-solid fa-bolt text-slate-950 text-lg font-black"></i>
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br {{ $theme['gradient'] }} flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition overflow-hidden">
+                            @if(!empty($theme['logo_url']))
+                                <img src="{{ $theme['logo_url'] }}" alt="Logo" class="w-full h-full object-contain p-1 bg-white/10">
+                            @else
+                                <i class="fa-solid fa-bolt text-slate-950 text-lg font-black"></i>
+                            @endif
                         </div>
                         <div>
                             <div class="text-xl font-black font-heading tracking-tight text-white flex items-center gap-1">
@@ -527,7 +531,7 @@
                     </a>
 
                     <!-- Sector Pill Badge -->
-                    <span class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full border {{ $theme['badge'] }} flex items-center gap-1">
+                    <span class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full border {{ $theme['badge'] }} flex items-center gap-1" title="{{ $theme['sector_name'] }}">
                         <i class="fa-solid {{ $theme['icon'] }} text-[9px]"></i>
                     </span>
                 </div>
@@ -599,7 +603,7 @@
                             <a href="{{ route('products.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('products.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-box-open w-4 text-center {{ request()->routeIs('products.*') ? $theme['text_accent'] : '' }}"></i>
-                                <span>Artigos & Medicamentos</span>
+                                <span>{{ $theme['catalog_title'] ?? 'Artigos & Produtos' }}</span>
                             </a>
 
                             @if(auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isStockManager())

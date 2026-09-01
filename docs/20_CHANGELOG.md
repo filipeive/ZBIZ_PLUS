@@ -6,6 +6,26 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
+## [1.0.10] - 2026-09-01 - Menu Lateral Dinâmico por Setor, Upload de Logotipo e Cor da Marca, Filtro de Serviços no Catálogo e Venda Manual
+### Added
+- **Menu Lateral Adaptativo por Setor (`layouts/app.blade.php` & `tenancy.php`):**
+  - Rótulo de catálogo dinâmico conforme o setor do tenant (`Artigos & Serviços` na Reprografia/Serigrafia, `Medicamentos & Farmácia` na Farmácia, `Artigos & Produtos` no Retalho).
+  - Suporte a exibição do Logótipo oficial da empresa na barra lateral e cabeçalho.
+- **Identidade Visual & Configurações Comerciais (`settings/index.blade.php` & `AdminController.php`):**
+  - Upload de logótipo da empresa (`company_logo`) com suporte a PNG, JPG, SVG e WebP.
+  - Seletor de cor primária da marca (`primary_color`) com seletor hexadecimal e persistência no JSON de configurações do tenant.
+  - Parâmetros para concessão de crédito/fiado e permissão de descontos comerciais.
+- **Filtros por Tipo & Estatísticas na Gestão de Produtos (`products/index.blade.php` & `ProductController.php`):**
+  - Barra de navegação rápida com abas: **Todos os Artigos**, **Produtos Físicos**, **Serviços Prestados** e **Stock Baixo**.
+  - Mini-cards com contadores dedicados de artigos físicos vs serviços disponíveis.
+- **Venda a Prazo (Dívidas) e Descontos Rápidos no POS 2.0 (`pos/index.blade.php`):**
+  - Seção de desconto global expansível com presets (5%, 10%, 15%) e valor fixo em MT.
+  - Validação de cliente obrigatório para pagamentos via Fiado/Dívida e campo de valor de entrada imediata.
+- **Atalho de Venda Manual (`sales/index.blade.php`):**
+  - Botão de acesso direto para o formulário de Venda Manual (`sales.manual-create`).
+
+---
+
 ## [1.0.9] - 2026-09-01 - Integração de Features POS do ReproSys, Filtros Avançados por Tipo & Isolamento Multi-Tenant na Gestão de Utilizadores
 ### Added
 - **Filtros Avançados por Tipo no POS 2.0 (Portado do ReproSys):**

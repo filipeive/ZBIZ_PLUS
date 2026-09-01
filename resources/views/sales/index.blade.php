@@ -34,6 +34,11 @@
         </div>
 
         <div class="flex items-center gap-3">
+            @if(auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->hasPermission('create_sales'))
+            <a href="{{ route('sales.manual-create') }}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs border border-slate-700 transition flex items-center gap-2">
+                <i class="fa-solid fa-pen-to-square text-violet-400"></i> Registar Venda Manual
+            </a>
+            @endif
             <a href="{{ route('pos.index') }}" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
                 <i class="fa-solid fa-cash-register"></i> Abrir Frente de Caixa POS
             </a>
