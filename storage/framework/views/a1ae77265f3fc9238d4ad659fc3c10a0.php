@@ -17,7 +17,7 @@
 
                 </span>
                 <h2 class="text-2xl sm:text-3xl font-black font-heading text-white">
-                    Olá, <?php echo e(auth()->user()->name); ?>! 👋
+                    Olá, <?php echo e(auth()->user()->name); ?>!
                 </h2>
                 <p class="text-xs sm:text-sm text-slate-400 mt-1 max-w-xl">
                     Acompanhe o desempenho das suas vendas, stock em tempo real e saúde financeira da sua loja.
@@ -26,12 +26,23 @@
 
             <!-- Quick Action Buttons -->
             <div class="flex items-center gap-3">
+                <?php if(auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin()): ?>
                 <a href="<?php echo e(route('pos.index')); ?>" class="px-5 py-3 rounded-2xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-black text-xs shadow-xl shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
                     <i class="fa-solid fa-cash-register text-sm"></i> Abrir Caixa POS
                 </a>
+                <?php endif; ?>
+
+                <?php if(auth()->user()->isStockManager() || auth()->user()->isManager() || auth()->user()->isAdmin()): ?>
                 <a href="<?php echo e(route('products.create')); ?>" class="px-4 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 transition flex items-center gap-2">
                     <i class="fa-solid fa-plus"></i> Novo Produto
                 </a>
+                <?php endif; ?>
+
+                <?php if(auth()->user()->isStockManager()): ?>
+                <a href="<?php echo e(route('stock-movements.index')); ?>" class="px-4 py-3 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs border border-emerald-500/30 transition flex items-center gap-2">
+                    <i class="fa-solid fa-boxes-stacked"></i> Movimento Stock
+                </a>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -94,7 +105,8 @@
                 </div>
                 <div class="flex items-center gap-2 mt-2 text-xs">
                     <span class="text-slate-400">Margem Líquida:</span>
-                    <span class="font-bold text-teal-400"><?php echo e($monthNetMargin ?? 0); ?>%</span>
+                    <!--aredondear a margem líquida para 2 casas decimais e adicionar o símbolo de % -->
+                    <span class="font-bold text-teal-400"><?php echo e(number_format($monthNetMargin ?? 0, 2, ',', '.')); ?>%</span>
                 </div>
             </div>
         </div>
@@ -242,31 +254,59 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctx = document.getElementById('salesChart');
     if (!ctx) return;
 
-    const chartData = <?php echo json_encode($salesChartData ?? ['labels' => [], 'data' => []], 512) ?>;
+    const chartData = <?php echo json_encode($salesChartData ?? ['labels' => [], 'salesData' => [], 'expensesData' => []]) ?>;
+    const salesSeries = chartData.salesData || chartData.data || [0, 0, 0, 0, 0, 0, 0];
+    const expensesSeries = chartData.expensesData || [0, 0, 0, 0, 0, 0, 0];
 
     new Chart(ctx, {
         type: 'line',
         data: {
-            labels: chartData.labels || ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
-            datasets: [{
-                label: 'Vendas (MT)',
-                data: chartData.data || [0, 0, 0, 0, 0, 0, 0],
-                borderColor: '<?php echo e($theme["hex"]); ?>',
-                backgroundColor: '<?php echo e($theme["glow"]); ?>',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.3,
-                pointBackgroundColor: '#0f172a',
-                pointBorderColor: '<?php echo e($theme["hex"]); ?>',
-                pointBorderWidth: 2,
-                pointRadius: 4,
-            }]
+            labels: chartData.labels && chartData.labels.length ? chartData.labels : ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+            datasets: [
+                {
+                    label: 'Vendas (MT)',
+                    data: salesSeries,
+                    borderColor: '<?php echo e($theme["hex"]); ?>',
+                    backgroundColor: '<?php echo e($theme["glow"]); ?>',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.35,
+                    pointBackgroundColor: '#0f172a',
+                    pointBorderColor: '<?php echo e($theme["hex"]); ?>',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                },
+                {
+                    label: 'Despesas (MT)',
+                    data: expensesSeries,
+                    borderColor: '#f43f5e',
+                    backgroundColor: 'rgba(244, 63, 94, 0.05)',
+                    borderWidth: 2,
+                    borderDash: [4, 4],
+                    fill: false,
+                    tension: 0.35,
+                    pointBackgroundColor: '#0f172a',
+                    pointBorderColor: '#f43f5e',
+                    pointBorderWidth: 2,
+                    pointRadius: 3,
+                }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { display: false },
+                legend: { 
+                    display: true, 
+                    position: 'top', 
+                    align: 'end',
+                    labels: { 
+                        color: '#94a3b8', 
+                        font: { size: 10, weight: 'bold' },
+                        boxWidth: 12,
+                        boxHeight: 12
+                    } 
+                },
                 tooltip: {
                     backgroundColor: '#0f172a',
                     titleColor: '#f8fafc',

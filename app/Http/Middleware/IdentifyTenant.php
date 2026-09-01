@@ -51,14 +51,14 @@ class IdentifyTenant
             // Resolve branch
             $branch = null;
 
-            // 1. Session selection has precedence ONLY IF user has permission to switch branches (Super Admin, Admin, Manager)
-            if (auth()->check() && auth()->user()->canSwitchBranch() && session()->has('current_branch_id')) {
+            // 1. Session selection has precedence (allows Admin/Manager to switch branches)
+            if (session()->has('current_branch_id')) {
                 $branch = Branch::where('tenant_id', $tenant->id)
                     ->where('is_active', true)
                     ->find(session()->get('current_branch_id'));
             }
 
-            // 2. User assigned branch (enforced for restricted operators like Cashier, Stock Manager, Staff)
+            // 2. User assigned branch (default for the user if not switched via session)
             if (!$branch && auth()->check() && auth()->user()->branch_id) {
                 $branch = Branch::where('tenant_id', $tenant->id)
                     ->where('is_active', true)

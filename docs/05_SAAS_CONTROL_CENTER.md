@@ -99,3 +99,4 @@ A **Central de Controle** é a interface restrita da equipe gestora do ZBPOS+ (S
 | `cashier` | **Ponto de Venda (POS)** | Abertura/fecho de caixa, emissão de vendas, faturas e recibos térmicos. |
 | `stock_manager` | **Armazém / Stock** | Entradas de mercadorias, conferência de lotes, baixas e transferências entre filiais. |
 | `staff` | **Operacional Básico** | Visualização de produtos e registro de atendimentos permitidos. |
+

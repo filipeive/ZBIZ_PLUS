@@ -5,10 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZBIZ+ POS 2.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         [x-cloak] { display: none !important; }
+        .swal2-popup.dark-swal {
+            background: rgba(15, 23, 42, 0.96) !important;
+            border: 1px solid rgba(51, 65, 85, 0.8) !important;
+            border-radius: 1.5rem !important;
+            color: #f8fafc !important;
+            backdrop-filter: blur(16px) !important;
+        }
+        .swal2-title {
+            color: #f8fafc !important;
+            font-weight: 800 !important;
+            font-size: 1.15rem !important;
+        }
+        .swal2-html-container {
+            color: #cbd5e1 !important;
+            font-size: 0.85rem !important;
+        }
     </style>
 </head>
 <body class="bg-gray-100 h-screen flex flex-col overflow-hidden select-none"
@@ -332,9 +349,52 @@
                     }
                 },
 
+                notifyError(title, message) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: title || 'Atenção',
+                        text: message,
+                        customClass: { popup: 'dark-swal' },
+                        confirmButtonColor: '#ef4444',
+                        confirmButtonText: 'Entendido'
+                    });
+                },
+
+                notifyWarning(title, message) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: title || 'Aviso de Stock',
+                        text: message,
+                        customClass: { popup: 'dark-swal' },
+                        confirmButtonColor: '#f59e0b',
+                        confirmButtonText: 'Ok'
+                    });
+                },
+
+                notifySuccess(title, message) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: title || 'Sucesso',
+                        text: message,
+                        customClass: { popup: 'dark-swal' },
+                        confirmButtonColor: '#10b981',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                },
+
                 addToCart(product) {
+                    const stockAvail = (product.stock_quantity !== undefined) ? product.stock_quantity : (product.stock || 0);
+                    if (product.type === 'product' && stockAvail <= 0) {
+                        this.notifyWarning('Stock Esgotado', 'O artigo "' + product.name + '" não possui stock disponível neste momento.');
+                        return;
+                    }
                     const existing = this.cart.find(item => item.product_id === product.id);
                     if (existing) {
+                        if (product.type === 'product' && (existing.quantity + 1) > stockAvail) {
+                            this.notifyWarning('Stock Insuficiente', 'A quantidade solicitada excede o stock disponível (Máximo: ' + stockAvail + ' un)!');
+                            return;
+                        }
                         existing.quantity += 1;
                     } else {
                         this.cart.push({
@@ -342,14 +402,21 @@
                             name: product.name,
                             unit_price: product.selling_price,
                             quantity: 1,
-                            discount: 0
+                            discount: 0,
+                            type: product.type,
+                            max_stock: stockAvail
                         });
                     }
                     this.$refs.searchInput.focus();
                 },
 
                 increaseQty(index) {
-                    this.cart[index].quantity += 1;
+                    const item = this.cart[index];
+                    if (item.type === 'product' && (item.quantity + 1) > item.max_stock) {
+                        this.notifyWarning('Limite Atingido', 'Quantidade máxima disponível em stock já adicionada (' + item.max_stock + ' un)!');
+                        return;
+                    }
+                    item.quantity += 1;
                 },
 
                 decreaseQty(index) {
@@ -409,7 +476,7 @@
                         // Salvar offline
                         this.offlineQueue.push(payload);
                         localStorage.setItem('zbiz_pos_offline_queue', JSON.stringify(this.offlineQueue));
-                        alert('Venda guardada em cache local (Modo Offline). Será sincronizada assim que a internet voltar.');
+                        this.notifyWarning('Modo Offline', 'Venda guardada em cache local. Será sincronizada automaticamente assim que a conexão retornar.');
                         this.clearCart();
                         this.showCheckoutModal = false;
                         this.isSubmitting = false;
@@ -428,13 +495,14 @@
                         const data = await res.json();
                         if (data.success) {
                             window.open(data.receipt_url + '?autoprint=1', '_blank', 'width=400,height=600');
+                            this.notifySuccess('Venda Concluída!', 'Venda #' + data.sale_id + ' processada com sucesso.');
                             this.clearCart();
                             this.showCheckoutModal = false;
                         } else {
-                            alert(data.message || 'Erro ao processar venda.');
+                            this.notifyError('Erro na Venda', data.message || 'Ocorreu um erro ao processar a venda.');
                         }
                     } catch (e) {
-                        alert('Erro de conexão. A guardar venda offline...');
+                        this.notifyWarning('Conexão Interrompida', 'A guardar venda em cache offline...');
                         this.offlineQueue.push(payload);
                         localStorage.setItem('zbiz_pos_offline_queue', JSON.stringify(this.offlineQueue));
                         this.clearCart();
@@ -459,10 +527,11 @@
                         if (data.success) {
                             this.offlineQueue = [];
                             localStorage.removeItem('zbiz_pos_offline_queue');
-                            alert('Vendas offline sincronizadas com sucesso!');
+                            this.notifySuccess('Sincronização', 'Vendas offline sincronizadas com sucesso com o servidor!');
                         }
                     } catch (e) {
                         console.error('Falha ao sincronizar vendas offline:', e);
+                        this.notifyError('Erro de Sync', 'Não foi possível sincronizar as vendas offline no momento.');
                     }
                 }
             };
