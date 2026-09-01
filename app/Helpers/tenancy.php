@@ -40,13 +40,30 @@ if (!function_exists('current_branch_id')) {
 }
 
 
+if (!function_exists('hex_to_rgba')) {
+    function hex_to_rgba(string $hex, float $alpha = 0.15): string
+    {
+        $hex = ltrim($hex, '#');
+        if (strlen($hex) === 3) {
+            $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+        }
+        if (strlen($hex) !== 6) {
+            return "rgba(16, 185, 129, {$alpha})";
+        }
+        $r = hexdec(substr($hex, 0, 2));
+        $g = hexdec(substr($hex, 2, 2));
+        $b = hexdec(substr($hex, 4, 2));
+        return "rgba({$r}, {$g}, {$b}, {$alpha})";
+    }
+}
+
 if (!function_exists('tenant_theme')) {
     function tenant_theme(?Tenant $tenant = null): array
     {
         $tenant ??= current_tenant();
         $type = $tenant?->business_type ?? 'retail';
         $settings = $tenant?->settings ?? [];
-        $customColor = $settings['primary_color'] ?? null;
+        $customColor = !empty($settings['primary_color']) ? $settings['primary_color'] : null;
         $logoPath = $settings['logo_path'] ?? null;
         $logoUrl = $logoPath ? asset('storage/' . $logoPath) : null;
 
@@ -58,7 +75,7 @@ if (!function_exists('tenant_theme')) {
                 'has_expiry'    => true,
                 'icon'          => 'fa-prescription-bottle-medical',
                 'color'         => 'emerald',
-                'hex'           => $customColor ?: '#10b981',
+                'hex'           => '#10b981',
                 'gradient'      => 'from-emerald-500 to-teal-600',
                 'glow'          => 'rgba(16, 185, 129, 0.15)',
                 'badge'         => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
@@ -74,7 +91,7 @@ if (!function_exists('tenant_theme')) {
                 'has_expiry'    => false,
                 'icon'          => 'fa-utensils',
                 'color'         => 'orange',
-                'hex'           => $customColor ?: '#f97316',
+                'hex'           => '#f97316',
                 'gradient'      => 'from-orange-500 to-rose-600',
                 'glow'          => 'rgba(249, 115, 22, 0.15)',
                 'badge'         => 'bg-orange-500/10 text-orange-400 border-orange-500/30',
@@ -90,7 +107,7 @@ if (!function_exists('tenant_theme')) {
                 'has_expiry'    => false,
                 'icon'          => 'fa-print',
                 'color'         => 'violet',
-                'hex'           => $customColor ?: '#8b5cf6',
+                'hex'           => '#8b5cf6',
                 'gradient'      => 'from-violet-500 to-purple-600',
                 'glow'          => 'rgba(139, 92, 246, 0.15)',
                 'badge'         => 'bg-violet-500/10 text-violet-400 border-violet-500/30',
@@ -106,7 +123,7 @@ if (!function_exists('tenant_theme')) {
                 'has_expiry'    => false,
                 'icon'          => 'fa-briefcase',
                 'color'         => 'teal',
-                'hex'           => $customColor ?: '#14b8a6',
+                'hex'           => '#14b8a6',
                 'gradient'      => 'from-teal-500 to-cyan-600',
                 'glow'          => 'rgba(20, 184, 166, 0.15)',
                 'badge'         => 'bg-teal-500/10 text-teal-400 border-teal-500/30',
@@ -122,7 +139,7 @@ if (!function_exists('tenant_theme')) {
                 'has_expiry'    => false,
                 'icon'          => 'fa-cart-shopping',
                 'color'         => 'sky',
-                'hex'           => $customColor ?: '#0ea5e9',
+                'hex'           => '#0ea5e9',
                 'gradient'      => 'from-sky-500 to-indigo-600',
                 'glow'          => 'rgba(14, 165, 233, 0.15)',
                 'badge'         => 'bg-sky-500/10 text-sky-400 border-sky-500/30',
@@ -132,6 +149,11 @@ if (!function_exists('tenant_theme')) {
                 'ring'          => 'focus:ring-sky-500 focus:border-sky-500',
             ],
         };
+
+        if ($customColor) {
+            $theme['hex'] = $customColor;
+            $theme['glow'] = hex_to_rgba($customColor, 0.18);
+        }
 
         $theme['logo_url'] = $logoUrl;
         $theme['custom_hex'] = $customColor;

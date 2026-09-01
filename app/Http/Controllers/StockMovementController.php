@@ -9,17 +9,27 @@ use Illuminate\Http\Request;
 class StockMovementController extends Controller
 {
     public function index(Request $request)
-        {
-            $query = StockMovement::with(['product', 'user']);
+    {
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+        $branchId = current_branch_id() ?? auth()->user()?->branch_id;
 
-            if ($request->filled('product')) {
-                $query->whereHas('product', function ($q) use ($request) {
-                    $q->where('name', 'like', '%' . $request->product . '%');
-                });
-            }
-        $branchId = current_branch_id();
-        if ($branchId) {
-            $query->where('branch_id', $branchId);
+        $query = StockMovement::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->with(['product', 'user']);
+
+        if ($request->filled('product')) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->product . '%');
+            });
+        }
+
+        if ($request->filled('branch_id')) {
+            $query->where('branch_id', $request->branch_id);
+        } elseif ($branchId && !(auth()->user()?->isAdmin() || auth()->user()?->isManager())) {
+            $query->where(function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId)
+                  ->orWhereNull('branch_id');
+            });
         }
 
         if ($request->filled('date_from')) {
@@ -32,9 +42,10 @@ class StockMovementController extends Controller
             $query->where('movement_type', $request->movement_type);
         }
 
-        $movements = $query->latest('movement_date')->paginate(20);
+        $movements = $query->latest('id')->paginate(20)->withQueryString();
+        $products = Product::whereIn('type', ['product', 'physical'])->where('is_active', true)->orderBy('name')->get();
 
-        return view('stock_movements.index', compact('movements'));
+        return view('stock_movements.index', compact('movements', 'products'));
     }
 
     public function create()

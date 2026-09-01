@@ -141,15 +141,15 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%) !important;
-            color: #020617 !important;
-            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.2) !important;
+            background: <?php echo e($theme['hex']); ?> !important;
+            color: #ffffff !important;
+            box-shadow: 0 10px 25px <?php echo e($theme['glow']); ?> !important;
         }
 
         .btn-outline-primary {
-            border-color: rgba(16, 185, 129, 0.8) !important;
-            color: #34d399 !important;
-            background: rgba(16, 185, 129, 0.08) !important;
+            border-color: <?php echo e($theme['hex']); ?> !important;
+            color: <?php echo e($theme['hex']); ?> !important;
+            background: <?php echo e($theme['glow']); ?> !important;
         }
 
         .btn-outline-secondary {
@@ -842,13 +842,13 @@
                     </div>
                 <?php endif; ?>
 
-                <?php if(session('error') || $errors->any()): ?>
+                <?php if(session('error') || (isset($errors) && $errors->any())): ?>
                     <div class="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs backdrop-blur-sm">
                         <div class="flex items-center space-x-2 font-bold mb-1">
                             <i class="fa-solid fa-triangle-exclamation text-base"></i>
                             <span><?php echo e(session('error') ?? 'Ocorreram erros na submissão:'); ?></span>
                         </div>
-                        <?php if($errors->any()): ?>
+                        <?php if(isset($errors) && $errors->any()): ?>
                             <ul class="list-disc list-inside space-y-0.5 pl-6 mt-1 text-rose-300/90">
                                 <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <li><?php echo e($error); ?></li>

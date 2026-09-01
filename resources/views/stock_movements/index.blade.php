@@ -12,12 +12,33 @@
     
     <!-- Top Action Bar -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
-        <div>
-            <h2 class="text-lg font-black font-heading text-white">Registo de Entradas, Saídas e Ajustes</h2>
-            <p class="text-xs text-slate-400">Rastreabilidade completa de todas as alterações de stock por filial e operador.</p>
-        </div>
+        <form method="GET" action="{{ route('stock-movements.index') }}" class="flex flex-col sm:flex-row items-center gap-3 w-full sm:max-w-xl">
+            <div class="relative flex-1 w-full">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 text-sm">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" name="product" value="{{ request('product') }}" placeholder="Buscar por artigo / produto..."
+                       class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-600 focus:ring-2 {{ $theme['ring'] }} outline-none">
+            </div>
 
-        <div class="flex items-center gap-3">
+            <select name="movement_type" onchange="this.form.submit()" class="w-full sm:w-36 px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                <option value="">Todos Tipos</option>
+                <option value="in" {{ request('movement_type') === 'in' ? 'selected' : '' }}>Entradas (+)</option>
+                <option value="out" {{ request('movement_type') === 'out' ? 'selected' : '' }}>Saídas (-)</option>
+                <option value="adjustment" {{ request('movement_type') === 'adjustment' ? 'selected' : '' }}>Ajustes</option>
+            </select>
+
+            <button type="submit" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition">
+                Filtrar
+            </button>
+            @if(request()->hasAny(['product', 'movement_type', 'date_from', 'date_to']))
+                <a href="{{ route('stock-movements.index') }}" class="px-3 py-2.5 bg-slate-800/60 hover:bg-slate-800 text-slate-400 rounded-xl text-xs flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </a>
+            @endif
+        </form>
+
+        <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
             <button @click="showModal = true" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
                 <i class="fa-solid fa-plus-minus"></i> Novo Ajuste / Entrada
             </button>
@@ -95,7 +116,7 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-300 mb-1">Artigo / Medicamento *</label>
                     <select name="product_id" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
-                        @foreach(\App\Models\Product::where('type', 'product')->get() as $p)
+                        @foreach($products as $p)
                             <option value="{{ $p->id }}">{{ $p->name }} (Atual: {{ $p->stock_quantity }} un)</option>
                         @endforeach
                     </select>

@@ -6,6 +6,20 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
+## [1.0.13] - 2026-09-01 - Correção das Movimentações de Stock Físico, Dashboard em Tempo Real e Cores Dinâmicas de Marca
+### Fixed
+- **Movimentações de Stock & Rastreabilidade de Vendas (`Product.php`, `StockMovementController.php` & `stock_movements/index.blade.php`):**
+  - Corrigido `Product::updateStock` para reconhecer produtos com tipo `'physical'` e `'product'`, garantindo a baixa de inventário e geração imediata de `StockMovement`.
+  - Injeção obrigatória de `tenant_id` e `branch_id` no registro de movimentações.
+  - Atualizada a listagem de movimentações com barra de pesquisa rápida, filtros por tipo (Entrada, Saída, Ajuste) e dropdown dinâmico de artigos no modal.
+- **Restauração e Métricas do Painel Principal (`DashboardController.php`, `layouts/app.blade.php` & `dashboard/index.blade.php`):**
+  - Corrigido erro de verificação de `$errors` que impedia o carregamento do dashboard.
+  - Exibição de KPIs em tempo real (Vendas de Hoje, Faturação do Mês, Lucro Real, Fiados a Receber e Lista de Vendas Recentes).
+- **Identidade Visual & Cores Personalizadas em Tempo Real (`tenancy.php` & `layouts/app.blade.php`):**
+  - Implementado cálculo dinâmico de `hex_to_rgba` e injeção do código hexadecimal escolhido nas variáveis CSS e botões primários.
+
+---
+
 ## [1.0.12] - 2026-09-01 - Correção da Listagem de Dívidas & Ajuste do Layout Responsivo da Sidebar para Firefox
 ### Fixed
 - **Listagem e Escopo de Fiados & Dívidas (`DebtController.php`, `SaleController.php` & `debts/index.blade.php`):**

@@ -131,6 +131,11 @@ class Product extends Model
         return $this->hasMany(StockMovement::class);
     }
 
+    public function isPhysical(): bool
+    {
+        return in_array($this->type, ['product', 'physical']);
+    }
+
     public function isLowStock(): bool
     {
         return $this->stock_quantity <= $this->min_stock_level;
@@ -150,8 +155,8 @@ class Product extends Model
             }
         }
 
-        // Caso contrário, atualiza o próprio stock (se for do tipo produto)
-        if ($this->type === 'product') {
+        // Caso contrário, atualiza o próprio stock (se for do tipo produto físico)
+        if ($this->isPhysical()) {
             if ($type === 'out') {
                 $this->decrement('stock_quantity', $quantity);
             } else {
@@ -160,6 +165,8 @@ class Product extends Model
 
             // Registrar movimentação de stock
             StockMovement::create([
+                'tenant_id' => $this->tenant_id ?? current_tenant_id() ?? auth()->user()?->tenant_id,
+                'branch_id' => current_branch_id() ?? auth()->user()?->branch_id ?? $this->branch_id,
                 'product_id' => $this->id,
                 'user_id' => $userId ?? auth()->id(),
                 'movement_type' => $type,
