@@ -6,6 +6,17 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
+## [1.0.16] - 2026-09-02 - Suporte Universal a Registo e Venda de Serviços para Todas as Empresas (Farmácias, Retalho, Gráfica)
+### Added & Improved
+- **Flexibilização do Módulo de Catálogo & Serviços (`ProductController.php`, `products/create.blade.php`, `products/edit.blade.php` e `products/index.blade.php`):**
+  - Todas as empresas (Farmácias, Supermercados, Reprografia, Lojas de Conveniência, etc.) agora podem cadastrar tanto **Produtos Físicos** (com controlo de stock, estoque mínimo, lotes e validade) quanto **Serviços Prestados** (sem controlo de stock, permitindo faturação ilimitada).
+  - Formulários de criação e edição adaptativos com Alpine.js (`x-model="itemType"`):
+    - Ao selecionar **Serviço**, os campos de inventário e validade são ocultados automaticamente, exibindo caixa explicativa e orientações contextuais (ex: Teste de Glicemia, Medição de Tensão Arterial, Aplicação de Injectáveis, Curativos, Entregas, Consultoria, Estamparia, Encadernação).
+    - Ao selecionar **Produto Físico**, os campos de contagem de unidades, stock mínimo de segurança e lotes ANARME/FEFO permanecem ativos.
+  - Abas de filtragem rápida e botões no cabeçalho do catálogo atualizados para acomodar serviços em todos os setores.
+
+---
+
 ## [1.0.15] - 2026-09-02 - Redesign Completo do Relatório Especializado de Vendas com Dark Theme & Chart.js
 ### Added & Improved
 - **Modernização Visual do Relatório Especializado de Vendas (`reports/sales_specialized.blade.php`):**

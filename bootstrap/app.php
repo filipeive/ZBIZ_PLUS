@@ -22,6 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'tenant'        => \App\Http\Middleware\IdentifyTenant::class,
+            'feature'       => \App\Http\Middleware\EnsurePlanFeature::class,
+            'subscription'  => \App\Http\Middleware\CheckSubscriptionStatus::class,
             'permissions'   => \App\Http\Middleware\CheckPermissions::class,
             'search.log'    => \App\Http\Middleware\SearchLogger::class,
             'temp.password' => \App\Http\Middleware\CheckTemporaryPassword::class,

@@ -7,14 +7,17 @@ use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Debt;
 use App\Models\FinancialAccount;
+use App\Models\Plan;
 use App\Models\Product;
 use App\Models\ProductBranch;
 use App\Models\Role;
 use App\Models\Sale;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Billing\SubscriptionService;
 use App\Services\Inventory\StockManagerService;
 use App\Services\TenantContext;
+use Database\Seeders\PlanSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -34,12 +37,16 @@ class POSCheckoutTest extends TestCase
     {
         parent::setUp();
 
+        $this->seed(PlanSeeder::class);
+
         $this->tenant = Tenant::create([
             'name'          => 'Supermercado Central',
             'slug'          => 'super-central',
             'business_type' => 'retail',
             'status'        => 'active',
         ]);
+
+        app(SubscriptionService::class)->startTrial($this->tenant, Plan::where('slug', 'pro')->firstOrFail());
 
         $this->branch = Branch::create([
             'tenant_id' => $this->tenant->id,

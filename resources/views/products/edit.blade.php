@@ -10,22 +10,22 @@
 @endphp
 
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6" x-data="{ showStockModal: false, hasBatch: {{ $hasExistingBatch ? 'true' : 'false' }} }">
+<div class="max-w-full mx-auto space-y-6" x-data="{ itemType: '{{ old('type', $product->type) }}', showStockModal: false, hasBatch: {{ $hasExistingBatch ? 'true' : 'false' }} }">
 
     <!-- Top Action Bar -->
     <div class="flex items-center justify-between bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
         <div class="flex items-center space-x-3">
             <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                <i class="fa-solid fa-box-open text-lg"></i>
+                <i :class="itemType === 'service' ? 'fa-solid fa-screwdriver-wrench' : 'fa-solid fa-box-open'" class="text-lg"></i>
             </div>
             <div>
                 <h2 class="text-lg font-black font-heading text-white">{{ $product->name }}</h2>
-                <p class="text-xs text-slate-400">{{ $product->type === 'service' ? 'Serviço Prestado' : 'Produto Físico em Stock' }}</p>
+                <p class="text-xs text-slate-400" x-text="itemType === 'service' ? '🛠️ Serviço Prestado / Mão de Obra' : '📦 Produto Físico com Controlo de Stock'"></p>
             </div>
         </div>
         <div class="flex items-center gap-2">
             @if($isPharmacy)
-                <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $theme['badge'] }} flex items-center gap-1.5 hidden sm:flex">
+                <span x-show="itemType !== 'service'" class="px-3 py-1 rounded-full text-xs font-bold border {{ $theme['badge'] }} flex items-center gap-1.5 hidden sm:flex">
                     <i class="fa-solid fa-pills"></i> Módulo Farmácia / ANARME
                 </span>
             @endif
@@ -46,20 +46,20 @@
 
             <div class="flex items-center justify-between border-b border-slate-800 pb-4">
                 <div>
-                    <h2 class="text-base font-black text-white font-heading">Informações Gerais do Artigo</h2>
-                    <p class="text-xs text-slate-400">Atualize os dados de identificação, preço, lote e validade.</p>
+                    <h2 class="text-base font-black text-white font-heading">
+                        <span x-text="itemType === 'service' ? 'Informações do Serviço' : 'Informações Gerais do Artigo'"></span>
+                    </h2>
+                    <p class="text-xs text-slate-400">Atualize os dados de identificação, categoria, preço e parâmetros comerciais.</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="sm:col-span-2">
-                    <label class="block text-xs font-bold text-slate-300 mb-1">
-                        {{ $isPharmacy ? 'Nome Comercial & Dosagem do Medicamento *' : 'Nome do Artigo / Serviço *' }}
-                    </label>
-                    <input type="text" name="name" value="{{ old('name', $product->name) }}" required
-                           placeholder="{{ $isPharmacy ? 'Ex: Amoxicilina 500mg Cápsulas' : 'Ex: Produto A' }}"
-                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
-                    @error('name') <p class="text-rose-400 text-xs mt-1">{{ $message }}</p> @enderror
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Tipo de Artigo / Oferta *</label>
+                    <select name="type" x-model="itemType" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                        <option value="product" {{ old('type', $product->type) === 'product' ? 'selected' : '' }}>📦 Produto Físico (com stock)</option>
+                        <option value="service" {{ old('type', $product->type) === 'service' ? 'selected' : '' }}>🛠️ Serviço / Prestação / Mão de Obra</option>
+                    </select>
                 </div>
 
                 <div>
@@ -73,12 +73,15 @@
                     </select>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1">Tipo de Artigo</label>
-                    <select name="type" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
-                        <option value="product" {{ old('type', $product->type) === 'product' ? 'selected' : '' }}>Produto Físico (com stock)</option>
-                        <option value="service" {{ old('type', $product->type) === 'service' ? 'selected' : '' }}>Serviço / Mão de Obra</option>
-                    </select>
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold text-slate-300 mb-1">
+                        <span x-show="itemType === 'service'">Nome do Serviço Prestado *</span>
+                        <span x-show="itemType !== 'service'">{{ $isPharmacy ? 'Nome Comercial & Dosagem do Medicamento *' : 'Nome do Artigo / Produto *' }}</span>
+                    </label>
+                    <input type="text" name="name" value="{{ old('name', $product->name) }}" required
+                           :placeholder="itemType === 'service' ? '{{ $isPharmacy ? 'Ex: Medição de Tensão / Teste de Glicemia / Aplicação de Injectável' : 'Ex: Encadernação / Impressão / Consultoria' }}' : '{{ $isPharmacy ? 'Ex: Amoxicilina 500mg Cápsulas' : 'Ex: Produto A' }}'"
+                           class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                    @error('name') <p class="text-rose-400 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
@@ -88,24 +91,25 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1">Código Interno (SKU / Registo ANARME)</label>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Código Interno / SKU</label>
                     <input type="text" name="sku" value="{{ old('sku', $product->sku) }}" placeholder="Ex: MED-001"
                            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1">Preço de Compra / Custo (MT)</label>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Preço de Custo / Insumos (MT)</label>
                     <input type="number" step="0.01" min="0" name="purchase_price" value="{{ old('purchase_price', $product->purchase_price) }}"
                            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none font-mono">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1">Preço de Venda Normal (MT) *</label>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Preço de Venda / Cobrança (MT) *</label>
                     <input type="number" step="0.01" min="0" name="selling_price" value="{{ old('selling_price', $product->selling_price) }}" required
                            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none font-mono font-bold">
                 </div>
 
-                @if ($product->type === 'product')
+                <!-- Physical Product Specific Stock Controls -->
+                <div x-show="itemType !== 'service'" class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:col-span-2">
                     <div>
                         <label class="block text-xs font-bold text-slate-300 mb-1">Unidade de Medida</label>
                         <input type="text" name="unit" value="{{ old('unit', $product->unit ?? 'un') }}" placeholder="un, comprimido, frasco, cx..."
@@ -114,7 +118,7 @@
 
                     <div>
                         <label class="block text-xs font-bold text-slate-300 mb-1">Stock Mínimo para Alerta *</label>
-                        <input type="number" name="min_stock_level" value="{{ old('min_stock_level', $product->min_stock_level) }}" min="0" required
+                        <input type="number" name="min_stock_level" value="{{ old('min_stock_level', $product->min_stock_level ?? 5) }}" min="0"
                                class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none font-mono">
                     </div>
 
@@ -127,7 +131,16 @@
                             <i class="fa-solid fa-boxes-packing"></i> Ajustar Inventário
                         </button>
                     </div>
-                @endif
+                </div>
+
+                <!-- Service Info Box -->
+                <div x-show="itemType === 'service'" class="sm:col-span-2 p-4 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-start gap-3">
+                    <i class="fa-solid fa-screwdriver-wrench text-violet-400 text-lg mt-0.5"></i>
+                    <div>
+                        <div class="text-xs font-bold text-violet-300">Registo de Serviço / Mão de Obra Ativo</div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Serviços não utilizam contagem de stock nem lotes físicos. Podem ser prestados e cobrados de forma contínua no POS e nas vendas manuais.</p>
+                    </div>
+                </div>
             </div>
 
             <!-- SECÇÃO ESPECIALIZADA: PROMOÇÃO & DESCONTO AUTOMÁTICO -->
@@ -175,8 +188,8 @@
                 </div>
             </div>
 
-            <!-- SECÇÃO ESPECIALIZADA: CONTROLO DE LOTE & VALIDADE (ANARME / FEFO) -->
-            <div class="pt-4 border-t border-slate-800 space-y-4">
+            <!-- SECÇÃO ESPECIALIZADA: CONTROLO DE LOTE & VALIDADE (Visível apenas para produtos físicos) -->
+            <div x-show="itemType !== 'service'" class="pt-4 border-t border-slate-800 space-y-4">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-sm font-bold text-white flex items-center gap-2">

@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
-@section('title', $theme['catalog_title'] ?? 'Produtos & Catálogo')
-@section('page-title', $theme['catalog_title'] ?? 'Catálogo de Produtos & Serviços')
-
 @php
     $theme = tenant_theme();
     $isPharmacy = current_tenant()?->isPharmacy() ?? false;
     $hasServices = $theme['has_services'] ?? false;
     $currentType = request('type', 'all');
 @endphp
+
+@section('title', $theme['catalog_title'] ?? 'Produtos & Catálogo')
+@section('page-title', $hasServices ? ($theme['catalog_title'] ?? 'Catálogo de Produtos & Serviços') : 'Catálogo de Produtos')
 
 @section('content')
 <div class="space-y-6">
@@ -50,13 +50,13 @@
             </a>
             @if(auth()->user()->isStockManager() || auth()->user()->isManager() || auth()->user()->isAdmin())
             <a href="{{ route('products.create') }}" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
-                <i class="fa-solid fa-plus"></i> {{ $isPharmacy ? 'Novo Medicamento' : ($hasServices ? 'Novo Artigo / Serviço' : 'Novo Artigo') }}
+                <i class="fa-solid fa-plus"></i> {{ $isPharmacy ? 'Novo Medicamento / Serviço' : 'Novo Artigo / Serviço' }}
             </a>
             @endif
         </div>
     </div>
 
-    <!-- Quick Type Filter Bar (Inspirado no ReproSys) -->
+    <!-- Quick Type Filter Bar -->
     <div class="flex items-center gap-2 overflow-x-auto pb-1">
         <a href="{{ route('products.index', array_merge(request()->except('type', 'page'), ['type' => 'all'])) }}"
            class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 {{ in_array($currentType, ['all', '']) ? 'bg-slate-800 text-white border border-slate-700 shadow-md' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800' }}">
@@ -72,13 +72,13 @@
             <span class="px-1.5 py-0.2 rounded-md bg-slate-950 text-[10px] text-slate-300">{{ $physicalCount ?? 0 }}</span>
         </a>
 
-        @if($hasServices || ($servicesCount ?? 0) > 0)
-        <a href="{{ route('products.index', array_merge(request()->except('type', 'page'), ['type' => 'service'])) }}"
-           class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 {{ $currentType === 'service' ? 'bg-violet-500/20 text-violet-400 border border-violet-500/40 shadow-md' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800' }}">
-            <i class="fa-solid fa-screwdriver-wrench text-[11px] text-violet-400"></i>
-            <span>Serviços Prestados</span>
-            <span class="px-1.5 py-0.2 rounded-md bg-slate-950 text-[10px] text-slate-300">{{ $servicesCount ?? 0 }}</span>
-        </a>
+        @if($hasServices)
+            <a href="{{ route('products.index', array_merge(request()->except('type', 'page'), ['type' => 'service'])) }}"
+               class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 {{ $currentType === 'service' ? 'bg-violet-500/20 text-violet-400 border border-violet-500/40 shadow-md' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800' }}">
+                <i class="fa-solid fa-screwdriver-wrench text-[11px] text-violet-400"></i>
+                <span>Serviços Prestados</span>
+                <span class="px-1.5 py-0.2 rounded-md bg-slate-950 text-[10px] text-slate-300">{{ $servicesCount ?? 0 }}</span>
+            </a>
         @endif
 
         <a href="{{ route('products.index', array_merge(request()->except('type', 'page'), ['type' => 'low-stock'])) }}"

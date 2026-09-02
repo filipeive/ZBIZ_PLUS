@@ -8,6 +8,7 @@ use App\Models\FinancialAccount;
 use App\Models\SalaryPayment;
 use App\Models\UserActivity;
 use App\Models\TemporaryPassword;
+use App\Services\Billing\SubscriptionService;
 use App\Services\FinancialService;
 use App\Traits\LogsActivity; 
 use Illuminate\Support\Str;
@@ -91,6 +92,13 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        $tenant = current_tenant();
+        if ($tenant && !app(SubscriptionService::class)->canCreateUser($tenant)) {
+            return back()
+                ->withInput()
+                ->with('error', 'O limite de utilizadores do pacote atual foi atingido. Atualize o plano para adicionar mais colaboradores.');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'employee_code' => 'nullable|string|max:50|unique:users,employee_code',

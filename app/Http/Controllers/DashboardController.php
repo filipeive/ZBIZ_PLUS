@@ -24,6 +24,11 @@ class DashboardController extends Controller
     public function index()
     {
         $user = auth()->user();
+
+        if ($user?->isSuperAdmin()) {
+            return redirect()->route('owner.tenants.index');
+        }
+
         $tenantId = current_tenant_id() ?? $user?->tenant_id;
         $userIdFilter = $this->dashboardUserIdFilter($user);
 

@@ -25,14 +25,6 @@
             </a>
         </div>
     </div>
-
-    @if(session('success'))
-        <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-3">
-            <i class="fa-solid fa-circle-check text-base"></i>
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
-
     <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data">
         @csrf
         
@@ -68,6 +60,16 @@
                         <input type="file" name="company_logo" accept="image/png,image/jpeg,image/svg+xml,image/webp"
                                class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-800 file:text-white hover:file:bg-slate-700 cursor-pointer">
                         <p class="text-[10px] text-slate-500 mt-1">PNG, JPG, SVG ou WebP (Máx. 3MB). Exibido em faturas, recibos e cabeçalho.</p>
+                        <!-- Remove Logo Button -->
+                        @if(!empty($theme['logo_url']))
+                            <div class="mt-2">
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="remove_logo" value="1" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+                                    <span class="ml-3 text-xs font-bold text-slate-300">Remover logótipo atual</span>
+                                </label>
+                            </div>
+                        @endif
                     </div>
 
                     <div>

@@ -20,6 +20,9 @@ class Tenant extends Model
         'address',
         'currency',
         'status',
+        'installation_mode',
+        'license_status',
+        'license_expires_at',
         'trial_ends_at',
         'subscription_ends_at',
         'settings',
@@ -27,6 +30,7 @@ class Tenant extends Model
 
     protected $casts = [
         'settings'             => 'array',
+        'license_expires_at'   => 'datetime',
         'trial_ends_at'        => 'datetime',
         'subscription_ends_at' => 'datetime',
     ];
@@ -65,6 +69,11 @@ class Tenant extends Model
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    public function licenseKeys(): HasMany
+    {
+        return $this->hasMany(LicenseKey::class);
     }
 
     

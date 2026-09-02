@@ -108,7 +108,19 @@ class SubscriptionService
             return false;
         }
 
-        return $subscription->plan?->hasFeature($featureKey) ?? false;
+        $plan = $subscription->plan;
+
+        if (!$plan) {
+            return false;
+        }
+
+        foreach ($this->featureAliases($featureKey) as $alias) {
+            if ($plan->hasFeature($alias)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -141,5 +153,17 @@ class SubscriptionService
         if ($maxBranches === 0) return true; // unlimited
 
         return $tenant->branches()->count() < $maxBranches;
+    }
+
+    private function featureAliases(string $featureKey): array
+    {
+        return match ($featureKey) {
+            'sales' => ['sales', 'pos'],
+            'stock_basic' => ['stock_basic', 'inventory', 'pharmacy'],
+            'cash_management' => ['cash_management', 'finance'],
+            'reports_advanced' => ['reports_advanced', 'reports'],
+            'pharmacy' => ['pharmacy', 'pharmacy_anarme'],
+            default => [$featureKey],
+        };
     }
 }

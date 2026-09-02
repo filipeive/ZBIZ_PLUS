@@ -120,4 +120,37 @@ class SubscriptionAndPlansTest extends TestCase
         ]);
         $this->assertFalse($this->subService->canCreateBranch($this->tenant));
     }
+
+    public function test_plan_feature_middleware_blocks_modules_outside_tenant_package(): void
+    {
+        $starterPlan = Plan::where('slug', 'starter')->first();
+        $this->subService->startTrial($this->tenant, $starterPlan);
+
+        $role = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        $branch = Branch::create([
+            'tenant_id' => $this->tenant->id,
+            'name'      => 'Loja Principal',
+            'code'      => 'MAIN',
+            'is_active' => true,
+            'is_main'   => true,
+        ]);
+        $user = User::create([
+            'tenant_id' => $this->tenant->id,
+            'branch_id' => $branch->id,
+            'name'      => 'Admin Starter',
+            'email'     => 'admin-starter@test.com',
+            'password'  => bcrypt('password'),
+            'role_id'   => $role->id,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->getJson(route('debts.index'))
+            ->assertForbidden()
+            ->assertJson([
+                'success' => false,
+                'error' => 'feature_not_in_plan',
+                'feature' => 'debts',
+            ]);
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Branch;
 use App\Models\Sale;
 use App\Models\User;
+use App\Services\Billing\SubscriptionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -41,6 +42,13 @@ class BranchController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $tenant = current_tenant();
+        if ($tenant && !app(SubscriptionService::class)->canCreateBranch($tenant)) {
+            return back()
+                ->withInput()
+                ->with('error', 'O limite de filiais do pacote atual foi atingido. Atualize o plano para adicionar mais lojas.');
+        }
+
         $tenantId = current_tenant_id();
 
         $validated = $request->validate([
@@ -172,4 +180,3 @@ class BranchController extends Controller
         }
     }
 }
-

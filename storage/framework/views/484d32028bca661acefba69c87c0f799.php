@@ -9,6 +9,7 @@
         $theme = tenant_theme();
         $tenant = current_tenant();
         $branch = current_branch();
+        $isOwnerConsole = auth()->user()?->isSuperAdmin();
         $subscription = $tenant?->activeSubscription();
         $allTenantBranches = $tenant ? $tenant->branches()->where('is_active', true)->orderByDesc('is_main')->get() : collect();
     ?>
@@ -58,14 +59,97 @@
             --tenant-primary-glow: <?php echo e($theme['glow']); ?>;
             --tenant-primary-soft: <?php echo e(hex_to_rgba($theme['hex'], 0.10)); ?>;
             --tenant-primary-border: <?php echo e(hex_to_rgba($theme['hex'], 0.35)); ?>;
+            --tenant-gradient-end: rgba(2, 6, 23, 0.88);
+            --app-bg: #020617;
+            --app-surface: rgba(15, 23, 42, 0.92);
+            --app-surface-muted: rgba(30, 41, 59, 0.82);
+            --app-border: rgba(51, 65, 85, 0.88);
+            --app-text: #f8fafc;
+            --app-muted: #94a3b8;
+            color-scheme: dark;
         }
 
-        body { font-family: 'Inter', sans-serif; }
+        html.light {
+            --app-bg: #f8fafc;
+            --app-surface: rgba(255, 255, 255, 0.96);
+            --app-surface-muted: #f1f5f9;
+            --app-border: #e2e8f0;
+            --app-text: #0f172a;
+            --app-muted: #64748b;
+            --tenant-gradient-end: rgba(255, 255, 255, 0.72);
+            color-scheme: light;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--app-bg);
+            color: var(--app-text);
+        }
         .font-heading { font-family: 'Outfit', sans-serif; }
         [x-cloak] { display: none !important; }
 
+        .app-shell {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .app-sidebar {
+            width: 18rem;
+            max-width: 18rem;
+            min-width: 18rem;
+            height: 100%;
+            min-height: 0;
+        }
+
+        .app-content {
+            flex: 1 1 auto;
+            min-width: 0;
+            width: calc(100% - 18rem);
+            height: 100%;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .app-main {
+            flex: 1 1 auto;
+            min-width: 0;
+            min-height: 0;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        @media (min-width: 1024px) {
+            .app-sidebar {
+                position: relative !important;
+                inset: auto !important;
+                transform: none !important;
+                flex: 0 0 18rem !important;
+                z-index: 30 !important;
+            }
+        }
+
+        @media (max-width: 1023.98px) {
+            .app-sidebar {
+                position: fixed !important;
+                top: 0 !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                z-index: 50 !important;
+            }
+
+            .app-content {
+                width: 100%;
+            }
+        }
+
         .tenant-gradient {
-            background-image: linear-gradient(135deg, var(--tenant-primary), color-mix(in srgb, var(--tenant-primary) 68%, #020617 32%)) !important;
+            background-color: var(--tenant-primary) !important;
+            background-image: linear-gradient(135deg, var(--tenant-primary), var(--tenant-gradient-end)) !important;
         }
 
         .tenant-text {
@@ -97,11 +181,16 @@
             filter: brightness(1.08);
         }
 
+        ::selection {
+            background: var(--tenant-primary);
+            color: #020617;
+        }
+
         .app-bootstrap-card,
         .card,
         .page-card {
-            background: rgba(15, 23, 42, 0.9) !important;
-            border: 1px solid rgba(51, 65, 85, 0.9) !important;
+            background: var(--app-surface) !important;
+            border: 1px solid var(--app-border) !important;
             border-radius: 1.5rem !important;
             box-shadow: 0 20px 45px rgba(15, 23, 42, 0.25) !important;
             color: #e2e8f0 !important;
@@ -111,8 +200,8 @@
         .card-body,
         .card-footer {
             background: transparent !important;
-            border-color: rgba(51, 65, 85, 0.9) !important;
-            color: #e2e8f0 !important;
+            border-color: var(--app-border) !important;
+            color: var(--app-text) !important;
         }
 
         .table,
@@ -121,7 +210,7 @@
         .table tbody td,
         .table tfoot td {
             color: #e2e8f0 !important;
-            border-color: rgba(51, 65, 85, 0.9) !important;
+            border-color: var(--app-border) !important;
             background-color: rgba(15, 23, 42, 0.35) !important;
         }
 
@@ -138,7 +227,7 @@
         .input-group-text,
         .form-check-input {
             background: rgba(2, 6, 23, 0.8) !important;
-            border: 1px solid rgba(51, 65, 85, 0.9) !important;
+            border: 1px solid var(--app-border) !important;
             color: #f8fafc !important;
             border-radius: 0.9rem !important;
         }
@@ -323,7 +412,7 @@
         .w-100 { width: 100% !important; }
         .h-100 { height: 100% !important; }
 
-        .text-muted { color: #94a3b8 !important; }
+        .text-muted { color: var(--app-muted) !important; }
         .text-primary { color: var(--tenant-primary) !important; }
         .text-success { color: #10b981 !important; }
         .text-danger { color: #f43f5e !important; }
@@ -338,8 +427,8 @@
         .h6 { font-size: 0.875rem !important; }
 
         .stats-card {
-            background: rgba(15, 23, 42, 0.9) !important;
-            border: 1px solid rgba(51, 65, 85, 0.8) !important;
+            background: var(--app-surface) !important;
+            border: 1px solid var(--app-border) !important;
             border-radius: 1.5rem !important;
             padding: 1.25rem !important;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
@@ -359,6 +448,39 @@
             color: #f8fafc !important;
         }
 
+        html.light .preserve-dark,
+        html.light .preserve-dark.bg-slate-900,
+        html.light .preserve-dark.bg-slate-900\/80,
+        html.light .preserve-dark.bg-slate-900\/90 {
+            background-color: #0f172a !important;
+            border-color: rgba(148, 163, 184, 0.28) !important;
+            color: #f8fafc !important;
+        }
+
+        html.light .preserve-dark .text-white,
+        html.light .preserve-dark .text-slate-100,
+        html.light .preserve-dark .text-slate-200 {
+            color: #f8fafc !important;
+        }
+
+        html.light .preserve-dark .text-slate-300 {
+            color: #cbd5e1 !important;
+        }
+
+        html.light .preserve-dark .text-slate-400,
+        html.light .preserve-dark .text-slate-500 {
+            color: #94a3b8 !important;
+        }
+
+        header,
+        aside,
+        .backdrop-blur-sm,
+        .backdrop-blur-md,
+        .backdrop-blur-xl {
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+        }
+
         /* Custom scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #020617; }
@@ -370,8 +492,8 @@
         ======================================================== */
         html.light,
         html.light body {
-            background-color: #f8fafc !important;
-            color: #0f172a !important;
+            background-color: var(--app-bg) !important;
+            color: var(--app-text) !important;
         }
 
         html.light .bg-slate-950 {
@@ -391,8 +513,8 @@
         html.light .card,
         html.light .page-card {
             background-color: #ffffff !important;
-            border-color: #e2e8f0 !important;
-            color: #0f172a !important;
+            border-color: var(--app-border) !important;
+            color: var(--app-text) !important;
             box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 10px -2px rgba(0, 0, 0, 0.02) !important;
         }
 
@@ -477,13 +599,14 @@
 
         html.light header {
             background-color: rgba(255, 255, 255, 0.92) !important;
-            border-color: #e2e8f0 !important;
+            border-color: var(--app-border) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
             backdrop-filter: blur(12px) !important;
         }
 
         html.light aside {
-            background-color: #ffffff !important;
-            border-color: #e2e8f0 !important;
+            background-color: var(--app-surface) !important;
+            border-color: var(--app-border) !important;
         }
 
         html.light .swal2-popup.dark-swal {
@@ -514,7 +637,7 @@
 
     <?php echo $__env->yieldPushContent('styles'); ?>
 </head>
-<body class="bg-slate-950 text-slate-100 h-screen w-screen overflow-hidden flex flex-col antialiased selection:bg-emerald-500 selection:text-slate-950 transition-colors duration-200"
+<body class="bg-slate-950 text-slate-100 h-screen w-screen overflow-hidden flex flex-col antialiased transition-colors duration-200"
       x-data="{ 
           sidebarOpen: false, 
           userDropdown: false,
@@ -538,7 +661,7 @@
     <!-- Background Ambient Glow -->
     <div class="fixed inset-0 pointer-events-none z-0" style="background: radial-gradient(circle at 15% 15%, <?php echo e($theme['glow']); ?> 0%, transparent 40%), radial-gradient(circle at 85% 85%, rgba(30, 41, 59, 0.4) 0%, transparent 50%);"></div>
 
-    <div class="relative z-10 flex h-full w-full overflow-hidden">
+    <div class="app-shell relative z-10 flex h-full w-full overflow-hidden">
 
         <!-- Mobile Sidebar Backdrop -->
         <div x-cloak x-show="sidebarOpen" 
@@ -547,12 +670,12 @@
 
         <!-- Sidebar Navigation -->
         <aside :class="sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'"
-               class="fixed inset-y-0 left-0 z-50 w-72 h-full flex-shrink-0 bg-slate-900/95 border-r border-slate-800/80 backdrop-blur-xl flex flex-col justify-between transition-transform duration-300 ease-in-out lg:relative lg:z-30 shadow-xl overflow-hidden">
+               class="app-sidebar fixed inset-y-0 left-0 z-50 w-72 h-full flex-shrink-0 bg-slate-900/95 border-r border-slate-800/80 backdrop-blur-xl flex flex-col justify-between transition-transform duration-300 ease-in-out lg:relative lg:z-30 shadow-xl overflow-hidden">
             
             <!-- Sidebar Top: Brand & Tenant Info -->
             <div class="flex flex-col flex-1 min-h-0 overflow-y-auto">
                 <div class="p-5 border-b border-slate-800/80 flex items-center justify-between">
-                    <a href="<?php echo e(route('dashboard.index')); ?>" class="flex items-center space-x-3 group">
+                    <a href="<?php echo e($isOwnerConsole ? route('owner.tenants.index') : route('dashboard.index')); ?>" class="flex items-center space-x-3 group">
                         <div class="w-10 h-10 rounded-xl bg-gradient-to-br <?php echo e($theme['gradient']); ?> flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition overflow-hidden">
                             <?php if(!empty($theme['logo_url'])): ?>
                                 <img src="<?php echo e($theme['logo_url']); ?>" alt="Logo" class="w-full h-full object-contain p-1 bg-white/10">
@@ -564,21 +687,27 @@
                             <div class="text-xl font-black font-heading tracking-tight text-white flex items-center gap-1">
                                 ZBIZ<span class="<?php echo e($theme['text_accent']); ?>">+</span>
                             </div>
-                            <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400 truncate max-w-[130px]" title="<?php echo e($tenant?->name ?? 'ZBIZ ERP'); ?>">
-                                <?php echo e($tenant?->name ?? 'SaaS Moçambique'); ?>
+                            <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400 truncate max-w-[130px]" title="<?php echo e($isOwnerConsole ? 'Owner Console' : ($tenant?->name ?? 'ZBIZ ERP')); ?>">
+                                <?php echo e($isOwnerConsole ? 'Owner Console' : ($tenant?->name ?? 'SaaS Moçambique')); ?>
 
                             </div>
                         </div>
                     </a>
 
                     <!-- Sector Pill Badge -->
-                    <span class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full border <?php echo e($theme['badge']); ?> flex items-center gap-1" title="<?php echo e($theme['sector_name']); ?>">
-                        <i class="fa-solid <?php echo e($theme['icon']); ?> text-[9px]"></i>
-                    </span>
+                    <?php if($isOwnerConsole): ?>
+                        <span class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full border <?php echo e($theme['badge']); ?> flex items-center gap-1" title="Gestão SaaS">
+                            <i class="fa-solid fa-building-shield text-[9px]"></i>
+                        </span>
+                    <?php else: ?>
+                        <span class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full border <?php echo e($theme['badge']); ?> flex items-center gap-1" title="<?php echo e($theme['sector_name']); ?>">
+                            <i class="fa-solid <?php echo e($theme['icon']); ?> text-[9px]"></i>
+                        </span>
+                    <?php endif; ?>
                 </div>
 
                 <!-- POS Quick Shortcut Button (Frente de Caixa) -->
-                <?php if(auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin() || auth()->user()->hasPermission('create_sales')): ?>
+                <?php if(!$isOwnerConsole && tenant_has_feature('pos') && (auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin() || auth()->user()->hasPermission('create_sales'))): ?>
                 <div class="px-4 py-3 border-b border-slate-800/80">
                     <a href="<?php echo e(route('pos.index')); ?>" 
                        class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> hover:opacity-95 text-slate-950 font-bold transition shadow-lg">
@@ -595,6 +724,29 @@
 
                 <!-- Navigation Links -->
                 <nav class="p-4 space-y-5 text-xs font-medium">
+                    <?php if($isOwnerConsole): ?>
+                    <div>
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Gestão SaaS</div>
+                        <div class="space-y-1">
+                            <a href="<?php echo e(route('owner.tenants.index')); ?>"
+                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition <?php echo e(request()->routeIs('owner.tenants.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'); ?>">
+                                <i class="fa-solid fa-building-shield w-4 text-center <?php echo e(request()->routeIs('owner.tenants.*') ? $theme['text_accent'] : ''); ?>"></i>
+                                <span>Tenants & Clientes</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Conta</div>
+                        <div class="space-y-1">
+                            <a href="<?php echo e(route('profile.edit')); ?>"
+                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition <?php echo e(request()->routeIs('profile.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'); ?>">
+                                <i class="fa-solid fa-user-gear w-4 text-center <?php echo e(request()->routeIs('profile.*') ? $theme['text_accent'] : ''); ?>"></i>
+                                <span>Perfil do Owner</span>
+                            </a>
+                        </div>
+                    </div>
+                    <?php else: ?>
                     
                     <!-- Visão Geral -->
                     <div>
@@ -609,7 +761,7 @@
                     </div>
 
                     <!-- Vendas & Comercial -->
-                    <?php if(auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isCashier() || auth()->user()->isStaff()): ?>
+	                    <?php if(tenant_has_feature('sales') && (auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isCashier() || auth()->user()->isStaff())): ?>
                     <div>
                         <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Vendas & Comercial</div>
                         <div class="space-y-1">
@@ -619,7 +771,7 @@
                                 <span>Vendas & Faturação</span>
                             </a>
 
-                            <?php if(auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isCashier()): ?>
+	                            <?php if(tenant_has_feature('debts') && (auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isCashier())): ?>
                             <a href="<?php echo e(route('debts.index')); ?>"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition <?php echo e(request()->routeIs('debts.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'); ?>">
                                 <i class="fa-solid fa-hand-holding-dollar w-4 text-center <?php echo e(request()->routeIs('debts.*') ? $theme['text_accent'] : ''); ?>"></i>
@@ -637,7 +789,7 @@
                     <?php endif; ?>
 
                     <!-- Catálogo & Stock -->
-                    <?php if(auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isStockManager() || auth()->user()->isCashier() || auth()->user()->isStaff()): ?>
+	                    <?php if(tenant_has_feature('stock_basic') && (auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isStockManager() || auth()->user()->isCashier() || auth()->user()->isStaff())): ?>
                     <div>
                         <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Catálogo & Stock</div>
                         <div class="space-y-1">
@@ -669,7 +821,7 @@
                     <div>
                         <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Financeiro & Caixa</div>
                         <div class="space-y-1">
-                            <?php if(auth()->user()->isAdmin() || auth()->user()->isManager()): ?>
+	                            <?php if(tenant_has_feature('cash_management') && (auth()->user()->isAdmin() || auth()->user()->isManager())): ?>
                             <a href="<?php echo e(route('finances.index')); ?>"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition <?php echo e(request()->routeIs('finances.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'); ?>">
                                 <i class="fa-solid fa-scale-balanced w-4 text-center <?php echo e(request()->routeIs('finances.*') ? $theme['text_accent'] : ''); ?>"></i>
@@ -685,7 +837,7 @@
                             </a>
                             <?php endif; ?>
 
-                            <?php if(auth()->user()->isAdmin() || auth()->user()->isManager()): ?>
+	                            <?php if(tenant_has_feature('reports_advanced') && (auth()->user()->isAdmin() || auth()->user()->isManager())): ?>
                             <a href="<?php echo e(route('reports.index')); ?>"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition <?php echo e(request()->routeIs('reports.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'); ?>">
                                 <i class="fa-solid fa-file-waveform w-4 text-center <?php echo e(request()->routeIs('reports.*') ? $theme['text_accent'] : ''); ?>"></i>
@@ -702,23 +854,35 @@
                         <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Administração & Equipa</div>
                         <div class="space-y-1">
                             <?php if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin()): ?>
+                            <?php if(auth()->user()->isSuperAdmin()): ?>
+                            <a href="<?php echo e(route('owner.tenants.index')); ?>"
+                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition <?php echo e(request()->routeIs('owner.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'); ?>">
+                                <i class="fa-solid fa-building-shield w-4 text-center <?php echo e(request()->routeIs('owner.*') ? $theme['text_accent'] : ''); ?>"></i>
+                                <span>Control Center SaaS</span>
+                            </a>
+                            <?php endif; ?>
+
                             <a href="<?php echo e(route('users.index')); ?>"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition <?php echo e(request()->routeIs('users.*') && !request()->routeIs('users.activity') && !request()->routeIs('users.payroll') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'); ?>">
                                 <i class="fa-solid fa-users-gear w-4 text-center <?php echo e(request()->routeIs('users.*') && !request()->routeIs('users.activity') && !request()->routeIs('users.payroll') ? $theme['text_accent'] : ''); ?>"></i>
                                 <span>Colaboradores & Acessos</span>
                             </a>
 
-                            <a href="<?php echo e(route('users.payroll')); ?>"
-                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition <?php echo e(request()->routeIs('users.payroll') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'); ?>">
-                                <i class="fa-solid fa-money-check-dollar w-4 text-center <?php echo e(request()->routeIs('users.payroll') ? $theme['text_accent'] : ''); ?>"></i>
-                                <span>Folha de Salários</span>
-                            </a>
+	                            <?php if(tenant_has_feature('salaries')): ?>
+	                            <a href="<?php echo e(route('users.payroll')); ?>"
+	                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition <?php echo e(request()->routeIs('users.payroll') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'); ?>">
+	                                <i class="fa-solid fa-money-check-dollar w-4 text-center <?php echo e(request()->routeIs('users.payroll') ? $theme['text_accent'] : ''); ?>"></i>
+	                                <span>Folha de Salários</span>
+	                            </a>
+	                            <?php endif; ?>
 
-                            <a href="<?php echo e(route('branches.index')); ?>"
-                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition <?php echo e(request()->routeIs('branches.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'); ?>">
-                                <i class="fa-solid fa-store w-4 text-center <?php echo e(request()->routeIs('branches.*') ? $theme['text_accent'] : ''); ?>"></i>
-                                <span>Filiais & Lojas</span>
-                            </a>
+	                            <?php if(tenant_has_feature('multi_branch')): ?>
+	                            <a href="<?php echo e(route('branches.index')); ?>"
+	                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition <?php echo e(request()->routeIs('branches.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'); ?>">
+	                                <i class="fa-solid fa-store w-4 text-center <?php echo e(request()->routeIs('branches.*') ? $theme['text_accent'] : ''); ?>"></i>
+	                                <span>Filiais & Lojas</span>
+	                            </a>
+	                            <?php endif; ?>
                             <?php endif; ?>
 
                             <a href="<?php echo e(route('document-templates.index')); ?>"
@@ -747,6 +911,7 @@
                         </div>
                     </div>
                     <?php endif; ?>
+                    <?php endif; ?>
 
                 </nav>
             </div>
@@ -763,7 +928,7 @@
                             <div class="text-xs font-bold text-white truncate"><?php echo e(auth()->user()?->name ?? 'Utilizador'); ?></div>
                             <div class="text-[10px] text-slate-500 truncate flex items-center gap-1">
                                 <span class="px-1.5 py-0.2 rounded bg-slate-800 text-[9px] text-slate-400 font-semibold"><?php echo e(auth()->user()?->role?->name ?? 'Utilizador'); ?></span>
-                                <span><?php echo e($branch?->name ?? 'Loja Principal'); ?></span>
+                                <span><?php echo e($isOwnerConsole ? 'Owner Console' : ($branch?->name ?? 'Loja Principal')); ?></span>
                             </div>
                         </div>
                     </div>
@@ -780,7 +945,7 @@
         </aside>
 
         <!-- Main Workspace Viewport -->
-        <div class="flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-slate-950/40">
+        <div class="app-content flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-slate-950/40">
             
             <!-- Top Navigation Bar -->
             <header class="h-16 flex-shrink-0 bg-slate-900/80 border-b border-slate-800/80 backdrop-blur-md px-4 sm:px-8 flex items-center justify-between z-20 shadow-sm">
@@ -808,7 +973,12 @@
                     </button>
 
                     <!-- Branch Selector: Interactive for Admin/Manager, Static for Cashier/Operators -->
-                    <?php if(auth()->user()->canSwitchBranch()): ?>
+                    <?php if($isOwnerConsole): ?>
+                    <div class="hidden sm:flex items-center space-x-1.5 bg-slate-950/80 border border-slate-800/80 px-3 py-1.5 rounded-xl text-xs" title="Console do dono do sistema">
+                        <i class="fa-solid fa-building-shield <?php echo e($theme['text_accent']); ?>"></i>
+                        <span class="text-slate-300 font-semibold">Owner Console</span>
+                    </div>
+                    <?php elseif(auth()->user()->canSwitchBranch()): ?>
                     <div class="relative" x-data="{ branchDropdown: false }">
                         <button @click="branchDropdown = !branchDropdown" 
                                 type="button"
@@ -853,13 +1023,15 @@
                     <?php endif; ?>
 
                     <!-- Subscription Trial / Plan Badge -->
+                    <?php if(!$isOwnerConsole): ?>
                     <div class="flex items-center space-x-1.5 border <?php echo e($theme['badge']); ?> px-3 py-1.5 rounded-xl text-xs font-bold">
                         <i class="fa-solid fa-crown text-[10px]"></i>
                         <span><?php echo e($subscription?->plan?->name ?? 'Trial 30 Dias'); ?></span>
                     </div>
+                    <?php endif; ?>
 
                     <!-- Direct POS Quick Action -->
-                    <?php if(auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin() || auth()->user()->hasPermission('create_sales')): ?>
+                    <?php if(!$isOwnerConsole && tenant_has_feature('pos') && (auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin() || auth()->user()->hasPermission('create_sales'))): ?>
                     <a href="<?php echo e(route('pos.index')); ?>" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white border border-slate-700 transition">
                         <i class="fa-solid fa-cash-register <?php echo e($theme['text_accent']); ?>"></i>
                         <span>POS</span>
@@ -870,7 +1042,7 @@
             </header>
 
             <!-- Main Content Scroll Area -->
-            <main class="flex-1 overflow-y-auto p-4 sm:p-8">
+            <main class="app-main flex-1 overflow-y-auto p-4 sm:p-8">
                 
                 <!-- Global Alerts -->
                 <?php if(session('success')): ?>
@@ -904,6 +1076,7 @@
             </main>
 
         </div>
+    </div>
 
     <!-- Toast Notifications -->
     <?php echo $__env->make('partials.toasts', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>

@@ -2,6 +2,7 @@
 
 use App\Models\Branch;
 use App\Models\Tenant;
+use App\Services\Billing\SubscriptionService;
 use App\Services\TenantContext;
 
 if (!function_exists('tenant_context')) {
@@ -36,6 +37,23 @@ if (!function_exists('current_branch_id')) {
     function current_branch_id(): ?int
     {
         return tenant_context()->getBranchId();
+    }
+}
+
+if (!function_exists('tenant_has_feature')) {
+    function tenant_has_feature(string $featureKey, ?Tenant $tenant = null): bool
+    {
+        if (auth()->user()?->isSuperAdmin()) {
+            return true;
+        }
+
+        $tenant ??= current_tenant();
+
+        if (!$tenant) {
+            return false;
+        }
+
+        return app(SubscriptionService::class)->isFeatureAccessible($tenant, $featureKey);
     }
 }
 

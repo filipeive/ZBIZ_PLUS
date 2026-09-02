@@ -25,6 +25,8 @@ use App\Http\Controllers\LandingController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\DocumentTemplateController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\LicenseActivationController;
+use App\Http\Controllers\Owner\TenantControlCenterController;
 
 
 
@@ -41,13 +43,25 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::post('/demo-login', [AuthController::class, 'demoLogin'])->name('demo.login');
 
 // ===== PROTECTED ROUTES =====
-Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
+Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->group(function () {
     // Dashboard - Acesso para todos os usuários logados
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::get('/dash', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/api/dashboard/metrics', [DashboardController::class, 'apiMetrics'])
         ->name('dashboard.api.metrics');
     Route::get('/dashboard/metrics', [DashboardController::class, 'apiMetrics'])->name('dashboard.metrics');
+
+    Route::prefix('owner')->name('owner.')->group(function () {
+        Route::get('/tenants', [TenantControlCenterController::class, 'index'])->name('tenants.index');
+        Route::get('/tenants/{tenant}', [TenantControlCenterController::class, 'show'])->name('tenants.show');
+        Route::put('/tenants/{tenant}', [TenantControlCenterController::class, 'update'])->name('tenants.update');
+        Route::post('/tenants/{tenant}/licenses', [TenantControlCenterController::class, 'issueLicense'])->name('tenants.licenses.issue');
+        Route::patch('/tenants/{tenant}/licenses/{license}/revoke', [TenantControlCenterController::class, 'revokeLicense'])->name('tenants.licenses.revoke');
+    });
+
+    Route::get('/license/activate', [LicenseActivationController::class, 'create'])->name('license.activate');
+    Route::post('/license/activate', [LicenseActivationController::class, 'store'])->name('license.activate.store');
+
     // Rotas para troca de senha temporária (apenas para usuários autenticados)
     Route::get('/password/change', [PasswordChangeController::class, 'show'])->name('password.change');
     Route::post('/password/change', [PasswordChangeController::class, 'update'])->name('password.change.update');
@@ -84,7 +98,7 @@ Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
     });
 
     // ===== PRODUTOS - Permissões ajustadas =====
-    Route::prefix('products')->name('products.')->group(function () {
+    Route::prefix('products')->name('products.')->middleware('feature:stock_basic')->group(function () {
         // Relatório e exportação - view_products permission
 
         // Criar produtos - create_products permission
@@ -112,7 +126,7 @@ Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
     });
 
     // ===== CATEGORIAS =====
-    Route::prefix('categories')->name('categories.')->middleware('permissions:view_categories')->group(function () {
+    Route::prefix('categories')->name('categories.')->middleware(['permissions:view_categories', 'feature:stock_basic'])->group(function () {
         Route::get('/', [CategoryController::class, 'index'])->name('index');
         Route::get('/create', [CategoryController::class, 'create'])->name('create')->middleware('permissions:create_categories');
         Route::post('/', [CategoryController::class, 'store'])->name('store')->middleware('permissions:create_categories');
@@ -156,7 +170,7 @@ Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
     });
 
     // ===== VENDAS =====
-    Route::prefix('sales')->name('sales.')->group(function () {
+    Route::prefix('sales')->name('sales.')->middleware('feature:sales')->group(function () {
         Route::middleware('permissions:create_sales')->group(function () {
             Route::get('/manual-create', [SaleController::class, 'manualCreate'])->name('manual-create');
         });
@@ -255,7 +269,7 @@ Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
     });
 
     // ===== DÍVIDAS =====
-    Route::prefix('debts')->name('debts.')->group(function () {
+    Route::prefix('debts')->name('debts.')->middleware('feature:debts')->group(function () {
 
         // Relatórios - view_reports permission (STATIC ROUTES FIRST)
         Route::middleware('permissions:view_reports')->group(function () {
@@ -310,7 +324,7 @@ Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
     });
 
     // ===== FINANÇAS =====
-    Route::prefix('finances')->name('finances.')->group(function () {
+    Route::prefix('finances')->name('finances.')->middleware('feature:cash_management')->group(function () {
         Route::middleware('permissions:view_finances')->group(function () {
             Route::get('/', [FinanceController::class, 'index'])->name('index');
             Route::get('/transactions/{transaction}', [FinanceController::class, 'show'])->name('transactions.show');
@@ -326,7 +340,7 @@ Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
     });
 
     // ===== FILIAIS / LOJAS (MULTI-BRANCH) =====
-    Route::prefix('branches')->name('branches.')->group(function () {
+    Route::prefix('branches')->name('branches.')->middleware('feature:multi_branch')->group(function () {
         Route::get('/', [BranchController::class, 'index'])->name('index');
         Route::get('/create', [BranchController::class, 'create'])->name('create');
         Route::post('/', [BranchController::class, 'store'])->name('store');
@@ -372,7 +386,7 @@ Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
     });
 
     // ===== MOVIMENTAÇÕES DE ESTOQUE =====
-    Route::prefix('stock-movements')->name('stock-movements.')->group(function () {
+    Route::prefix('stock-movements')->name('stock-movements.')->middleware('feature:stock_basic')->group(function () {
         // Visualizar movimentações - view_stock_movements permission
         Route::middleware('permissions:view_stock_movements')->group(function () {
             Route::get('/', [StockMovementController::class, 'index'])->name('index');
@@ -407,19 +421,19 @@ Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
         Route::get('/low-stock', [ReportController::class, 'lowStock'])->name('low-stock');
 
         // ===== RELATÓRIOS FINANCEIROS =====
-        Route::get('/profit-loss', [ReportController::class, 'profitLoss'])->name('profit-loss');
-        Route::get('/cash-flow', [ReportController::class, 'cashFlow'])->name('cash-flow');
+        Route::get('/profit-loss', [ReportController::class, 'profitLoss'])->name('profit-loss')->middleware('feature:reports_advanced');
+        Route::get('/cash-flow', [ReportController::class, 'cashFlow'])->name('cash-flow')->middleware('feature:reports_advanced');
 
         // ===== ANÁLISES AVANÇADAS =====
-        Route::get('/customer-profitability', [ReportController::class, 'customerProfitability'])->name('customer-profitability');
-        Route::get('/abc-analysis', [ReportController::class, 'abcAnalysis'])->name('abc-analysis');
-        Route::get('/period-comparison', [ReportController::class, 'periodComparison'])->name('period-comparison');
-        Route::get('/business-insights', [ReportController::class, 'businessInsights'])->name('business-insights');
+        Route::get('/customer-profitability', [ReportController::class, 'customerProfitability'])->name('customer-profitability')->middleware('feature:reports_advanced');
+        Route::get('/abc-analysis', [ReportController::class, 'abcAnalysis'])->name('abc-analysis')->middleware('feature:reports_advanced');
+        Route::get('/period-comparison', [ReportController::class, 'periodComparison'])->name('period-comparison')->middleware('feature:reports_advanced');
+        Route::get('/business-insights', [ReportController::class, 'businessInsights'])->name('business-insights')->middleware('feature:reports_advanced');
 
         // ===== RELATÓRIOS ESPECIALIZADOS =====
-        Route::get('/sales-specialized', [ReportController::class, 'salesReport'])->name('sales-specialized');
-        Route::get('/expenses-specialized', [ReportController::class, 'expensesReport'])->name('expenses-specialized');
-        Route::get('/comparison-specialized', [ReportController::class, 'comparisonReport'])->name('comparison-specialized');
+        Route::get('/sales-specialized', [ReportController::class, 'salesReport'])->name('sales-specialized')->middleware('feature:reports_advanced');
+        Route::get('/expenses-specialized', [ReportController::class, 'expensesReport'])->name('expenses-specialized')->middleware('feature:reports_advanced');
+        Route::get('/comparison-specialized', [ReportController::class, 'comparisonReport'])->name('comparison-specialized')->middleware('feature:reports_advanced');
 
         // ===== EXPORTAÇÕES =====
         Route::get('/export', [ReportController::class, 'export'])->name('export');
@@ -433,8 +447,8 @@ Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
     Route::prefix('users')->name('users.')->middleware('permissions:manage_users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
         Route::get('/employees', [UserController::class, 'index'])->name('employees');
-        Route::get('/employees/payroll', [UserController::class, 'payroll'])->name('employees.payroll');
-        Route::get('/payroll', [UserController::class, 'payroll'])->name('payroll');
+        Route::get('/employees/payroll', [UserController::class, 'payroll'])->name('employees.payroll')->middleware('feature:salaries');
+        Route::get('/payroll', [UserController::class, 'payroll'])->name('payroll')->middleware('feature:salaries');
         Route::get('/activity/{user?}', [UserController::class, 'activity'])->name('activity');
         Route::get('/create', [UserController::class, 'create'])->name('create');
         Route::post('/', [UserController::class, 'store'])->name('store');
@@ -447,9 +461,9 @@ Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
         Route::post('/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('toggle-status');
         Route::post('/{user}/reset-password', [UserController::class, 'resetPassword'])->name('reset-password');
         // Rotas de salário e recibos
-        Route::post('/{user}/salary-payments', [UserController::class, 'storeSalaryPayment'])->name('salary-payments.store');
-        Route::get('/{user}/salary-payments/{payment}/receipt', [UserController::class, 'salaryReceipt'])->name('salary-payments.receipt');
-        Route::post('/{user}/salary-payments/{payment}/receipt/upload', [UserController::class, 'uploadSalaryReceipt'])->name('salary-payments.receipt.upload');
+        Route::post('/{user}/salary-payments', [UserController::class, 'storeSalaryPayment'])->name('salary-payments.store')->middleware('feature:salaries');
+        Route::get('/{user}/salary-payments/{payment}/receipt', [UserController::class, 'salaryReceipt'])->name('salary-payments.receipt')->middleware('feature:salaries');
+        Route::post('/{user}/salary-payments/{payment}/receipt/upload', [UserController::class, 'uploadSalaryReceipt'])->name('salary-payments.receipt.upload')->middleware('feature:salaries');
 
         // Rotas de senhas temporárias
         Route::get('/{user}/temporary-passwords', [UserController::class, 'temporaryPasswords'])->name('temporary-passwords');
@@ -496,7 +510,7 @@ Route::middleware(['auth', 'permissions', 'temp.password'])->group(function () {
     Route::delete('/notifications/clear-all', [NotificationController::class, 'clearAll']);
 
     // ===== ZBIZ POS 2.0 (FRENTE DE CAIXA RÁPIDA DENTRO DO ESCOPO DO TENANT) =====
-    Route::prefix('pos')->name('pos.')->group(function () {
+    Route::prefix('pos')->name('pos.')->middleware('feature:pos')->group(function () {
         Route::get('/', [\App\Http\Controllers\POS\POSController::class, 'index'])->name('index');
         Route::get('/search', [\App\Http\Controllers\POS\POSController::class, 'searchProducts'])->name('search');
         Route::post('/sale', [\App\Http\Controllers\POS\POSController::class, 'storeSale'])->name('sale');

@@ -80,9 +80,10 @@ class ProductController extends Controller
      */
     public function create(Request $request)
     {
-        $categories = Category::where('is_active', true)->orderBy('name')->get();
+        $tenantId = auth()->user()?->tenant_id ?? current_tenant_id();
+        $categories = Category::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('is_active', true)->orderBy('name')->get();
         // Produtos físicos que podem ser vinculados a serviços (ex: Papel A4)
-        $physicalProducts = Product::where('type', 'product')->where('is_active', true)->orderBy('name')->get();
+        $physicalProducts = Product::withoutGlobalScopes()->where('tenant_id', $tenantId)->whereIn('type', ['product', 'physical'])->where('is_active', true)->orderBy('name')->get();
         return view('products.create', compact('categories', 'physicalProducts'));
     }
 
@@ -92,11 +93,13 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         try {
+            $tenantId = auth()->user()?->tenant_id ?? current_tenant_id();
+
             $validationRules = [
                 'name' => 'required|string|max:150',
                 'category_id' => 'required|exists:categories,id',
                 'linked_product_id' => 'nullable|exists:products,id',
-                'type' => 'required|in:product,service',
+                'type' => 'required|in:product,physical,service',
                 'selling_price' => 'required|numeric|min:0',
                 'purchase_price' => 'nullable|numeric|min:0',
                 'promotional_price' => 'nullable|numeric|min:0',
@@ -113,10 +116,10 @@ class ProductController extends Controller
                 'is_active' => 'boolean'
             ];
 
-            // Validações adicionais se for produto
-            if ($request->type === 'product') {
-                $validationRules['stock_quantity'] = 'required|integer|min:0';
-                $validationRules['min_stock_level'] = 'required|integer|min:0';
+            // Validações adicionais se for produto físico
+            if (in_array($request->type, ['product', 'physical'])) {
+                $validationRules['stock_quantity'] = 'nullable|integer|min:0';
+                $validationRules['min_stock_level'] = 'nullable|integer|min:0';
             }
 
             $validated = $request->validate($validationRules);
@@ -129,16 +132,17 @@ class ProductController extends Controller
                 'promotion_ends_at', 'barcode', 'sku', 'unit', 'description'
             ])->toArray();
 
+            $data['tenant_id'] = $tenantId;
             $data['is_on_promotion'] = $request->boolean('is_on_promotion');
             $data['is_active'] = $request->boolean('is_active', true);
 
-            if ($request->type === 'product') {
+            if (in_array($request->type, ['product', 'physical'])) {
                 $data['stock_quantity'] = (int) $request->input('stock_quantity', 0);
-                $data['min_stock_level'] = (int) $request->input('min_stock_level', 0);
+                $data['min_stock_level'] = (int) $request->input('min_stock_level', 5);
             } else {
                 $data['stock_quantity'] = 0;
                 $data['min_stock_level'] = 0;
-                $data['unit'] = null;
+                $data['unit'] = 'serviço';
             }
 
             $product = Product::create($data);
@@ -206,9 +210,11 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        $categories = Category::where('is_active', true)->orderBy('name')->get();
-        // Produtos físicos que podem ser vinculados (exceto o próprio para evitar loops)
-        $physicalProducts = Product::where('type', 'product')
+        $tenantId = auth()->user()?->tenant_id ?? current_tenant_id();
+        $categories = Category::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('is_active', true)->orderBy('name')->get();
+        $physicalProducts = Product::withoutGlobalScopes()
+                                   ->where('tenant_id', $tenantId)
+                                   ->whereIn('type', ['product', 'physical'])
                                    ->where('is_active', true)
                                    ->where('id', '!=', $product->id)
                                    ->orderBy('name')
@@ -239,6 +245,7 @@ class ProductController extends Controller
                 'name' => 'required|string|max:150',
                 'category_id' => 'required|exists:categories,id',
                 'linked_product_id' => 'nullable|exists:products,id',
+                'type' => 'required|in:product,physical,service',
                 'selling_price' => 'required|numeric|min:0',
                 'purchase_price' => 'nullable|numeric|min:0',
                 'promotional_price' => 'nullable|numeric|min:0',
@@ -255,14 +262,14 @@ class ProductController extends Controller
                 'is_active' => 'boolean'
             ];
 
-            if ($product->type === 'product') {
-                $validationRules['min_stock_level'] = 'required|integer|min:0';
+            if (in_array($request->type, ['product', 'physical'])) {
+                $validationRules['min_stock_level'] = 'nullable|integer|min:0';
             }
 
             $validated = $request->validate($validationRules);
 
             $data = collect($validated)->only([
-                'name', 'category_id', 'linked_product_id', 'selling_price',
+                'name', 'category_id', 'linked_product_id', 'type', 'selling_price',
                 'purchase_price', 'promotional_price', 'promotion_discount_percent',
                 'promotion_ends_at', 'barcode', 'sku', 'unit', 'description'
             ])->toArray();
@@ -270,8 +277,12 @@ class ProductController extends Controller
             $data['is_on_promotion'] = $request->boolean('is_on_promotion');
             $data['is_active'] = $request->boolean('is_active', true);
 
-            if ($product->type === 'product') {
-                $data['min_stock_level'] = (int) $request->input('min_stock_level', 0);
+            if (in_array($request->type, ['product', 'physical'])) {
+                $data['min_stock_level'] = (int) $request->input('min_stock_level', 5);
+            } else {
+                $data['stock_quantity'] = 0;
+                $data['min_stock_level'] = 0;
+                $data['unit'] = 'serviço';
             }
 
             $product->update($data);
