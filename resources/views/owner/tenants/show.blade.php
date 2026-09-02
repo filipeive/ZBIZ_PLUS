@@ -3,10 +3,16 @@
 @section('title', 'Gerir Tenant: ' . $tenant->name)
 @section('page-title', 'Gerir Empresa / Tenant')
 
+@php
+    $theme = tenant_theme();
+    $latestLicense = $tenant->licenseKeys->first();
+@endphp
+
 @section('content')
 <div class="space-y-6" x-data="{ 
     copiedKey: false, 
     copiedToken: false,
+    copiedKeyId: null,
     copyToClipboard(text, isToken = false) {
         navigator.clipboard.writeText(text);
         if (isToken) {
@@ -16,12 +22,17 @@
             this.copiedKey = true;
             setTimeout(() => this.copiedKey = false, 2500);
         }
+    },
+    copyRowKey(text, id) {
+        navigator.clipboard.writeText(text);
+        this.copiedKeyId = id;
+        setTimeout(() => this.copiedKeyId = null, 2500);
     }
 }">
     <!-- Top Bar -->
-    <div class="flex items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
         <div class="flex items-center space-x-3">
-            <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 flex-shrink-0">
                 <i class="fa-solid fa-building-shield text-xl"></i>
             </div>
             <div>
@@ -29,13 +40,30 @@
                 <p class="text-xs text-slate-400 font-mono">{{ $tenant->slug }} · {{ $tenant->email ?? 'sem email' }} · NUIT: {{ $tenant->nuit ?? 'N/D' }}</p>
             </div>
         </div>
+
         <div class="flex items-center gap-2">
+            <!-- Impersonate Support Button -->
+            <form method="POST" action="{{ route('owner.tenants.impersonate', $tenant) }}" class="inline">
+                @csrf
+                <button type="submit" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-400 hover:text-sky-300 text-xs font-bold transition flex items-center gap-2 border border-slate-700">
+                    <i class="fa-solid fa-right-to-bracket"></i> Entrar como Suporte
+                </button>
+            </form>
+
+            @if($latestLicense)
+                <a href="{{ route('owner.tenants.licenses.certificate', [$tenant, $latestLicense]) }}" 
+                   class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition flex items-center gap-2 border border-slate-700">
+                    <i class="fa-solid fa-file-shield text-emerald-400"></i> Certificado
+                </a>
+            @endif
+
             <a href="{{ route('owner.tenants.index') }}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition flex items-center gap-2">
                 <i class="fa-solid fa-arrow-left"></i> Voltar à Lista
             </a>
         </div>
     </div>
 
+    <!-- License Just Issued Alert Card -->
     @if(session('issued_license_key_code') || session('issued_license_token'))
         <div class="rounded-3xl border border-emerald-500/30 bg-emerald-500/10 p-6 space-y-4 shadow-xl">
             <div class="flex items-center justify-between">
@@ -56,11 +84,13 @@
                         <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">Chave Serial do Software (License Key)</span>
                         <span class="text-lg sm:text-xl font-black font-mono text-white tracking-wider select-all">{{ session('issued_license_key_code') }}</span>
                     </div>
-                    <button type="button" @click="copyToClipboard('{{ session('issued_license_key_code') }}', false)" 
-                            class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs hover:bg-emerald-400 transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
-                        <i class="fa-solid" :class="copiedKey ? 'fa-check' : 'fa-copy'"></i>
-                        <span x-text="copiedKey ? 'Chave Copiada!' : 'Copiar Chave Serial'"></span>
-                    </button>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <button type="button" @click="copyToClipboard('{{ session('issued_license_key_code') }}', false)" 
+                                class="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs hover:bg-emerald-400 transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
+                            <i class="fa-solid" :class="copiedKey ? 'fa-check' : 'fa-copy'"></i>
+                            <span x-text="copiedKey ? 'Chave Copiada!' : 'Copiar Chave Serial'"></span>
+                        </button>
+                    </div>
                 </div>
             @endif
 
@@ -271,8 +301,8 @@
                                     <div class="font-mono font-bold text-emerald-400 flex items-center gap-1.5">
                                         <span>{{ $license->key_code ?? 'CERT-LEGACY' }}</span>
                                         @if($license->key_code)
-                                            <button type="button" @click="copyToClipboard('{{ $license->key_code }}', false)" title="Copiar Chave" class="text-slate-500 hover:text-white transition">
-                                                <i class="fa-solid fa-copy text-[11px]"></i>
+                                            <button type="button" @click="copyRowKey('{{ $license->key_code }}', {{ $license->id }})" title="Copiar Chave" class="text-slate-400 hover:text-white transition">
+                                                <i class="fa-solid" :class="copiedKeyId === {{ $license->id }} ? 'fa-check text-emerald-400' : 'fa-copy text-[11px]'"></i>
                                             </button>
                                         @endif
                                     </div>
@@ -286,15 +316,24 @@
                                 </td>
                                 <td class="py-3 text-slate-400 font-mono text-[11px]">{{ $license->starts_at?->format('d/m/Y') }} - {{ $license->expires_at?->format('d/m/Y') }}</td>
                                 <td class="py-3 text-right">
-                                    @if($license->status !== 'revoked')
-                                        <form method="POST" action="{{ route('owner.tenants.licenses.revoke', [$tenant, $license]) }}" onsubmit="return confirm('Tem a certeza que deseja revogar esta licença?')">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button class="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold text-[11px] transition">
-                                                Revogar
-                                            </button>
-                                        </form>
-                                    @endif
+                                    <div class="inline-flex items-center gap-1.5">
+                                        <a href="{{ route('owner.tenants.licenses.certificate', [$tenant, $license]) }}" 
+                                           class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-[11px] border border-slate-700 transition flex items-center gap-1"
+                                           title="Ver Certificado Oficial">
+                                            <i class="fa-solid fa-file-shield text-emerald-400"></i>
+                                            <span>Certificado</span>
+                                        </a>
+
+                                        @if($license->status !== 'revoked')
+                                            <form method="POST" action="{{ route('owner.tenants.licenses.revoke', [$tenant, $license]) }}" onsubmit="return confirm('Tem a certeza que deseja revogar esta licença?')">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button class="px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold text-[11px] transition">
+                                                    Revogar
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @empty

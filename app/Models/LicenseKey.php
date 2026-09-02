@@ -11,7 +11,6 @@ class LicenseKey extends Model
         'tenant_id',
         'plan_id',
         'issued_by_user_id',
-        'key_code',
         'key_hash',
         'mode',
         'status',

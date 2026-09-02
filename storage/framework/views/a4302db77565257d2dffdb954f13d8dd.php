@@ -54,18 +54,6 @@
                     class="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs placeholder:text-slate-500 focus:ring-1 focus:ring-emerald-500">
             </div>
 
-            <?php if(auth()->user()->isSuperAdmin() && !empty($tenants) && count($tenants) > 0 && !$isEmployeesView): ?>
-                <select name="tenant_id" class="px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs" onchange="this.form.submit()">
-                    <option value="">Todas as Empresas</option>
-                    <?php $__currentLoopData = $tenants; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $t): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <option value="<?php echo e($t->id); ?>" <?php echo e(request('tenant_id') == $t->id ? 'selected' : ''); ?>>
-                            <?php echo e($t->name); ?>
-
-                        </option>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                </select>
-            <?php endif; ?>
-
             <?php if (! ($isEmployeesView)): ?>
                 <select name="role" class="px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs" onchange="this.form.submit()">
                     <option value="">Todas as Funções</option>
@@ -87,7 +75,7 @@
             <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
                 Filtrar
             </button>
-            <?php if(request()->hasAny(['search', 'role', 'status', 'tenant_id'])): ?>
+            <?php if(request()->hasAny(['search', 'role', 'status'])): ?>
                 <a href="<?php echo e($clearAction); ?>" class="px-3 py-2 text-slate-400 hover:text-white text-xs">Limpar</a>
             <?php endif; ?>
         </form>
@@ -112,9 +100,6 @@
                 <thead>
                     <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider">
                         <th class="pb-3">Utilizador</th>
-                        <?php if(auth()->user()->isSuperAdmin() && !$isEmployeesView): ?>
-                            <th class="pb-3">Empresa / Tenant</th>
-                        <?php endif; ?>
                         <?php if($isEmployeesView): ?>
                             <th class="pb-3">Cargo & Doc.</th>
                             <th class="pb-3">Salário Base</th>
@@ -137,20 +122,6 @@
                                     </div>
                                 </div>
                             </td>
-                            <?php if(auth()->user()->isSuperAdmin() && !$isEmployeesView): ?>
-                                <td class="py-3.5">
-                                    <?php if($user->isSuperAdmin()): ?>
-                                        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-violet-500/10 text-violet-400 border border-violet-500/30 inline-flex items-center gap-1">
-                                            <i class="fa-solid fa-crown text-[9px]"></i> Global SaaS
-                                        </span>
-                                    <?php elseif($user->tenant): ?>
-                                        <div class="font-bold text-slate-200"><?php echo e($user->tenant->name); ?></div>
-                                        <div class="text-[10px] text-slate-500 font-mono"><?php echo e($user->tenant->slug); ?></div>
-                                    <?php else: ?>
-                                        <span class="text-slate-500">Sem Empresa</span>
-                                    <?php endif; ?>
-                                </td>
-                            <?php endif; ?>
                             <?php if($isEmployeesView): ?>
                                 <td class="py-3.5">
                                     <div class="font-semibold text-slate-200"><?php echo e($user->job_title ?: '-'); ?></div>

@@ -178,16 +178,56 @@ class LicenseControlCenterTest extends TestCase
         $this->assertSame(1, LicenseKey::count());
     }
 
-    public function test_activation_accepts_software_serial_key_format(): void
+    public function test_owner_can_create_tenant_and_issue_initial_license(): void
     {
         config(['license.signing_key' => 'testing-license-secret']);
         $this->seed(PlanSeeder::class);
 
-        $tenant = Tenant::create([
-            'name' => 'Instalação Serial Key',
-            'slug' => 'instalacao-serial-key',
+        $ownerRole = Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
+        $owner = User::create([
+            'name' => 'Super Dono',
+            'email' => 'super-dono-creator@test.com',
+            'password' => bcrypt('password'),
+            'role_id' => $ownerRole->id,
+            'is_active' => true,
+        ]);
+
+        $plan = Plan::where('slug', 'pro')->firstOrFail();
+
+        $response = $this->actingAs($owner)->post(route('owner.tenants.store'), [
+            'name' => 'Farmácia Nova Era',
             'business_type' => 'pharmacy',
-            'status' => 'trial',
+            'email' => 'contato@novaera.co.mz',
+            'phone' => '+258 84 999 8888',
+            'nuit' => '400999888',
+            'plan_id' => $plan->id,
+            'installation_mode' => 'offline',
+            'duration_months' => 12,
+            'admin_name' => 'Gerente Farmacia',
+            'admin_email' => 'gerente@novaera.co.mz',
+            'admin_password' => 'password123',
+        ]);
+
+        $newTenant = Tenant::where('slug', 'farmacia-nova-era')->first();
+        $this->assertNotNull($newTenant);
+        $response->assertRedirect(route('owner.tenants.show', $newTenant));
+
+        $this->assertSame('pharmacy', $newTenant->business_type);
+        $this->assertSame('offline', $newTenant->installation_mode);
+        $this->assertDatabaseHas('branches', ['tenant_id' => $newTenant->id, 'code' => 'SEDE']);
+        $this->assertDatabaseHas('users', ['tenant_id' => $newTenant->id, 'email' => 'gerente@novaera.co.mz']);
+        $this->assertDatabaseHas('license_keys', ['tenant_id' => $newTenant->id, 'mode' => 'offline']);
+    }
+
+    public function test_owner_can_impersonate_tenant_for_support(): void
+    {
+        $this->seed(PlanSeeder::class);
+
+        $tenant = Tenant::create([
+            'name' => 'Empresa Cliente Suporte',
+            'slug' => 'empresa-cliente-suporte',
+            'business_type' => 'reprography',
+            'status' => 'active',
         ]);
         $branch = Branch::create([
             'tenant_id' => $tenant->id,
@@ -196,33 +236,62 @@ class LicenseControlCenterTest extends TestCase
             'is_active' => true,
             'is_main' => true,
         ]);
-        $role = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        $user = User::create([
-            'tenant_id' => $tenant->id,
-            'branch_id' => $branch->id,
-            'name' => 'Admin Farmacia',
-            'email' => 'admin-farmacia-key@test.com',
+
+        $ownerRole = Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
+        $owner = User::create([
+            'name' => 'Super Dono Suporte',
+            'email' => 'super-dono-suporte@test.com',
             'password' => bcrypt('password'),
-            'role_id' => $role->id,
+            'role_id' => $ownerRole->id,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($owner)
+            ->post(route('owner.tenants.impersonate', $tenant))
+            ->assertRedirect(route('dashboard.index'))
+            ->assertSessionHas('current_tenant_id', $tenant->id)
+            ->assertSessionHas('current_branch_id', $branch->id);
+    }
+
+    public function test_owner_can_view_official_license_certificate(): void
+    {
+        config(['license.signing_key' => 'testing-license-secret']);
+        $this->seed(PlanSeeder::class);
+
+        $tenant = Tenant::create([
+            'name' => 'Empresa Certificado',
+            'slug' => 'empresa-certificado',
+            'business_type' => 'retail',
+            'status' => 'active',
+        ]);
+        $plan = Plan::where('slug', 'enterprise')->firstOrFail();
+
+        $ownerRole = Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
+        $owner = User::create([
+            'name' => 'Super Dono Certificado',
+            'email' => 'super-dono-cert@test.com',
+            'password' => bcrypt('password'),
+            'role_id' => $ownerRole->id,
             'is_active' => true,
         ]);
 
         $issued = app(LicenseService::class)->issue(
             $tenant,
-            Plan::where('slug', 'enterprise')->firstOrFail(),
+            $plan,
             now(),
             now()->addYear(),
-            'offline'
+            'offline',
+            $owner,
+            $tenant->name
         );
 
-        $this->assertNotEmpty($issued['key_code']);
-        $this->assertMatchesRegularExpression('/^ZBIZ-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/', $issued['key_code']);
+        $license = LicenseKey::where('tenant_id', $tenant->id)->latest()->firstOrFail();
 
-        $this->actingAs($user)
-            ->post(route('license.activate.store'), ['license_key' => $issued['key_code']])
-            ->assertRedirect(route('dashboard.index'));
-
-        $this->assertSame('active', $tenant->fresh()->license_status);
-        $this->assertSame('offline', $tenant->fresh()->installation_mode);
+        $this->actingAs($owner)
+            ->get(route('owner.tenants.licenses.certificate', [$tenant, $license]))
+            ->assertOk()
+            ->assertSeeText('Certificado Oficial de Ativação de Licença de Software')
+            ->assertSeeText($tenant->name)
+            ->assertSeeText($license->key_code);
     }
 }

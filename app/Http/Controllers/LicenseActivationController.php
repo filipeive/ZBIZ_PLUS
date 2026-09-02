@@ -18,7 +18,7 @@ class LicenseActivationController extends Controller
     public function store(Request $request, LicenseService $licenses): RedirectResponse
     {
         $validated = $request->validate([
-            'license_key' => 'required|string|min:10',
+            'license_key' => 'required|string|min:80',
         ]);
 
         try {

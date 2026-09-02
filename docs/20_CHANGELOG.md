@@ -6,6 +6,23 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
+## [1.0.18] - 2026-09-02 - Control Center SaaS Executivo, Criação Rápida de Tenants, Impersonate e Certificados de Licença
+### Added & Improved
+- **Visualização e Cópia Instantânea de Chaves de Licença de Software (`owner/tenants/index.blade.php` e `owner/tenants/show.blade.php`):**
+  - O Dono da plataforma agora pode visualizar a chave serial ativa (`ZBIZ-XXXX-XXXX-XXXX-XXXX`) de cada empresa diretamente na tabela do Control Center com botão de cópia rápida em 1 clique.
+  - Alertas interativos com feedback em tempo real e visualização expansível do certificado completo assinado para instalações offline.
+- **Emissão e Impressão de Certificados Oficiais de Licença (`owner/tenants/certificate.blade.php`):**
+  - Criada tela de Certificado de Licença Oficial em alta definição com selo de autenticidade, dados da empresa, NUIT, plano, modo de operação, chave serial em destaque e assinatura digital SHA-256 HMAC.
+  - Suporte total a impressão direta e exportação em PDF via botão dedicado (`window.print()`).
+- **Modal de Registo Rápido de Novas Empresas (`TenantControlCenterController::store`):**
+  - O Dono pode registar instantaneamente novas empresas/tenants através de um modal interativo: dados comerciais, setor de atividade, plano, modo de instalação (Cloud/Offline), validade inicial e criação automática do utilizador gestor com emissão imediata da licença de software.
+- **Modo Suporte / Impersonate (`TenantControlCenterController::impersonate`):**
+  - Permite ao Super Admin aceder ao ambiente operacional de qualquer tenant com 1 clique para prestar assistência e suporte técnico em tempo real.
+- **Métricas Executivas SaaS:**
+  - Adicionado cálculo em tempo real de MRR (Receita Recorrente Mensal), ARR estimado, total de licenças ativas, filiais e utilizadores do ecossistema.
+
+---
+
 ## [1.0.17] - 2026-09-02 - Reformulação do Painel do Dono (Owner), Chaves Seriais de Software e Correção de Temas Light/Dark
 ### Added & Improved
 - **Menu Dedicado e Especializado para o Dono / Super Admin (`layouts/app.blade.php`):**
@@ -14,12 +31,10 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - **Chaves de Licença em Formato Padrão de Software (`LicenseService.php`, `LicenseKey.php`, `license/activate.blade.php` e `owner/tenants/show.blade.php`):**
   - Implementada geração automática de Chaves Seriais legíveis no formato `ZBIZ-XXXX-XXXX-XXXX-XXXX` (ex: `ZBIZ-4F92-K81M-Q7P3-9A2E`).
   - Suporte de dupla ativação: tanto pelo código serial legível quanto pelo certificado token assinado criptograficamente.
-  - Cartão de emissão de licença com feedback interativo em tempo real e botão de cópia instantânea.
 - **Gestão Global de Utilizadores com Filtro por Empresa (`UserController.php` e `users/index.blade.php`):**
-  - Para o Super Admin, a listagem de utilizadores agora exibe a coluna **Empresa / Tenant** com badge identificador (Global SaaS vs Empresa específica) e filtro seletivo por tenant.
+  - Para o Super Admin, a listagem de utilizadores agora exibe a coluna **Empresa / Tenant** com badge identificador e filtro seletivo por tenant.
 - **Correção da Inconsistência de Cores nos Temas Light e Dark (`layouts/app.blade.php`):**
-  - Eliminada sobreposição agressiva de `text-white` que forçava textos em botões, badges e fundos escuros a ficarem pretos no modo claro.
-  - Harmonizado o contraste tipográfico através de `var(--app-text)` e regras de preservação para elementos de alto contraste.
+  - Eliminada sobreposição de `text-white` no tema claro e harmonizado o contraste tipográfico através de `var(--app-text)`.
 
 ---
 

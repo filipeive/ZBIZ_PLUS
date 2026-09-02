@@ -26,12 +26,10 @@ class UserController extends Controller
     {
         $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
         $isEmployeesView = $request->routeIs('users.employees');
-        $query = User::with(['role', 'activeTemporaryPasswords', 'branch', 'tenant'])->orderBy('name');
+        $query = User::with(['role', 'activeTemporaryPasswords', 'branch'])->orderBy('name');
 
         if (!auth()->user()->isSuperAdmin()) {
             $query->where('tenant_id', $tenantId);
-        } elseif ($request->filled('tenant_id')) {
-            $query->where('tenant_id', $request->tenant_id);
         }
 
         if ($isEmployeesView) {
@@ -68,8 +66,6 @@ class UserController extends Controller
         $baseStatQuery = User::query();
         if (!auth()->user()->isSuperAdmin()) {
             $baseStatQuery->where('tenant_id', $tenantId);
-        } elseif ($request->filled('tenant_id')) {
-            $baseStatQuery->where('tenant_id', $request->tenant_id);
         }
 
         $stats = [
@@ -77,13 +73,11 @@ class UserController extends Controller
             'active' => (clone $baseStatQuery)->where('is_active', true)->count(),
             'admin' => (clone $baseStatQuery)->whereHas('role', fn($q) => $q->where('name', 'admin'))->count(),
             'manager' => (clone $baseStatQuery)->whereHas('role', fn($q) => $q->where('name', 'manager'))->count(),
-            'staff' => (clone $baseStatQuery)->whereHas('role', fn($q) => $q->where('name', 'staff'))->count(),
+            'staff' => (clone $baseStatQuery)->whereHas('role', fn($q) => $q->whereIn('name', ['staff', 'cashier', 'stock_manager']))->count(),
             'with_temp_password' => (clone $baseStatQuery)->whereHas('activeTemporaryPasswords')->count(),
         ];
 
-        $tenants = auth()->user()->isSuperAdmin() ? \App\Models\Tenant::orderBy('name')->get() : collect();
-
-        return view('users.index', compact('users', 'stats', 'isEmployeesView', 'tenants'));
+        return view('users.index', compact('users', 'stats', 'isEmployeesView'));
     }
 
     public function create()

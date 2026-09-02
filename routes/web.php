@@ -53,10 +53,13 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
 
     Route::prefix('owner')->name('owner.')->group(function () {
         Route::get('/tenants', [TenantControlCenterController::class, 'index'])->name('tenants.index');
+        Route::post('/tenants', [TenantControlCenterController::class, 'store'])->name('tenants.store');
         Route::get('/tenants/{tenant}', [TenantControlCenterController::class, 'show'])->name('tenants.show');
         Route::put('/tenants/{tenant}', [TenantControlCenterController::class, 'update'])->name('tenants.update');
+        Route::post('/tenants/{tenant}/impersonate', [TenantControlCenterController::class, 'impersonate'])->name('tenants.impersonate');
         Route::post('/tenants/{tenant}/licenses', [TenantControlCenterController::class, 'issueLicense'])->name('tenants.licenses.issue');
         Route::patch('/tenants/{tenant}/licenses/{license}/revoke', [TenantControlCenterController::class, 'revokeLicense'])->name('tenants.licenses.revoke');
+        Route::get('/tenants/{tenant}/licenses/{license}/certificate', [TenantControlCenterController::class, 'certificate'])->name('tenants.licenses.certificate');
     });
 
     Route::get('/license/activate', [LicenseActivationController::class, 'create'])->name('license.activate');
