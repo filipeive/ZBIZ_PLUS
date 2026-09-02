@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class AdminController extends Controller
 {
@@ -14,7 +15,7 @@ class AdminController extends Controller
     public function settingsView(Request $request)
     {
         $tenant = current_tenant();
-        $settings = Setting::all()->pluck('value', 'key');
+        $settings = $this->settingsForTenant($tenant);
         
         return view('settings.index', compact('tenant', 'settings'));
     }
@@ -39,6 +40,10 @@ class AdminController extends Controller
             'receipt_footer'        => 'nullable|string|max:255',
             'primary_color'         => 'nullable|string|regex:/^#[a-fA-F0-9]{6}$/',
             'company_logo'          => 'nullable|image|mimes:jpeg,png,jpg,svg,webp|max:3072',
+            'invoice_prefix'        => 'nullable|string|max:12',
+            'receipt_prefix'        => 'nullable|string|max:12',
+            'receipt_paper_size'    => 'nullable|string|in:58mm,80mm,A4',
+            'low_stock_policy'      => 'nullable|string|in:global,per_product,per_branch',
             'allow_debt'            => 'nullable|boolean',
             'allow_discount'        => 'nullable|boolean',
             'enable_notifications'  => 'nullable|boolean',
@@ -55,8 +60,16 @@ class AdminController extends Controller
             $settings['primary_color'] = $request->primary_color;
         }
 
+        $settings['tax_rate'] = (string)($validated['tax_rate'] ?? '16');
+        $settings['stock_alert_threshold'] = (string)($validated['stock_alert_threshold'] ?? '5');
+        $settings['receipt_footer'] = $validated['receipt_footer'] ?? 'Obrigado pela sua preferência!';
+        $settings['invoice_prefix'] = strtoupper($validated['invoice_prefix'] ?? 'FT');
+        $settings['receipt_prefix'] = strtoupper($validated['receipt_prefix'] ?? 'REC');
+        $settings['receipt_paper_size'] = $validated['receipt_paper_size'] ?? '80mm';
+        $settings['low_stock_policy'] = $validated['low_stock_policy'] ?? 'per_product';
         $settings['allow_debt'] = $request->has('allow_debt') ? '1' : '0';
         $settings['allow_discount'] = $request->has('allow_discount') ? '1' : '0';
+        $settings['enable_notifications'] = $request->has('enable_notifications') ? '1' : '0';
 
         if ($tenant) {
             $tenant->update([
@@ -79,21 +92,29 @@ class AdminController extends Controller
             'company_address'       => $validated['company_address'] ?? '',
             'business_type'         => $validated['business_type'],
             'default_currency'      => $validated['default_currency'] ?? 'MT',
-            'tax_rate'              => $validated['tax_rate'] ?? '16',
-            'stock_alert_threshold' => $validated['stock_alert_threshold'] ?? '5',
-            'receipt_footer'        => $validated['receipt_footer'] ?? 'Obrigado pela sua preferência!',
+            'tax_rate'              => $settings['tax_rate'],
+            'stock_alert_threshold' => $settings['stock_alert_threshold'],
+            'receipt_footer'        => $settings['receipt_footer'],
             'primary_color'         => $settings['primary_color'] ?? '',
             'logo_path'             => $settings['logo_path'] ?? '',
+            'invoice_prefix'        => $settings['invoice_prefix'],
+            'receipt_prefix'        => $settings['receipt_prefix'],
+            'receipt_paper_size'    => $settings['receipt_paper_size'],
+            'low_stock_policy'      => $settings['low_stock_policy'],
             'allow_debt'            => $settings['allow_debt'],
             'allow_discount'        => $settings['allow_discount'],
-            'enable_notifications'  => $request->has('enable_notifications') ? '1' : '0',
+            'enable_notifications'  => $settings['enable_notifications'],
         ];
 
         foreach ($settingKeys as $k => $v) {
-            Setting::updateOrCreate(
-                ['key' => $k],
-                ['value' => (string)$v]
-            );
+            $attributes = ['key' => $k];
+            $values = ['value' => (string)$v];
+
+            if (Schema::hasColumn('settings', 'tenant_id')) {
+                $values['tenant_id'] = $tenant?->id;
+            }
+
+            Setting::updateOrCreate($attributes, $values);
         }
 
         return redirect()->route('admin.settings')
@@ -105,7 +126,7 @@ class AdminController extends Controller
      */
     public function getSettings()
     {
-        $settings = Setting::all()->pluck('value', 'key');
+        $settings = $this->settingsForTenant(current_tenant());
         
         if ($settings->isEmpty()) {
             $settings = [
@@ -135,10 +156,14 @@ class AdminController extends Controller
             foreach ($request->all() as $key => $value) {
                 if (in_array($key, ['_token', 'api_token'])) continue;
                 
-                Setting::updateOrCreate(
-                    ['key' => $key],
-                    ['value' => is_bool($value) ? ($value ? '1' : '0') : $value]
-                );
+                $attributes = ['key' => $key];
+                $values = ['value' => is_bool($value) ? ($value ? '1' : '0') : $value];
+
+                if (Schema::hasColumn('settings', 'tenant_id')) {
+                    $values['tenant_id'] = current_tenant_id();
+                }
+
+                Setting::updateOrCreate($attributes, $values);
             }
             return response()->json(['message' => 'Configurações salvas com sucesso!']);
         } catch (\Exception $e) {
@@ -222,5 +247,32 @@ class AdminController extends Controller
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Erro ao limpar logs'], 500);
         }
+    }
+
+    private function settingsForTenant($tenant)
+    {
+        $defaults = collect([
+            'company_name' => $tenant?->name ?? 'ZBIZ+',
+            'company_address' => $tenant?->address ?? 'Moçambique',
+            'company_phone' => $tenant?->phone ?? '',
+            'company_email' => $tenant?->email ?? '',
+            'company_nuit' => $tenant?->nuit ?? '',
+            'business_type' => $tenant?->business_type ?? 'retail',
+            'enable_notifications' => '1',
+            'default_currency' => $tenant?->currency ?? 'MT',
+            'tax_rate' => '16',
+            'receipt_footer' => 'Obrigado pela sua preferência!',
+            'stock_alert_threshold' => '5',
+            'invoice_prefix' => 'FT',
+            'receipt_prefix' => 'REC',
+            'receipt_paper_size' => '80mm',
+            'low_stock_policy' => 'per_product',
+            'allow_debt' => '1',
+            'allow_discount' => '1',
+        ]);
+
+        $tenantSettings = collect($tenant?->settings ?? []);
+
+        return $defaults->merge($tenantSettings);
     }
 }

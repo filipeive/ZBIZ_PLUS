@@ -16,7 +16,7 @@
 ?>
 
 <?php $__env->startSection('content'); ?>
-<div class="max-w-5xl mx-auto space-y-6 pb-12">
+<div class="max-w-full mx-auto space-y-6 pb-12">
     
     <!-- Top Action Bar -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">

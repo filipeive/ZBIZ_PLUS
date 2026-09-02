@@ -53,9 +53,49 @@
     </script>
 
     <style>
+        :root {
+            --tenant-primary: {{ $theme['hex'] }};
+            --tenant-primary-glow: {{ $theme['glow'] }};
+            --tenant-primary-soft: {{ hex_to_rgba($theme['hex'], 0.10) }};
+            --tenant-primary-border: {{ hex_to_rgba($theme['hex'], 0.35) }};
+        }
+
         body { font-family: 'Inter', sans-serif; }
         .font-heading { font-family: 'Outfit', sans-serif; }
         [x-cloak] { display: none !important; }
+
+        .tenant-gradient {
+            background-image: linear-gradient(135deg, var(--tenant-primary), color-mix(in srgb, var(--tenant-primary) 68%, #020617 32%)) !important;
+        }
+
+        .tenant-text {
+            color: var(--tenant-primary) !important;
+        }
+
+        .tenant-border {
+            border-color: var(--tenant-primary) !important;
+        }
+
+        .tenant-ring:focus {
+            border-color: var(--tenant-primary) !important;
+            box-shadow: 0 0 0 3px var(--tenant-primary-glow) !important;
+        }
+
+        .tenant-badge {
+            background: var(--tenant-primary-soft) !important;
+            color: var(--tenant-primary) !important;
+            border-color: var(--tenant-primary-border) !important;
+        }
+
+        .tenant-button {
+            background: var(--tenant-primary) !important;
+            color: #020617 !important;
+            box-shadow: 0 12px 28px var(--tenant-primary-glow) !important;
+        }
+
+        .tenant-button:hover {
+            filter: brightness(1.08);
+        }
 
         .app-bootstrap-card,
         .card,
@@ -111,9 +151,9 @@
         .form-control:focus,
         .form-select:focus,
         .form-check-input:focus {
-            border-color: rgba(16, 185, 129, 0.8) !important;
+            border-color: var(--tenant-primary) !important;
             outline: none !important;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+            box-shadow: 0 0 0 3px var(--tenant-primary-glow) !important;
         }
 
         .btn,
@@ -141,15 +181,15 @@
         }
 
         .btn-primary {
-            background: {{ $theme['hex'] }} !important;
+            background: var(--tenant-primary) !important;
             color: #ffffff !important;
-            box-shadow: 0 10px 25px {{ $theme['glow'] }} !important;
+            box-shadow: 0 10px 25px var(--tenant-primary-glow) !important;
         }
 
         .btn-outline-primary {
-            border-color: {{ $theme['hex'] }} !important;
-            color: {{ $theme['hex'] }} !important;
-            background: {{ $theme['glow'] }} !important;
+            border-color: var(--tenant-primary) !important;
+            color: var(--tenant-primary) !important;
+            background: var(--tenant-primary-glow) !important;
         }
 
         .btn-outline-secondary {
@@ -284,7 +324,7 @@
         .h-100 { height: 100% !important; }
 
         .text-muted { color: #94a3b8 !important; }
-        .text-primary { color: #34d399 !important; }
+        .text-primary { color: var(--tenant-primary) !important; }
         .text-success { color: #10b981 !important; }
         .text-danger { color: #f43f5e !important; }
         .text-warning { color: #fbbf24 !important; }
@@ -306,7 +346,7 @@
             position: relative;
             overflow: hidden;
         }
-        .stats-card.primary { border-left: 4px solid #34d399 !important; }
+        .stats-card.primary { border-left: 4px solid var(--tenant-primary) !important; }
         .stats-card.success { border-left: 4px solid #10b981 !important; }
         .stats-card.warning { border-left: 4px solid #fbbf24 !important; }
         .stats-card.danger { border-left: 4px solid #f43f5e !important; }

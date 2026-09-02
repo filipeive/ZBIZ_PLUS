@@ -954,8 +954,21 @@ class ReportController extends Controller
         $paymentMethod = $request->input('payment_method', 'all');
         $customerId = $request->input('customer_id');
 
-        $query = Sale::with(['user', 'items.product'])
+        $tenantId = auth()->user()?->tenant_id ?? current_tenant_id();
+        $branchId = current_branch_id() ?? auth()->user()?->branch_id;
+
+        $query = Sale::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->with(['user', 'items.product'])
             ->whereBetween('sale_date', [$dateFrom, $dateTo]);
+
+        if ($request->filled('branch_id')) {
+            $query->where('branch_id', $request->branch_id);
+        } elseif ($branchId && !(auth()->user()?->isAdmin() || auth()->user()?->isManager())) {
+            $query->where(function($q) use ($branchId) {
+                $q->where('branch_id', $branchId)->orWhereNull('branch_id');
+            });
+        }
 
         // Filtros específicos
         if ($paymentMethod !== 'all') {

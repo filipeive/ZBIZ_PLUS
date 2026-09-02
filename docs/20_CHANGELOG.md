@@ -6,16 +6,40 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
-## [1.0.14] - 2026-09-02 - Isolamento Estrito de Tenant no POS, Vendas e Encomendas
-### Fixed
-- **Isolamento de Produtos no POS (`POSController.php` & `pos/index.blade.php`):**
-  - Reforçada a precedência do `auth()->user()->tenant_id` sobre o contexto de sessão em `POSController::index` e `POSController::searchProducts`.
-  - Adicionada blindagem em `fetchProductsList` para abortar imediatamente caso o identificador do tenant esteja indefinido ou vazio, eliminando qualquer vazamento de catálogo entre Farmácia e Reprografia.
-  - Ordenação alfabética e limite expandido de catálogo para o grid de PDV.
-- **Isolamento em Pesquisas de Produtos (`SaleController.php` & `OrderController.php`):**
-  - Injetado filtro estrito de `where('tenant_id', $tenantId)` nas rotas de busca assíncrona de artigos para emissão de vendas e encomendas.
+## [1.0.15] - 2026-09-02 - Redesign Completo do Relatório Especializado de Vendas com Dark Theme & Chart.js
+### Added & Improved
+- **Modernização Visual do Relatório Especializado de Vendas (`reports/sales_specialized.blade.php`):**
+  - Migração completa do antigo estilo Bootstrap para a linguagem de design Tailwind CSS com suporte total a dark mode e paleta de cores temática do tenant (`tenant_theme()`).
+  - Top Action Bar com atalhos rápidos para a Central de Relatórios, exportação direta em Excel, PDF e impressão térmica/A4.
+  - Filtros avançados com seleção de período, meios de pagamento (Dinheiro, M-Pesa, e-Mola, Cartão, Transferência e Crédito/Fiado) e busca rápida por cliente.
+  - 6 cartões de KPIs executivos: Total de Vendas, Receita Bruta, Custo Total (CMV), Lucro Operacional, Ticket Médio e Margem Real %.
+  - 2 gráficos interativos com Chart.js (Evolução Diária com curvas de receita/lucro e Gráfico Donut de distribuição por meio de pagamento).
+  - Tabela analítica de Desempenho por Método de Pagamento com barras de progresso e classificação de performance comercial.
+  - Top 10 Vendedores e Top 10 Artigos/Serviços mais rentáveis do período.
+  - Extrato Detalhado de Vendas com badges estilizados, margens em tempo real e links diretos para exibição e impressão de comprovativos.
+- **Escopo e Segurança de Dados (`ReportController.php`):**
+  - Injetado isolamento rigoroso por `tenant_id` e filial ativa nas consultas analíticas de `ReportController::salesReport`.
 
 ---
+
+## [Unreleased]
+### Fixed
+- **Isolamento de Produtos no POS (`POSController.php`):**
+  - Removido o bypass de escopos globais nas consultas do POS e mantido filtro explícito por `tenant_id`.
+  - Validado que filtros por categoria só aceitam categorias do tenant atual.
+  - Restringida a finalização da venda para aceitar apenas `customer_id` e `product_id` pertencentes ao tenant atual.
+  - Protegida a impressão de recibos contra acesso a vendas de outro tenant.
+- **Cache e estado do catálogo POS (`POSController.php` & `pos/index.blade.php`):**
+  - Desativado cache HTTP em `/pos` e `/pos/search`, evitando catálogo antigo ao alternar entre empresas.
+  - Adicionado escopo de tenant/filial no estado Alpine do POS e nas filas offline locais.
+  - Forçada busca sem cache no JavaScript, com validação do `tenant_id` retornado pela API.
+- **Métricas do Dashboard (`DashboardController.php`):**
+  - Corrigido cálculo de vendas mensais para considerar o mês completo e tenant atual.
+  - Ajustado filtro por operador para que administradores e gerentes vejam vendas do tenant/filial, enquanto caixas continuam restritos às próprias vendas.
+- **Definições e identidade visual (`AdminController.php`, `tenancy.php`, `layouts/app.blade.php` & `settings/index.blade.php`):**
+  - Configurações comerciais e de marca passam a ser priorizadas por tenant via `tenants.settings`.
+  - Cor principal definida pelo utilizador agora alimenta utilitários CSS reais usados em botões, bordas, badges, foco e gradientes.
+  - Adicionados parâmetros profissionais para prefixos de fatura/recibo, formato do talão e política de stock baixo.
 
 ## [1.0.13] - 2026-09-01 - Correção das Movimentações de Stock Físico, Dashboard em Tempo Real e Cores Dinâmicas de Marca
 ### Fixed

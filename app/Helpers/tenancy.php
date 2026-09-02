@@ -153,6 +153,12 @@ if (!function_exists('tenant_theme')) {
         if ($customColor) {
             $theme['hex'] = $customColor;
             $theme['glow'] = hex_to_rgba($customColor, 0.18);
+            $theme['gradient'] = 'tenant-gradient';
+            $theme['badge'] = 'tenant-badge';
+            $theme['btn'] = 'tenant-button';
+            $theme['text_accent'] = 'tenant-text';
+            $theme['border'] = 'tenant-border';
+            $theme['ring'] = 'tenant-ring';
         }
 
         $theme['logo_url'] = $logoUrl;

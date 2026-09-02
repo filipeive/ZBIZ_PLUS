@@ -439,6 +439,9 @@
                 searchQuery: '',
                 selectedCategory: null,
                 selectedType: 'all',
+                tenantId: <?php echo e((int) ($tenantId ?? 0)); ?>,
+                branchId: <?php echo e((int) ($branchId ?? 0)); ?>,
+                storageScope: 'tenant-<?php echo e((int) ($tenantId ?? 0)); ?>-branch-<?php echo e((int) ($branchId ?? 0)); ?>',
                 products: <?php echo json_encode($initialProducts ?? [], 15, 512) ?>,
                 cart: [],
                 customer: null,
@@ -449,13 +452,34 @@
                 showCustomerModal: false,
                 isSubmitting: false,
                 isLoading: false,
-                offlineQueue: JSON.parse(localStorage.getItem('zbiz_pos_offline_queue') || '[]'),
+                offlineQueue: [],
 
                 init() {
+                    const previousScope = sessionStorage.getItem('zbiz_pos_scope');
+                    if (previousScope && previousScope !== this.storageScope) {
+                        this.products = [];
+                        this.cart = [];
+                        this.customer = null;
+                    }
+
+                    sessionStorage.setItem('zbiz_pos_scope', this.storageScope);
+                    this.offlineQueue = JSON.parse(localStorage.getItem(this.offlineQueueKey()) || '[]');
+
                     window.addEventListener('online', () => { this.isOnline = true; this.syncOffline(); });
                     window.addEventListener('offline', () => { this.isOnline = false; });
+                    window.addEventListener('pageshow', (event) => {
+                        if (event.persisted) {
+                            this.products = [];
+                            this.searchProducts();
+                        }
+                    });
+
                     this.searchProducts();
                     this.$nextTick(() => this.$refs.searchInput.focus());
+                },
+
+                offlineQueueKey() {
+                    return `zbiz_pos_offline_queue_${this.storageScope}`;
                 },
 
                 get subtotal() {
@@ -476,11 +500,25 @@
                         const params = new URLSearchParams({
                             q: this.searchQuery,
                             category_id: this.selectedCategory || '',
-                            type: this.selectedType || 'all'
+                            type: this.selectedType || 'all',
+                            tenant_scope: this.storageScope,
+                            _: Date.now()
                         });
-                        const res = await fetch(`/pos/search?${params}`);
+                        const res = await fetch(`/pos/search?${params}`, {
+                            cache: 'no-store',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
                         const data = await res.json();
                         if (data.success) {
+                            if (Number(data.tenant_id) !== Number(this.tenantId)) {
+                                this.products = [];
+                                this.notifyError('Sessão de empresa alterada', 'Recarregue o POS para sincronizar o catálogo da empresa atual.');
+                                return;
+                            }
+
                             this.products = data.products;
                         }
                     } catch (e) {
@@ -629,7 +667,7 @@
                     if (!this.isOnline) {
                         // Salvar offline
                         this.offlineQueue.push(payload);
-                        localStorage.setItem('zbiz_pos_offline_queue', JSON.stringify(this.offlineQueue));
+                        localStorage.setItem(this.offlineQueueKey(), JSON.stringify(this.offlineQueue));
                         this.notifyWarning('Modo Offline', 'Venda guardada em cache local. Será sincronizada automaticamente assim que a conexão retornar.');
                         this.clearCart();
                         this.showCheckoutModal = false;
@@ -658,7 +696,7 @@
                     } catch (e) {
                         this.notifyWarning('Conexão Interrompida', 'A guardar venda em cache offline...');
                         this.offlineQueue.push(payload);
-                        localStorage.setItem('zbiz_pos_offline_queue', JSON.stringify(this.offlineQueue));
+                        localStorage.setItem(this.offlineQueueKey(), JSON.stringify(this.offlineQueue));
                         this.clearCart();
                         this.showCheckoutModal = false;
                     } finally {
@@ -680,7 +718,7 @@
                         const data = await res.json();
                         if (data.success) {
                             this.offlineQueue = [];
-                            localStorage.removeItem('zbiz_pos_offline_queue');
+                            localStorage.removeItem(this.offlineQueueKey());
                             this.notifySuccess('Sincronização', 'Vendas offline sincronizadas com sucesso com o servidor!');
                         }
                     } catch (e) {

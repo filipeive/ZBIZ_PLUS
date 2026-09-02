@@ -24,19 +24,20 @@ class DashboardController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $userIdFilter = $user->isAdmin() ? null : $user->id;
+        $tenantId = current_tenant_id() ?? $user?->tenant_id;
+        $userIdFilter = $this->dashboardUserIdFilter($user);
 
         // --- CÁLCULOS DE HOJE ---
         $today = Carbon::today();
         $todayStr = $today->toDateString();
 
-        $todaySalesQuery = Sale::whereDate('sale_date', $today);
+        $todaySalesQuery = Sale::where('tenant_id', $tenantId)->whereDate('sale_date', $today);
         if ($userIdFilter) $todaySalesQuery->where('user_id', $userIdFilter);
         $todaySales = $todaySalesQuery->sum('total_amount');
 
         $todayOutflows = $this->financialService->sumTransactions($todayStr, $todayStr, 'out', true, $userIdFilter);
         
-        $todayProductsSoldQuery = Sale::whereDate('sale_date', $today);
+        $todayProductsSoldQuery = Sale::where('tenant_id', $tenantId)->whereDate('sale_date', $today);
         if ($userIdFilter) $todayProductsSoldQuery->where('user_id', $userIdFilter);
         $todayProductsSold = $todayProductsSoldQuery->withCount('items')->get()->sum('items_count');
 
@@ -44,7 +45,7 @@ class DashboardController extends Controller
         $yesterday = Carbon::yesterday();
         $yesterdayStr = $yesterday->toDateString();
 
-        $yesterdaySalesQuery = Sale::whereDate('sale_date', $yesterday);
+        $yesterdaySalesQuery = Sale::where('tenant_id', $tenantId)->whereDate('sale_date', $yesterday);
         if ($userIdFilter) $yesterdaySalesQuery->where('user_id', $userIdFilter);
         $yesterdaySales = $yesterdaySalesQuery->sum('total_amount');
 
@@ -55,7 +56,7 @@ class DashboardController extends Controller
 
         // --- CÁLCULOS FINANCEIROS CENTRALIZADOS (Mês Atual) ---
         $monthStart = Carbon::now()->startOfMonth()->toDateString();
-        $monthEnd = Carbon::now()->toDateString();
+        $monthEnd = Carbon::now()->endOfMonth()->toDateString();
 
         $metrics = $this->financialService->getGlobalMetrics($monthStart, $monthEnd, $userIdFilter);
         
@@ -67,11 +68,15 @@ class DashboardController extends Controller
         $monthNetCashFlow = $metrics['net_cash_flow'];
 
         // --- CÁLCULOS DE VENDAS E CUSTOS ---
-        $monthSalesQuery = Sale::where('sale_date', '>=', $monthStart);
+        $monthSalesQuery = Sale::where('tenant_id', $tenantId)
+            ->whereDate('sale_date', '>=', $monthStart)
+            ->whereDate('sale_date', '<=', $monthEnd);
         if ($userIdFilter) $monthSalesQuery->where('user_id', $userIdFilter);
         $monthSales = $monthSalesQuery->sum('total_amount');
 
-        $monthExpensesQuery = Expense::where('expense_date', '>=', $monthStart);
+        $monthExpensesQuery = Expense::where('tenant_id', $tenantId)
+            ->whereDate('expense_date', '>=', $monthStart)
+            ->whereDate('expense_date', '<=', $monthEnd);
         if ($userIdFilter) $monthExpensesQuery->where('user_id', $userIdFilter);
         $monthExpenses = $monthExpensesQuery->sum('amount');
 
@@ -80,7 +85,9 @@ class DashboardController extends Controller
         $monthCostOfGoodsQuery = DB::table('sale_items')
             ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
             ->join('products', 'sale_items.product_id', '=', 'products.id')
-            ->where('sales.sale_date', '>=', $monthStart);
+            ->where('sales.tenant_id', $tenantId)
+            ->whereDate('sales.sale_date', '>=', $monthStart)
+            ->whereDate('sales.sale_date', '<=', $monthEnd);
         if ($userIdFilter) $monthCostOfGoodsQuery->where('sales.user_id', $userIdFilter);
         $monthCostOfGoods = $monthCostOfGoodsQuery->sum(DB::raw('sale_items.quantity * COALESCE(products.purchase_price, 0)'));
 
@@ -91,19 +98,21 @@ class DashboardController extends Controller
         $monthGrossMargin = $monthSales > 0 ? ($monthGrossProfit / $monthSales) * 100 : 0;
         $monthNetMargin = $monthSales > 0 ? ($monthRealProfit / $monthSales) * 100 : 0;
 
-        $monthActiveCustomersQuery = Sale::where('sale_date', '>=', $monthStart);
+        $monthActiveCustomersQuery = Sale::where('tenant_id', $tenantId)
+            ->whereDate('sale_date', '>=', $monthStart)
+            ->whereDate('sale_date', '<=', $monthEnd);
         if ($userIdFilter) $monthActiveCustomersQuery->where('user_id', $userIdFilter);
         $monthActiveCustomers = $monthActiveCustomersQuery->distinct('customer_name')->count('customer_name');
 
         // --- COMPARAÇÃO COM MÊS ANTERIOR ---
-        $prevMonthSalesQuery = Sale::whereBetween('sale_date', [
+        $prevMonthSalesQuery = Sale::where('tenant_id', $tenantId)->whereBetween('sale_date', [
             Carbon::now()->subMonth()->startOfMonth()->toDateString(), 
             Carbon::now()->subMonth()->endOfMonth()->toDateString()
         ]);
         if ($userIdFilter) $prevMonthSalesQuery->where('user_id', $userIdFilter);
         $prevMonthSales = $prevMonthSalesQuery->sum('total_amount');
 
-        $prevMonthExpensesQuery = Expense::whereBetween('expense_date', [
+        $prevMonthExpensesQuery = Expense::where('tenant_id', $tenantId)->whereBetween('expense_date', [
             Carbon::now()->subMonth()->startOfMonth()->toDateString(), 
             Carbon::now()->subMonth()->endOfMonth()->toDateString()
         ]);
@@ -120,15 +129,15 @@ class DashboardController extends Controller
         // --- DADOS DO GRÁFICO E LISTAS ---
         $salesChartData = $this->getSalesChartData($userIdFilter);
         $cashFlowChartData = $this->financialService->getCashFlowChartData(7, $userIdFilter);
-        $lowStockProducts = Product::withoutGlobalScopes()
-            ->where('tenant_id', current_tenant_id() ?? auth()->user()?->tenant_id)
+        $lowStockProducts = Product::query()
+            ->where('tenant_id', $tenantId)
             ->whereRaw('stock_quantity <= min_stock_level')
             ->whereIn('type', ['product', 'physical'])
             ->where('is_active', true)
             ->get();
-        $recentSalesQuery = Sale::with('user', 'items.product');
+        $recentSalesQuery = Sale::with('user', 'items.product')->where('tenant_id', $tenantId);
         if ($userIdFilter) $recentSalesQuery->where('user_id', $userIdFilter);
-        $recentSales = $recentSalesQuery->latest()->limit(5)->get();
+        $recentSales = $recentSalesQuery->latest('sale_date')->latest()->limit(5)->get();
         
         // Extrair variáveis dos arrays para o compact()
         $salesChangePercent = $salesChange['percent'];
@@ -171,19 +180,20 @@ class DashboardController extends Controller
     public function apiMetrics()
     {
         $user = auth()->user();
-        $userIdFilter = $user->isAdmin() ? null : $user->id;
+        $tenantId = current_tenant_id() ?? $user?->tenant_id;
+        $userIdFilter = $this->dashboardUserIdFilter($user);
 
         $today = Carbon::today();
         $todayStr = $today->toDateString();
 
-        $todaySalesQuery = Sale::whereDate('sale_date', $today);
+        $todaySalesQuery = Sale::where('tenant_id', $tenantId)->whereDate('sale_date', $today);
         if ($userIdFilter) $todaySalesQuery->where('user_id', $userIdFilter);
         $todaySales = $todaySalesQuery->sum('total_amount');
 
         $todayOutflows = $this->financialService->sumTransactions($todayStr, $todayStr, 'out', true, $userIdFilter);
         
-        $lowStockCount = Product::withoutGlobalScopes()
-            ->where('tenant_id', current_tenant_id() ?? auth()->user()?->tenant_id)
+        $lowStockCount = Product::query()
+            ->where('tenant_id', $tenantId)
             ->whereRaw('stock_quantity <= min_stock_level')
             ->whereIn('type', ['product', 'physical'])
             ->where('is_active', true)
@@ -192,7 +202,7 @@ class DashboardController extends Controller
         $yesterday = Carbon::yesterday();
         $yesterdayStr = $yesterday->toDateString();
         
-        $yesterdaySalesQuery = Sale::whereDate('sale_date', $yesterday);
+        $yesterdaySalesQuery = Sale::where('tenant_id', $tenantId)->whereDate('sale_date', $yesterday);
         if ($userIdFilter) $yesterdaySalesQuery->where('user_id', $userIdFilter);
         $yesterdaySales = $yesterdaySalesQuery->sum('total_amount');
 
@@ -207,7 +217,7 @@ class DashboardController extends Controller
         
         $dynamicAlerts = $this->getDynamicAlerts($lowStockCount, $todayOutflows, $todaySales);
 
-        $activeSalesQuery = Sale::whereDate('sale_date', $today);
+        $activeSalesQuery = Sale::where('tenant_id', $tenantId)->whereDate('sale_date', $today);
         if ($userIdFilter) $activeSalesQuery->where('user_id', $userIdFilter);
 
         return response()->json([
@@ -264,10 +274,12 @@ class DashboardController extends Controller
      */
     private function getSalesChartData($userId = null)
     {
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
         $startDate = Carbon::today()->subDays(6);
         $endDate = Carbon::today();
 
         $salesQuery = Sale::select(DB::raw('DATE(sale_date) as date'), DB::raw('SUM(total_amount) as total'))
+            ->where('tenant_id', $tenantId)
             ->whereDate('sale_date', '>=', $startDate)
             ->whereDate('sale_date', '<=', $endDate);
         if ($userId) $salesQuery->where('user_id', $userId);
@@ -277,6 +289,7 @@ class DashboardController extends Controller
             ->toArray();
 
         $expensesQuery = Expense::select(DB::raw('DATE(expense_date) as date'), DB::raw('SUM(amount) as total'))
+            ->where('tenant_id', $tenantId)
             ->whereDate('expense_date', '>=', $startDate)
             ->whereDate('expense_date', '<=', $endDate);
         if ($userId) $expensesQuery->where('user_id', $userId);
@@ -302,6 +315,15 @@ class DashboardController extends Controller
             'salesData' => $salesData,
             'expensesData' => $expensesData,
         ];
+    }
+
+    private function dashboardUserIdFilter($user): ?int
+    {
+        if (!$user) {
+            return null;
+        }
+
+        return ($user->isAdmin() || $user->isManager()) ? null : $user->id;
     }
     
     /**

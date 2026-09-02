@@ -135,6 +135,94 @@ class POSCheckoutTest extends TestCase
         $response->assertJsonPath('products.0.stock_quantity', 50);
     }
 
+    public function test_pos_all_filter_only_lists_products_from_current_tenant(): void
+    {
+        $otherTenant = Tenant::create([
+            'name'          => 'Reprografia Express',
+            'slug'          => 'reprografia-express',
+            'business_type' => 'reprography',
+            'status'        => 'active',
+        ]);
+
+        $otherBranch = Branch::create([
+            'tenant_id' => $otherTenant->id,
+            'name'      => 'Loja Repro',
+            'code'      => 'REPRO',
+            'is_main'   => true,
+            'is_active' => true,
+        ]);
+
+        $otherCategory = Category::create([
+            'tenant_id' => $otherTenant->id,
+            'name'      => 'Impressões',
+            'is_active' => true,
+        ]);
+
+        Product::create([
+            'tenant_id'      => $otherTenant->id,
+            'category_id'    => $otherCategory->id,
+            'name'           => 'Cópia A4 P&B',
+            'type'           => 'service',
+            'purchase_price' => 1.00,
+            'selling_price'  => 5.00,
+            'stock_quantity' => 0,
+            'is_active'      => true,
+        ]);
+
+        app(TenantContext::class)->setTenant($this->tenant)->setBranch($this->branch);
+        $this->actingAs($this->cashier);
+
+        $response = $this->getJson('/pos/search?type=all');
+
+        $response->assertOk();
+        $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
+        $names = collect($response->json('products'))->pluck('name');
+
+        $this->assertTrue($names->contains('Leite Condensado Moça'));
+        $this->assertFalse($names->contains('Cópia A4 P&B'));
+    }
+
+    public function test_pos_sale_rejects_product_from_another_tenant(): void
+    {
+        $otherTenant = Tenant::create([
+            'name'          => 'Reprografia Express',
+            'slug'          => 'reprografia-express',
+            'business_type' => 'reprography',
+            'status'        => 'active',
+        ]);
+
+        $otherProduct = Product::create([
+            'tenant_id'      => $otherTenant->id,
+            'name'           => 'Encadernação',
+            'type'           => 'service',
+            'purchase_price' => 10.00,
+            'selling_price'  => 100.00,
+            'stock_quantity' => 0,
+            'is_active'      => true,
+        ]);
+
+        app(TenantContext::class)->setTenant($this->tenant)->setBranch($this->branch);
+        $this->actingAs($this->cashier);
+
+        $response = $this->postJson('/pos/sale', [
+            'customer_name'  => 'Cliente Balcão',
+            'items'          => [
+                [
+                    'product_id' => $otherProduct->id,
+                    'quantity'   => 1,
+                    'unit_price' => 100.00,
+                    'discount'   => 0,
+                ],
+            ],
+            'discount_amount'=> 0,
+            'payment_method' => 'cash',
+            'amount_paid'    => 100.00,
+        ]);
+
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors('items.0.product_id');
+    }
+
     public function test_pos_sale_checkout_deducts_stock_and_updates_ledger(): void
     {
         $this->actingAs($this->cashier);

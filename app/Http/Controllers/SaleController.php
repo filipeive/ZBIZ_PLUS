@@ -731,30 +731,22 @@ class SaleController extends Controller
     public function searchProducts(Request $request)
     {
         $search = $request->get('q');
-        $tenantId = auth()->user()?->tenant_id ?? current_tenant_id();
-
-        if (!$tenantId) {
-            return response()->json([]);
-        }
-
-        $products = Product::withoutGlobalScopes()
-                          ->where('tenant_id', $tenantId)
-                          ->where('is_active', true)
+        
+        $products = Product::where('is_active', true)
                           ->where(function($query) use ($search) {
                               $query->where('name', 'like', "%{$search}%")
-                                    ->orWhere('barcode', 'like', "%{$search}%")
-                                    ->orWhere('sku', 'like', "%{$search}%");
+                                    ->orWhere('code', 'like', "%{$search}%");
                           })
                           ->with('category')
-                          ->limit(20)
+                          ->limit(10)
                           ->get();
         
         return response()->json($products->map(function($product) {
             return [
                 'id' => $product->id,
                 'name' => $product->name,
-                'code' => $product->barcode ?? $product->sku ?? $product->id,
-                'price' => (float)$product->selling_price,
+                'code' => $product->code,
+                'price' => $product->selling_price,
                 'stock' => $product->stock_quantity,
                 'type' => $product->type,
                 'category' => $product->category->name ?? 'Sem categoria'

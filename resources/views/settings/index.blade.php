@@ -8,7 +8,7 @@
 @endphp
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6" x-data="{ primaryColor: '{{ $settings['primary_color'] ?? $theme['hex'] }}' }">
 
     <!-- Top Action Bar -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
@@ -73,16 +73,17 @@
                     <div>
                         <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Cor Principal da Marca</label>
                         <div class="flex items-center gap-3">
-                            <input type="color" name="primary_color" value="{{ $tenant?->settings['primary_color'] ?? $theme['hex'] }}" 
+                            <input type="color" name="primary_color" x-model="primaryColor"
                                    class="w-10 h-10 rounded-xl bg-transparent border border-slate-700 cursor-pointer">
-                            <input type="text" name="primary_color_text" readonly value="{{ $tenant?->settings['primary_color'] ?? $theme['hex'] }}"
+                            <input type="text" name="primary_color_text" readonly x-model="primaryColor"
                                    class="flex-1 px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white font-mono">
                         </div>
+                        <div class="mt-2 h-2 rounded-full border border-slate-800" :style="`background: linear-gradient(90deg, ${primaryColor}, rgba(15, 23, 42, 0.25))`"></div>
                     </div>
 
                     <div>
                         <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Sector de Atividade *</label>
-                        <select name="business_type" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                        <select name="business_type" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white {{ $theme['ring'] }} outline-none">
                             <option value="reprography" {{ ($tenant?->business_type ?? $settings['business_type'] ?? '') === 'reprography' ? 'selected' : '' }}>Gráfica, Reprografia & Serigrafia</option>
                             <option value="pharmacy" {{ ($tenant?->business_type ?? $settings['business_type'] ?? '') === 'pharmacy' ? 'selected' : '' }}>Farmácia & Saúde (ANARME)</option>
                             <option value="retail" {{ ($tenant?->business_type ?? $settings['business_type'] ?? '') === 'retail' ? 'selected' : '' }}>Retalho, Supermercado & Loja</option>
@@ -95,7 +96,7 @@
                     <div>
                         <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Moeda Padrão</label>
                         <input type="text" name="default_currency" value="{{ $tenant?->currency ?? $settings['default_currency'] ?? 'MT' }}" 
-                               class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                               class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white {{ $theme['ring'] }} outline-none">
                     </div>
                 </div>
 
@@ -132,41 +133,41 @@
                         <div class="sm:col-span-2">
                             <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Nome Comercial da Empresa *</label>
                             <input type="text" name="company_name" value="{{ $tenant?->name ?? $settings['company_name'] ?? '' }}" required
-                                   class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                                   class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white {{ $theme['ring'] }} outline-none">
                         </div>
 
                         <div>
                             <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">NUIT (Número Fiscal)</label>
                             <input type="text" name="company_nuit" value="{{ $tenant?->nuit ?? $settings['company_nuit'] ?? '' }}"
                                    placeholder="Ex: 0049983822"
-                                   class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                                   class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white {{ $theme['ring'] }} outline-none">
                         </div>
 
                         <div>
                             <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Telefone Principal</label>
                             <input type="text" name="company_phone" value="{{ $tenant?->phone ?? $settings['company_phone'] ?? '' }}"
                                    placeholder="Ex: +258 84 724 0296"
-                                   class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                                   class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white {{ $theme['ring'] }} outline-none">
                         </div>
 
                         <div>
                             <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Email de Contacto</label>
                             <input type="email" name="company_email" value="{{ $tenant?->email ?? $settings['company_email'] ?? '' }}"
                                    placeholder="Ex: contacto@empresa.co.mz"
-                                   class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                                   class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white {{ $theme['ring'] }} outline-none">
                         </div>
 
                         <div>
                             <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Taxa de IVA Padrão (%)</label>
                             <input type="number" step="0.1" name="tax_rate" value="{{ $settings['tax_rate'] ?? '16' }}"
-                                   class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                                   class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white {{ $theme['ring'] }} outline-none">
                         </div>
 
                         <div class="sm:col-span-2">
                             <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Endereço da Sede</label>
                             <input type="text" name="company_address" value="{{ $tenant?->address ?? $settings['company_address'] ?? '' }}"
                                    placeholder="Ex: Av. Samora Machel nº 120, Cidade de Quelimane"
-                                   class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                                   class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white {{ $theme['ring'] }} outline-none">
                         </div>
                     </div>
                 </div>
@@ -181,13 +182,43 @@
                         <div class="sm:col-span-2">
                             <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Mensagem / Rodapé do Talão Térmico (80mm)</label>
                             <input type="text" name="receipt_footer" value="{{ $settings['receipt_footer'] ?? 'Obrigado pela preferência!' }}"
-                                   class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                                   class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white {{ $theme['ring'] }} outline-none">
                         </div>
 
                         <div>
                             <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Limite de Alerta de Stock Baixo (un)</label>
                             <input type="number" name="stock_alert_threshold" value="{{ $settings['stock_alert_threshold'] ?? '5' }}"
-                                   class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                                   class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white {{ $theme['ring'] }} outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Prefixo de Fatura</label>
+                            <input type="text" name="invoice_prefix" value="{{ $settings['invoice_prefix'] ?? 'FT' }}" maxlength="12"
+                                   class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white uppercase font-mono {{ $theme['ring'] }} outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Prefixo de Recibo</label>
+                            <input type="text" name="receipt_prefix" value="{{ $settings['receipt_prefix'] ?? 'REC' }}" maxlength="12"
+                                   class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white uppercase font-mono {{ $theme['ring'] }} outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Formato do Talão</label>
+                            <select name="receipt_paper_size" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white {{ $theme['ring'] }} outline-none">
+                                <option value="80mm" {{ ($settings['receipt_paper_size'] ?? '80mm') === '80mm' ? 'selected' : '' }}>80mm - POS térmico padrão</option>
+                                <option value="58mm" {{ ($settings['receipt_paper_size'] ?? '80mm') === '58mm' ? 'selected' : '' }}>58mm - POS compacto</option>
+                                <option value="A4" {{ ($settings['receipt_paper_size'] ?? '80mm') === 'A4' ? 'selected' : '' }}>A4 - Impressão documental</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Política de Stock Baixo</label>
+                            <select name="low_stock_policy" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white {{ $theme['ring'] }} outline-none">
+                                <option value="per_product" {{ ($settings['low_stock_policy'] ?? 'per_product') === 'per_product' ? 'selected' : '' }}>Por produto</option>
+                                <option value="per_branch" {{ ($settings['low_stock_policy'] ?? 'per_product') === 'per_branch' ? 'selected' : '' }}>Por filial</option>
+                                <option value="global" {{ ($settings['low_stock_policy'] ?? 'per_product') === 'global' ? 'selected' : '' }}>Limite global</option>
+                            </select>
                         </div>
 
                         <div class="space-y-3 pt-2">
@@ -225,4 +256,3 @@
 
 </div>
 @endsection
-

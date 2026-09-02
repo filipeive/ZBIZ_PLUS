@@ -18,6 +18,8 @@ use App\Services\Inventory\StockManagerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class POSController extends Controller
@@ -30,25 +32,25 @@ class POSController extends Controller
     /**
      * Tela Principal do POS.
      */
-    public function index(): View
+    public function index()
     {
-        $tenantId = auth()->user()?->tenant_id ?? current_tenant_id();
+        $tenantId = $this->resolveTenantId();
         $branchId = current_branch_id() ?? auth()->user()?->branch_id;
 
-        $categories = Category::withoutGlobalScopes()
+        $categories = Category::query()
             ->where('is_active', true)
             ->where('tenant_id', $tenantId)
             ->orderBy('name')
             ->get();
 
-        $customers = Customer::withoutGlobalScopes()
+        $customers = Customer::query()
             ->where('is_active', true)
             ->where('tenant_id', $tenantId)
             ->orderBy('name')
             ->limit(50)
             ->get();
 
-        $accounts = FinancialAccount::withoutGlobalScopes()
+        $accounts = FinancialAccount::query()
             ->where('is_active', true)
             ->where('tenant_id', $tenantId)
             ->get();
@@ -65,7 +67,11 @@ class POSController extends Controller
                 ->first();
         }
 
-        return view('pos.index', compact('categories', 'customers', 'accounts', 'activeShift', 'initialProducts'));
+        return response()
+            ->view('pos.index', compact('categories', 'customers', 'accounts', 'activeShift', 'initialProducts', 'tenantId', 'branchId'))
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
 
     /**
@@ -76,15 +82,19 @@ class POSController extends Controller
         $query = $request->input('q', '');
         $categoryId = $request->input('category_id');
         $type = $request->input('type', 'all');
-        $tenantId = auth()->user()?->tenant_id ?? current_tenant_id();
+        $tenantId = $this->resolveTenantId();
         $branchId = current_branch_id() ?? auth()->user()?->branch_id;
 
         $mapped = $this->fetchProductsList($query, $categoryId, $type, $tenantId, $branchId);
 
         return response()->json([
             'success'   => true,
+            'tenant_id' => $tenantId,
+            'branch_id' => $branchId,
             'products'  => $mapped,
-        ]);
+        ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
 
     /**
@@ -92,11 +102,7 @@ class POSController extends Controller
      */
     protected function fetchProductsList(?string $query, $categoryId, string $type, $tenantId, $branchId): array
     {
-        if (!$tenantId) {
-            return [];
-        }
-
-        $productsQuery = Product::withoutGlobalScopes()
+        $productsQuery = Product::query()
             ->where('is_active', true)
             ->where('tenant_id', $tenantId);
 
@@ -109,6 +115,15 @@ class POSController extends Controller
         }
 
         if (!empty($categoryId)) {
+            $categoryExists = Category::query()
+                ->where('tenant_id', $tenantId)
+                ->whereKey($categoryId)
+                ->exists();
+
+            if (!$categoryExists) {
+                return [];
+            }
+
             $productsQuery->where('category_id', $categoryId);
         }
 
@@ -121,7 +136,7 @@ class POSController extends Controller
                           ->whereRaw('stock_quantity <= min_stock_level');
         }
 
-        $products = $productsQuery->with('category')->orderBy('name')->limit(120)->get();
+        $products = $productsQuery->with('category')->orderBy('name')->limit(80)->get();
 
         return $products->map(function ($product) use ($branchId) {
             $stock = $this->stockService->getStock($product->id, $branchId);
@@ -156,12 +171,21 @@ class POSController extends Controller
      */
     public function storeSale(Request $request): JsonResponse
     {
+        $tenantId = $this->resolveTenantId();
+        $branchId = current_branch_id() ?? auth()->user()?->branch_id;
+
         $validated = $request->validate([
-            'customer_id'       => 'nullable|exists:customers,id',
+            'customer_id'       => [
+                'nullable',
+                Rule::exists('customers', 'id')->where('tenant_id', $tenantId),
+            ],
             'customer_name'     => 'nullable|string|max:150',
             'customer_nuit'     => 'nullable|string|max:15',
             'items'             => 'required|array|min:1',
-            'items.*.product_id'=> 'required|exists:products,id',
+            'items.*.product_id'=> [
+                'required',
+                Rule::exists('products', 'id')->where('tenant_id', $tenantId),
+            ],
             'items.*.quantity'  => 'required|numeric|min:0.01',
             'items.*.unit_price'=> 'required|numeric|min:0',
             'items.*.discount'  => 'nullable|numeric|min:0',
@@ -172,8 +196,7 @@ class POSController extends Controller
             'offline_id'        => 'nullable|string',
         ]);
 
-        return DB::transaction(function () use ($validated) {
-            $branchId = current_branch_id();
+        return DB::transaction(function () use ($validated, $tenantId, $branchId) {
             $userId = auth()->id();
 
             // 1. Calcular Totais
@@ -181,7 +204,9 @@ class POSController extends Controller
             $itemsData = [];
 
             foreach ($validated['items'] as $item) {
-                $product = Product::findOrFail($item['product_id']);
+                $product = Product::query()
+                    ->where('tenant_id', $tenantId)
+                    ->findOrFail($item['product_id']);
                 $qty = (float)$item['quantity'];
                 $price = (float)$item['unit_price'];
                 $itemDiscount = (float)($item['discount'] ?? 0);
@@ -207,14 +232,16 @@ class POSController extends Controller
             // 2. Resolver Cliente
             $customer = null;
             if (!empty($validated['customer_id'])) {
-                $customer = Customer::find($validated['customer_id']);
+                $customer = Customer::query()
+                    ->where('tenant_id', $tenantId)
+                    ->find($validated['customer_id']);
             }
 
             $customerName = $customer ? $customer->name : ($validated['customer_name'] ?? 'Cliente Avulso');
 
             // 3. Criar Venda
             $sale = Sale::create([
-                'tenant_id'       => current_tenant_id(),
+                'tenant_id'       => $tenantId,
                 'branch_id'       => $branchId,
                 'user_id'         => $userId,
                 'customer_id'     => $customer?->id,
@@ -232,7 +259,7 @@ class POSController extends Controller
             // 4. Criar Itens e Deduzir Stock
             foreach ($itemsData as $item) {
                 SaleItem::create([
-                    'tenant_id'      => current_tenant_id(),
+                    'tenant_id'      => $tenantId,
                     'branch_id'      => $branchId,
                     'sale_id'        => $sale->id,
                     'product_id'     => $item['product']->id,
@@ -261,7 +288,7 @@ class POSController extends Controller
             // 5. Se for venda a crédito (Fiado), gerar Dívida
             if ($validated['payment_method'] === 'credit') {
                 $debt = Debt::create([
-                    'tenant_id'        => current_tenant_id(),
+                    'tenant_id'        => $tenantId,
                     'branch_id'        => $branchId,
                     'user_id'          => $userId,
                     'customer_id'      => $customer?->id,
@@ -301,6 +328,10 @@ class POSController extends Controller
      */
     public function printReceipt(Sale $sale): View
     {
+        if ($sale->tenant_id !== $this->resolveTenantId()) {
+            abort(404);
+        }
+
         $sale->load(['items.product', 'user', 'branch', 'customer', 'tenant']);
         return view('pos.receipt', compact('sale'));
     }
@@ -335,5 +366,18 @@ class POSController extends Controller
             'success' => true,
             'results' => $synced,
         ]);
+    }
+
+    protected function resolveTenantId(): int
+    {
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+
+        if (!$tenantId) {
+            throw ValidationException::withMessages([
+                'tenant_id' => 'Tenant não identificado para esta operação POS.',
+            ]);
+        }
+
+        return (int)$tenantId;
     }
 }
