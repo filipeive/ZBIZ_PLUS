@@ -6,6 +6,17 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
+## [1.0.14] - 2026-09-02 - Isolamento Estrito de Tenant no POS, Vendas e Encomendas
+### Fixed
+- **Isolamento de Produtos no POS (`POSController.php` & `pos/index.blade.php`):**
+  - Reforçada a precedência do `auth()->user()->tenant_id` sobre o contexto de sessão em `POSController::index` e `POSController::searchProducts`.
+  - Adicionada blindagem em `fetchProductsList` para abortar imediatamente caso o identificador do tenant esteja indefinido ou vazio, eliminando qualquer vazamento de catálogo entre Farmácia e Reprografia.
+  - Ordenação alfabética e limite expandido de catálogo para o grid de PDV.
+- **Isolamento em Pesquisas de Produtos (`SaleController.php` & `OrderController.php`):**
+  - Injetado filtro estrito de `where('tenant_id', $tenantId)` nas rotas de busca assíncrona de artigos para emissão de vendas e encomendas.
+
+---
+
 ## [1.0.13] - 2026-09-01 - Correção das Movimentações de Stock Físico, Dashboard em Tempo Real e Cores Dinâmicas de Marca
 ### Fixed
 - **Movimentações de Stock & Rastreabilidade de Vendas (`Product.php`, `StockMovementController.php` & `stock_movements/index.blade.php`):**

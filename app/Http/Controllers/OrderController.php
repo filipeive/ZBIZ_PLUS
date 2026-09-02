@@ -712,21 +712,30 @@ class OrderController extends Controller
     public function searchProducts(Request $request)
     {
         $term = $request->get('term', $request->get('q', ''));
+        $tenantId = auth()->user()?->tenant_id ?? current_tenant_id();
 
-        $products = Product::where('is_active', true)
+        if (!$tenantId) {
+            return response()->json([]);
+        }
+
+        $products = Product::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('is_active', true)
             ->where(function ($query) use ($term) {
                 $query->where('name', 'like', '%' . $term . '%')
+                    ->orWhere('barcode', 'like', '%' . $term . '%')
+                    ->orWhere('sku', 'like', '%' . $term . '%')
                     ->orWhere('description', 'like', '%' . $term . '%');
             })
             ->with('category')
-            ->limit(10)
+            ->limit(20)
             ->get()
             ->map(function ($product) {
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
                     'description' => $product->description,
-                    'price' => $product->selling_price,
+                    'price' => (float)$product->selling_price,
                     'stock' => $product->stock_quantity,
                     'category' => $product->category->name ?? 'Sem categoria'
                 ];

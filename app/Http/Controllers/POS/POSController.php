@@ -32,7 +32,7 @@ class POSController extends Controller
      */
     public function index(): View
     {
-        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+        $tenantId = auth()->user()?->tenant_id ?? current_tenant_id();
         $branchId = current_branch_id() ?? auth()->user()?->branch_id;
 
         $categories = Category::withoutGlobalScopes()
@@ -76,7 +76,7 @@ class POSController extends Controller
         $query = $request->input('q', '');
         $categoryId = $request->input('category_id');
         $type = $request->input('type', 'all');
-        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+        $tenantId = auth()->user()?->tenant_id ?? current_tenant_id();
         $branchId = current_branch_id() ?? auth()->user()?->branch_id;
 
         $mapped = $this->fetchProductsList($query, $categoryId, $type, $tenantId, $branchId);
@@ -92,6 +92,10 @@ class POSController extends Controller
      */
     protected function fetchProductsList(?string $query, $categoryId, string $type, $tenantId, $branchId): array
     {
+        if (!$tenantId) {
+            return [];
+        }
+
         $productsQuery = Product::withoutGlobalScopes()
             ->where('is_active', true)
             ->where('tenant_id', $tenantId);
@@ -117,7 +121,7 @@ class POSController extends Controller
                           ->whereRaw('stock_quantity <= min_stock_level');
         }
 
-        $products = $productsQuery->with('category')->limit(80)->get();
+        $products = $productsQuery->with('category')->orderBy('name')->limit(120)->get();
 
         return $products->map(function ($product) use ($branchId) {
             $stock = $this->stockService->getStock($product->id, $branchId);
