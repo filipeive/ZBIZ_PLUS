@@ -56,6 +56,17 @@
                     class="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs placeholder:text-slate-500 focus:ring-1 focus:ring-emerald-500">
             </div>
 
+            @if(auth()->user()->isSuperAdmin() && !empty($tenants) && count($tenants) > 0 && !$isEmployeesView)
+                <select name="tenant_id" class="px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs" onchange="this.form.submit()">
+                    <option value="">Todas as Empresas</option>
+                    @foreach($tenants as $t)
+                        <option value="{{ $t->id }}" {{ request('tenant_id') == $t->id ? 'selected' : '' }}>
+                            {{ $t->name }}
+                        </option>
+                    @endforeach
+                </select>
+            @endif
+
             @unless($isEmployeesView)
                 <select name="role" class="px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs" onchange="this.form.submit()">
                     <option value="">Todas as Funções</option>
@@ -76,7 +87,7 @@
             <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
                 Filtrar
             </button>
-            @if(request()->hasAny(['search', 'role', 'status']))
+            @if(request()->hasAny(['search', 'role', 'status', 'tenant_id']))
                 <a href="{{ $clearAction }}" class="px-3 py-2 text-slate-400 hover:text-white text-xs">Limpar</a>
             @endif
         </form>
@@ -100,6 +111,9 @@
                 <thead>
                     <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider">
                         <th class="pb-3">Utilizador</th>
+                        @if(auth()->user()->isSuperAdmin() && !$isEmployeesView)
+                            <th class="pb-3">Empresa / Tenant</th>
+                        @endif
                         @if($isEmployeesView)
                             <th class="pb-3">Cargo & Doc.</th>
                             <th class="pb-3">Salário Base</th>
@@ -122,6 +136,20 @@
                                     </div>
                                 </div>
                             </td>
+                            @if(auth()->user()->isSuperAdmin() && !$isEmployeesView)
+                                <td class="py-3.5">
+                                    @if($user->isSuperAdmin())
+                                        <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-violet-500/10 text-violet-400 border border-violet-500/30 inline-flex items-center gap-1">
+                                            <i class="fa-solid fa-crown text-[9px]"></i> Global SaaS
+                                        </span>
+                                    @elseif($user->tenant)
+                                        <div class="font-bold text-slate-200">{{ $user->tenant->name }}</div>
+                                        <div class="text-[10px] text-slate-500 font-mono">{{ $user->tenant->slug }}</div>
+                                    @else
+                                        <span class="text-slate-500">Sem Empresa</span>
+                                    @endif
+                                </td>
+                            @endif
                             @if($isEmployeesView)
                                 <td class="py-3.5">
                                     <div class="font-semibold text-slate-200">{{ $user->job_title ?: '-' }}</div>

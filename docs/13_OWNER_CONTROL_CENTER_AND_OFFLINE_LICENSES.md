@@ -39,25 +39,22 @@ A tabela `subscriptions` continua a representar o ciclo comercial online:
 
 O middleware `subscription` bloqueia escrita quando a subscrição ou licença expira, mantendo leitura em modo somente-leitura.
 
-### Licença
+### Licença de Software & Chave Serial
 
-A tabela `license_keys` guarda o histórico das chaves emitidas:
+A tabela `license_keys` guarda o histórico das chaves emitidas e o código legível da licença:
 
-- tenant;
-- plano;
-- modo de instalação;
-- validade;
-- hash da chave;
-- assinatura;
-- estado: `issued`, `active`, `revoked`, `expired`.
+- `key_code`: Código serial amigável no formato padrão de software `ZBIZ-XXXX-XXXX-XXXX-XXXX` (ex: `ZBIZ-4F92-K81M-Q7P3-9A2E`);
+- `key_hash`: Hash SHA-256 da chave / token;
+- `tenant_id`: Empresa / Tenant destinatário;
+- `plan_id`: Plano contratado;
+- `mode`: Modo de instalação (`cloud`, `local_online`, `offline`);
+- `validade`: Datas de início e expiração (`starts_at` e `expires_at`);
+- `signature`: Assinatura digital HMAC para validação criptográfica offline;
+- `status`: `issued`, `active`, `revoked`, `expired`.
 
-A chave entregue ao cliente é um token:
-
-```text
-base64url(payload).assinatura_hmac
-```
-
-O payload inclui tenant, plano, features, limites e datas. A assinatura usa `LICENSE_SIGNING_KEY`, permitindo validação offline sem consultar o servidor central.
+A ativação do software suporta dois formatos transparentes:
+1. **Chave Serial Humana**: `ZBIZ-XXXX-XXXX-XXXX-XXXX` (fácil de digitar ou copiar para o cliente);
+2. **Certificado Assinado Completo**: `base64url(payload).assinatura_hmac` para instalações em modo air-gapped rigoroso sem acesso à rede.
 
 ## Fluxo Cloud
 

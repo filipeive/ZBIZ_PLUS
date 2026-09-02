@@ -177,4 +177,52 @@ class LicenseControlCenterTest extends TestCase
         $this->assertSame('active', $tenant->fresh()->license_status);
         $this->assertSame(1, LicenseKey::count());
     }
+
+    public function test_activation_accepts_software_serial_key_format(): void
+    {
+        config(['license.signing_key' => 'testing-license-secret']);
+        $this->seed(PlanSeeder::class);
+
+        $tenant = Tenant::create([
+            'name' => 'Instalação Serial Key',
+            'slug' => 'instalacao-serial-key',
+            'business_type' => 'pharmacy',
+            'status' => 'trial',
+        ]);
+        $branch = Branch::create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Sede',
+            'code' => 'SEDE',
+            'is_active' => true,
+            'is_main' => true,
+        ]);
+        $role = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        $user = User::create([
+            'tenant_id' => $tenant->id,
+            'branch_id' => $branch->id,
+            'name' => 'Admin Farmacia',
+            'email' => 'admin-farmacia-key@test.com',
+            'password' => bcrypt('password'),
+            'role_id' => $role->id,
+            'is_active' => true,
+        ]);
+
+        $issued = app(LicenseService::class)->issue(
+            $tenant,
+            Plan::where('slug', 'enterprise')->firstOrFail(),
+            now(),
+            now()->addYear(),
+            'offline'
+        );
+
+        $this->assertNotEmpty($issued['key_code']);
+        $this->assertMatchesRegularExpression('/^ZBIZ-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/', $issued['key_code']);
+
+        $this->actingAs($user)
+            ->post(route('license.activate.store'), ['license_key' => $issued['key_code']])
+            ->assertRedirect(route('dashboard.index'));
+
+        $this->assertSame('active', $tenant->fresh()->license_status);
+        $this->assertSame('offline', $tenant->fresh()->installation_mode);
+    }
 }

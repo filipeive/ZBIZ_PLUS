@@ -16,6 +16,24 @@ use RuntimeException;
 
 class LicenseService
 {
+    public function generateSoftwareLicenseKey(): string
+    {
+        do {
+            $blocks = [];
+            for ($i = 0; $i < 4; $i++) {
+                $block = '';
+                $chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+                for ($j = 0; $j < 4; $j++) {
+                    $block .= $chars[random_int(0, strlen($chars) - 1)];
+                }
+                $blocks[] = $block;
+            }
+            $keyCode = 'ZBIZ-' . implode('-', $blocks);
+        } while (LicenseKey::where('key_code', $keyCode)->exists());
+
+        return $keyCode;
+    }
+
     public function issue(
         Tenant $tenant,
         Plan $plan,
@@ -33,10 +51,13 @@ class LicenseService
             throw new InvalidArgumentException('A data de expiração deve ser posterior à data de início.');
         }
 
+        $keyCode = $this->generateSoftwareLicenseKey();
+
         $payload = [
             'issuer' => config('license.issuer'),
             'version' => 1,
             'mode' => $mode,
+            'key_code' => $keyCode,
             'tenant' => [
                 'id' => $tenant->id,
                 'slug' => $tenant->slug,
@@ -66,6 +87,7 @@ class LicenseService
             'tenant_id' => $tenant->id,
             'plan_id' => $plan->id,
             'issued_by_user_id' => $issuer?->id,
+            'key_code' => $keyCode,
             'key_hash' => hash('sha256', $token),
             'mode' => $mode,
             'status' => 'issued',
@@ -77,12 +99,52 @@ class LicenseService
             'notes' => $notes,
         ]);
 
-        return ['license' => $license, 'token' => $token, 'payload' => $payload];
+        return ['license' => $license, 'token' => $token, 'key_code' => $keyCode, 'payload' => $payload];
     }
 
-    public function verifyToken(string $token): array
+    public function verifyToken(string $tokenOrKey): array
     {
-        [$body, $signature] = $this->splitToken($token);
+        $tokenOrKey = trim($tokenOrKey);
+
+        // Se for uma chave no formato ZBIZ-XXXX-XXXX-XXXX-XXXX
+        if (preg_match('/^ZBIZ-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/i', $tokenOrKey)) {
+            $license = LicenseKey::where('key_code', strtoupper($tokenOrKey))->first();
+            if (!$license) {
+                throw new RuntimeException('Chave de licença não encontrada ou inválida.');
+            }
+            if ($license->status === 'revoked') {
+                throw new RuntimeException('Esta chave de licença foi revogada pelo administrador.');
+            }
+
+            $payload = $license->payload ?? [
+                'tenant' => ['id' => $license->tenant_id, 'slug' => $license->tenant?->slug, 'name' => $license->tenant?->name],
+                'plan' => ['id' => $license->plan_id, 'slug' => $license->plan?->slug, 'name' => $license->plan?->name],
+                'starts_at' => $license->starts_at?->toIso8601String(),
+                'expires_at' => $license->expires_at?->toIso8601String(),
+                'mode' => $license->mode,
+            ];
+
+            $startsAt = Carbon::parse($payload['starts_at'] ?? $license->starts_at);
+            $expiresAt = Carbon::parse($payload['expires_at'] ?? $license->expires_at);
+            $skew = (int) config('license.clock_skew_minutes', 10);
+
+            if ($startsAt->greaterThan(now()->addMinutes($skew))) {
+                throw new RuntimeException('Licença ainda não está ativa.');
+            }
+
+            if ($expiresAt->lessThan(now()->subMinutes($skew))) {
+                throw new RuntimeException('Licença expirada.');
+            }
+
+            return [
+                'payload' => $payload,
+                'signature' => $license->signature ?? '',
+                'key_hash' => $license->key_hash,
+                'key_code' => $license->key_code,
+            ];
+        }
+
+        [$body, $signature] = $this->splitToken($tokenOrKey);
 
         if (!hash_equals($this->sign($body), $signature)) {
             throw new RuntimeException('Licença inválida ou adulterada.');
@@ -108,7 +170,8 @@ class LicenseService
         return [
             'payload' => $payload,
             'signature' => $signature,
-            'key_hash' => hash('sha256', $token),
+            'key_hash' => hash('sha256', $tokenOrKey),
+            'key_code' => data_get($payload, 'key_code'),
         ];
     }
 

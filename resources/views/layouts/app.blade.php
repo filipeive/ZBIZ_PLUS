@@ -497,7 +497,7 @@
         }
 
         html.light .bg-slate-950 {
-            background-color: #f1f5f9 !important;
+            background-color: #f8fafc !important;
             color: #0f172a !important;
         }
 
@@ -522,7 +522,7 @@
         html.light .bg-slate-800\/80,
         html.light .bg-slate-800\/60,
         html.light .bg-slate-800\/50 {
-            background-color: #e2e8f0 !important;
+            background-color: #f1f5f9 !important;
             color: #1e293b !important;
         }
 
@@ -543,7 +543,7 @@
             border-color: #e2e8f0 !important;
         }
 
-        html.light .text-white,
+        /* Dynamic text contrast without breaking bright buttons and badges */
         html.light .text-slate-100,
         html.light .text-slate-200 {
             color: #0f172a !important;
@@ -725,12 +725,38 @@
                 <nav class="p-4 space-y-5 text-xs font-medium">
                     @if($isOwnerConsole)
                     <div>
-                        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Gestão SaaS</div>
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Painel do Dono (SaaS)</div>
                         <div class="space-y-1">
                             <a href="{{ route('owner.tenants.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('owner.tenants.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-building-shield w-4 text-center {{ request()->routeIs('owner.tenants.*') ? $theme['text_accent'] : '' }}"></i>
-                                <span>Tenants & Clientes</span>
+                                <span>Tenants &amp; Clientes</span>
+                            </a>
+                            <a href="{{ route('license.activate') }}"
+                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('license.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
+                                <i class="fa-solid fa-key w-4 text-center {{ request()->routeIs('license.*') ? $theme['text_accent'] : '' }}"></i>
+                                <span>Validar / Ativar Licença</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Administração Global</div>
+                        <div class="space-y-1">
+                            <a href="{{ route('users.index') }}"
+                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('users.index') || request()->routeIs('users.show') || request()->routeIs('users.edit') || request()->routeIs('users.create') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
+                                <i class="fa-solid fa-users-gear w-4 text-center {{ request()->routeIs('users.*') ? $theme['text_accent'] : '' }}"></i>
+                                <span>Todos os Utilizadores</span>
+                            </a>
+                            <a href="{{ route('users.activity') }}"
+                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('users.activity') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
+                                <i class="fa-solid fa-clock-rotate-left w-4 text-center {{ request()->routeIs('users.activity') ? $theme['text_accent'] : '' }}"></i>
+                                <span>Auditoria & Atividades</span>
+                            </a>
+                            <a href="{{ route('admin.settings') }}"
+                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('admin.settings*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
+                                <i class="fa-solid fa-sliders w-4 text-center {{ request()->routeIs('admin.settings*') ? $theme['text_accent'] : '' }}"></i>
+                                <span>Definições do Sistema</span>
                             </a>
                         </div>
                     </div>

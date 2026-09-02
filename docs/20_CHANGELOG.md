@@ -6,6 +6,23 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
+## [1.0.17] - 2026-09-02 - Reformulação do Painel do Dono (Owner), Chaves Seriais de Software e Correção de Temas Light/Dark
+### Added & Improved
+- **Menu Dedicado e Especializado para o Dono / Super Admin (`layouts/app.blade.php`):**
+  - Removidos menus operacionais específicos de tenant (PDV, catálogo de produtos, vendas locais) da visão do Dono.
+  - Estruturada a navegação exclusiva para gestão SaaS: **Tenants & Clientes**, **Validação & Ativação de Licenças**, **Todos os Utilizadores Globais**, **Auditoria & Atividades**, **Definições do Sistema** e **Perfil do Owner**.
+- **Chaves de Licença em Formato Padrão de Software (`LicenseService.php`, `LicenseKey.php`, `license/activate.blade.php` e `owner/tenants/show.blade.php`):**
+  - Implementada geração automática de Chaves Seriais legíveis no formato `ZBIZ-XXXX-XXXX-XXXX-XXXX` (ex: `ZBIZ-4F92-K81M-Q7P3-9A2E`).
+  - Suporte de dupla ativação: tanto pelo código serial legível quanto pelo certificado token assinado criptograficamente.
+  - Cartão de emissão de licença com feedback interativo em tempo real e botão de cópia instantânea.
+- **Gestão Global de Utilizadores com Filtro por Empresa (`UserController.php` e `users/index.blade.php`):**
+  - Para o Super Admin, a listagem de utilizadores agora exibe a coluna **Empresa / Tenant** com badge identificador (Global SaaS vs Empresa específica) e filtro seletivo por tenant.
+- **Correção da Inconsistência de Cores nos Temas Light e Dark (`layouts/app.blade.php`):**
+  - Eliminada sobreposição agressiva de `text-white` que forçava textos em botões, badges e fundos escuros a ficarem pretos no modo claro.
+  - Harmonizado o contraste tipográfico através de `var(--app-text)` e regras de preservação para elementos de alto contraste.
+
+---
+
 ## [1.0.16] - 2026-09-02 - Suporte Universal a Registo e Venda de Serviços para Todas as Empresas (Farmácias, Retalho, Gráfica)
 ### Added & Improved
 - **Flexibilização do Módulo de Catálogo & Serviços (`ProductController.php`, `products/create.blade.php`, `products/edit.blade.php` e `products/index.blade.php`):**
