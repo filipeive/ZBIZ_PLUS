@@ -127,7 +127,7 @@
                     <?php $__empty_1 = true; $__currentLoopData = $tenants; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $tenant): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                         <?php
                             $subscription = $tenant->currentSubscription;
-                            $latestLicense = $tenant->licenseKeys->first();
+                            $latestLicense = $tenant->latestLicenseKey;
                             $statusClass = match($tenant->status) {
                                 'active' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
                                 'trial' => 'bg-sky-500/10 text-sky-400 border-sky-500/30',

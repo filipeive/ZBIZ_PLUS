@@ -26,7 +26,7 @@ class TenantControlCenterController extends Controller
         $this->authorizeOwner();
 
         $tenants = Tenant::query()
-            ->with(['currentSubscription.plan', 'licenseKeys' => fn ($query) => $query->latest()])
+            ->with(['currentSubscription.plan', 'latestLicenseKey'])
             ->withCount(['branches', 'users', 'products'])
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->string('search');

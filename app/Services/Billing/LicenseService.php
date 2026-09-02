@@ -61,11 +61,13 @@ class LicenseService
         $body = $this->base64UrlEncode(json_encode($payload, JSON_UNESCAPED_SLASHES));
         $signature = $this->sign($body);
         $token = $body . '.' . $signature;
+        $keyCode = $this->generateSoftwareLicenseKey();
 
         $license = LicenseKey::create([
             'tenant_id' => $tenant->id,
             'plan_id' => $plan->id,
             'issued_by_user_id' => $issuer?->id,
+            'key_code' => $keyCode,
             'key_hash' => hash('sha256', $token),
             'mode' => $mode,
             'status' => 'issued',
@@ -77,12 +79,50 @@ class LicenseService
             'notes' => $notes,
         ]);
 
-        return ['license' => $license, 'token' => $token, 'payload' => $payload];
+        return ['license' => $license, 'token' => $token, 'key_code' => $keyCode, 'payload' => $payload];
     }
 
-    public function verifyToken(string $token): array
+    public function generateSoftwareLicenseKey(): string
     {
-        [$body, $signature] = $this->splitToken($token);
+        do {
+            $parts = [];
+            for ($i = 0; $i < 4; $i++) {
+                $parts[] = strtoupper(Str::random(4));
+            }
+            $keyCode = 'ZBIZ-' . implode('-', $parts);
+        } while (LicenseKey::where('key_code', $keyCode)->exists());
+
+        return $keyCode;
+    }
+
+    public function verifyToken(string $tokenOrKey): array
+    {
+        $tokenOrKey = trim($tokenOrKey);
+
+        if (preg_match('/^ZBIZ-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/i', $tokenOrKey)) {
+            $license = LicenseKey::where('key_code', strtoupper($tokenOrKey))->first();
+            if (!$license || $license->status === 'revoked') {
+                throw new RuntimeException('Chave serial de licença inválida ou revogada.');
+            }
+
+            if ($license->expires_at && $license->expires_at->isPast()) {
+                throw new RuntimeException('Chave de licença expirada.');
+            }
+
+            return [
+                'payload' => $license->payload ?? [
+                    'tenant' => ['id' => $license->tenant_id],
+                    'plan' => ['id' => $license->plan_id],
+                    'starts_at' => $license->starts_at?->toIso8601String(),
+                    'expires_at' => $license->expires_at?->toIso8601String(),
+                ],
+                'signature' => $license->signature,
+                'key_hash' => $license->key_hash,
+                'license_model' => $license,
+            ];
+        }
+
+        [$body, $signature] = $this->splitToken($tokenOrKey);
 
         if (!hash_equals($this->sign($body), $signature)) {
             throw new RuntimeException('Licença inválida ou adulterada.');
@@ -108,7 +148,7 @@ class LicenseService
         return [
             'payload' => $payload,
             'signature' => $signature,
-            'key_hash' => hash('sha256', $token),
+            'key_hash' => hash('sha256', $tokenOrKey),
         ];
     }
 

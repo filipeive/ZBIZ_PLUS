@@ -129,7 +129,7 @@
                     @forelse($tenants as $tenant)
                         @php
                             $subscription = $tenant->currentSubscription;
-                            $latestLicense = $tenant->licenseKeys->first();
+                            $latestLicense = $tenant->latestLicenseKey;
                             $statusClass = match($tenant->status) {
                                 'active' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
                                 'trial' => 'bg-sky-500/10 text-sky-400 border-sky-500/30',

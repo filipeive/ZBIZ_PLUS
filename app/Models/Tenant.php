@@ -76,6 +76,11 @@ class Tenant extends Model
         return $this->hasMany(LicenseKey::class);
     }
 
+    public function latestLicenseKey(): HasOne
+    {
+        return $this->hasOne(LicenseKey::class)->latestOfMany();
+    }
+
     
     public function activeSubscription(): ?Subscription
     {
