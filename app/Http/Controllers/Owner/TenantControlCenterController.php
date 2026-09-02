@@ -61,7 +61,7 @@ class TenantControlCenterController extends Controller
             'total_users' => User::count(),
             'total_branches' => Branch::count(),
             'total_licenses' => LicenseKey::count(),
-            'active_licenses' => LicenseKey::where('status', 'active')->count(),
+            'active_licenses' => LicenseKey::whereIn('status', ['active', 'issued'])->count(),
             'mrr' => (float) $mrr,
             'arr' => (float) ($mrr * 12),
         ];
@@ -167,12 +167,23 @@ class TenantControlCenterController extends Controller
     {
         $this->authorizeOwner();
 
-        session(['current_tenant_id' => $tenant->id]);
+        session([
+            'is_support_mode' => true,
+            'support_mode_tenant_id' => $tenant->id,
+            'current_tenant_id' => $tenant->id,
+        ]);
         $mainBranch = $tenant->branches()->where('is_main', true)->first() ?? $tenant->branches()->first();
         session(['current_branch_id' => $mainBranch?->id]);
 
         return redirect()->route('dashboard.index')
-            ->with('success', "A aceder ao ambiente da empresa: {$tenant->name} (Modo Suporte)");
+            ->with('success', "A aceder ao ambiente da empresa: {$tenant->name} (Modo Suporte Técnico)");
+    }
+
+    public function leaveImpersonate(): RedirectResponse
+    {
+        session()->forget(['is_support_mode', 'support_mode_tenant_id', 'current_tenant_id', 'current_branch_id']);
+        return redirect()->route('owner.tenants.index')
+            ->with('success', 'Saiu do modo de suporte. De volta ao painel do dono.');
     }
 
     public function certificate(Tenant $tenant, LicenseKey $license): View
@@ -231,21 +242,31 @@ class TenantControlCenterController extends Controller
         ]);
 
         if (!empty($validated['plan_id'])) {
-            Subscription::updateOrCreate(
-                ['tenant_id' => $tenant->id, 'plan_id' => $validated['plan_id']],
-                [
-                    'status' => $validated['status'] === 'trial' ? 'trialing' : ($validated['status'] === 'active' ? 'active' : 'suspended'),
-                    'trial_starts_at' => $validated['status'] === 'trial' ? now() : null,
-                    'trial_ends_at' => $validated['status'] === 'trial' ? Carbon::parse($validated['license_expires_at'] ?? now()->addDays(30)) : null,
-                    'current_period_starts_at' => $validated['status'] === 'active' ? now() : null,
-                    'current_period_ends_at' => $validated['license_expires_at'] ? Carbon::parse($validated['license_expires_at']) : null,
+            $subscription = Subscription::where('tenant_id', $tenant->id)->latest()->first();
+            $subStatus = $validated['status'] === 'trial' ? 'trialing' : ($validated['status'] === 'active' ? 'active' : 'suspended');
+            $periodEnd = $validated['license_expires_at'] ? Carbon::parse($validated['license_expires_at']) : now()->addYear();
+
+            if ($subscription) {
+                $subscription->update([
+                    'plan_id' => $validated['plan_id'],
+                    'status' => $subStatus,
+                    'current_period_starts_at' => now(),
+                    'current_period_ends_at' => $periodEnd,
+                ]);
+            } else {
+                Subscription::create([
+                    'tenant_id' => $tenant->id,
+                    'plan_id' => $validated['plan_id'],
+                    'status' => $subStatus,
+                    'current_period_starts_at' => now(),
+                    'current_period_ends_at' => $periodEnd,
                     'payment_method' => 'manual',
                     'last_payment_reference' => 'OWNER-PANEL',
-                ]
-            );
+                ]);
+            }
         }
 
-        return redirect()->route('owner.tenants.show', $tenant)->with('success', 'Tenant atualizado com sucesso.');
+        return redirect()->route('owner.tenants.show', $tenant)->with('success', 'Tenant e plano atualizados com sucesso.');
     }
 
     public function issueLicense(Request $request, Tenant $tenant, LicenseService $licenses): RedirectResponse
@@ -273,10 +294,40 @@ class TenantControlCenterController extends Controller
             $validated['notes'] ?? null
         );
 
+        // Synchronize tenant and subscription to active
+        $tenant->update([
+            'status' => 'active',
+            'license_status' => 'active',
+            'installation_mode' => $validated['mode'],
+            'license_expires_at' => Carbon::parse($validated['expires_at']),
+            'subscription_ends_at' => Carbon::parse($validated['expires_at']),
+        ]);
+
+        $subscription = Subscription::where('tenant_id', $tenant->id)->latest()->first();
+        if ($subscription) {
+            $subscription->update([
+                'plan_id' => $plan->id,
+                'status' => 'active',
+                'current_period_starts_at' => Carbon::parse($validated['starts_at']),
+                'current_period_ends_at' => Carbon::parse($validated['expires_at']),
+            ]);
+        } else {
+            Subscription::create([
+                'tenant_id' => $tenant->id,
+                'plan_id' => $plan->id,
+                'status' => 'active',
+                'current_period_starts_at' => Carbon::parse($validated['starts_at']),
+                'current_period_ends_at' => Carbon::parse($validated['expires_at']),
+                'payment_method' => 'manual',
+                'last_payment_reference' => 'LICENSE-ISSUANCE',
+            ]);
+        }
+
         return redirect()
             ->route('owner.tenants.show', $tenant)
-            ->with('success', 'Licença emitida com sucesso.')
-            ->with('issued_license_token', $issued['token']);
+            ->with('success', 'Licença emitida e plano ativado com sucesso.')
+            ->with('issued_license_token', $issued['token'])
+            ->with('issued_license_key_code', $issued['key_code']);
     }
 
     public function revokeLicense(Tenant $tenant, LicenseKey $license, LicenseService $licenses): RedirectResponse

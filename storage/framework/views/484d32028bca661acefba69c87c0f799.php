@@ -9,7 +9,7 @@
         $theme = tenant_theme();
         $tenant = current_tenant();
         $branch = current_branch();
-        $isOwnerConsole = auth()->user()?->isSuperAdmin();
+        $isOwnerConsole = auth()->user()?->isSuperAdmin() && !session('is_support_mode');
         $subscription = $tenant?->activeSubscription();
         $allTenantBranches = $tenant ? $tenant->branches()->where('is_active', true)->orderByDesc('is_main')->get() : collect();
     ?>
@@ -658,6 +658,24 @@
           }
       }">
 
+    <!-- Support Mode Banner for Super Admin -->
+    <?php if(session('is_support_mode')): ?>
+    <div class="bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 px-5 py-2 flex items-center justify-between shadow-xl relative z-50 text-xs font-bold border-b border-amber-300">
+        <div class="flex items-center gap-2.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-slate-950 animate-ping"></span>
+            <i class="fa-solid fa-headset text-slate-950 text-sm"></i>
+            <span><strong>MODO SUPORTE TÉCNICO ATIVO:</strong> A operar na empresa <span class="underline font-black"><?php echo e($tenant?->name ?? 'Cliente'); ?></span> (Filial: <?php echo e($branch?->name ?? 'Sede'); ?>).</span>
+        </div>
+        <form method="POST" action="<?php echo e(route('owner.tenants.leave-impersonate')); ?>" class="inline">
+            <?php echo csrf_field(); ?>
+            <button type="submit" class="px-3.5 py-1 bg-slate-950 text-amber-300 hover:bg-slate-900 rounded-xl text-xs font-black transition flex items-center gap-1.5 shadow-md">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Sair do Suporte & Voltar ao Owner</span>
+            </button>
+        </form>
+    </div>
+    <?php endif; ?>
+
     <!-- Background Ambient Glow -->
     <div class="fixed inset-0 pointer-events-none z-0" style="background: radial-gradient(circle at 15% 15%, <?php echo e($theme['glow']); ?> 0%, transparent 40%), radial-gradient(circle at 85% 85%, rgba(30, 41, 59, 0.4) 0%, transparent 50%);"></div>
 
@@ -680,7 +698,7 @@
                             <?php if(!empty($theme['logo_url'])): ?>
                                 <img src="<?php echo e($theme['logo_url']); ?>" alt="Logo" class="w-full h-full object-contain p-1 bg-white/10">
                             <?php else: ?>
-                                <i class="fa-solid fa-bolt text-slate-950 text-lg font-black"></i>
+                                <i class="fa-solid fa-bolt text-white text-lg font-black drop-shadow"></i>
                             <?php endif; ?>
                         </div>
                         <div>
@@ -710,12 +728,12 @@
                 <?php if(!$isOwnerConsole && tenant_has_feature('pos') && (auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin() || auth()->user()->hasPermission('create_sales'))): ?>
                 <div class="px-4 py-3 border-b border-slate-800/80">
                     <a href="<?php echo e(route('pos.index')); ?>" 
-                       class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> hover:opacity-95 text-slate-950 font-bold transition shadow-lg">
+                       class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> hover:opacity-95 text-white font-bold transition shadow-lg shadow-emerald-500/10 border border-white/20">
                         <div class="flex items-center space-x-2.5">
-                            <i class="fa-solid fa-cash-register text-base"></i>
-                            <span>ZBIZ POS 2.0</span>
+                            <i class="fa-solid fa-cash-register text-base text-white"></i>
+                            <span class="text-white font-black text-xs tracking-wide">ZBIZ POS 2.0</span>
                         </div>
-                        <span class="text-[10px] uppercase bg-slate-950/20 px-2 py-0.5 rounded-md font-extrabold tracking-wider">
+                        <span class="text-[9px] uppercase bg-black/25 text-white border border-white/30 px-2 py-0.5 rounded-md font-black tracking-wider">
                             FRENTE CAIXA
                         </span>
                     </a>

@@ -25,7 +25,7 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        if ($user?->isSuperAdmin()) {
+        if ($user?->isSuperAdmin() && !session('is_support_mode')) {
             return redirect()->route('owner.tenants.index');
         }
 
