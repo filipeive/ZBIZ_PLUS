@@ -55,15 +55,17 @@ class RestaurantTableController extends Controller
         try {
             DB::beginTransaction();
 
+            $tableName = str_starts_with(mb_strtolower(trim($table->name)), 'mesa') ? trim($table->name) : 'Mesa ' . trim($table->name);
+
             $order = Order::create([
                 'tenant_id' => current_tenant_id(),
                 'branch_id' => current_branch_id(),
                 'restaurant_table_id' => $table->id,
                 'user_id' => auth()->id(),
-                'customer_name' => 'Mesa ' . $table->name,
-                'description' => 'Consumo na mesa ' . $table->name,
+                'customer_name' => $tableName,
+                'description' => 'Consumo na ' . $tableName,
                 'status' => 'pending',
-                'payment_status' => 'unpaid',
+                'payment_status' => 'pending',
                 'priority' => 'medium',
                 'estimated_amount' => 0.00,
                 'advance_payment' => 0.00,

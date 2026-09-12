@@ -8,7 +8,7 @@
 @endphp
 
 @section('content')
-<div class="space-y-6" x-data="{ showModal: false, viewMode: 'grid' }">
+<div class="space-y-6" x-data="{ showModal: false, viewMode: window.innerWidth < 768 ? 'grid' : (localStorage.getItem('preferredViewMode') || 'grid') }">
     
     <!-- Top Action & Filter Bar -->
     <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl space-y-4">
