@@ -87,7 +87,7 @@
                     <i class="fa-solid fa-file-invoice-dollar"></i> Folha Salarial
                 </a>
             @endif
-            <a href="{{ route('users.create', $isEmployeesView ? ['role' => 'staff'] : []) }}" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
+            <a href="{{ route('users.create', $isEmployeesView ? ['role' => 'staff'] : []) }}" class="px-4 py-2.5 rounded-2xl {{ $theme['btn'] }} text-xs hover:scale-105 active:scale-95 transition flex items-center gap-2">
                 <i class="fa-solid fa-user-plus"></i> {{ $isEmployeesView ? 'Novo Colaborador' : 'Novo Utilizador' }}
             </a>
         </div>

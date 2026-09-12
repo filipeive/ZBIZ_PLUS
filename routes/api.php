@@ -29,6 +29,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     // AUTHENTICATION (PUBLIC)
     // ==========================================
     Route::prefix('auth')->name('auth.')->group(function () {
+        Route::get('/login', function (\Illuminate\Http\Request $request) {
+            if ($request->expectsJson() || str_contains($request->header('Accept', ''), 'json')) {
+                return response()->json([
+                    'message' => 'O método GET não é suportado para autenticação na API. Utilize POST com email e password.'
+                ], 405);
+            }
+            return redirect()->route('login');
+        });
         Route::post('/login', [AuthController::class, 'login'])->name('login');
         Route::post('/register', [AuthController::class, 'register'])->name('register');
         Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->name('forgot-password');
@@ -297,7 +305,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::prefix('public')->name('public.')->group(function () {
         Route::get('/products/featured', [ProductController::class, 'featured'])->name('products.featured');
         Route::get('/categories/active', [CategoryController::class, 'active'])->name('categories.active');
-        Route::get('/business/info', [App\Http\Controllers\Api\V1\BusinessController::class, 'info'])->name('business.info');
+        Route::get('/business/info', [App\Http\Controllers\Api\V1\BusinessController::class, 'businessInfo'])->name('business.info');
     });
 });
 

@@ -86,7 +86,7 @@
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
                         <button type="button" @click="copyToClipboard('{{ session('issued_license_key_code') }}', false)" 
-                                class="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs hover:bg-emerald-400 transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
+                                class="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition flex items-center justify-center gap-2 shadow-md">
                             <i class="fa-solid" :class="copiedKey ? 'fa-check' : 'fa-copy'"></i>
                             <span x-text="copiedKey ? 'Chave Copiada!' : 'Copiar Chave Serial'"></span>
                         </button>
@@ -160,7 +160,7 @@
                 <label class="space-y-1">
                     <span class="text-[10px] uppercase text-slate-400 font-bold">Modo de Instalação *</span>
                     <select name="installation_mode" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs">
-                        @foreach(['cloud' => '☁️ Cloud SaaS (Nuvem)', 'local_online' => '🌐 Local com Internet', 'offline' => '🔒 Local Offline (Sem Internet)'] as $value => $label)
+                        @foreach(['cloud' => 'Cloud SaaS (Nuvem)', 'local_online' => 'Local com Internet', 'offline' => 'Local Offline (Sem Internet)'] as $value => $label)
                             <option value="{{ $value }}" {{ old('installation_mode', $tenant->installation_mode ?? 'cloud') === $value ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
@@ -181,7 +181,7 @@
                     </select>
                 </label>
             </div>
-            <button class="px-5 py-2.5 rounded-xl bg-gradient-to-r {{ tenant_theme()['gradient'] }} text-slate-950 font-black text-xs shadow-lg transition">
+            <button class="px-5 py-2.5 rounded-xl {{ tenant_theme()['btn'] }} text-xs hover:scale-105 transition">
                 Guardar Alterações do Tenant
             </button>
         </form>

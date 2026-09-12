@@ -117,7 +117,7 @@
                 <a href="{{ route('debts.show', $debt) }}" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
                     Cancelar
                 </a>
-                <button type="submit" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg transition flex items-center gap-2">
+                <button type="submit" class="px-5 py-2.5 rounded-2xl {{ $theme['btn'] }} text-xs transition flex items-center gap-2">
                     <i class="fa-solid fa-check"></i> Confirmar Registo de Pagamento
                 </button>
             </div>

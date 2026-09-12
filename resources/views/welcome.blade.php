@@ -47,7 +47,7 @@
                 </a>
             @else
                 <a href="{{ route('login') }}" class="text-slate-300 hover:text-white font-semibold text-sm px-3 py-2 transition">Entrar</a>
-                <a href="{{ route('register') }}" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-5 py-2.5 rounded-xl text-sm transition shadow-lg shadow-emerald-500/25 hover:scale-105 active:scale-95">
+                <a href="{{ route('register') }}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition shadow-md hover:scale-105 active:scale-95">
                     Experimentar 30 Dias Grátis
                 </a>
             @endauth
@@ -71,7 +71,7 @@
 
         <!-- CTA Buttons -->
         <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="{{ route('register') }}" class="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black px-8 py-4 rounded-2xl text-base shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 transition transform hover:-translate-y-0.5">
+            <a href="{{ route('register') }}" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-4 rounded-2xl text-base shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5 flex items-center justify-center">
                 <i class="fa-solid fa-rocket mr-2"></i> Criar Conta Grátis (30 Dias)
             </a>
             <a href="{{ route('login') }}" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold px-8 py-4 rounded-2xl text-base transition">
@@ -226,7 +226,7 @@
                         <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Produtos Ilimitados</li>
                     </ul>
                 </div>
-                <a href="{{ route('register', ['plan' => 'pharmacy_plus', 'sector' => 'pharmacy']) }}" class="mt-8 block text-center bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-2.5 rounded-xl text-xs transition shadow-lg shadow-emerald-500/20">
+                <a href="{{ route('register', ['plan' => 'pharmacy_plus', 'sector' => 'pharmacy']) }}" class="mt-8 block text-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-md">
                     Começar Grátis (30 Dias)
                 </a>
             </div>

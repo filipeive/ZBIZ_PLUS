@@ -44,7 +44,7 @@
             <a href="{{ route('sales.index') }}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs border border-slate-700 transition flex items-center gap-2">
                 <i class="fa-solid fa-arrow-left"></i> Voltar ao Histórico
             </a>
-            <a href="{{ route('pos.index') }}" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
+            <a href="{{ route('pos.index') }}" class="px-5 py-2.5 rounded-2xl {{ $theme['btn'] }} text-xs hover:scale-105 active:scale-95 transition flex items-center gap-2">
                 <i class="fa-solid fa-cash-register"></i> Frente de Caixa POS
             </a>
         </div>
@@ -107,7 +107,7 @@
                             <select x-model="selectedCatalogProductId" @change="addProductFromCatalog()" class="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none max-w-[240px]">
                                 <option value="">+ Selecionar do Catálogo...</option>
                                 <template x-for="prod in catalogProducts" :key="prod.id">
-                                    <option :value="prod.id" x-text="prod.name + ' (' + formatCurrency(prod.selling_price) + ')' + (prod.is_on_promotion ? ' 🏷️ PROMO' : '')"></option>
+                                    <option :value="prod.id" x-text="prod.name + ' (' + formatCurrency(prod.selling_price) + ')' + (prod.is_on_promotion ? ' - PROMO' : '')"></option>
                                 </template>
                             </select>
 
@@ -286,7 +286,7 @@
 
                     <div class="pt-2">
                         <button type="submit" :disabled="items.length === 0"
-                                class="w-full py-3.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} disabled:opacity-50 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2">
+                                class="w-full py-3.5 rounded-2xl {{ $theme['btn'] }} disabled:opacity-50 text-sm hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2">
                             <i class="fa-solid fa-check-to-slot"></i> Concluir Venda Manual
                         </button>
                     </div>
@@ -411,11 +411,11 @@ document.addEventListener('alpine:init', () => {
 
         submitForm(e) {
             if (this.items.length === 0) {
-                alert('Adicione pelo menos um item à venda.');
+                showToast('Adicione pelo menos um item à venda.', 'warning');
                 return;
             }
             if (this.paymentMethod === 'credit' && (!this.customerName || this.customerName.trim() === '' || this.customerName.trim().toLowerCase() === 'cliente avulso')) {
-                alert('Para registrar venda a crédito / fiado, informe o nome real do cliente.');
+                showToast('Para registrar venda a crédito / fiado, informe o nome real do cliente.', 'warning');
                 return;
             }
             e.target.submit();

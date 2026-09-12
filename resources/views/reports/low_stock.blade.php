@@ -1,332 +1,319 @@
 @extends('layouts.app')
 
-@section('title', 'Produtos com Stock Baixo')
-@section('page-title', 'Stock Baixo')
-@section('title-icon', 'fa-exclamation-triangle')
-@section('breadcrumbs')
-    <li class="breadcrumb-item"><a href="{{ route('reports.index') }}">Relatórios</a></li>
-    <li class="breadcrumb-item active">Stock Baixo</li>
-@endsection
+@section('page-title', 'Alertas de Stock & Validade')
+@section('title-icon', 'fa-triangle-exclamation')
 
 @section('content')
-    <!-- Header com botões de ação -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="space-y-6">
+
+    {{-- ─── Page Header ─── --}}
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h2 class="h3 mb-1 text-warning fw-bold">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                Produtos com Stock Baixo
-            </h2>
-            <p class="text-muted mb-0">Lista de produtos com estoque insuficiente ou esgotado</p>
+            <h2 class="text-xl font-black text-slate-800 dark:text-white tracking-tight">Alertas de Stock & Validade</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Produtos com stock abaixo do mínimo e lotes prestes a expirar.</p>
         </div>
-        <a href="{{ route('reports.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-2"></i> Voltar
-        </a>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('reports.index') }}"
+               class="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 transition">
+                <i class="fa-solid fa-arrow-left text-[11px]"></i> Relatórios
+            </a>
+            <button onclick="window.print()"
+                    class="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 transition">
+                <i class="fa-solid fa-print text-[11px]"></i> Imprimir
+            </button>
+            <a href="{{ route('products.create') }}"
+               class="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm">
+                <i class="fa-solid fa-plus text-[11px]"></i> Novo Produto
+            </a>
+        </div>
     </div>
 
-    <!-- Alertas -->
-    @if($products->count() > 0)
-        <div class="alert alert-warning fade-in mb-4">
-            <i class="fas fa-exclamation-triangle me-2"></i>
-            <strong>Atenção!</strong> Foram encontrados <strong>{{ $products->count() }}</strong> produtos com stock baixo ou esgotado.
-        </div>
-    @else
-        <div class="alert alert-success fade-in mb-4">
-            <i class="fas fa-check-circle me-2"></i>
-            <strong>Parabéns!</strong> Todos os produtos estão com stock adequado.
-        </div>
-    @endif
-
-    <!-- Cards de Resumo -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
-            <div class="card stats-card danger h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="text-muted mb-2 fw-semibold">Produtos Esgotados</h6>
-                            <h3 class="mb-0 text-danger fw-bold">{{ $products->where('stock_quantity', 0)->count() }}</h3>
-                            <small class="text-muted">sem estoque</small>
-                        </div>
-                        <div class="text-danger">
-                            <i class="fas fa-times-circle fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
+    {{-- ─── KPI Summary Cards ─── --}}
+    @php
+        $outOfStock   = $products->where('stock_quantity', '<=', 0)->count();
+        $lowStock     = $products->where('stock_quantity', '>', 0)->count();
+        $expiredNow   = $expiringBatches->filter(fn($b) => \Carbon\Carbon::parse($b->expiry_date)->isPast())->count();
+        $expiringSoon = $expiringBatches->filter(fn($b) => !$b->expiry_date || !\Carbon\Carbon::parse($b->expiry_date)->isPast())->count();
+    @endphp
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 flex items-start gap-4">
+            <div class="w-11 h-11 rounded-xl bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-ban text-lg"></i>
+            </div>
+            <div>
+                <div class="text-2xl font-black text-slate-800 dark:text-white">{{ $outOfStock }}</div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">Esgotados</div>
             </div>
         </div>
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
-            <div class="card stats-card warning h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="text-muted mb-2 fw-semibold">Stock Baixo</h6>
-                            <h3 class="mb-0 text-warning fw-bold">{{ $products->where('stock_quantity', '>', 0)->count() }}</h3>
-                            <small class="text-muted">estoque insuficiente</small>
-                        </div>
-                        <div class="text-warning">
-                            <i class="fas fa-exclamation-triangle fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 flex items-start gap-4">
+            <div class="w-11 h-11 rounded-xl bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+            </div>
+            <div>
+                <div class="text-2xl font-black text-slate-800 dark:text-white">{{ $lowStock }}</div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">Stock Baixo</div>
             </div>
         </div>
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
-            <div class="card stats-card primary h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="text-muted mb-2 fw-semibold">Total de Produtos</h6>
-                            <h3 class="mb-0 text-primary fw-bold">{{ $products->count() }}</h3>
-                            <small class="text-muted">em alerta</small>
-                        </div>
-                        <div class="text-primary">
-                            <i class="fas fa-box fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 flex items-start gap-4">
+            <div class="w-11 h-11 rounded-xl bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-skull-crossbones text-lg"></i>
+            </div>
+            <div>
+                <div class="text-2xl font-black text-slate-800 dark:text-white">{{ $expiredNow }}</div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">Lotes Vencidos</div>
             </div>
         </div>
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
-            <div class="card stats-card success h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <h6 class="text-muted mb-2 fw-semibold">Valor em Stock</h6>
-                            <h3 class="mb-0 text-success fw-bold">
-                                {{ number_format($products->sum(fn($p) => $p->stock_quantity * $p->purchase_price), 2, ',', '.') }} MT
-                            </h3>
-                            <small class="text-muted">em produtos críticos</small>
-                        </div>
-                        <div class="text-success">
-                            <i class="fas fa-dollar-sign fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 flex items-start gap-4">
+            <div class="w-11 h-11 rounded-xl bg-orange-100 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-hourglass-half text-lg"></i>
+            </div>
+            <div>
+                <div class="text-2xl font-black text-slate-800 dark:text-white">{{ $expiringSoon }}</div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">A Expirar em 90 dias</div>
             </div>
         </div>
     </div>
 
-    @if($products->count() > 0)
-        <!-- Tabela de Produtos com Stock Baixo -->
-        <div class="card fade-in mb-4">
-            <div class="card-header bg-white">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0 d-flex align-items-center">
-                        <i class="fas fa-boxes me-2 text-warning"></i>
-                        Produtos com Stock Baixo
-                    </h5>
-                    <button type="button" class="btn btn-success btn-sm" onclick="exportReport()">
-                        <i class="fas fa-file-pdf me-1"></i> Exportar
-                    </button>
+    {{-- ─── Tabs ─── --}}
+    <div x-data="{ tab: 'stock' }">
+        <div class="flex gap-1 border-b border-slate-200 dark:border-slate-800 mb-6">
+            <button @click="tab = 'stock'"
+                    :class="tab === 'stock' ? 'border-b-2 border-emerald-600 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'"
+                    class="flex items-center gap-2 px-4 py-2.5 text-sm transition">
+                <i class="fa-solid fa-box-open text-xs"></i>
+                Stock Baixo
+                @if($products->count() > 0)
+                <span class="ml-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-[10px] font-black">{{ $products->count() }}</span>
+                @endif
+            </button>
+            <button @click="tab = 'expiry'"
+                    :class="tab === 'expiry' ? 'border-b-2 border-rose-600 text-rose-700 dark:text-rose-400 font-bold' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'"
+                    class="flex items-center gap-2 px-4 py-2.5 text-sm transition">
+                <i class="fa-solid fa-calendar-xmark text-xs"></i>
+                Prestes a Expirar
+                @if($expiringBatches->count() > 0)
+                <span class="ml-1 px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400 text-[10px] font-black">{{ $expiringBatches->count() }}</span>
+                @endif
+            </button>
+        </div>
+
+        {{-- ──────── TAB: STOCK BAIXO ──────── --}}
+        <div x-show="tab === 'stock'" x-cloak>
+            @if($products->isEmpty())
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-16 text-center">
+                    <div class="w-16 h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-circle-check text-3xl"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-700 dark:text-white mb-1">Tudo em Ordem!</h3>
+                    <p class="text-sm text-slate-400">Nenhum produto com stock abaixo do mínimo.</p>
                 </div>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0" id="products-table">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Produto</th>
-                                <th>Categoria</th>
-                                <th class="text-center">Stock Atual</th>
-                                <th class="text-center">Mínimo</th>
-                                <th class="text-center">Status</th>
-                                <th class="text-end">Preço Compra</th>
-                                <th class="text-end">Preço Venda</th>
-                                <th class="text-end">Valor Stock</th>
-                                <th class="text-center">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($products as $product)
-                                <tr class="{{ $product->stock_quantity <= 0 ? 'table-danger' : 'table-warning' }}">
-                                    <td>
-                                        <div class="d-flex flex-column">
-                                            <strong>{{ $product->name }}</strong>
-                                            @if($product->description)
-                                                <small class="text-muted">{{ Str::limit($product->description, 50) }}</small>
-                                            @endif
-                                        </div>
+            @else
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                    <div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                        <span class="text-sm font-bold text-slate-700 dark:text-white">{{ $products->count() }} produto(s) com stock crítico</span>
+                        <a href="{{ route('products.index', ['stock_status' => 'low']) }}" class="text-xs text-emerald-600 dark:text-emerald-400 font-bold hover:underline">Ver todos →</a>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-800/50 text-[11px] uppercase text-slate-400 dark:text-slate-500 tracking-wider font-bold">
+                                    <th class="px-5 py-3 text-left">Produto</th>
+                                    <th class="px-4 py-3 text-left">Categoria</th>
+                                    <th class="px-4 py-3 text-center">Stock Atual</th>
+                                    <th class="px-4 py-3 text-center">Mínimo</th>
+                                    <th class="px-4 py-3 text-center">Status</th>
+                                    <th class="px-4 py-3 text-right">Valor Inventário</th>
+                                    <th class="px-4 py-3 text-center">Acções</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                                @foreach($products as $product)
+                                @php
+                                    $isOut = $product->stock_quantity <= 0;
+                                    $deficit = max(0, $product->min_stock_level - $product->stock_quantity);
+                                @endphp
+                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+                                    <td class="px-5 py-3.5">
+                                        <div class="font-semibold text-slate-800 dark:text-white text-xs">{{ $product->name }}</div>
+                                        @if($product->barcode)
+                                        <div class="text-[10px] text-slate-400 font-mono">{{ $product->barcode }}</div>
+                                        @endif
                                     </td>
-                                    <td>
-                                        <span class="badge bg-light text-dark">{{ $product->category->name ?? 'N/A' }}</span>
+                                    <td class="px-4 py-3.5">
+                                        <span class="text-xs text-slate-500 dark:text-slate-400">{{ $product->category?->name ?? '—' }}</span>
                                     </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-{{ $product->stock_quantity <= 0 ? 'danger' : 'warning' }}">
+                                    <td class="px-4 py-3.5 text-center">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold {{ $isOut ? 'bg-rose-100 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400' : 'bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400' }}">
                                             {{ $product->stock_quantity }} {{ $product->unit }}
                                         </span>
                                     </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-secondary">{{ $product->min_stock_level }}</span>
+                                    <td class="px-4 py-3.5 text-center">
+                                        <span class="text-xs text-slate-500 dark:text-slate-400">{{ $product->min_stock_level }} {{ $product->unit }}</span>
                                     </td>
-                                    <td class="text-center">
-                                        @if($product->stock_quantity <= 0)
-                                            <span class="badge bg-danger">Esgotado</span>
+                                    <td class="px-4 py-3.5 text-center">
+                                        @if($isOut)
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-black bg-rose-600 text-white">
+                                                <i class="fa-solid fa-circle-xmark text-[9px]"></i> Esgotado
+                                            </span>
                                         @else
-                                            <span class="badge bg-warning">Baixo</span>
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-black bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400">
+                                                <i class="fa-solid fa-triangle-exclamation text-[9px]"></i> Baixo
+                                            </span>
                                         @endif
                                     </td>
-                                    <td class="text-end">
-                                        {{ number_format($product->purchase_price, 2, ',', '.') }} MT
+                                    <td class="px-4 py-3.5 text-right">
+                                        <span class="text-xs font-bold text-slate-700 dark:text-slate-200">
+                                            {{ number_format($product->stock_quantity * ($product->purchase_price ?? 0), 2, ',', '.') }} MT
+                                        </span>
                                     </td>
-                                    <td class="text-end text-success fw-bold">
-                                        {{ number_format($product->selling_price, 2, ',', '.') }} MT
-                                    </td>
-                                    <td class="text-end">
-                                        {{ number_format($product->stock_quantity * $product->purchase_price, 2, ',', '.') }} MT
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="{{ route('products.show', $product) }}" 
-                                               class="btn btn-outline-info" title="Ver Detalhes">
-                                                <i class="fas fa-eye"></i>
+                                    <td class="px-4 py-3.5">
+                                        <div class="flex items-center justify-center gap-1.5">
+                                            <a href="{{ route('products.show', $product) }}"
+                                               class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-blue-100 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400 flex items-center justify-center transition"
+                                               title="Ver Detalhes">
+                                                <i class="fa-solid fa-eye text-[10px]"></i>
                                             </a>
-                                            <a href="{{ route('products.edit', $product) }}" 
-                                               class="btn btn-outline-warning" title="Editar Produto">
-                                                <i class="fas fa-edit"></i>
+                                            <a href="{{ route('products.edit', $product) }}"
+                                               class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-amber-100 dark:hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 flex items-center justify-center transition"
+                                               title="Editar">
+                                                <i class="fa-solid fa-pen text-[10px]"></i>
+                                            </a>
+                                            <a href="{{ route('stock-movements.create', ['product_id' => $product->id]) }}"
+                                               class="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-500/20 flex items-center justify-center transition"
+                                               title="Entrada de Stock">
+                                                <i class="fa-solid fa-plus text-[10px]"></i>
                                             </a>
                                         </div>
                                     </td>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Gráficos -->
-        <div class="row mb-4">
-            <!-- Gráfico de Status -->
-            <div class="col-lg-6">
-                <div class="card fade-in">
-                    <div class="card-header bg-white">
-                        <h5 class="card-title mb-0 d-flex align-items-center">
-                            <i class="fas fa-chart-pie me-2 text-danger"></i>
-                            Distribuição por Status
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="statusChart" height="100"></canvas>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </div>
 
-            <!-- Gráfico de Produtos Mais Críticos -->
-            <div class="col-lg-6">
-                <div class="card fade-in">
-                    <div class="card-header bg-white">
-                        <h5 class="card-title mb-0 d-flex align-items-center">
-                            <i class="fas fa-chart-bar me-2 text-warning"></i>
-                            Top 10 Produtos Críticos
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="criticalChart" height="100"></canvas>
+                {{-- Deficit Alert --}}
+                @php $totalDeficit = $products->sum(fn($p) => max(0, $p->min_stock_level - $p->stock_quantity)); @endphp
+                @if($totalDeficit > 0)
+                <div class="mt-4 p-4 rounded-2xl bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 flex items-start gap-3">
+                    <i class="fa-solid fa-lightbulb text-amber-500 mt-0.5 flex-shrink-0"></i>
+                    <div class="text-xs text-amber-700 dark:text-amber-300">
+                        <strong>Ação Recomendada:</strong> É necessário repor aproximadamente <strong>{{ number_format($totalDeficit) }} unidades</strong> no total para atingir os níveis mínimos definidos.
+                        <a href="{{ route('orders.create') }}" class="ml-2 font-bold underline">Criar Encomenda →</a>
                     </div>
                 </div>
-            </div>
-        </div>
-    @endif
-@endsection
-
-@push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        function exportReport() {
-            const params = new URLSearchParams();
-            params.set('export', 'pdf');
-            params.set('type', 'low-stock');
-            
-            window.open('{{ route("reports.export") }}?' + params.toString(), '_blank');
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            @if($products->count() > 0)
-                // Gráfico de Status (Esgotados vs Baixo Stock)
-                const statusCtx = document.getElementById('statusChart').getContext('2d');
-                const esgotados = {{ $products->where('stock_quantity', 0)->count() }};
-                const baixo = {{ $products->where('stock_quantity', '>', 0)->count() }};
-                
-                new Chart(statusCtx, {
-                    type: 'doughnut',
-                     {
-                        labels: ['Esgotados', 'Stock Baixo'],
-                         [esgotados, baixo],
-                        backgroundColor: ['#dc3545', '#ffc107'],
-                        borderWidth: 2
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: { position: 'bottom' }
-                        }
-                    }
-                });
-
-                // Gráfico de Produtos Mais Críticos
-                const criticalCtx = document.getElementById('criticalChart').getContext('2d');
-                const criticalProducts = @json($products->take(10)->pluck('name'));
-                const criticalStock = @json($products->take(10)->pluck('stock_quantity'));
-                
-                new Chart(criticalCtx, {
-                    type: 'bar',
-                     {
-                        labels: criticalProducts,
-                        datasets: [{
-                            label: 'Stock Atual',
-                             criticalStock,
-                            backgroundColor: 'rgba(220, 53, 69, 0.5)',
-                            borderColor: 'rgba(220, 53, 69, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
+                @endif
             @endif
-        });
-    </script>
-@endpush
+        </div>
 
-@push('styles')
-    <style>
-        .stats-card {
-            transition: all 0.3s ease;
-            border-left: 4px solid transparent;
-        }
-        .stats-card.danger { border-left-color: #dc2626; }
-        .stats-card.warning { border-left-color: #ea580c; }
-        .stats-card.primary { border-left-color: #1e3a8a; }
-        .stats-card.success { border-left-color: #059669; }
-        .stats-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        }
+        {{-- ──────── TAB: PRESTES A EXPIRAR ──────── --}}
+        <div x-show="tab === 'expiry'" x-cloak>
+            @if($expiringBatches->isEmpty())
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-16 text-center">
+                    <div class="w-16 h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-circle-check text-3xl"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-700 dark:text-white mb-1">Sem Alertas de Validade</h3>
+                    <p class="text-sm text-slate-400">Nenhum lote expira nos próximos 90 dias.</p>
+                </div>
+            @else
+                {{-- Urgency banner for expired --}}
+                @if($expiredNow > 0)
+                <div class="mb-4 p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/5 border border-rose-300 dark:border-rose-500/30 flex items-start gap-3">
+                    <i class="fa-solid fa-skull-crossbones text-rose-600 dark:text-rose-400 text-base mt-0.5 flex-shrink-0"></i>
+                    <div>
+                        <div class="text-sm font-black text-rose-700 dark:text-rose-300">{{ $expiredNow }} lote(s) já vencido(s)!</div>
+                        <div class="text-xs text-rose-500 dark:text-rose-400 mt-0.5">Retire imediatamente estes produtos de circulação para evitar riscos à saúde dos clientes.</div>
+                    </div>
+                </div>
+                @endif
 
-        .fade-in {
-            animation: fadeIn 0.6s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .table-hover tbody tr:hover {
-            background-color: rgba(220, 53, 69, 0.05);
-        }
-
-        .loading-spinner {
-            width: 30px; height: 30px; border: 3px solid #f3f4f6; border-top: 3px solid #0d6efd; border-radius: 50%; animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
-@endpush
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                    <div class="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                        <span class="text-sm font-bold text-slate-700 dark:text-white">{{ $expiringBatches->count() }} lote(s) a monitorar (próximos 90 dias)</span>
+                        <div class="flex items-center gap-3 text-[11px]">
+                            <span class="flex items-center gap-1 text-rose-600 dark:text-rose-400"><span class="w-2 h-2 rounded-full bg-rose-500"></span>Vencido</span>
+                            <span class="flex items-center gap-1 text-orange-600 dark:text-orange-400"><span class="w-2 h-2 rounded-full bg-orange-500"></span>&lt; 30 dias</span>
+                            <span class="flex items-center gap-1 text-amber-600 dark:text-amber-400"><span class="w-2 h-2 rounded-full bg-amber-500"></span>&lt; 90 dias</span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-800/50 text-[11px] uppercase text-slate-400 dark:text-slate-500 tracking-wider font-bold">
+                                    <th class="px-5 py-3 text-left">Produto</th>
+                                    <th class="px-4 py-3 text-left">Lote / Referência</th>
+                                    <th class="px-4 py-3 text-center">Quantidade</th>
+                                    <th class="px-4 py-3 text-center">Data de Validade</th>
+                                    <th class="px-4 py-3 text-center">Urgência</th>
+                                    <th class="px-4 py-3 text-center">Acções</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                                @foreach($expiringBatches as $batch)
+                                @php
+                                    $expiry = \Carbon\Carbon::parse($batch->expiry_date);
+                                    $daysLeft = now()->diffInDays($expiry, false);
+                                    $isExpired = $daysLeft < 0;
+                                    $isUrgent  = !$isExpired && $daysLeft <= 30;
+                                    $isSoon    = !$isExpired && !$isUrgent && $daysLeft <= 90;
+                                    $rowClass  = $isExpired ? 'bg-rose-50/50 dark:bg-rose-500/5' : ($isUrgent ? 'bg-orange-50/50 dark:bg-orange-500/5' : '');
+                                @endphp
+                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition {{ $rowClass }}">
+                                    <td class="px-5 py-3.5">
+                                        <div class="font-semibold text-slate-800 dark:text-white text-xs">{{ $batch->product?->name ?? '—' }}</div>
+                                        <div class="text-[10px] text-slate-400">{{ $batch->product?->category?->name ?? '' }}</div>
+                                    </td>
+                                    <td class="px-4 py-3.5">
+                                        <span class="text-xs text-slate-500 dark:text-slate-400 font-mono">{{ $batch->batch_number ?? 'S/N' }}</span>
+                                    </td>
+                                    <td class="px-4 py-3.5 text-center">
+                                        <span class="text-xs font-bold text-slate-700 dark:text-slate-200">{{ $batch->quantity }} un</span>
+                                    </td>
+                                    <td class="px-4 py-3.5 text-center">
+                                        <span class="text-xs font-mono {{ $isExpired ? 'text-rose-600 dark:text-rose-400 font-black' : 'text-slate-600 dark:text-slate-300' }}">
+                                            {{ $expiry->format('d/m/Y') }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3.5 text-center">
+                                        @if($isExpired)
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-black bg-rose-600 text-white">
+                                                <i class="fa-solid fa-skull-crossbones text-[9px]"></i> Vencido
+                                            </span>
+                                        @elseif($isUrgent)
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-black bg-orange-100 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400">
+                                                <i class="fa-solid fa-fire text-[9px]"></i> {{ $daysLeft }}d restantes
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400">
+                                                <i class="fa-solid fa-hourglass-half text-[9px]"></i> {{ round($daysLeft) }}d
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="px-4 py-3.5">
+                                        <div class="flex items-center justify-center gap-1.5">
+                                            <a href="{{ route('products.show', $batch->product_id) }}"
+                                               class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-blue-100 hover:text-blue-600 flex items-center justify-center transition"
+                                               title="Ver Produto">
+                                                <i class="fa-solid fa-eye text-[10px]"></i>
+                                            </a>
+                                            @if($isExpired)
+                                            <a href="{{ route('stock-movements.create', ['product_id' => $batch->product_id, 'type' => 'out', 'reason' => 'expired']) }}"
+                                               class="w-7 h-7 rounded-lg bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-200 flex items-center justify-center transition"
+                                               title="Registar Saída por Vencimento">
+                                                <i class="fa-solid fa-trash-arrow-up text-[10px]"></i>
+                                            </a>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
+</div>
+@endsection

@@ -42,7 +42,7 @@
             </div>
 
             <div class="md:col-span-1">
-                <button type="submit" class="w-full py-3 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-sm shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center justify-center">
+                <button type="submit" class="w-full py-3 rounded-2xl {{ $theme['btn'] }} text-sm hover:scale-105 active:scale-95 transition flex items-center justify-center">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
             </div>

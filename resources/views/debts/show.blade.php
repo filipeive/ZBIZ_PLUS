@@ -17,7 +17,7 @@
         </a>
 
         @if($debt->remaining_amount > 0)
-            <button @click="showPayModal = true" class="px-5 py-2 rounded-xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg transition flex items-center gap-2">
+            <button @click="showPayModal = true" class="px-5 py-2 rounded-xl {{ $theme['btn'] }} text-xs transition flex items-center gap-2">
                 <i class="fa-solid fa-hand-holding-dollar"></i> Registar Pagamento
             </button>
         @endif
@@ -116,7 +116,7 @@
 
                 <div class="flex gap-3 pt-2">
                     <button type="button" @click="showPayModal = false" class="w-1/3 py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs">Cancelar</button>
-                    <button type="submit" class="w-2/3 py-2.5 rounded-xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg transition">Confirmar Pagamento</button>
+                    <button type="submit" class="w-2/3 py-2.5 rounded-xl {{ $theme['btn'] }} text-xs transition">Confirmar Pagamento</button>
                 </div>
             </form>
         </div>

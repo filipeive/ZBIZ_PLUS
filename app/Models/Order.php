@@ -16,6 +16,7 @@ class Order extends Model
     // Campos que podem ser preenchidos em massa
     protected $fillable = [
         'tenant_id', 'branch_id',
+        'restaurant_table_id',
         'user_id',
         'customer_name',
         'customer_phone', 
@@ -61,6 +62,11 @@ class Order extends Model
     public function debt(): HasOne
     {
         return $this->hasOne(Debt::class, 'order_id');
+    }
+
+    public function restaurantTable(): BelongsTo
+    {
+        return $this->belongsTo(RestaurantTable::class);
     }
 
     /* ============================

@@ -25,19 +25,21 @@ class FinancialService
      * Centralized Financial Metrics.
      * Use this method in Dashboard, Reports, and Finances to ensure consistency.
      */
-    public function getGlobalMetrics(?string $dateFrom = null, ?string $dateTo = null, ?int $userId = null): array
+    public function getGlobalMetrics(?string $dateFrom = null, ?string $dateTo = null, ?int $userId = null, ?int $branchId = null): array
     {
         $dateFrom ??= now()->startOfMonth()->toDateString();
         $dateTo ??= now()->toDateString();
 
         // 1. Current Capital (Total Cash on Hand/Banks)
         $currentLiquidity = (float) FinancialAccount::operational()
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->get()
             ->sum(fn ($account) => $account->current_balance);
 
         // 2. Accounts Receivable (Real value from Debts)
         $accountsReceivable = (float) Debt::where('status', 'active')
             ->when($userId, fn($q) => $q->where('user_id', $userId))
+            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
             ->sum('remaining_amount');
 
         // 3. Real Business Value (Liquid Capital + Receivables)
@@ -45,13 +47,13 @@ class FinancialService
         $totalRealValue = $currentLiquidity + $accountsReceivable;
 
         // 4. Period Summary (Inflows vs Outflows)
-        $summary = $this->getPeriodSummary($dateFrom, $dateTo, $userId);
+        $summary = $this->getPeriodSummary($dateFrom, $dateTo, $userId, $branchId);
 
         // 5. Comparison Period (Previous)
         $periodDays = Carbon::parse($dateFrom)->diffInDays(Carbon::parse($dateTo)) + 1;
         $prevDateFrom = Carbon::parse($dateFrom)->subDays($periodDays)->toDateString();
         $prevDateTo = Carbon::parse($dateFrom)->subDay()->toDateString();
-        $prevSummary = $this->getPeriodSummary($prevDateFrom, $prevDateTo, $userId);
+        $prevSummary = $this->getPeriodSummary($prevDateFrom, $prevDateTo, $userId, $branchId);
 
         return [
             'current_liquidity'   => $currentLiquidity,
@@ -444,12 +446,16 @@ class FinancialService
      * Base query for active (non-reversed) transactions.
      * ALL financial queries MUST use this as base.
      */
-    private function activeTransactionsQuery(?int $userId = null)
+    private function activeTransactionsQuery(?int $userId = null, ?int $branchId = null)
     {
         $query = FinancialTransaction::where('status', 'confirmed');
         
         if ($userId) {
             $query->where('user_id', $userId);
+        }
+
+        if ($branchId) {
+            $query->where('branch_id', $branchId);
         }
         
         return $query;
@@ -459,9 +465,9 @@ class FinancialService
      * Sum transactions by direction within a date range.
      * Excludes adjustments from operational totals by default.
      */
-    public function sumTransactions(string $dateFrom, string $dateTo, string $direction, bool $excludeAdjustments = true, ?int $userId = null): float
+    public function sumTransactions(string $dateFrom, string $dateTo, string $direction, bool $excludeAdjustments = true, ?int $userId = null, ?int $branchId = null): float
     {
-        $query = $this->activeTransactionsQuery($userId)
+        $query = $this->activeTransactionsQuery($userId, $branchId)
             ->whereBetween('transaction_date', [$dateFrom, $dateTo])
             ->where('direction', $direction);
 
@@ -475,14 +481,14 @@ class FinancialService
     /**
      * Resumo do mês — fonte única para Dashboard, Finance e Relatórios.
      */
-    public function getMonthSummary(?Carbon $date = null, ?int $userId = null): array
+    public function getMonthSummary(?Carbon $date = null, ?int $userId = null, ?int $branchId = null): array
     {
         $date ??= now();
         $monthStart = $date->copy()->startOfMonth()->toDateString();
         $monthEnd   = $date->copy()->endOfMonth()->toDateString();
 
-        $inflows  = $this->sumTransactions($monthStart, $monthEnd, 'in', true, $userId);
-        $outflows = $this->sumTransactions($monthStart, $monthEnd, 'out', true, $userId);
+        $inflows  = $this->sumTransactions($monthStart, $monthEnd, 'in', true, $userId, $branchId);
+        $outflows = $this->sumTransactions($monthStart, $monthEnd, 'out', true, $userId, $branchId);
 
         return [
             'inflows'  => $inflows,
@@ -495,10 +501,10 @@ class FinancialService
      * Resumo financeiro de um período arbitrário.
      * Usado por Dashboard, Relatórios e APIs.
      */
-    public function getPeriodSummary(string $dateFrom, string $dateTo, ?int $userId = null): array
+    public function getPeriodSummary(string $dateFrom, string $dateTo, ?int $userId = null, ?int $branchId = null): array
     {
-        $inflows  = $this->sumTransactions($dateFrom, $dateTo, 'in', true, $userId);
-        $outflows = $this->sumTransactions($dateFrom, $dateTo, 'out', true, $userId);
+        $inflows  = $this->sumTransactions($dateFrom, $dateTo, 'in', true, $userId, $branchId);
+        $outflows = $this->sumTransactions($dateFrom, $dateTo, 'out', true, $userId, $branchId);
 
         return [
             'inflows'  => $inflows,
@@ -510,9 +516,10 @@ class FinancialService
     /**
      * Capital actual = soma do saldo de todas as contas operacionais activas.
      */
-    public function getCurrentCapital(): float
+    public function getCurrentCapital(?int $branchId = null): float
     {
         return (float) FinancialAccount::operational()
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->get()
             ->sum(fn($account) => $account->current_balance);
     }
@@ -520,11 +527,14 @@ class FinancialService
     /**
      * Total a receber (dívidas activas).
      */
-    public function getAccountsReceivable(?int $userId = null): float
+    public function getAccountsReceivable(?int $userId = null, ?int $branchId = null): float
     {
         $query = Debt::where('status', 'active');
         if ($userId) {
             $query->where('user_id', $userId);
+        }
+        if ($branchId) {
+            $query->where('branch_id', $branchId);
         }
         return (float) $query->sum('remaining_amount');
     }
@@ -532,12 +542,12 @@ class FinancialService
     /**
      * Dados para gráfico de fluxo de caixa dos últimos N dias.
      */
-    public function getCashFlowChartData(int $days = 7, ?int $userId = null): array
+    public function getCashFlowChartData(int $days = 7, ?int $userId = null, ?int $branchId = null): array
     {
         $startDate = Carbon::today()->subDays($days - 1);
         $endDate   = Carbon::today();
 
-        $transactions = $this->activeTransactionsQuery($userId)
+        $transactions = $this->activeTransactionsQuery($userId, $branchId)
             ->select(
                 DB::raw('DATE(transaction_date) as date'),
                 DB::raw("SUM(CASE WHEN direction = 'in' THEN amount ELSE 0 END) as inflows"),

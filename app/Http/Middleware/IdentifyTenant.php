@@ -17,8 +17,13 @@ class IdentifyTenant
 
         $tenant = null;
 
+        // Support mode must resolve the selected tenant before the owner's tenant.
+        if (session('is_support_mode') && session()->has('current_tenant_id')) {
+            $tenant = Tenant::find(session()->get('current_tenant_id'));
+        }
+
         // 1. Resolve from Authenticated User
-        if (auth()->check() && auth()->user()->tenant_id) {
+        if (!$tenant && auth()->check() && auth()->user()->tenant_id) {
             $tenant = Tenant::find(auth()->user()->tenant_id);
         }
 

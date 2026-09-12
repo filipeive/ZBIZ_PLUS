@@ -27,31 +27,40 @@ class ReportController extends Controller
     {
         return auth()->user()->isAdmin() ? null : auth()->id();
     }
+
+    private function getBranchIdFilter(): ?int
+    {
+        return current_branch_id() ?? auth()->user()?->branch_id;
+    }
     public function index(Request $request)
     {
         $dateFrom = $request->input('date_from', now()->startOfMonth()->format('Y-m-d'));
         $dateTo = $request->input('date_to', now()->format('Y-m-d'));
         $reportType = $request->input('report_type', 'all');
+        $userId = $this->getUserIdFilter();
+        $branchId = $this->getBranchIdFilter();
     
         // Métricas principais com verificações de consistência
-        $metricas = $this->calcularMetricasPrincipais($dateFrom, $dateTo, $this->getUserIdFilter());
+        $metricas = $this->calcularMetricasPrincipais($dateFrom, $dateTo, $userId, $branchId);
         
         // Gráficos
-        $salesChart = $this->getSalesChartData($dateFrom, $dateTo);
-        $paymentMethod = $this->getPaymentMethodData($dateFrom, $dateTo);
+        $salesChart = $this->getSalesChartData($dateFrom, $dateTo, $branchId);
+        $paymentMethod = $this->getPaymentMethodData($dateFrom, $dateTo, $branchId);
         
         // Produtos mais vendidos
-        $topProducts = $this->getTopProducts($dateFrom, $dateTo);
+        $topProducts = $this->getTopProducts($dateFrom, $dateTo, $branchId);
         
         // Vendas recentes
         $recentSales = Sale::with(['user', 'items'])
             ->whereBetween('sale_date', [$dateFrom, $dateTo])
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+            ->when($userId, fn ($q) => $q->where('user_id', $userId))
             ->latest()
             ->take(10)
             ->get();
     
         // Tabelas detalhadas baseadas no tipo de relatório
-        $dados = $this->getDadosDetalhados($reportType, $dateFrom, $dateTo, $this->getUserIdFilter());
+        $dados = $this->getDadosDetalhados($reportType, $dateFrom, $dateTo, $userId, $branchId);
     
         return view('reports.index', array_merge(
             $metricas,
@@ -64,7 +73,8 @@ class ReportController extends Controller
                 'recentSales' => $recentSales,
                 'dateFrom' => $dateFrom,
                 'dateTo' => $dateTo,
-                'reportType' => $reportType
+                'reportType' => $reportType,
+                'branchId' => $branchId,
             ],
             $dados
         ));
@@ -83,6 +93,9 @@ class ReportController extends Controller
         if ($userId = $this->getUserIdFilter()) {
             $query->where('user_id', $userId);
         }
+        if ($branchId = $this->getBranchIdFilter()) {
+            $query->where('branch_id', $branchId);
+        }
 
         $sales = $query->groupBy('date')
             ->orderBy('date')
@@ -97,8 +110,10 @@ class ReportController extends Controller
 
     public function inventory()
     {
+        $branchId = $this->getBranchIdFilter();
         $products = Product::with('category')
             ->where('type', 'product')
+            ->when($branchId, fn ($q) => $q->whereHas('productBranches', fn ($pb) => $pb->where('branch_id', $branchId)))
             ->orderBy('name')
             ->get();
 
@@ -106,14 +121,33 @@ class ReportController extends Controller
     }
     public function lowStock()
     {
+        $tenantId = auth()->user()?->tenant_id;
+        $branchId = $this->getBranchIdFilter();
+
         $products = Product::whereColumn('stock_quantity', '<=', 'min_stock_level')
             ->where('is_active', true)
+            ->with(['category'])
+            ->when($branchId, fn ($q) => $q->whereHas('productBranches', fn ($pb) => $pb
+                ->where('branch_id', $branchId)
+                ->whereColumn('stock_quantity', '<=', 'min_stock_level')))
+            ->orderBy('stock_quantity', 'asc')
             ->get();
 
-        return view('reports.low_stock', compact('products'));
+        // Products expiring in the next 90 days via product_batches
+        $expiringBatches = \App\Models\ProductBatch::with('product.category')
+            ->where('tenant_id', $tenantId)
+            ->whereNotNull('expiry_date')
+            ->where('quantity', '>', 0)
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+            ->whereDate('expiry_date', '<=', now()->addDays(90))
+            ->orderBy('expiry_date', 'asc')
+            ->get();
+
+        return view('reports.low_stock', compact('products', 'expiringBatches'));
     }
     public function monthlySales()
     {
+        $branchId = $this->getBranchIdFilter();
         $monthRaw = DB::connection()->getDriverName() === 'sqlite'
             ? "strftime('%Y-%m', sale_date) as month"
             : "DATE_FORMAT(sale_date, '%Y-%m') as month";
@@ -122,6 +156,7 @@ class ReportController extends Controller
             DB::raw($monthRaw),
             DB::raw("SUM(total_amount) as total")
         )
+        ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
         ->groupBy('month')
         ->orderBy('month', 'desc')
         ->get();
@@ -132,11 +167,13 @@ class ReportController extends Controller
     {
         $dateFrom = $request->input('date_from', now()->startOfMonth()->format('Y-m-d'));
         $dateTo = $request->input('date_to', now()->format('Y-m-d'));
+        $branchId = $this->getBranchIdFilter();
 
         $sales = Product::select('products.name')
             ->join('sale_items', 'products.id', '=', 'sale_items.product_id')
             ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
             ->whereBetween('sales.sale_date', [$dateFrom, $dateTo])
+            ->when($branchId, fn ($q) => $q->where('sales.branch_id', $branchId))
             ->groupBy('products.name')
             ->selectRaw('SUM(sale_items.quantity) as quantity_sold, SUM(sale_items.total_price) as total_revenue')
             ->orderByDesc('quantity_sold')
@@ -147,18 +184,20 @@ class ReportController extends Controller
     /**
      * Métricas principais — usa FinancialService centralizado para dados de transações.
      */
-    private function calcularMetricasPrincipais($dateFrom, $dateTo, $userId = null)
+    private function calcularMetricasPrincipais($dateFrom, $dateTo, $userId = null, ?int $branchId = null)
     {
         // Resumo centralizado via FinancialService
-        $metrics = $this->financialService->getGlobalMetrics($dateFrom, $dateTo, $userId);
+        $metrics = $this->financialService->getGlobalMetrics($dateFrom, $dateTo, $userId, $branchId);
         
         $salesQuery = Sale::whereBetween('sale_date', [$dateFrom, $dateTo]);
+        if ($branchId) $salesQuery->where('branch_id', $branchId);
         if ($userId) $salesQuery->where('user_id', $userId);
         
         $totalSales = (clone $salesQuery)->count();
         $totalRevenue = (clone $salesQuery)->sum('total_amount');
         
         $expensesQuery = Expense::whereBetween('expense_date', [$dateFrom, $dateTo]);
+        if ($branchId) $expensesQuery->where('branch_id', $branchId);
         if ($userId) $expensesQuery->where('user_id', $userId);
         $totalExpenses = $expensesQuery->sum('amount');
         
@@ -171,6 +210,7 @@ class ReportController extends Controller
             ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
             ->join('products', 'sale_items.product_id', '=', 'products.id')
             ->whereBetween('sales.sale_date', [$dateFrom, $dateTo])
+            ->when($branchId, fn ($q) => $q->where('sales.branch_id', $branchId))
             ->sum(DB::raw('sale_items.quantity * COALESCE(products.purchase_price, 0)'));
         
         // Cálculos de margem e lucro
@@ -187,7 +227,10 @@ class ReportController extends Controller
         $previousRevenue = Sale::whereBetween('sale_date', [
             Carbon::parse($dateFrom)->subDays(Carbon::parse($dateFrom)->diffInDays(Carbon::parse($dateTo)) + 1)->format('Y-m-d'),
             Carbon::parse($dateFrom)->subDay()->format('Y-m-d')
-        ])->sum('total_amount');
+        ])
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+            ->when($userId, fn ($q) => $q->where('user_id', $userId))
+            ->sum('total_amount');
         $revenueGrowth = $previousRevenue > 0 ? ((($totalRevenue - $previousRevenue) / $previousRevenue) * 100) : 0;
 
         // Use centralized FinancialService for capital and receivables
@@ -215,7 +258,7 @@ class ReportController extends Controller
         ];
     }
 
-    private function getDadosDetalhados($reportType, $dateFrom, $dateTo, $userId = null)
+    private function getDadosDetalhados($reportType, $dateFrom, $dateTo, $userId = null, ?int $branchId = null)
     {
         $dados = [
             'sales' => collect(),
@@ -227,6 +270,7 @@ class ReportController extends Controller
             $salesQuery = Sale::with(['user', 'items.product'])
                 ->whereBetween('sale_date', [$dateFrom, $dateTo]);
             
+            if ($branchId) $salesQuery->where('branch_id', $branchId);
             if ($userId) $salesQuery->where('user_id', $userId);
 
             $dados['sales'] = $salesQuery->select([
@@ -251,6 +295,7 @@ class ReportController extends Controller
             $expensesQuery = Expense::with(['user', 'category'])
                 ->whereBetween('expense_date', [$dateFrom, $dateTo]);
 
+            if ($branchId) $expensesQuery->where('branch_id', $branchId);
             if ($userId) $expensesQuery->where('user_id', $userId);
 
             $dados['expenses'] = $expensesQuery->select([
@@ -269,11 +314,13 @@ class ReportController extends Controller
                     'selling_price', 'stock_quantity', 'min_stock_level'
                 ])
                 ->get()
-                ->map(function ($product) {
+                ->map(function ($product) use ($branchId, $dateFrom, $dateTo) {
                     // Calcular quantidade vendida no período
                     $salesData = DB::table('sale_items')
                         ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
                         ->where('sale_items.product_id', $product->id)
+                        ->when($branchId, fn ($q) => $q->where('sales.branch_id', $branchId))
+                        ->whereBetween('sales.sale_date', [$dateFrom, $dateTo])
                         ->select([
                             DB::raw('SUM(sale_items.quantity) as quantity_sold'),
                             DB::raw('SUM(sale_items.total_price) as revenue_generated')
@@ -297,9 +344,11 @@ class ReportController extends Controller
         $dateFrom = $request->input('date_from', now()->startOfMonth()->format('Y-m-d'));
         $dateTo = $request->input('date_to', now()->format('Y-m-d'));
         $userId = $this->getUserIdFilter();
+        $branchId = $this->getBranchIdFilter();
 
         // Receitas
         $salesRevenueQuery = Sale::whereBetween('sale_date', [$dateFrom, $dateTo]);
+        if ($branchId) $salesRevenueQuery->where('branch_id', $branchId);
         if ($userId) $salesRevenueQuery->where('user_id', $userId);
         $salesRevenue = $salesRevenueQuery->sum('total_amount');
         
@@ -309,6 +358,7 @@ class ReportController extends Controller
             ->join('products', 'sale_items.product_id', '=', 'products.id')
             ->whereBetween('sales.sale_date', [$dateFrom, $dateTo]);
         
+        if ($branchId) $cogsQuery->where('sales.branch_id', $branchId);
         if ($userId) $cogsQuery->where('sales.user_id', $userId);
         $costOfGoodsSold = $cogsQuery->sum(DB::raw('sale_items.quantity * COALESCE(products.purchase_price, 0)'));
 
@@ -319,6 +369,7 @@ class ReportController extends Controller
         $expensesQuery = Expense::with('category')
             ->whereBetween('expense_date', [$dateFrom, $dateTo]);
         
+        if ($branchId) $expensesQuery->where('branch_id', $branchId);
         if ($userId) $expensesQuery->where('user_id', $userId);
 
         $expensesByCategory = $expensesQuery->get()
@@ -341,6 +392,7 @@ class ReportController extends Controller
             ->join('sale_items', 'products.id', '=', 'sale_items.product_id')
             ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
             ->whereBetween('sales.sale_date', [$dateFrom, $dateTo])
+            ->when($branchId, fn ($q) => $q->where('sales.branch_id', $branchId))
             ->groupBy('products.id', 'products.name', 'products.purchase_price')
             ->selectRaw('
                 SUM(sale_items.quantity) as quantity_sold,
@@ -359,10 +411,11 @@ class ReportController extends Controller
         ));
     }
 
-    private function getSalesChartData($dateFrom, $dateTo)
+    private function getSalesChartData($dateFrom, $dateTo, ?int $branchId = null)
     {
         $start = Carbon::parse($dateFrom);
         $end = Carbon::parse($dateTo);
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
         
         $labels = [];
         $data = [];
@@ -373,7 +426,9 @@ class ReportController extends Controller
             $sales = DB::table('sales')
                 ->leftJoin('sale_items', 'sales.id', '=', 'sale_items.sale_id')
                 ->leftJoin('products', 'sale_items.product_id', '=', 'products.id')
+                ->where('sales.tenant_id', $tenantId)
                 ->whereBetween('sales.sale_date', [$dateFrom, $dateTo])
+                ->when($branchId, fn ($q) => $q->where('sales.branch_id', $branchId))
                 ->select([
                     DB::raw('YEAR(sales.sale_date) as year'),
                     DB::raw('MONTH(sales.sale_date) as month'),
@@ -395,7 +450,9 @@ class ReportController extends Controller
             $sales = DB::table('sales')
                 ->leftJoin('sale_items', 'sales.id', '=', 'sale_items.sale_id')
                 ->leftJoin('products', 'sale_items.product_id', '=', 'products.id')
+                ->where('sales.tenant_id', $tenantId)
                 ->whereBetween('sales.sale_date', [$dateFrom, $dateTo])
+                ->when($branchId, fn ($q) => $q->where('sales.branch_id', $branchId))
                 ->select([
                     DB::raw('DATE(sales.sale_date) as date'),
                     DB::raw('SUM(sales.total_amount) as revenue'),
@@ -419,12 +476,13 @@ class ReportController extends Controller
         ];
     }
 
-    private function getPaymentMethodData($dateFrom, $dateTo)
+    private function getPaymentMethodData($dateFrom, $dateTo, ?int $branchId = null)
     {
         $payments = Sale::select('payment_method', 
                 DB::raw('COUNT(*) as count'),
                 DB::raw('SUM(total_amount) as total'))
             ->whereBetween('sale_date', [$dateFrom, $dateTo])
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->groupBy('payment_method')
             ->get();
         
@@ -452,7 +510,7 @@ class ReportController extends Controller
         ];
     }
 
-    private function getTopProducts($dateFrom, $dateTo)
+    private function getTopProducts($dateFrom, $dateTo, ?int $branchId = null)
     {
         return Product::select(
             'products.id',
@@ -466,6 +524,7 @@ class ReportController extends Controller
         ->join('sale_items', 'products.id', '=', 'sale_items.product_id')
         ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
         ->whereBetween('sales.sale_date', [$dateFrom, $dateTo])
+        ->when($branchId, fn ($q) => $q->where('sales.branch_id', $branchId))
         ->groupBy('products.id', 'products.name', 'products.purchase_price', 'products.selling_price')
         ->orderBy('total_quantity', 'desc')
         ->take(10)
@@ -482,28 +541,32 @@ class ReportController extends Controller
     {
         $today = now()->toDateString();
         $thisMonth = now()->startOfMonth()->toDateString();
+        $branchId = $this->getBranchIdFilter();
         
         // Métricas do dia
-        $todayMetrics = $this->calcularMetricasPrincipais($today, $today);
+        $todayMetrics = $this->calcularMetricasPrincipais($today, $today, $this->getUserIdFilter(), $branchId);
         
         // Métricas do mês
-        $monthMetrics = $this->calcularMetricasPrincipais($thisMonth, $today);
+        $monthMetrics = $this->calcularMetricasPrincipais($thisMonth, $today, $this->getUserIdFilter(), $branchId);
 
         // Produtos com baixo stock
         $lowStockProducts = Product::where('type', 'product')
             ->where('is_active', true)
             ->whereRaw('stock_quantity <= min_stock_level')
+            ->when($branchId, fn ($q) => $q->whereHas('productBranches', fn ($pb) => $pb
+                ->where('branch_id', $branchId)
+                ->whereColumn('stock_quantity', '<=', 'min_stock_level')))
             ->with('category')
             ->get();
 
         // Top produtos do mês
-        $topProductsThisMonth = $this->getTopProducts($thisMonth, $today);
+        $topProductsThisMonth = $this->getTopProducts($thisMonth, $today, $branchId);
 
         // Vendas dos últimos 7 dias com lucro
         $last7Days = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = now()->subDays($i)->toDateString();
-            $dayMetrics = $this->calcularMetricasPrincipais($date, $date);
+            $dayMetrics = $this->calcularMetricasPrincipais($date, $date, $this->getUserIdFilter(), $branchId);
             
             $last7Days[] = [
                 'date' => Carbon::parse($date)->format('d/m'),
@@ -528,9 +591,11 @@ class ReportController extends Controller
         $dateTo = $request->input('date_to', now()->format('Y-m-d'));
         $reportType = $request->input('report_type', 'all');
         $format = $request->input('format', 'pdf');
+        $branchId = $this->getBranchIdFilter();
+        $userId = $this->getUserIdFilter();
 
-        $metricas = $this->calcularMetricasPrincipais($dateFrom, $dateTo);
-        $dados = $this->getDadosDetalhados($reportType, $dateFrom, $dateTo);
+        $metricas = $this->calcularMetricasPrincipais($dateFrom, $dateTo, $userId, $branchId);
+        $dados = $this->getDadosDetalhados($reportType, $dateFrom, $dateTo, $userId, $branchId);
 
         if ($format === 'excel') {
             return Excel::download(
@@ -554,9 +619,11 @@ class ReportController extends Controller
         $dateFrom = $request->input('date_from', now()->startOfMonth()->format('Y-m-d'));
         $dateTo = $request->input('date_to', now()->format('Y-m-d'));
         $reportType = $request->input('report_type', 'all');
+        $branchId = $this->getBranchIdFilter();
+        $userId = $this->getUserIdFilter();
 
-        $metricas = $this->calcularMetricasPrincipais($dateFrom, $dateTo);
-        $dados = $this->getDadosDetalhados($reportType, $dateFrom, $dateTo);
+        $metricas = $this->calcularMetricasPrincipais($dateFrom, $dateTo, $userId, $branchId);
+        $dados = $this->getDadosDetalhados($reportType, $dateFrom, $dateTo, $userId, $branchId);
 
         return Excel::download(
             new ReportExport($dados['sales'], $dados['expenses'], $dados['products'], 
@@ -572,9 +639,11 @@ class ReportController extends Controller
     {
         $dateFrom = $request->input('date_from', now()->startOfMonth()->format('Y-m-d'));
         $dateTo = $request->input('date_to', now()->format('Y-m-d'));
+        $branchId = $this->getBranchIdFilter();
 
         // Only use confirmed transactions for cash flow reports
         $transactions = FinancialTransaction::where('status', 'confirmed')
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->whereBetween('transaction_date', [$dateFrom, $dateTo])->get();
 
         $cashInflows = $transactions
@@ -592,6 +661,7 @@ class ReportController extends Controller
         $outflowLabels = $cashOutflows->keys()->mapWithKeys(fn ($type) => [$type => $this->formatTransactionType($type)]);
         $salesCountByDate = Sale::select(DB::raw('DATE(sale_date) as date'), DB::raw('COUNT(*) as total'))
             ->whereBetween('sale_date', [$dateFrom, $dateTo])
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->groupBy(DB::raw('DATE(sale_date)'))
             ->pluck('total', 'date');
 
@@ -602,6 +672,7 @@ class ReportController extends Controller
             )
             ->where('status', 'confirmed')
             ->whereBetween('transaction_date', [$dateFrom, $dateTo])
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->groupBy(DB::raw('DATE(transaction_date)'))
             ->orderBy(DB::raw('DATE(transaction_date)'))
             ->get()
@@ -679,9 +750,11 @@ class ReportController extends Controller
     {
         $dateFrom = $request->input('date_from', now()->startOfMonth()->format('Y-m-d'));
         $dateTo = $request->input('date_to', now()->format('Y-m-d'));
+        $branchId = $this->getBranchIdFilter();
 
         $customerAnalysis = Sale::with(['items.product'])
             ->whereBetween('sale_date', [$dateFrom, $dateTo])
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->whereNotNull('customer_name')
             ->where('customer_name', '!=', '')
             ->get()
@@ -723,6 +796,7 @@ class ReportController extends Controller
     {
         $dateFrom = $request->input('date_from', now()->startOfMonth()->format('Y-m-d'));
         $dateTo = $request->input('date_to', now()->format('Y-m-d'));
+        $branchId = $this->getBranchIdFilter();
 
         // Análise de produtos por receita
         $productAnalysis = \DB::table('products')
@@ -730,6 +804,7 @@ class ReportController extends Controller
             ->join('sale_items', 'products.id', '=', 'sale_items.product_id')
             ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
             ->whereBetween('sales.sale_date', [$dateFrom, $dateTo])
+            ->when($branchId, fn ($q) => $q->where('sales.branch_id', $branchId))
             ->where('products.tenant_id', current_tenant_id() ?? 1)
             ->whereNull('products.deleted_at')
             ->groupBy('products.id', 'products.name', 'products.selling_price', 'products.purchase_price', 'categories.name')
@@ -792,12 +867,14 @@ class ReportController extends Controller
         $currentDateTo = $request->input('current_date_to', now()->format('Y-m-d'));
         $previousDateFrom = $request->input('previous_date_from', now()->subMonth()->startOfMonth()->format('Y-m-d'));
         $previousDateTo = $request->input('previous_date_to', now()->subMonth()->endOfMonth()->format('Y-m-d'));
+        $branchId = $this->getBranchIdFilter();
+        $userId = $this->getUserIdFilter();
 
         // Métricas do período atual
-        $currentMetrics = $this->calcularMetricasPrincipais($currentDateFrom, $currentDateTo);
+        $currentMetrics = $this->calcularMetricasPrincipais($currentDateFrom, $currentDateTo, $userId, $branchId);
         
         // Métricas do período anterior
-        $previousMetrics = $this->calcularMetricasPrincipais($previousDateFrom, $previousDateTo);
+        $previousMetrics = $this->calcularMetricasPrincipais($previousDateFrom, $previousDateTo, $userId, $branchId);
 
         // Cálculo de variações
         $comparisons = [];
@@ -829,8 +906,8 @@ class ReportController extends Controller
         }
 
         // Top produtos por período
-        $currentTopProducts = $this->getTopProducts($currentDateFrom, $currentDateTo)->take(5);
-        $previousTopProducts = $this->getTopProducts($previousDateFrom, $previousDateTo)->take(5);
+        $currentTopProducts = $this->getTopProducts($currentDateFrom, $currentDateTo, $branchId)->take(5);
+        $previousTopProducts = $this->getTopProducts($previousDateFrom, $previousDateTo, $branchId)->take(5);
 
         return view('reports.period_comparison', compact(
             'currentDateFrom', 'currentDateTo', 'previousDateFrom', 'previousDateTo',
@@ -846,13 +923,15 @@ class ReportController extends Controller
     {
         $dateFrom = $request->input('date_from', now()->startOfMonth()->format('Y-m-d'));
         $dateTo = $request->input('date_to', now()->format('Y-m-d'));
+        $branchId = $this->getBranchIdFilter();
+        $userId = $this->getUserIdFilter();
 
         $insights = [];
         $alerts = [];
         $recommendations = [];
 
         // Calcular métricas
-        $metrics = $this->calcularMetricasPrincipais($dateFrom, $dateTo);
+        $metrics = $this->calcularMetricasPrincipais($dateFrom, $dateTo, $userId, $branchId);
 
         // ALERTAS CRÍTICOS
         if ($metrics['netMargin'] < 5) {
@@ -876,6 +955,9 @@ class ReportController extends Controller
         // Produtos com baixo estoque
         $lowStockCount = Product::whereColumn('stock_quantity', '<=', 'min_stock_level')
             ->where('is_active', true)
+            ->when($branchId, fn ($q) => $q->whereHas('productBranches', fn ($pb) => $pb
+                ->where('branch_id', $branchId)
+                ->whereColumn('stock_quantity', '<=', 'min_stock_level')))
             ->count();
 
         if ($lowStockCount > 0) {
@@ -922,6 +1004,8 @@ class ReportController extends Controller
                 DB::raw('SUM(total_amount) as total')
             )
             ->whereYear('sale_date', now()->year)
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+            ->when($userId, fn ($q) => $q->where('user_id', $userId))
             ->groupBy('month')
             ->pluck('total', 'month')
             ->toArray();
@@ -955,7 +1039,7 @@ class ReportController extends Controller
         $customerId = $request->input('customer_id');
 
         $tenantId = auth()->user()?->tenant_id ?? current_tenant_id();
-        $branchId = current_branch_id() ?? auth()->user()?->branch_id;
+        $branchId = $this->getBranchIdFilter();
 
         $query = Sale::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
@@ -964,10 +1048,8 @@ class ReportController extends Controller
 
         if ($request->filled('branch_id')) {
             $query->where('branch_id', $request->branch_id);
-        } elseif ($branchId && !(auth()->user()?->isAdmin() || auth()->user()?->isManager())) {
-            $query->where(function($q) use ($branchId) {
-                $q->where('branch_id', $branchId)->orWhereNull('branch_id');
-            });
+        } elseif ($branchId) {
+            $query->where('branch_id', $branchId);
         }
 
         // Filtros específicos
@@ -1030,27 +1112,44 @@ class ReportController extends Controller
             ];
         })->sortByDesc('total_revenue');
 
-        // Produtos mais vendidos neste período
-        $topProducts = $sales->flatMap->items->groupBy('product.name')->map(function ($group, $productName) {
-            $product = $group->first()->product;
+        $productSearch = $request->input('product_search');
+
+        // Produtos/Artigos vendidos no período com filtro de pesquisa e quantidades exatas (ex: Paracetamol)
+        $allProductSales = $sales->flatMap->items->filter(function ($item) use ($productSearch) {
+            if (empty($productSearch)) return true;
+            return str_contains(strtolower($item->product->name ?? ''), strtolower($productSearch));
+        })->groupBy(function ($item) {
+            return $item->product->name ?? 'Outro Produto';
+        })->map(function ($group, $productName) {
+            $firstItem = $group->first();
+            $product = $firstItem?->product;
+            $quantity = $group->sum('quantity');
+            $revenue = $group->sum('total_price');
+            $cost = $group->sum(function ($item) use ($product) {
+                return $item->quantity * ($product->purchase_price ?? 0);
+            });
+            $profit = $revenue - $cost;
+            $margin = $revenue > 0 ? (($profit / $revenue) * 100) : 0;
+
             return [
                 'name' => $productName,
-                'quantity' => $group->sum('quantity'),
-                'revenue' => $group->sum('total_price'),
-                'cost' => $group->sum(function ($item) use ($product) {
-                    return $item->quantity * ($product->purchase_price ?? 0);
-                }),
-                'profit' => $group->sum('total_price') - $group->sum(function ($item) use ($product) {
-                    return $item->quantity * ($product->purchase_price ?? 0);
-                })
+                'category' => $product?->category?->name ?? 'Geral',
+                'quantity' => $quantity,
+                'revenue' => $revenue,
+                'cost' => $cost,
+                'profit' => $profit,
+                'margin' => $margin,
+                'unit_price' => $product?->selling_price ?? ($quantity > 0 ? $revenue / $quantity : 0),
             ];
-        })->sortByDesc('revenue')->take(10);
+        })->sortByDesc('quantity');
+
+        $topProducts = $allProductSales->take(10);
 
         return view('reports.sales_specialized', compact(
-            'sales', 'dateFrom', 'dateTo', 'paymentMethod', 'customerId',
+            'sales', 'dateFrom', 'dateTo', 'paymentMethod', 'customerId', 'productSearch',
             'totalSales', 'totalRevenue', 'totalCost', 'totalProfit', 
             'averageTicket', 'averageMargin', 'salesByMethod', 
-            'salesByDay', 'topSellers', 'topProducts'
+            'salesByDay', 'topSellers', 'topProducts', 'allProductSales'
         ));
     }
 

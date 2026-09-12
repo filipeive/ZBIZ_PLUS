@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\RestaurantTable;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Category;
@@ -73,7 +74,15 @@ class OrderController extends Controller
     {
         $products = Product::where('is_active', true)->orderBy('name')->get();
         $categories = Category::where('is_active', true)->get();
-        return view('orders.create', compact('products', 'categories'));
+        $restaurantTables = current_tenant()?->business_type === 'restaurant'
+            ? RestaurantTable::where('tenant_id', current_tenant_id())
+                ->where('branch_id', current_branch_id())
+                ->whereIn('status', ['free', 'reserved'])
+                ->orderBy('name')
+                ->get()
+            : collect();
+
+        return view('orders.create', compact('products', 'categories', 'restaurantTables'));
     }
 
     // Salva um novo pedido
@@ -95,6 +104,22 @@ class OrderController extends Controller
             'create_debt' => 'boolean',
             'debt_due_date' => 'nullable|date|after_or_equal:delivery_date'
         ]);
+
+        if ($request->filled('restaurant_table_id')) {
+            $request->validate([
+                'restaurant_table_id' => ['integer', 'exists:restaurant_tables,id'],
+            ]);
+
+            abort_unless(
+                current_tenant()?->business_type === 'restaurant'
+                && RestaurantTable::whereKey($request->restaurant_table_id)
+                    ->where('tenant_id', current_tenant_id())
+                    ->where('branch_id', current_branch_id())
+                    ->whereIn('status', ['free', 'reserved'])
+                    ->exists(),
+                422
+            );
+        }
 
         Log::info('Validation passed');
 
@@ -163,6 +188,7 @@ class OrderController extends Controller
                 $order = Order::create([
                     'tenant_id' => $tenantId,
                     'branch_id' => $branchId,
+                    'restaurant_table_id' => $request->restaurant_table_id,
                     'user_id' => auth()->id(),
                     'customer_name' => $request->customer_name,
                     'customer_phone' => $request->customer_phone,
@@ -177,6 +203,10 @@ class OrderController extends Controller
                 ]);
 
                 Log::info('Order created', ['order_id' => $order->id]);
+
+                if ($request->filled('restaurant_table_id')) {
+                    RestaurantTable::whereKey($request->restaurant_table_id)->update(['status' => 'occupied']);
+                }
 
                 // Criar os itens do pedido
                 foreach ($items as $item) {

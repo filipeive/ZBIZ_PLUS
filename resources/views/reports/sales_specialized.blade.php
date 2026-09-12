@@ -32,7 +32,7 @@
                 <i class="fa-solid fa-file-pdf"></i> PDF
             </button>
 
-            <button type="button" onclick="window.print()" class="px-4 py-2 bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
+            <button type="button" onclick="window.print()" class="px-4 py-2 {{ $theme['btn'] }} text-xs rounded-xl hover:scale-105 active:scale-95 transition flex items-center gap-2">
                 <i class="fa-solid fa-print"></i> Imprimir
             </button>
         </div>
@@ -47,6 +47,17 @@
         </div>
 
         <form method="GET" action="{{ route('reports.sales-specialized') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+            @if(auth()->user()?->isSuperAdmin())
+            <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Tenant (SaaS)</label>
+                <select name="tenant_id" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                    <option value="all" {{ request('tenant_id') === 'all' || !request('tenant_id') ? 'selected' : '' }}>Todos os Tenants</option>
+                    @foreach(\App\Models\Tenant::orderBy('name')->get() as $t)
+                        <option value="{{ $t->id }}" {{ request('tenant_id') == $t->id ? 'selected' : '' }}>{{ $t->name }} (#{{ $t->id }})</option>
+                    @endforeach
+                </select>
+            </div>
+            @endif
             <div>
                 <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Data Inicial</label>
                 <input type="date" name="date_from" value="{{ $dateFrom }}" 
@@ -73,20 +84,41 @@
             </div>
 
             <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Pesquisar Artigo / Medicamento</label>
+                <input type="text" name="product_search" value="{{ $productSearch ?? '' }}" placeholder="Ex: Paracetamol, Amoxicilina..."
+                       class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-600 focus:ring-2 {{ $theme['ring'] }} outline-none">
+            </div>
+
+            <div>
                 <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Cliente</label>
                 <input type="text" name="customer_id" value="{{ $customerId }}" placeholder="Buscar por cliente..."
                        class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-600 focus:ring-2 {{ $theme['ring'] }} outline-none">
             </div>
 
-            <div class="flex items-center gap-2">
-                <button type="submit" class="flex-1 py-2.5 bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-magnifying-glass"></i> Filtrar
-                </button>
-                @if(request()->hasAny(['date_from', 'date_to', 'payment_method', 'customer_id']))
-                <a href="{{ route('reports.sales-specialized') }}" class="px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl text-xs transition" title="Limpar Filtros">
-                    <i class="fa-solid fa-xmark"></i>
-                </a>
-                @endif
+            <div class="sm:col-span-2 lg:col-span-6 flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800">
+                <!-- Quick Period Presets -->
+                <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                    <span class="text-[11px] font-bold uppercase text-slate-500 mr-1">Período:</span>
+                    <a href="{{ route('reports.sales-specialized', array_merge(request()->all(), ['date_from' => now()->toDateString(), 'date_to' => now()->toDateString()])) }}"
+                       class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[11px] border border-slate-700">Hoje</a>
+                    <a href="{{ route('reports.sales-specialized', array_merge(request()->all(), ['date_from' => now()->startOfWeek()->toDateString(), 'date_to' => now()->endOfWeek()->toDateString()])) }}"
+                       class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[11px] border border-slate-700">Esta Semana</a>
+                    <a href="{{ route('reports.sales-specialized', array_merge(request()->all(), ['date_from' => now()->startOfMonth()->toDateString(), 'date_to' => now()->endOfMonth()->toDateString()])) }}"
+                       class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[11px] border border-slate-700">Este Mês</a>
+                    <a href="{{ route('reports.sales-specialized', array_merge(request()->all(), ['date_from' => now()->subMonth()->startOfMonth()->toDateString(), 'date_to' => now()->subMonth()->endOfMonth()->toDateString()])) }}"
+                       class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[11px] border border-slate-700">Mês Passado</a>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button type="submit" class="px-5 py-2 {{ $theme['btn'] }} text-xs rounded-xl transition flex items-center gap-2">
+                        <i class="fa-solid fa-filter"></i> Aplicar Filtros
+                    </button>
+                    @if(request()->hasAny(['date_from', 'date_to', 'payment_method', 'product_search', 'customer_id', 'tenant_id']))
+                        <a href="{{ route('reports.sales-specialized') }}" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl text-xs font-bold transition">
+                            Limpar
+                        </a>
+                    @endif
+                </div>
             </div>
         </form>
     </div>
@@ -295,8 +327,74 @@
                     </tbody>
                 </table>
             </div>
+    <!-- Relatório Detalhado de Unidades Vendidas por Produto (ex: Paracetamol) -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div>
+                <h3 class="text-base font-black font-heading text-slate-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-boxes-stacked text-emerald-600 dark:text-emerald-400"></i> Relatório de Unidades Vendidas por Artigo / Medicamento
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Contagem exata de unidades comercializadas (ex: Paracetamol, Amoxicilina) no período selecionado.</p>
+            </div>
+            <span class="text-xs font-bold px-3 py-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-xl border border-emerald-200 dark:border-emerald-500/30">
+                Total: {{ count($allProductSales ?? []) }} Artigos Vendidos
+            </span>
         </div>
 
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider">
+                        <th class="pb-3">Artigo / Medicamento</th>
+                        <th class="pb-3">Categoria</th>
+                        <th class="pb-3 text-center">Unidades Vendidas</th>
+                        <th class="pb-3 text-right">Preço Unit. (MT)</th>
+                        <th class="pb-3 text-right">Faturação Total (MT)</th>
+                        <th class="pb-3 text-right">Lucro Bruto (MT)</th>
+                        <th class="pb-3 text-center">Margem (%)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono">
+                    @forelse($allProductSales ?? [] as $item)
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition">
+                            <td class="py-3 font-sans font-bold text-slate-900 dark:text-white">
+                                <i class="fa-solid fa-pills mr-1.5 text-emerald-500"></i>{{ $item['name'] }}
+                            </td>
+                            <td class="py-3 font-sans text-slate-500 dark:text-slate-400">
+                                <span class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px]">
+                                    {{ $item['category'] }}
+                                </span>
+                            </td>
+                            <td class="py-3 text-center">
+                                <span class="px-3 py-1 rounded-xl font-bold bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30">
+                                    {{ number_format($item['quantity'], 0) }} un
+                                </span>
+                            </td>
+                            <td class="py-3 text-right text-slate-600 dark:text-slate-300">
+                                {{ number_format($item['unit_price'], 2, ',', '.') }}
+                            </td>
+                            <td class="py-3 text-right text-slate-900 dark:text-white font-bold">
+                                {{ number_format($item['revenue'], 2, ',', '.') }} MT
+                            </td>
+                            <td class="py-3 text-right {{ $item['profit'] >= 0 ? 'text-teal-600 dark:text-teal-400 font-bold' : 'text-rose-600 dark:text-rose-400 font-bold' }}">
+                                {{ number_format($item['profit'], 2, ',', '.') }} MT
+                            </td>
+                            <td class="py-3 text-center font-sans font-bold">
+                                <span class="px-2 py-0.5 rounded text-[10px] {{ $item['margin'] >= 20 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200' }}">
+                                    {{ number_format($item['margin'], 1, ',', '.') }}%
+                                </span>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="py-10 text-center text-slate-400 font-sans">
+                                Nenhum artigo/medicamento encontrado para o período ou termo pesquisado.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Análise por Método de Pagamento -->
@@ -344,7 +442,7 @@
                             <td class="py-3 text-center font-mono">
                                 <span class="text-xs text-slate-300">{{ number_format($percentage, 1) }}%</span>
                                 <div class="w-24 bg-slate-800 h-1.5 rounded-full mx-auto mt-1 overflow-hidden">
-                                    <div class="bg-gradient-to-r {{ $theme['gradient'] }} h-full" style="width: {{ $percentage }}%"></div>
+                                    <div class="bg-emerald-500 h-full" style="width: {{ $percentage }}%"></div>
                                 </div>
                             </td>
                             <td class="py-3 text-right font-mono font-black text-emerald-400 text-sm">

@@ -31,16 +31,17 @@ class SaleController extends Controller
     {
         $query = Sale::with(['user', 'branch', 'items.product']);
 
-        // Filtrar por filial ativa
+        $user = auth()->user();
         $branchId = current_branch_id();
+
+        // A lista acompanha sempre a filial ativa. Operadores continuam limitados
+        // às próprias vendas dentro dessa filial.
         if ($branchId) {
             $query->where('branch_id', $branchId);
         }
 
-        // Somente Admin e Super Admin veem todas as vendas da filial.
-        // Gerentes e Staff veem apenas o que registraram.
-        if (! auth()->user()->isAdmin()) {
-            $query->where('user_id', auth()->id());
+        if (! $user?->isAdmin() && ! $user?->isManager()) {
+            $query->where('user_id', $user?->id);
         }
         
         // Filtros existentes mantidos...

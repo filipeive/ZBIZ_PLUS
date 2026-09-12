@@ -37,7 +37,7 @@
                 </div>
                 <div class="modal-footer border-t border-slate-800 pt-3 flex justify-end gap-2">
                     <button type="button" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black text-xs">Confirmar Liquidação</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md">Confirmar Liquidação</button>
                 </div>
             </form>
         </div>

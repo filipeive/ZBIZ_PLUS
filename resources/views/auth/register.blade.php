@@ -132,7 +132,7 @@
                         </div>
                     </div>
 
-                    <button type="button" @click="step = 2" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-sm shadow-lg shadow-emerald-500/20 transition">
+                    <button type="button" @click="step = 2" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow-md transition">
                         Avançar para Dados do Administrador <i class="fa-solid fa-arrow-right ml-1"></i>
                     </button>
                 </div>
@@ -180,7 +180,7 @@
                         <button type="button" @click="step = 1" class="w-1/3 py-3 bg-slate-800 text-slate-300 font-bold rounded-xl text-sm">
                             <i class="fa-solid fa-arrow-left mr-1"></i> Voltar
                         </button>
-                        <button type="button" @click="step = 3" class="w-2/3 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-sm shadow-lg shadow-emerald-500/20 transition">
+                        <button type="button" @click="step = 3" class="w-2/3 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow-md transition">
                             Escolher Plano de Teste <i class="fa-solid fa-arrow-right ml-1"></i>
                         </button>
                     </div>
@@ -217,7 +217,7 @@
                         <button type="button" @click="step = 2" class="w-1/3 py-3.5 bg-slate-800 text-slate-300 font-bold rounded-xl text-sm">
                             <i class="fa-solid fa-arrow-left mr-1"></i> Voltar
                         </button>
-                        <button type="submit" class="w-2/3 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black rounded-xl text-base shadow-xl shadow-emerald-500/30 transition transform active:scale-95">
+                        <button type="submit" class="w-2/3 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-base shadow-md transition transform active:scale-95">
                             <i class="fa-solid fa-check-circle mr-1"></i> CONCLUIR E ABRIR O ZBIZ+
                         </button>
                     </div>

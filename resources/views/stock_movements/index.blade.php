@@ -10,39 +10,73 @@
 @section('content')
 <div class="space-y-6" x-data="{ showModal: false }">
     
-    <!-- Top Action Bar -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
-        <form method="GET" action="{{ route('stock-movements.index') }}" class="flex flex-col sm:flex-row items-center gap-3 w-full sm:max-w-xl">
-            <div class="relative flex-1 w-full">
-                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 text-sm">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </span>
-                <input type="text" name="product" value="{{ request('product') }}" placeholder="Buscar por artigo / produto..."
-                       class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-600 focus:ring-2 {{ $theme['ring'] }} outline-none">
+    <!-- Top Action & Filter Bar -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-lg font-black font-heading text-slate-900 dark:text-white">Movimentações de Stock</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Histórico completo de entradas, saídas, quebras e ajustes de inventário.</p>
             </div>
 
-            <select name="movement_type" onchange="this.form.submit()" class="w-full sm:w-36 px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
-                <option value="">Todos Tipos</option>
-                <option value="in" {{ request('movement_type') === 'in' ? 'selected' : '' }}>Entradas (+)</option>
-                <option value="out" {{ request('movement_type') === 'out' ? 'selected' : '' }}>Saídas (-)</option>
-                <option value="adjustment" {{ request('movement_type') === 'adjustment' ? 'selected' : '' }}>Ajustes</option>
-            </select>
-
-            <button type="submit" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition">
-                Filtrar
-            </button>
-            @if(request()->hasAny(['product', 'movement_type', 'date_from', 'date_to']))
-                <a href="{{ route('stock-movements.index') }}" class="px-3 py-2.5 bg-slate-800/60 hover:bg-slate-800 text-slate-400 rounded-xl text-xs flex items-center justify-center">
-                    <i class="fa-solid fa-xmark"></i>
+            <div class="flex flex-wrap items-center gap-2.5 w-full sm:w-auto justify-end">
+                <a href="{{ route('reports.inventory') }}" class="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-boxes-stacked text-sky-500"></i> Relatório Inventário
                 </a>
-            @endif
-        </form>
-
-        <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
-            <button @click="showModal = true" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
-                <i class="fa-solid fa-plus-minus"></i> Novo Ajuste / Entrada
-            </button>
+                <a href="{{ route('reports.low-stock') }}" class="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Stock Baixo / Validades
+                </a>
+                <button @click="showModal = true" class="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-2">
+                    <i class="fa-solid fa-plus-minus"></i> Novo Ajuste / Entrada
+                </button>
+            </div>
         </div>
+
+        <!-- Filter Controls -->
+        <form method="GET" action="{{ route('stock-movements.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-3 border-t border-slate-100 dark:border-slate-800/80 items-end">
+            <div class="relative">
+                <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Pesquisar Artigo</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 text-xs">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" name="product" value="{{ request('product') }}" placeholder="Nome do artigo..."
+                           class="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Tipo de Movimento</label>
+                <select name="movement_type" onchange="this.form.submit()" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500">
+                    <option value="">Todos Tipos</option>
+                    <option value="in" {{ request('movement_type') === 'in' ? 'selected' : '' }}>Entradas (+)</option>
+                    <option value="out" {{ request('movement_type') === 'out' ? 'selected' : '' }}>Saídas (-)</option>
+                    <option value="adjustment" {{ request('movement_type') === 'adjustment' ? 'selected' : '' }}>Ajustes</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Data Inicial</label>
+                <input type="date" name="date_from" value="{{ request('date_from') }}"
+                       class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Data Final</label>
+                <input type="date" name="date_to" value="{{ request('date_to') }}"
+                       class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button type="submit" class="flex-1 py-2 px-3 bg-secundary dark:bg-slate-100 text-slate-500 hover:text-slate-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-filter"></i> Filtrar
+                </button>
+                @if(request()->hasAny(['product', 'movement_type', 'date_from', 'date_to']))
+                <a href="{{ route('stock-movements.index') }}" class="py-2 px-3 bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-700 rounded-xl text-xs font-bold transition">
+                    Limpar
+                </a>
+                @endif
+            </div>
+        </form>
     </div>
 
     <!-- Stock Movements Table -->
@@ -146,7 +180,7 @@
 
                 <div class="flex gap-3 pt-2">
                     <button type="button" @click="showModal = false" class="w-1/3 py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs">Cancelar</button>
-                    <button type="submit" class="w-2/3 py-2.5 rounded-xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg transition">Gravar Movimento</button>
+                    <button type="submit" class="w-2/3 py-2.5 rounded-xl {{ $theme['btn'] }} text-xs hover:scale-105 active:scale-95 transition">Gravar Movimento</button>
                 </div>
             </form>
         </div>

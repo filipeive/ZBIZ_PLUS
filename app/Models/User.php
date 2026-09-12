@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Laravel\Sanctum\HasApiTokens;
 use App\Models\Role;
 use App\Models\Notification;
 use App\Models\SalaryPayment;
@@ -17,7 +18,7 @@ use App\Services\PermissionService;
 
 class User extends Authenticatable
 {
-    use HasFactory;
+    use HasFactory, HasApiTokens;
 
     protected $fillable = [
         'tenant_id', 'branch_id',

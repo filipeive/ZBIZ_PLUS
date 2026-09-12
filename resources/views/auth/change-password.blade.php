@@ -37,7 +37,7 @@
         </div>
 
         <div class="pt-2">
-            <button type="submit" class="w-full py-3 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition">
+            <button type="submit" class="w-full py-3 rounded-2xl {{ $theme['btn'] }} text-xs hover:scale-105 active:scale-95 transition">
                 Atualizar Palavra-passe & Entrar
             </button>
         </div>

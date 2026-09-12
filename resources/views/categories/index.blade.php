@@ -18,7 +18,7 @@
         </div>
 
         <button @click="editMode = false; categoryName = ''; categoryDesc = ''; categoryActive = true; showModal = true" 
-                class="px-5 py-3 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
+                class="px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-sm transition flex items-center gap-2">
             <i class="fa-solid fa-plus"></i> Nova Categoria
         </button>
     </div>
@@ -103,7 +103,7 @@
 
                 <div class="flex gap-3 pt-2">
                     <button type="button" @click="showModal = false" class="w-1/3 py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs">Cancelar</button>
-                    <button type="submit" class="w-2/3 py-2.5 rounded-xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg transition">Guardar</button>
+                    <button type="submit" class="w-2/3 py-2.5 rounded-xl {{ $theme['btn'] }} text-xs hover:scale-105 active:scale-95 transition">Guardar</button>
                 </div>
             </form>
         </div>

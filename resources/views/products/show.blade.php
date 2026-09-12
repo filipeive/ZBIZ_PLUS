@@ -22,7 +22,7 @@
                 <i class="fa-solid fa-boxes-stacked text-emerald-400"></i> Movimentações
             </a>
             @if(auth()->user()->isStockManager() || auth()->user()->isManager() || auth()->user()->isAdmin())
-            <a href="{{ route('products.edit', $product->id) }}" class="px-5 py-2 rounded-xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg transition flex items-center gap-2">
+            <a href="{{ route('products.edit', $product->id) }}" class="px-5 py-2 rounded-xl {{ $theme['btn'] }} text-xs transition flex items-center gap-2">
                 <i class="fa-solid fa-pen-to-square"></i> Editar Artigo
             </a>
             @endif

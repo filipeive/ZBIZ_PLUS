@@ -16,7 +16,7 @@
             <h2 class="text-lg font-black font-heading text-white">Central de Documentos & Modelos</h2>
             <p class="text-xs text-slate-400">Gere contratos de arrendamento, recibos fiscais e acordos operacionais.</p>
         </div>
-        <a href="{{ route('documents.templates.rent-contract.print') }}" target="_blank" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
+        <a href="{{ route('documents.templates.rent-contract.print') }}" target="_blank" class="px-4 py-2.5 rounded-2xl {{ $theme['btn'] }} text-xs hover:scale-105 active:scale-95 transition flex items-center gap-2">
             <i class="fa-solid fa-print"></i> Imprimir Contrato de Renda
         </a>
     </div>

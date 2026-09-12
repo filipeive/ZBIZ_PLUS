@@ -51,7 +51,10 @@ class AdminController extends Controller
 
         $settings = $tenant?->settings ?? [];
 
-        if ($request->hasFile('company_logo')) {
+        if ($request->boolean('remove_logo') || $request->has('remove_logo')) {
+            unset($settings['logo_path']);
+            Setting::where('tenant_id', $tenant?->id)->where('key', 'logo_path')->delete();
+        } elseif ($request->hasFile('company_logo')) {
             $logoPath = $request->file('company_logo')->store('tenant-logos', 'public');
             $settings['logo_path'] = $logoPath;
         }

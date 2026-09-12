@@ -28,4 +28,5 @@
 
 ## 4. TABELAS VERTICAIS (FARMÁCIA)
 * `product_batches` (id, tenant_id, product_id, branch_id, batch_number, expiration_date, quantity, cost_price)
+* `branch_product_inquiries` (id, tenant_id, branch_id, sender_branch_id, recipient_branch_id, product_id, product_name, user_id, quantity, message, status, response, response_by, read_at, timestamps)
 * `prescription_records` (id, tenant_id, branch_id, sale_id, doctor_name, doctor_reg_number, prescription_photo_path)

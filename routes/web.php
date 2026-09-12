@@ -50,8 +50,11 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
     Route::get('/api/dashboard/metrics', [DashboardController::class, 'apiMetrics'])
         ->name('dashboard.api.metrics');
     Route::get('/dashboard/metrics', [DashboardController::class, 'apiMetrics'])->name('dashboard.metrics');
+    Route::get('/api/dashboard/expiry-alerts', [DashboardController::class, 'apiExpiryAlerts'])
+        ->name('dashboard.api.expiry_alerts');
 
-    Route::prefix('owner')->name('owner.')->group(function () {
+
+    Route::prefix('owner')->name('owner.')->middleware('owner')->group(function () {
         Route::get('/tenants', [TenantControlCenterController::class, 'index'])->name('tenants.index');
         Route::post('/tenants', [TenantControlCenterController::class, 'store'])->name('tenants.store');
         Route::get('/tenants/{tenant}', [TenantControlCenterController::class, 'show'])->name('tenants.show');
@@ -94,6 +97,12 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         Route::get('/show', [ProfileController::class, 'show'])->name('show');
         //update-photo
         Route::patch('/photo', [ProfileController::class, 'updatePhoto'])->name('update-photo');
+    });
+
+    Route::prefix('restaurant/tables')->name('restaurant.tables.')->middleware('permissions:manage_settings')->group(function () {
+        Route::get('/', [\App\Http\Controllers\RestaurantTableController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\RestaurantTableController::class, 'store'])->name('store');
+        Route::patch('/{table}/status', [\App\Http\Controllers\RestaurantTableController::class, 'updateStatus'])->name('status');
     });
 
     // ===== PONTO DE VENDA - create_sales permission =====
@@ -509,9 +518,12 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
     });
 
     // ===== NOTIFICAÇÕES - Todos os usuários logados =====
-    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
-    Route::delete('/notifications/clear-all', [NotificationController::class, 'clearAll']);
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/api/notifications', [NotificationController::class, 'apiList'])->name('notifications.api');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+    Route::delete('/notifications/clear-all', [NotificationController::class, 'clearAll'])->name('notifications.clear-all');
+
 
     // ===== ZBIZ POS 2.0 (FRENTE DE CAIXA RÁPIDA DENTRO DO ESCOPO DO TENANT) =====
     Route::prefix('pos')->name('pos.')->middleware('feature:pos')->group(function () {

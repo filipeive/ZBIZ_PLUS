@@ -224,7 +224,7 @@
 
                 <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
                     <button type="button" @click="showPayModal = false" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold">Cancelar</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs">Confirmar Pagamento</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl {{ $theme['btn'] }} text-xs">Confirmar Pagamento</button>
                 </div>
             </form>
         </div>
@@ -247,7 +247,7 @@
 
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" @click="showUploadModal = false" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold">Cancelar</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs">Salvar Recibo</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl {{ $theme['btn'] }} text-xs">Salvar Recibo</button>
                 </div>
             </form>
         </div>

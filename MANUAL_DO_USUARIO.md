@@ -598,6 +598,9 @@ Caminho: Configurações → Geral
 
 ### Atalhos de Teclado
 
+
+Esta secção aplica-se apenas a empresas configuradas com o setor **Restaurante & Bar**.
+
 | Tecla | Ação |
 |-------|------|
 | `Ctrl+K` | Abrir busca global |

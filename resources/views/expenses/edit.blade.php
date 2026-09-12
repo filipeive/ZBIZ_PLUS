@@ -118,7 +118,7 @@
                 <a href="{{ route('expenses.index') }}" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
                     Cancelar
                 </a>
-                <button type="submit" class="px-5 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg transition flex items-center gap-2">
+                <button type="submit" class="px-5 py-2.5 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md transition flex items-center gap-2">
                     <i class="fa-solid fa-floppy-disk"></i> Atualizar Despesa
                 </button>
             </div>

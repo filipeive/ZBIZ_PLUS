@@ -21,7 +21,7 @@
                 <i class="fa-solid fa-pen-to-square"></i> Editar
             </a>
             @if($expense->isRentExpense())
-                <a href="{{ route('documents.templates.rent-contract.print') }}" target="_blank" class="px-4 py-2 rounded-xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg transition flex items-center gap-2">
+                <a href="{{ route('documents.templates.rent-contract.print') }}" target="_blank" class="px-4 py-2 rounded-xl {{ $theme['btn'] }} text-xs transition flex items-center gap-2">
                     <i class="fa-solid fa-print"></i> Recibo de Renda
                 </a>
             @endif
@@ -120,7 +120,7 @@
 
                 <div class="flex gap-3 pt-2">
                     <button type="button" @click="showUploadModal = false" class="w-1/3 py-2 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs">Cancelar</button>
-                    <button type="submit" class="w-2/3 py-2 rounded-xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg transition">Guardar Ficheiro</button>
+                    <button type="submit" class="w-2/3 py-2 rounded-xl {{ $theme['btn'] }} text-xs transition">Guardar Ficheiro</button>
                 </div>
             </form>
         </div>

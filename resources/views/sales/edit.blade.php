@@ -720,7 +720,7 @@
                 const discountReason = document.getElementById('modal-discount-reason').value;
 
                 if (discountValue <= 0) {
-                    alert('Informe um valor de desconto válido.');
+                    showToast('Informe um valor de desconto válido.', 'warning');
                     return;
                 }
 
@@ -782,7 +782,7 @@
                 const price = document.getElementById('new-item-price').value;
 
                 if (!productSelect.value || !quantity || !price) {
-                    alert('Preencha todos os campos obrigatórios.');
+                    showToast('Preencha todos os campos obrigatórios.', 'warning');
                     return;
                 }
 
@@ -876,7 +876,7 @@
                 const items = document.querySelectorAll('.item-row:not(.removing)');
 
                 if (items.length === 0) {
-                    alert('A venda deve ter pelo menos um item.');
+                    showToast('A venda deve ter pelo menos um item.', 'warning');
                     e.preventDefault();
                     return false;
                 }
@@ -894,7 +894,7 @@
                 });
 
                 if (hasError) {
-                    alert('Todos os itens devem ter produto, quantidade e preço preenchidos.');
+                    showToast('Todos os itens devem ter produto, quantidade e preço preenchidos.', 'warning');
                     e.preventDefault();
                     return false;
                 }

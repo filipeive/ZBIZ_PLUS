@@ -75,6 +75,12 @@ function toastManager() {
             @if(session('info') || session('status'))
                 this.addToast({ type: 'info', title: 'Informação', message: {!! json_encode(session('info') ?? session('status')) !!} });
             @endif
+
+            @if(isset($errors) && $errors->any())
+                @foreach($errors->all() as $error)
+                    this.addToast({ type: 'error', title: 'Erro de Validação', message: {!! json_encode($error) !!} });
+                @endforeach
+            @endif
         },
         addToast(detail) {
             const id = Date.now() + Math.random();
@@ -127,11 +133,27 @@ function toastManager() {
 }
 
 // Global JS Helper for invoking toasts from any script
-window.toast = function(options) {
+window.toast = function(options, type = 'info', title = null) {
     if (typeof options === 'string') {
-        options = { message: options, type: 'info' };
+        options = { message: options, type: type, title: title };
     }
     window.dispatchEvent(new CustomEvent('toast', { detail: options }));
 };
+window.toast.success = (msg, title) => window.toast({ type: 'success', message: msg, title: title });
+window.toast.error = (msg, title) => window.toast({ type: 'error', message: msg, title: title });
+window.toast.warning = (msg, title) => window.toast({ type: 'warning', message: msg, title: title });
+window.toast.info = (msg, title) => window.toast({ type: 'info', message: msg, title: title });
+
 window.showToast = window.toast;
+window.toastr = window.toast;
+
+// Override browser native alert to use Toast instead
+window.alert = function(message) {
+    if (!message) return;
+    window.toast({
+        type: 'warning',
+        title: 'Atenção',
+        message: String(message)
+    });
+};
 </script>

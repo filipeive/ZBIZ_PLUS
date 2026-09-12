@@ -1204,16 +1204,12 @@
 
             // ===== SISTEMA DE TOAST =====
             function showToast(message, type = 'success') {
-                if (window.FDSMULTSERVICES && window.FDSMULTSERVICES.Toast) {
-                    window.FDSMULTSERVICES.Toast.show(message, type);
-                } else if (window.ProfessionalToast) {
-                    window.ProfessionalToast.show(message, type);
+                if (window.toast) {
+                    window.toast(message, type);
                 } else if (window.toastr) {
                     toastr[type](message);
                 } else {
-                    // Fallback para alert
-                    console.warn('Sistema de toast não encontrado, usando alert');
-                    alert(`${type.toUpperCase()}: ${message}`);
+                    console.log(`[Toast] ${type}: ${message}`);
                 }
             }
 

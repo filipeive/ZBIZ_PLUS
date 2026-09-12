@@ -481,7 +481,7 @@
         form.addEventListener('submit', function(e) {
             if (!movementTypeInput.value) {
                 e.preventDefault();
-                alert('Por favor, selecione o tipo de movimento.');
+                showToast('Por favor, selecione o tipo de movimento.', 'warning');
                 return false;
             }
 

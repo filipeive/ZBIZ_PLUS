@@ -49,7 +49,7 @@
                 <i class="fa-solid fa-chart-pie text-emerald-400"></i> Relatórios
             </a>
             @if(auth()->user()->isStockManager() || auth()->user()->isManager() || auth()->user()->isAdmin())
-            <a href="{{ route('products.create') }}" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
+            <a href="{{ route('products.create') }}" class="px-5 py-2.5 rounded-2xl {{ $theme['btn'] }} text-xs hover:scale-105 active:scale-95 transition flex items-center gap-2">
                 <i class="fa-solid fa-plus"></i> {{ $isPharmacy ? 'Novo Medicamento / Serviço' : 'Novo Artigo / Serviço' }}
             </a>
             @endif

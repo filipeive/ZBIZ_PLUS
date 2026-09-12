@@ -160,7 +160,7 @@
 
                     <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-800">
                         <button type="submit" 
-                                class="px-5 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
+                                class="px-5 py-2.5 rounded-2xl {{ $theme['btn'] }} text-xs hover:scale-105 active:scale-95 transition flex items-center gap-2">
                             <i class="fa-solid fa-floppy-disk"></i> Guardar Alterações
                         </button>
                     </div>
@@ -296,7 +296,7 @@
 
                 <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
                     <button type="button" @click="showPhotoModal = false" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-700">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 rounded-xl text-xs font-black">Submeter Foto</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black">Submeter Foto</button>
                 </div>
             </form>
         </div>

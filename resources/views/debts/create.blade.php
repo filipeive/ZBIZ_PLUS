@@ -157,7 +157,7 @@
                                 </select>
                             </div>
                             <div class="md:col-span-3">
-                                <button type="button" class="w-full py-2.5 rounded-xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg flex items-center justify-center gap-2" onclick="addProduct()">
+                                <button type="button" class="w-full py-2.5 rounded-xl {{ $theme['btn'] }} text-xs flex items-center justify-center gap-2" onclick="addProduct()">
                                     <i class="fa-solid fa-plus"></i> Adicionar
                                 </button>
                             </div>
@@ -269,7 +269,7 @@
                             <span class="text-[10px] text-slate-500 mt-1 block">Deixar vazio se não houver amortização imediata</span>
                         </div>
 
-                        <button type="submit" class="w-full py-3 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2">
+                        <button type="submit" class="w-full py-3 rounded-2xl {{ $theme['btn'] }} text-xs hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2">
                             <i class="fa-solid fa-floppy-disk"></i> Confirmar & Criar Dívida
                         </button>
                     </div>
@@ -310,11 +310,11 @@
             const select = document.getElementById('product-select');
             const option = select.options[select.selectedIndex];
             if (!option.value) {
-                alert('Selecione um produto');
+                showToast('Selecione um produto', 'warning');
                 return;
             }
             if (option.disabled) {
-                alert('Produto sem stock disponível');
+                showToast('Produto sem stock disponível', 'error');
                 return;
             }
 
@@ -334,7 +334,7 @@
                 if (existing.quantity < product.stock) {
                     existing.quantity++;
                 } else {
-                    alert('Estoque máximo atingido para ' + product.name);
+                    showToast('Estoque máximo atingido para ' + product.name, 'warning');
                     return;
                 }
             } else {
@@ -394,7 +394,7 @@
             @if ($type === 'product')
                 if (productsCart.length === 0) {
                     e.preventDefault();
-                    alert('Adicione pelo menos um produto');
+                    showToast('Adicione pelo menos um produto', 'warning');
                     return false;
                 }
             @endif

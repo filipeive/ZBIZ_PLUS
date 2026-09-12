@@ -105,7 +105,7 @@
                 <i class="fa-solid fa-key text-emerald-400"></i> Validar Licença
             </a>
             <button type="button" @click="createModalOpen = true" 
-                    class="px-4 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
+                    class="px-4 py-2.5 rounded-2xl {{ $theme['btn'] }} text-xs hover:scale-105 active:scale-95 transition flex items-center gap-2">
                 <i class="fa-solid fa-plus"></i> Registar Nova Empresa
             </button>
         </div>
@@ -216,7 +216,7 @@
                                     </form>
 
                                     <!-- Manage Button -->
-                                    <a href="{{ route('owner.tenants.show', $tenant) }}" class="px-3 py-1.5 rounded-xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-[11px] shadow-sm hover:scale-105 active:scale-95 transition flex items-center gap-1">
+                                    <a href="{{ route('owner.tenants.show', $tenant) }}" class="px-3 py-1.5 rounded-xl {{ $theme['btn'] }} text-[11px] hover:scale-105 active:scale-95 transition flex items-center gap-1">
                                         <i class="fa-solid fa-sliders text-[10px]"></i>
                                         <span>Gerir</span>
                                     </a>
@@ -356,7 +356,7 @@
                     <button type="button" @click="createModalOpen = false" class="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white text-xs font-bold">
                         Cancelar
                     </button>
-                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg transition flex items-center gap-2">
+                    <button type="submit" class="px-6 py-2.5 rounded-xl {{ $theme['btn'] }} text-xs transition flex items-center gap-2">
                         <i class="fa-solid fa-bolt"></i> Criar Tenant & Emitir Licença
                     </button>
                 </div>

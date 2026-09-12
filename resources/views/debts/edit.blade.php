@@ -176,7 +176,7 @@
                     </div>
 
                     <div class="pt-4 border-t border-slate-800 space-y-2">
-                        <button type="submit" class="w-full py-3 rounded-2xl bg-amber-500 text-slate-950 font-black text-xs hover:bg-amber-400 transition flex items-center justify-center gap-2">
+                        <button type="submit" class="w-full py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-2">
                             <i class="fa-solid fa-floppy-disk"></i> Salvar Alterações
                         </button>
                         <a href="{{ route('debts.show', $debt) }}" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs flex items-center justify-center gap-2 transition">

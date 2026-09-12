@@ -58,7 +58,7 @@
                             </select>
                         </div>
                         <div class="md:col-span-3">
-                            <button type="button" class="w-full py-2.5 rounded-xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg flex items-center justify-center gap-2" onclick="addItemToCart()">
+                            <button type="button" class="w-full py-2.5 rounded-xl {{ $theme['btn'] }} text-xs flex items-center justify-center gap-2" onclick="addItemToCart()">
                                 <i class="fa-solid fa-plus"></i> Adicionar
                             </button>
                         </div>
@@ -154,7 +154,7 @@
                         <span class="text-base font-black font-mono text-amber-400" id="display-balance">MT 0,00</span>
                     </div>
 
-                    <button type="submit" class="w-full py-3 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-sm shadow-xl hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2">
+                    <button type="submit" class="w-full py-3 rounded-2xl {{ $theme['btn'] }} text-sm hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2">
                         <i class="fa-solid fa-check"></i> Salvar Alterações
                     </button>
                 </div>

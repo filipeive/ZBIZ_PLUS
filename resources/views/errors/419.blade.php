@@ -22,8 +22,8 @@
             </p>
         </div>
         <div class="pt-2 flex flex-col gap-2">
-            <a href="{{ route('login') }}" class="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition">
-                <i class="fa-solid fa-right-to-bracket mr-1"></i> Iniciar Sessão
+            <a href="{{ route('login') }}" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md hover:scale-105 active:scale-95 transition flex items-center justify-center">
+                <i class="fa-solid fa-right-to-bracket mr-1"></i> Ir para o Login
             </a>
             <button onclick="window.location.reload()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
                 Recarregar Página

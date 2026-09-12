@@ -52,7 +52,7 @@
                             </select>
                         </div>
                         <div class="md:col-span-3">
-                            <button type="button" class="w-full py-2.5 rounded-xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg flex items-center justify-center gap-2" onclick="addItemToCart()">
+                            <button type="button" class="w-full py-2.5 rounded-xl {{ $theme['btn'] }} text-xs flex items-center justify-center gap-2" onclick="addItemToCart()">
                                 <i class="fa-solid fa-plus"></i> Adicionar
                             </button>
                         </div>
@@ -134,6 +134,18 @@
                         <input type="date" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs" name="delivery_date" id="delivery_date" value="{{ old('delivery_date') }}">
                     </div>
 
+                    @if(current_tenant()?->business_type === 'restaurant')
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="restaurant_table_id">Mesa</label>
+                            <select class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs" name="restaurant_table_id" id="restaurant_table_id">
+                                <option value="">Sem mesa / balcão</option>
+                                @foreach($restaurantTables as $restaurantTable)
+                                    <option value="{{ $restaurantTable->id }}" @selected(old('restaurant_table_id') == $restaurantTable->id)>{{ $restaurantTable->name }} ({{ $restaurantTable->capacity }} lugares)</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Prioridade *</label>
                         <select class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs" name="priority" id="priority" required>
@@ -169,7 +181,7 @@
                         <span class="text-base font-black font-mono text-rose-400" id="remaining-amount">MT 0,00</span>
                     </div>
 
-                    <button type="submit" class="w-full py-3 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2">
+                    <button type="submit" class="w-full py-3 rounded-2xl {{ $theme['btn'] }} text-xs hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2">
                         <i class="fa-solid fa-floppy-disk"></i> Salvar Pedido
                     </button>
                 </div>
@@ -281,7 +293,7 @@
             const validItems = cartItems.filter(item => item !== null);
             if (validItems.length === 0) {
                 e.preventDefault();
-                alert('Adicione pelo menos um item ao pedido.');
+                showToast('Adicione pelo menos um item ao pedido.', 'warning');
                 return false;
             }
             document.getElementById('items-json').value = JSON.stringify(validItems);

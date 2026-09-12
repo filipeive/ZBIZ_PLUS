@@ -6,6 +6,17 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
+## [Unreleased]
+### Added
+- **Alertas automáticos de validade por filial:** o dashboard consulta lotes vencidos e próximos do vencimento (90 dias) da filial ativa, atualiza a cada 30 segundos, exibe estados de carregamento/erro e oferece som configurável com Web Audio API.
+- **Consultas de produto entre filiais:** adicionado fluxo protegido por tenant para solicitar disponibilidade de produto a outra filial, responder, cancelar e acompanhar o estado da consulta.
+- **Proteção reforçada do Owner:** rotas `/owner` e `/owner/tenants` passam a exigir explicitamente o middleware de Super Admin, preservando o fluxo de suporte/impersonation.
+
+- Adicionada a página Tailwind **Mesas & Sala**, disponível apenas para tenants restaurante.
+- Implementados os estados operacionais livre, ocupada, reservada e limpeza.
+- Adicionado vínculo opcional entre encomendas e mesas; a mesa é marcada como ocupada ao abrir uma comanda.
+- Documentada a operação restaurante em `docs/07_VERTICAL_MODULES.md`.
+
 ## [1.0.18] - 2026-09-02 - Control Center SaaS Executivo, Criação Rápida de Tenants, Impersonate e Certificados de Licença
 ### Added & Improved
 - **Visualização e Cópia Instantânea de Chaves de Licença de Software (`owner/tenants/index.blade.php` e `owner/tenants/show.blade.php`):**

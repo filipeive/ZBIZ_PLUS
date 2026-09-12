@@ -41,8 +41,8 @@
             <a href="{{ route('debts.debtors-report') }}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs border border-slate-700/80 transition flex items-center gap-2">
                 <i class="fa-solid fa-chart-pie text-amber-400"></i> Relatório Devedores
             </a>
-            <a href="{{ route('debts.create') }}" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r {{ $theme['gradient'] }} text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
-                <i class="fa-solid fa-plus"></i> Novo Fiado
+            <a href="{{ route('debts.create') }}" class="px-5 py-2.5 rounded-2xl bg-primary text-primary dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 font-bold text-xs shadow-sm transition flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i> Registrar Dívida
             </a>
         </div>
     </div>

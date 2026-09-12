@@ -39,6 +39,17 @@
         <div class="card-body">
             <form method="GET" action="{{ route('reports.expenses-specialized') }}">
                 <div class="row g-3">
+                    @if(auth()->user()?->isSuperAdmin())
+                    <div class="col-md-3">
+                        <label class="form-label">Tenant (SaaS)</label>
+                        <select class="form-select" name="tenant_id">
+                            <option value="all" {{ request('tenant_id') === 'all' || !request('tenant_id') ? 'selected' : '' }}>Todos os Tenants</option>
+                            @foreach(\App\Models\Tenant::orderBy('name')->get() as $t)
+                                <option value="{{ $t->id }}" {{ request('tenant_id') == $t->id ? 'selected' : '' }}>{{ $t->name }} (#{{ $t->id }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
                     <div class="col-md-3">
                         <label class="form-label">Data Inicial</label>
                         <input type="date" class="form-control" name="date_from" value="{{ $dateFrom }}">
