@@ -8,7 +8,7 @@
 @endphp
 
 @section('content')
-<div class="space-y-6" x-data="{ showModal: false }">
+<div class="space-y-6" x-data="{ showModal: false, viewMode: 'grid' }">
     
     <!-- Top Action Bar -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
@@ -18,14 +18,76 @@
         </div>
 
         <div class="flex items-center gap-3">
+            <!-- View Switcher -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-1 flex items-center gap-1">
+                <button @click="viewMode = 'grid'" :class="viewMode === 'grid' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-border-all"></i> Grid
+                </button>
+                <button @click="viewMode = 'table'" :class="viewMode === 'table' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-list"></i> Tabela
+                </button>
+            </div>
+
             <button @click="showModal = true" class="px-5 py-2.5 rounded-2xl {{ $theme['btn'] }} text-xs hover:scale-105 active:scale-95 transition flex items-center gap-2">
                 <i class="fa-solid fa-plus"></i> Nova Despesa
             </button>
         </div>
     </div>
 
-    <!-- Expenses Data Table -->
-    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden">
+    <!-- GRID VIEW CARDS -->
+    <div x-show="viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        @forelse($expenses as $expense)
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl flex flex-col justify-between hover:border-slate-700 transition group relative overflow-hidden">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-center text-sm font-bold">
+                            <i class="fa-solid fa-receipt"></i>
+                        </div>
+                        
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 capitalize">
+                            {{ $expense->payment_method ?? 'Dinheiro' }}
+                        </span>
+                    </div>
+
+                    <h3 class="text-base font-black text-white font-heading">
+                        {{ $expense->description }}
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">
+                        <i class="fa-solid fa-tag text-slate-500 mr-1"></i> {{ $expense->category?->name ?? 'Geral' }}
+                    </p>
+
+                    @if($expense->receipt_number)
+                        <p class="text-[11px] font-mono text-slate-500 mt-2">
+                            Recibo Nº: {{ $expense->receipt_number }}
+                        </p>
+                    @endif
+                </div>
+
+                <div class="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] text-slate-500 font-bold block uppercase">Valor Pago</span>
+                        <span class="text-base font-black text-rose-400 font-mono">- {{ number_format($expense->amount, 2, ',', '.') }} MT</span>
+                    </div>
+
+                    <form method="POST" action="{{ route('expenses.destroy', $expense->id) }}" onsubmit="return confirm('Tem certeza que deseja apagar esta despesa?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-rose-400 flex items-center justify-center transition" title="Apagar">
+                            <i class="fa-solid fa-trash text-xs"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        @empty
+            <div class="col-span-full py-16 text-center text-slate-500 bg-slate-900/50 border border-dashed border-slate-800 rounded-3xl">
+                <i class="fa-solid fa-money-bill-transfer text-4xl mb-3 text-slate-600"></i>
+                <p class="text-sm">Nenhuma despesa registada neste período.</p>
+            </div>
+        @endforelse
+    </div>
+
+    <!-- TABLE VIEW -->
+    <div x-show="viewMode === 'table'" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
                 <thead>
@@ -83,13 +145,13 @@
                 </tbody>
             </table>
         </div>
-
-        @if(method_exists($expenses, 'links'))
-            <div class="mt-6 pt-4 border-t border-slate-800">
-                {{ $expenses->links() }}
-            </div>
-        @endif
     </div>
+
+    @if(method_exists($expenses, 'links'))
+        <div class="mt-6 pt-4 border-t border-slate-800">
+            {{ $expenses->links() }}
+        </div>
+    @endif
 
     <!-- Modal Nova Despesa -->
     <div x-cloak x-show="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">

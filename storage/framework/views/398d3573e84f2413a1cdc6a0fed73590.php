@@ -18,7 +18,7 @@
             </div>
             <div>
                 <h2 class="text-lg font-black font-heading text-white"><?php echo e($product->name); ?></h2>
-                <p class="text-xs text-slate-400" x-text="itemType === 'service' ? '🛠️ Serviço Prestado / Mão de Obra' : '📦 Produto Físico com Controlo de Stock'"></p>
+                <p class="text-xs text-slate-400" x-text="itemType === 'service' ? 'Serviço Prestado / Mão de Obra' : 'Produto Físico com Controlo de Stock'"></p>
             </div>
         </div>
         <div class="flex items-center gap-2">
@@ -55,8 +55,8 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-300 mb-1">Tipo de Artigo / Oferta *</label>
                     <select name="type" x-model="itemType" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none">
-                        <option value="product" <?php echo e(old('type', $product->type) === 'product' ? 'selected' : ''); ?>>📦 Produto Físico (com stock)</option>
-                        <option value="service" <?php echo e(old('type', $product->type) === 'service' ? 'selected' : ''); ?>>🛠️ Serviço / Prestação / Mão de Obra</option>
+                        <option value="product" <?php echo e(old('type', $product->type) === 'product' ? 'selected' : ''); ?>>Produto Físico (com stock)</option>
+                        <option value="service" <?php echo e(old('type', $product->type) === 'service' ? 'selected' : ''); ?>>Serviço / Prestação / Mão de Obra</option>
                     </select>
                 </div>
 
@@ -276,7 +276,7 @@ unset($__errorArgs, $__bag); ?>
 
             <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
                 <a href="<?php echo e(route('products.index')); ?>" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">Cancelar</a>
-                <button type="submit" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition">
+                <button type="submit" class="px-5 py-2.5 rounded-2xl <?php echo e($theme['btn']); ?> text-xs hover:scale-105 active:scale-95 transition">
                     Guardar Alterações
                 </button>
             </div>
@@ -314,7 +314,7 @@ unset($__errorArgs, $__bag); ?>
 
                     <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
                         <button type="button" @click="showStockModal = false" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold">Cancelar</button>
-                        <button type="submit" class="px-5 py-2 rounded-xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-black text-xs">Confirmar Ajuste</button>
+                        <button type="submit" class="px-5 py-2 rounded-xl <?php echo e($theme['btn']); ?> text-xs">Confirmar Ajuste</button>
                     </div>
                 </form>
             </div>

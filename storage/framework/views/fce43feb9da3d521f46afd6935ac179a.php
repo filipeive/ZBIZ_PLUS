@@ -30,6 +30,17 @@
     <!-- Filters Section -->
     <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
         <form method="GET" action="<?php echo e(route('reports.profit-loss')); ?>" class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-4 items-end">
+            <?php if(auth()->user()?->isSuperAdmin()): ?>
+            <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Tenant (SaaS)</label>
+                <select name="tenant_id" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                    <option value="all" <?php echo e(request('tenant_id') === 'all' || !request('tenant_id') ? 'selected' : ''); ?>>Todos os Tenants</option>
+                    <?php $__currentLoopData = \App\Models\Tenant::orderBy('name')->get(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $t): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <option value="<?php echo e($t->id); ?>" <?php echo e(request('tenant_id') == $t->id ? 'selected' : ''); ?>><?php echo e($t->name); ?> (#<?php echo e($t->id); ?>)</option>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </select>
+            </div>
+            <?php endif; ?>
             <div>
                 <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Data Inicial</label>
                 <input type="date" name="date_from" value="<?php echo e($dateFrom); ?>" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
@@ -39,7 +50,7 @@
                 <input type="date" name="date_to" value="<?php echo e($dateTo); ?>" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
             </div>
             <div>
-                <button type="submit" class="w-full py-2 bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-1.5">
+                <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-filter"></i> Calcular DRE
                 </button>
             </div>
@@ -162,7 +173,7 @@
             </div>
 
             <!-- Linha 5: Resultado Líquido Final -->
-            <div class="p-5 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-950 border-2 <?php echo e($operatingProfit >= 0 ? 'border-emerald-500/50' : 'border-rose-500/50'); ?> flex items-center justify-between">
+            <div class="p-5 rounded-2xl bg-slate-900 border-2 <?php echo e($operatingProfit >= 0 ? 'border-emerald-500/50' : 'border-rose-500/50'); ?> flex items-center justify-between">
                 <div>
                     <div class="text-xs uppercase font-bold text-slate-400">5. RESULTADO LÍQUIDO OPERACIONAL</div>
                     <div class="text-xs text-slate-500 mt-0.5">Margem Líquida Real: <?php echo e(number_format($operatingMargin, 1)); ?>%</div>
@@ -255,4 +266,5 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 <?php $__env->stopPush(); ?>
 <?php $__env->stopSection(); ?>
+
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /home/fdev-ms/Filipe/ZBIZ_PLUS/resources/views/reports/profit_loss.blade.php ENDPATH**/ ?>

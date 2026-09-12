@@ -20,7 +20,7 @@
                 <i class="fa-solid fa-boxes-stacked text-emerald-400"></i> Movimentações
             </a>
             <?php if(auth()->user()->isStockManager() || auth()->user()->isManager() || auth()->user()->isAdmin()): ?>
-            <a href="<?php echo e(route('products.edit', $product->id)); ?>" class="px-5 py-2 rounded-xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-black text-xs shadow-lg transition flex items-center gap-2">
+            <a href="<?php echo e(route('products.edit', $product->id)); ?>" class="px-5 py-2 rounded-xl <?php echo e($theme['btn']); ?> text-xs transition flex items-center gap-2">
                 <i class="fa-solid fa-pen-to-square"></i> Editar Artigo
             </a>
             <?php endif; ?>

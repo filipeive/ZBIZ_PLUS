@@ -22,7 +22,7 @@
             </p>
         </div>
         <div class="pt-2 flex flex-col gap-2">
-            <a href="<?php echo e(url('/dashboard')); ?>" class="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition">
+            <a href="<?php echo e(url('/dashboard')); ?>" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md hover:scale-105 active:scale-95 transition flex items-center justify-center">
                 <i class="fa-solid fa-house mr-1"></i> Ir para o Painel Principal
             </a>
             <button onclick="window.history.back()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">

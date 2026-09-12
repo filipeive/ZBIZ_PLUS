@@ -150,7 +150,7 @@
                 </div>
 
                 <div class="flex items-end gap-2">
-                    <button type="submit" class="w-full px-4 py-2 bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-1.5">
+                    <button type="submit" class="w-full px-4 py-2 <?php echo e($theme['btn']); ?> text-xs rounded-xl transition flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-filter"></i> Filtrar
                     </button>
                     <?php if(request()->hasAny(['status', 'priority', 'customer', 'date_from', 'date_to'])): ?>

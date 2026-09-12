@@ -86,27 +86,43 @@ class Order extends Model
     public function getStatusBadgeAttribute()
     {
         $badges = [
-            'pending'     => 'bg-warning text-dark',
-            'in_progress' => 'bg-info text-white',
-            'completed'   => 'bg-success text-white',
-            'delivered'   => 'bg-primary text-white',
-            'cancelled'   => 'bg-danger text-white'
+            'pending'     => 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+            'in_progress' => 'bg-sky-500/20 text-sky-300 border-sky-500/40',
+            'ready'       => 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+            'completed'   => 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
+            'delivered'   => 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+            'cancelled'   => 'bg-rose-500/20 text-rose-300 border-rose-500/40'
         ];
         
-        return $badges[$this->status] ?? 'bg-secondary text-white';
+        return $badges[$this->status] ?? 'bg-slate-800 text-slate-300 border-slate-700';
     }
 
     public function getStatusTextAttribute()
     {
         $texts = [
             'pending'     => 'Pendente',
-            'in_progress' => 'Em Andamento',
+            'in_progress' => 'Em Preparo',
+            'ready'       => 'Pronto',
             'completed'   => 'Concluído',
             'delivered'   => 'Entregue',
             'cancelled'   => 'Cancelado'
         ];
         
         return $texts[$this->status] ?? 'Desconhecido';
+    }
+
+    public function getElapsedTimeAttribute()
+    {
+        if (!$this->created_at) {
+            return '0m';
+        }
+        $diffMinutes = (int) $this->created_at->diffInMinutes(now());
+        if ($diffMinutes < 60) {
+            return $diffMinutes . 'm';
+        }
+        $hours = floor($diffMinutes / 60);
+        $mins = $diffMinutes % 60;
+        return "{$hours}h {$mins}m";
     }
 
     public function getPriorityBadgeAttribute()

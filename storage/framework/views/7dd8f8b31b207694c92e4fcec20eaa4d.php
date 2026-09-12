@@ -12,7 +12,7 @@
 
         <textarea name="license_key" rows="8" required class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-xs text-white font-mono placeholder:text-slate-600" placeholder="Cole a chave de licença aqui"><?php echo e(old('license_key')); ?></textarea>
 
-        <button class="px-5 py-2.5 rounded-xl bg-gradient-to-r <?php echo e(tenant_theme()['gradient']); ?> text-slate-950 font-black text-xs">Ativar Licença</button>
+        <button class="px-5 py-2.5 rounded-xl <?php echo e(tenant_theme()['btn']); ?> text-xs">Ativar Licença</button>
     </form>
 </div>
 <?php $__env->stopSection(); ?>

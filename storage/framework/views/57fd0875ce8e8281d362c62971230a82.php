@@ -156,7 +156,7 @@
                 </div>
 
                 <div class="flex items-end gap-2">
-                    <button type="submit" class="w-full px-4 py-2 bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-1.5">
+                    <button type="submit" class="w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-filter"></i> Filtrar
                     </button>
                     <?php if(request()->hasAny(['category_id', 'type', 'stock_status', 'status', 'period'])): ?>

@@ -20,7 +20,7 @@
         </div>
         <div class="flex items-center gap-2">
             <button type="button" @click="copyKey('<?php echo e($license->key_code); ?>')" 
-                    class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition flex items-center gap-2 shadow-lg shadow-emerald-500/20">
+                    class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition flex items-center gap-2 shadow-md">
                 <i class="fa-solid" :class="copiedKey ? 'fa-check' : 'fa-copy'"></i>
                 <span x-text="copiedKey ? 'Chave Copiada!' : 'Copiar Chave Serial'"></span>
             </button>

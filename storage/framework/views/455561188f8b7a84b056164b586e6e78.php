@@ -38,11 +38,11 @@
                     </h3>
 
                     <div class="flex items-center space-x-4">
-                        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br <?php echo e($theme['gradient']); ?> flex items-center justify-center shadow-lg border border-slate-700 overflow-hidden relative group">
+                        <div class="w-16 h-16 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg border border-emerald-500/30 overflow-hidden relative group">
                             <?php if(!empty($theme['logo_url'])): ?>
                                 <img src="<?php echo e($theme['logo_url']); ?>" alt="Logo" class="w-full h-full object-contain p-1.5 bg-white/10">
                             <?php else: ?>
-                                <i class="fa-solid <?php echo e($theme['icon']); ?> text-slate-950 text-2xl font-black"></i>
+                                <i class="fa-solid <?php echo e($theme['icon']); ?> text-white text-2xl font-black"></i>
                             <?php endif; ?>
                         </div>
                         <div>
@@ -61,11 +61,13 @@
                         <p class="text-[10px] text-slate-500 mt-1">PNG, JPG, SVG ou WebP (Máx. 3MB). Exibido em faturas, recibos e cabeçalho.</p>
                         <!-- Remove Logo Button -->
                         <?php if(!empty($theme['logo_url'])): ?>
-                            <div class="mt-2">
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" name="remove_logo" value="1" class="sr-only peer">
-                                    <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
-                                    <span class="ml-3 text-xs font-bold text-slate-300">Remover logótipo atual</span>
+                            <div class="mt-3 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-between">
+                                <span class="text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2">
+                                    <i class="fa-solid fa-image"></i> Logótipo ativo
+                                </span>
+                                <label class="flex items-center gap-2 cursor-pointer bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-xl transition shadow-sm">
+                                    <input type="checkbox" name="remove_logo" value="1" class="w-4 h-4 text-white rounded border-white/40 focus:ring-rose-500">
+                                    <span class="text-xs font-bold">Remover Logótipo</span>
                                 </label>
                             </div>
                         <?php endif; ?>
@@ -244,7 +246,7 @@
                     </div>
 
                     <div class="pt-4 border-t border-slate-800 flex justify-end">
-                        <button type="submit" class="px-6 py-3 rounded-2xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-black text-xs shadow-lg hover:scale-105 active:scale-95 transition flex items-center gap-2">
+                        <button type="submit" class="px-6 py-3 rounded-2xl <?php echo e($theme['btn']); ?> text-xs hover:scale-105 active:scale-95 transition flex items-center gap-2">
                             <i class="fa-solid fa-floppy-disk"></i> Guardar Configurações
                         </button>
                     </div>

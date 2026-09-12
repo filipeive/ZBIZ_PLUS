@@ -24,4 +24,21 @@ class RestaurantTable extends Model
     {
         return $this->belongsTo(Branch::class);
     }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'restaurant_table_id');
+    }
+
+    public function activeOrder()
+    {
+        return $this->hasOne(Order::class, 'restaurant_table_id')
+            ->whereNotIn('status', ['completed', 'delivered', 'cancelled'])
+            ->latestOfMany();
+    }
+
+    public function hasActiveOrder(): bool
+    {
+        return $this->activeOrder()->exists();
+    }
 }

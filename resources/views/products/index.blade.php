@@ -11,7 +11,7 @@
 @section('page-title', $hasServices ? ($theme['catalog_title'] ?? 'Catálogo de Produtos & Serviços') : 'Catálogo de Produtos')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6" x-data="{ viewMode: 'grid' }">
     
     <!-- Top Action & Search Bar -->
     <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
@@ -45,12 +45,22 @@
         </form>
 
         <div class="flex items-center gap-2.5 w-full lg:w-auto justify-end">
+            <!-- View Mode Toggle -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-1 flex items-center gap-1">
+                <button @click="viewMode = 'grid'" :class="viewMode === 'grid' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-border-all"></i> Grid
+                </button>
+                <button @click="viewMode = 'table'" :class="viewMode === 'table' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-list"></i> Tabela
+                </button>
+            </div>
+
             <a href="{{ route('products.report') }}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs border border-slate-700/80 transition flex items-center gap-2">
                 <i class="fa-solid fa-chart-pie text-emerald-400"></i> Relatórios
             </a>
             @if(auth()->user()->isStockManager() || auth()->user()->isManager() || auth()->user()->isAdmin())
             <a href="{{ route('products.create') }}" class="px-5 py-2.5 rounded-2xl {{ $theme['btn'] }} text-xs hover:scale-105 active:scale-95 transition flex items-center gap-2">
-                <i class="fa-solid fa-plus"></i> {{ $isPharmacy ? 'Novo Medicamento / Serviço' : 'Novo Artigo / Serviço' }}
+                <i class="fa-solid fa-plus"></i> {{ $isPharmacy ? 'Novo Medicamento' : 'Novo Artigo' }}
             </a>
             @endif
         </div>
@@ -134,8 +144,75 @@
         </div>
     </div>
 
-    <!-- Products Data Table -->
-    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden">
+    <!-- GRID VIEW CARDS -->
+    <div x-show="viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+        @forelse($products as $product)
+            @php
+                $earliestBatch = $product->batches()->where('status', 'active')->orderBy('expiry_date', 'asc')->first();
+            @endphp
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl flex flex-col justify-between hover:border-slate-700 transition group relative overflow-hidden">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-2xl bg-slate-800 text-slate-300 flex items-center justify-center text-sm font-bold border border-slate-700">
+                            @if($product->type === 'service')
+                                <i class="fa-solid fa-screwdriver-wrench text-violet-400"></i>
+                            @else
+                                <i class="fa-solid fa-box {{ $theme['text_accent'] }}"></i>
+                            @endif
+                        </div>
+                        
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border {{ $product->type === 'service' ? 'bg-violet-500/10 text-violet-400 border-violet-500/30' : ($product->stock_quantity <= $product->min_stock_level ? 'bg-rose-500/10 text-rose-400 border-rose-500/30' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30') }}">
+                            @if($product->type === 'service')
+                                Serviço
+                            @else
+                                {{ $product->stock_quantity }} {{ $product->unit ?? 'un' }}
+                            @endif
+                        </span>
+                    </div>
+
+                    <p class="text-[10px] font-mono text-slate-500 uppercase tracking-wider mb-1">
+                        {{ $product->barcode ?? $product->sku ?? ('PRD-' . $product->id) }}
+                    </p>
+                    <h3 class="text-base font-black text-white font-heading hover:text-emerald-400 transition">
+                        <a href="{{ route('products.show', $product->id) }}">{{ $product->name }}</a>
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1 line-clamp-1">{{ $product->category?->name ?? 'Geral' }}</p>
+
+                    @if($isPharmacy && $earliestBatch)
+                        <div class="mt-2 text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg p-1.5 flex items-center gap-1.5">
+                            <i class="fa-solid fa-calendar-day"></i> Validade: {{ $earliestBatch->expiry_date->format('m/Y') }} (Lote: {{ $earliestBatch->batch_number }})
+                        </div>
+                    @endif
+                </div>
+
+                <div class="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] text-slate-500 font-bold block uppercase">Preço Venda</span>
+                        <span class="text-sm font-black text-white font-mono">{{ number_format($product->selling_price, 2, ',', '.') }} MT</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('products.show', $product->id) }}" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-emerald-400 flex items-center justify-center transition" title="Ficha Técnica">
+                            <i class="fa-solid fa-eye text-xs"></i>
+                        </a>
+                        @if(auth()->user()->isStockManager() || auth()->user()->isManager() || auth()->user()->isAdmin())
+                            <a href="{{ route('products.edit', $product->id) }}" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition" title="Editar">
+                                <i class="fa-solid fa-pen-to-square text-xs"></i>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @empty
+            <div class="col-span-full py-16 text-center text-slate-500 bg-slate-900/50 border border-dashed border-slate-800 rounded-3xl">
+                <i class="fa-solid fa-box-open text-4xl mb-3 text-slate-600"></i>
+                <p class="text-sm">Nenhum produto registado ainda.</p>
+            </div>
+        @endforelse
+    </div>
+
+    <!-- TABLE VIEW -->
+    <div x-show="viewMode === 'table'" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
                 <thead>
@@ -202,25 +279,16 @@
                             </td>
                             <td class="py-3.5 text-right">
                                 <div class="flex items-center justify-end gap-1.5">
-                                    <!-- Ver Ficha Técnica -->
-                                    <a href="{{ route('products.show', $product->id) }}" 
-                                       class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-emerald-400 hover:bg-slate-700 flex items-center justify-center transition" 
-                                       title="Ver Ficha Técnica">
+                                    <a href="{{ route('products.show', $product->id) }}" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-emerald-400 hover:bg-slate-700 flex items-center justify-center transition" title="Ver Ficha Técnica">
                                         <i class="fa-solid fa-eye text-xs"></i>
                                     </a>
-
                                     @if(auth()->user()->isStockManager() || auth()->user()->isManager() || auth()->user()->isAdmin())
-                                    <!-- Editar -->
-                                    <a href="{{ route('products.edit', $product->id) }}" 
-                                       class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 flex items-center justify-center transition" 
-                                       title="Editar">
+                                    <a href="{{ route('products.edit', $product->id) }}" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 flex items-center justify-center transition" title="Editar">
                                         <i class="fa-solid fa-pen-to-square text-xs"></i>
                                     </a>
                                     @endif
-
                                     @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
-                                    <!-- Eliminar -->
-                                    <form action="{{ route('products.destroy', $product->id) }}" method="POST" onsubmit="return confirm('Deseja realmente eliminar este artigo do catálogo? O histórico de vendas será preservado.');" class="inline">
+                                    <form action="{{ route('products.destroy', $product->id) }}" method="POST" onsubmit="return confirm('Deseja realmente eliminar este artigo do catálogo?');" class="inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 flex items-center justify-center transition" title="Eliminar">
@@ -242,13 +310,13 @@
                 </tbody>
             </table>
         </div>
-
-        @if(method_exists($products, 'links'))
-            <div class="mt-6 pt-4 border-t border-slate-800">
-                {{ $products->links() }}
-            </div>
-        @endif
     </div>
+
+    @if(method_exists($products, 'links'))
+        <div class="mt-6 pt-4 border-t border-slate-800">
+            {{ $products->links() }}
+        </div>
+    @endif
 
 </div>
 @endsection

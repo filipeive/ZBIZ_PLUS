@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>" class="dark">
+<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>" class="light">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -44,12 +44,15 @@
 
     <!-- Theme Preload Script -->
     <script>
-        if (localStorage.getItem('zb_theme') === 'light') {
-            document.documentElement.classList.remove('dark');
-            document.documentElement.classList.add('light');
-        } else {
+        if (localStorage.getItem('zb_theme') === 'dark') {
             document.documentElement.classList.add('dark');
             document.documentElement.classList.remove('light');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
+            if (!localStorage.getItem('zb_theme')) {
+                localStorage.setItem('zb_theme', 'light');
+            }
         }
     </script>
 
@@ -496,6 +499,24 @@
             color: var(--app-text) !important;
         }
 
+        html.light .fixed.inset-0.pointer-events-none {
+            display: none !important;
+        }
+
+        html.light header,
+        html.light aside,
+        html.light .backdrop-blur-sm,
+        html.light .backdrop-blur-md,
+        html.light .backdrop-blur-xl {
+            -webkit-backdrop-filter: none !important;
+            backdrop-filter: none !important;
+        }
+
+        html.light .app-content,
+        html.light .app-main {
+            background-color: #f8fafc !important;
+        }
+
         html.light .bg-slate-950 {
             background-color: #f8fafc !important;
             color: #0f172a !important;
@@ -526,6 +547,14 @@
             color: #1e293b !important;
         }
 
+        html.light .bg-slate-950\/80,
+        html.light .bg-slate-950\/60,
+        html.light .bg-slate-950\/40,
+        html.light .bg-slate-950\/30 {
+            background-color: #f8fafc !important;
+            color: #0f172a !important;
+        }
+
         html.light .hover\:bg-slate-800:hover,
         html.light .hover\:bg-slate-800\/60:hover {
             background-color: #e2e8f0 !important;
@@ -539,11 +568,40 @@
         html.light .border-slate-800,
         html.light .border-slate-800\/80,
         html.light .border-slate-800\/60,
-        html.light .border-slate-700 {
+        html.light .border-slate-700,
+        html.light .border-slate-700\/80 {
             border-color: #e2e8f0 !important;
         }
 
         /* Dynamic text contrast without breaking bright buttons and badges */
+        html.light .bg-white.text-white,
+        html.light .bg-slate-950.text-white,
+        html.light .bg-slate-900.text-white,
+        html.light .bg-slate-900\/95.text-white,
+        html.light .bg-slate-900\/90.text-white,
+        html.light .bg-slate-900\/85.text-white,
+        html.light .bg-slate-900\/80.text-white,
+        html.light .bg-slate-900\/70.text-white,
+        html.light .bg-slate-900\/50.text-white,
+        html.light .bg-slate-800.text-white,
+        html.light .bg-slate-800\/80.text-white,
+        html.light .bg-slate-800\/60.text-white,
+        html.light .bg-slate-800\/50.text-white,
+        html.light .bg-slate-950 .text-white,
+        html.light .bg-slate-900 .text-white,
+        html.light .bg-slate-900\/95 .text-white,
+        html.light .bg-slate-900\/90 .text-white,
+        html.light .bg-slate-900\/85 .text-white,
+        html.light .bg-slate-900\/80 .text-white,
+        html.light .bg-slate-900\/70 .text-white,
+        html.light .bg-slate-900\/50 .text-white,
+        html.light .bg-slate-800 .text-white,
+        html.light .bg-slate-800\/80 .text-white,
+        html.light .bg-slate-800\/60 .text-white,
+        html.light .bg-slate-800\/50 .text-white {
+            color: #0f172a !important;
+        }
+
         html.light .text-slate-100,
         html.light .text-slate-200 {
             color: #0f172a !important;
@@ -559,6 +617,54 @@
 
         html.light .text-slate-500 {
             color: #64748b !important;
+        }
+
+        html.light .page-title,
+        html.light header h1,
+        html.light h1,
+        html.light h2,
+        html.light h3,
+        html.light h4,
+        html.light .font-heading {
+            color: #0f172a !important;
+        }
+
+        html.light .tenant-gradient,
+        html.light .bg-gradient-to-r {
+            color: #ffffff !important;
+        }
+
+        html.light .tenant-gradient .text-white,
+        html.light .bg-gradient-to-r .text-white,
+        html.light .bg-emerald-500,
+        html.light .bg-emerald-600,
+        html.light .bg-rose-500,
+        html.light .bg-rose-600,
+        html.light .bg-sky-500,
+        html.light .bg-sky-600,
+        html.light .bg-indigo-500,
+        html.light .bg-indigo-600 {
+            color: #ffffff !important;
+        }
+
+        html.light .tenant-button {
+            color: #ffffff !important;
+            box-shadow: 0 10px 22px var(--tenant-primary-glow) !important;
+        }
+
+        html.light .preserve-dark,
+        html.light .preserve-dark h1,
+        html.light .preserve-dark h2,
+        html.light .preserve-dark h3,
+        html.light .preserve-dark h4,
+        html.light .preserve-dark .font-heading,
+        html.light .preserve-dark .text-white {
+            color: #f8fafc !important;
+        }
+
+        html.light .shadow-xl,
+        html.light .shadow-2xl {
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08) !important;
         }
 
         html.light input,
@@ -692,53 +798,40 @@
             
             <!-- Sidebar Top: Brand & Tenant Info -->
             <div class="flex flex-col flex-1 min-h-0 overflow-y-auto">
-                <div class="p-5 border-b border-slate-800/80 flex items-center justify-between">
-                    <a href="<?php echo e($isOwnerConsole ? route('owner.tenants.index') : route('dashboard.index')); ?>" class="flex items-center space-x-3 group">
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br <?php echo e($theme['gradient']); ?> flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition overflow-hidden">
+                <div class="p-5 border-b border-slate-800/60 flex items-center justify-between">
+                    <a href="<?php echo e($isOwnerConsole ? route('owner.tenants.index') : route('dashboard.index')); ?>" class="flex items-center space-x-3 group min-w-0">
+                        <!-- Brand logo/avatar -->
+                        <div class="w-9 h-9 rounded-xl bg-emerald-600 flex-shrink-0 flex items-center justify-center shadow-md group-hover:scale-105 transition overflow-hidden border border-emerald-500/30">
                             <?php if(!empty($theme['logo_url'])): ?>
-                                <img src="<?php echo e($theme['logo_url']); ?>" alt="Logo" class="w-full h-full object-contain p-1 bg-white/10">
+                                <img src="<?php echo e($theme['logo_url']); ?>" alt="Logo" class="w-full h-full object-contain p-0.5">
                             <?php else: ?>
-                                <i class="fa-solid fa-bolt text-white text-lg font-black drop-shadow"></i>
+                                <i class="fa-solid fa-bolt text-white text-sm"></i>
                             <?php endif; ?>
                         </div>
-                        <div>
-                            <div class="text-xl font-black font-heading tracking-tight text-white flex items-center gap-1">
+                        <div class="min-w-0">
+                            <div class="text-sm font-black font-heading tracking-tight text-white leading-none flex items-baseline gap-0.5">
                                 ZBIZ<span class="<?php echo e($theme['text_accent']); ?>">+</span>
                             </div>
-                            <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400 truncate max-w-[130px]" title="<?php echo e($isOwnerConsole ? 'Owner Console' : ($tenant?->name ?? 'ZBIZ ERP')); ?>">
+                            <div class="text-[10px] text-slate-400 font-medium truncate max-w-[120px] leading-tight mt-0.5" title="<?php echo e($isOwnerConsole ? 'Owner Console' : ($tenant?->name ?? 'ZBIZ ERP')); ?>">
                                 <?php echo e($isOwnerConsole ? 'Owner Console' : ($tenant?->name ?? 'SaaS Moçambique')); ?>
 
                             </div>
                         </div>
                     </a>
 
-                    <!-- Sector Pill Badge -->
+                    <!-- Sector / Role Pill -->
                     <?php if($isOwnerConsole): ?>
-                        <span class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full border <?php echo e($theme['badge']); ?> flex items-center gap-1" title="Gestão SaaS">
-                            <i class="fa-solid fa-building-shield text-[9px]"></i>
+                        <span class="ml-2 flex-shrink-0 text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full border <?php echo e($theme['badge']); ?> flex items-center gap-1" title="Gestão SaaS">
+                            <i class="fa-solid fa-building-shield"></i>
                         </span>
                     <?php else: ?>
-                        <span class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full border <?php echo e($theme['badge']); ?> flex items-center gap-1" title="<?php echo e($theme['sector_name']); ?>">
-                            <i class="fa-solid <?php echo e($theme['icon']); ?> text-[9px]"></i>
+                        <span class="ml-2 flex-shrink-0 text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full border <?php echo e($theme['badge']); ?> flex items-center gap-1" title="<?php echo e($theme['sector_name']); ?>">
+                            <i class="fa-solid <?php echo e($theme['icon']); ?>"></i>
                         </span>
                     <?php endif; ?>
                 </div>
 
-                <!-- POS Quick Shortcut Button (Frente de Caixa) -->
-                <?php if(!$isOwnerConsole && tenant_has_feature('pos') && (auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin() || auth()->user()->hasPermission('create_sales'))): ?>
-                <div class="px-4 py-3 border-b border-slate-800/80">
-                    <a href="<?php echo e(route('pos.index')); ?>" 
-                       class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> hover:opacity-95 text-white font-bold transition shadow-lg shadow-emerald-500/10 border border-white/20">
-                        <div class="flex items-center space-x-2.5">
-                            <i class="fa-solid fa-cash-register text-base text-white"></i>
-                            <span class="text-white font-black text-xs tracking-wide">ZBIZ POS 2.0</span>
-                        </div>
-                        <span class="text-[9px] uppercase bg-black/25 text-white border border-white/30 px-2 py-0.5 rounded-md font-black tracking-wider">
-                            FRENTE CAIXA
-                        </span>
-                    </a>
-                </div>
-                <?php endif; ?>
+
 
                 <!-- Navigation Links -->
                 <nav class="p-4 space-y-5 text-xs font-medium">
@@ -830,6 +923,18 @@
                             </a>
                         </div>
                     </div>
+                    <?php endif; ?>
+
+                    <?php if($tenant?->business_type === 'restaurant'): ?>
+                        <div>
+                            <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Restaurante</div>
+                            <div class="space-y-1">
+                                <a href="<?php echo e(route('restaurant.tables.index')); ?>" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl transition <?php echo e(request()->routeIs('restaurant.tables.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'); ?>">
+                                    <i class="fa-solid fa-chair w-4 text-center <?php echo e(request()->routeIs('restaurant.tables.*') ? $theme['text_accent'] : ''); ?>"></i>
+                                    <span>Mesas & Sala</span>
+                                </a>
+                            </div>
+                        </div>
                     <?php endif; ?>
 
                     <!-- Catálogo & Stock -->
@@ -960,29 +1065,55 @@
                 </nav>
             </div>
 
-            <!-- Sidebar Bottom: Active Branch & Profile Info -->
-            <div class="p-4 border-t border-slate-800/80 bg-slate-950/40">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3 min-w-0">
-                        <div class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs text-white">
-                            <?php echo e(substr(auth()->user()?->name ?? 'A', 0, 2)); ?>
+            <!-- Sidebar Bottom: Active Branch & User Info -->
+            <div class="border-t border-slate-800/60 bg-slate-950/50" x-data="{ userMenuOpen: false }">
+                <!-- Branch info strip -->
+                <?php if(!$isOwnerConsole && $branch): ?>
+                <div class="px-4 py-2 border-b border-slate-800/40 flex items-center gap-2">
+                    <i class="fa-solid fa-store text-[9px] <?php echo e($theme['text_accent']); ?>"></i>
+                    <span class="text-[10px] text-slate-400 font-medium truncate"><?php echo e($branch?->name ?? 'Loja Principal'); ?></span>
+                </div>
+                <?php endif; ?>
+                <!-- User row -->
+                <div class="p-3 flex items-center justify-between">
+                    <button @click="userMenuOpen = !userMenuOpen" class="flex items-center space-x-2.5 min-w-0 group" type="button">
+                        <div class="w-8 h-8 rounded-lg bg-slate-700 border border-slate-600 flex items-center justify-center font-black text-[11px] text-white flex-shrink-0 group-hover:bg-slate-600 transition">
+                            <?php echo e(strtoupper(substr(auth()->user()?->name ?? 'U', 0, 2))); ?>
 
                         </div>
-                        <div class="min-w-0">
-                            <div class="text-xs font-bold text-white truncate"><?php echo e(auth()->user()?->name ?? 'Utilizador'); ?></div>
-                            <div class="text-[10px] text-slate-500 truncate flex items-center gap-1">
-                                <span class="px-1.5 py-0.2 rounded bg-slate-800 text-[9px] text-slate-400 font-semibold"><?php echo e(auth()->user()?->role?->name ?? 'Utilizador'); ?></span>
-                                <span><?php echo e($isOwnerConsole ? 'Owner Console' : ($branch?->name ?? 'Loja Principal')); ?></span>
-                            </div>
+                        <div class="min-w-0 text-left">
+                            <div class="text-[11px] font-bold text-white truncate max-w-[110px]"><?php echo e(auth()->user()?->name ?? 'Utilizador'); ?></div>
+                            <div class="text-[9px] text-slate-500 truncate"><?php echo e(auth()->user()?->role?->name ?? 'Utilizador'); ?></div>
                         </div>
-                    </div>
+                        <i class="fa-solid fa-chevron-up text-[8px] text-slate-500 transition" :class="userMenuOpen ? 'rotate-0' : 'rotate-180'"></i>
+                    </button>
 
                     <form method="POST" action="<?php echo e(route('logout')); ?>">
                         <?php echo csrf_field(); ?>
-                        <button type="submit" class="w-8 h-8 rounded-lg bg-slate-800/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 flex items-center justify-center transition" title="Terminar Sessão">
+                        <button type="submit" class="w-8 h-8 rounded-lg hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 flex items-center justify-center transition" title="Terminar Sessão">
                             <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
                         </button>
                     </form>
+                </div>
+                <!-- User popup menu -->
+                <div x-show="userMenuOpen" @click.away="userMenuOpen = false" x-cloak
+                     class="mx-3 mb-3 bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-xl">
+                    <a href="<?php echo e(route('profile.edit')); ?>" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs text-slate-300 hover:bg-slate-700 hover:text-white transition">
+                        <i class="fa-solid fa-user-gear w-4 text-center text-slate-400"></i> Perfil & Conta
+                    </a>
+                    <?php if(!$isOwnerConsole): ?>
+                    <a href="<?php echo e(route('admin.settings')); ?>" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs text-slate-300 hover:bg-slate-700 hover:text-white transition border-t border-slate-700/50">
+                        <i class="fa-solid fa-sliders w-4 text-center text-slate-400"></i> Definições
+                    </a>
+                    <?php endif; ?>
+                    <div class="border-t border-slate-700/50">
+                        <form method="POST" action="<?php echo e(route('logout')); ?>">
+                            <?php echo csrf_field(); ?>
+                            <button type="submit" class="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs text-rose-400 hover:bg-rose-500/10 transition">
+                                <i class="fa-solid fa-power-off w-4 text-center"></i> Terminar Sessão
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
 
@@ -991,128 +1122,429 @@
         <!-- Main Workspace Viewport -->
         <div class="app-content flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-slate-950/40">
             
-            <!-- Top Navigation Bar -->
-            <header class="h-16 flex-shrink-0 bg-slate-900/80 border-b border-slate-800/80 backdrop-blur-md px-4 sm:px-8 flex items-center justify-between z-20 shadow-sm">
-                
-                <div class="flex items-center space-x-3 min-w-0 pr-3">
-                    <button @click="sidebarOpen = !sidebarOpen" class="w-10 h-10 flex-shrink-0 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center lg:hidden">
+            <!-- Top Navigation Bar — Full-Width Professional -->
+            <header class="h-14 flex-shrink-0 bg-white/95 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800/80 backdrop-blur-md z-20 shadow-sm"
+                    x-data="{
+                        searchQuery: '',
+                        searchResults: [],
+                        searchLoading: false,
+                        searchOpen: false,
+                        notifOpen: false,
+                        userMenuOpen: false,
+                        unreadNotifCount: <?php echo e(auth()->check() ? auth()->user()->notifications()->where('read', false)->count() : 0); ?>,
+                        lowStockCount: <?php echo e(isset($lowStockProducts) ? (is_countable($lowStockProducts) ? count($lowStockProducts) : 0) : 0); ?>,
+                        recentNotifs: [],
+                        searchTimer: null,
+
+                        async loadNotifCounts() {
+                            try {
+                                const r = await fetch('<?php echo e(route('notifications.api')); ?>', { credentials: 'same-origin' });
+                                if (r.ok) {
+                                    const d = await r.json();
+                                    this.unreadNotifCount = d.unread_count ?? 0;
+                                    this.lowStockCount = d.expiring_count ?? this.lowStockCount;
+                                    this.recentNotifs = d.notifications || [];
+                                }
+                            } catch(e) {}
+                        },
+
+                        async markAllNotificationsRead() {
+                            this.unreadNotifCount = 0;
+                            try {
+                                await fetch('<?php echo e(route('notifications.mark-all-read')); ?>', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
+                                        'Content-Type': 'application/json'
+                                    }
+                                });
+                                this.loadNotifCounts();
+                            } catch(e) {}
+                        },
+
+                        async doSearch(q) {
+                            if (q.length < 2) { this.searchResults = []; this.searchOpen = false; return; }
+                            this.searchLoading = true;
+                            this.searchOpen = true;
+                            try {
+                                const r = await fetch(`<?php echo e(route('search.api')); ?>?q=${encodeURIComponent(q)}&limit=6`, { credentials: 'same-origin' });
+                                if (r.ok) {
+                                    const d = await r.json();
+                                    this.searchResults = d.results || [];
+                                }
+                            } catch(e) { this.searchResults = []; }
+                            finally { this.searchLoading = false; }
+                        },
+
+                        onSearchInput(q) {
+                            clearTimeout(this.searchTimer);
+                            if (q.length < 2) { this.searchResults = []; this.searchOpen = false; return; }
+                            this.searchTimer = setTimeout(() => this.doSearch(q), 280);
+                        }
+                    }"
+                    x-init="loadNotifCounts()">
+
+                <div class="h-full flex items-center px-4 sm:px-6 gap-3">
+
+                    <!-- Mobile sidebar toggle -->
+                    <button @click="sidebarOpen = !sidebarOpen"
+                            class="w-9 h-9 flex-shrink-0 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center lg:hidden transition"
+                            aria-label="Menu">
                         <i class="fa-solid fa-bars text-sm"></i>
                     </button>
 
-                    <h1 class="text-base sm:text-lg font-black font-heading text-white truncate">
-                        <?php echo $__env->yieldContent('page-title', 'Visão Geral'); ?>
-                    </h1>
-                </div>
-
-                <!-- Right Top Tools: Branch Switcher, Subscription Badge, Theme Toggle, POS -->
-                <div class="flex items-center space-x-2.5 sm:space-x-3">
-                    
-                    <!-- Theme Toggle (Light / Dark) -->
-                    <button @click="toggleTheme()" 
-                            type="button"
-                            class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition border border-slate-700/80 shadow-sm"
-                            :title="isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'">
-                        <i x-show="isDarkMode" class="fa-solid fa-sun text-amber-400 text-xs sm:text-sm"></i>
-                        <i x-show="!isDarkMode" class="fa-solid fa-moon text-indigo-500 text-xs sm:text-sm"></i>
-                    </button>
-
-                    <!-- Branch Selector: Interactive for Admin/Manager, Static for Cashier/Operators -->
-                    <?php if($isOwnerConsole): ?>
-                    <div class="hidden sm:flex items-center space-x-1.5 bg-slate-950/80 border border-slate-800/80 px-3 py-1.5 rounded-xl text-xs" title="Console do dono do sistema">
-                        <i class="fa-solid fa-building-shield <?php echo e($theme['text_accent']); ?>"></i>
-                        <span class="text-slate-300 font-semibold">Owner Console</span>
+                    <!-- Page Title (desktop) — compact left anchor -->
+                    <div class="hidden lg:flex items-center gap-2 flex-shrink-0 min-w-0 mr-2">
+                        <i class="fa-solid <?php echo $__env->yieldContent('title-icon', 'fa-chart-pie'); ?> text-xs <?php echo e($theme['text_accent']); ?>"></i>
+                        <h1 class="text-sm font-bold text-slate-700 dark:text-white font-heading whitespace-nowrap">
+                            <?php echo $__env->yieldContent('page-title', 'Painel'); ?>
+                        </h1>
                     </div>
-                    <?php elseif(auth()->user()->canSwitchBranch()): ?>
-                    <div class="relative" x-data="{ branchDropdown: false }">
-                        <button @click="branchDropdown = !branchDropdown" 
-                                type="button"
-                                class="hidden sm:flex items-center space-x-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 px-3 py-1.5 rounded-xl text-xs transition cursor-pointer">
-                            <i class="fa-solid fa-store <?php echo e($theme['text_accent']); ?>"></i>
-                            <span class="text-slate-300 font-semibold"><?php echo e($branch?->name ?? 'Loja Principal'); ?></span>
-                            <i class="fa-solid fa-chevron-down text-[9px] text-slate-500 ml-1"></i>
-                        </button>
 
-                        <div x-show="branchDropdown" 
-                             @click.away="branchDropdown = false" 
-                             x-cloak 
-                             class="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-2 z-50 space-y-1">
-                            <div class="px-2 py-1 text-[10px] uppercase font-bold text-slate-500 tracking-wider">Alternar Filial Ativa</div>
-                            <?php $__empty_1 = true; $__currentLoopData = $allTenantBranches; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $tb): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                                <form action="<?php echo e(route('branches.switch', $tb->id)); ?>" method="POST">
-                                    <?php echo csrf_field(); ?>
-                                    <button type="submit" class="w-full text-left px-3 py-2 rounded-xl text-xs flex items-center justify-between transition <?php echo e($tb->id === ($branch?->id) ? 'bg-emerald-500/10 text-emerald-400 font-bold' : 'text-slate-300 hover:bg-slate-800'); ?>">
-                                        <span class="truncate"><?php echo e($tb->name); ?></span>
-                                        <?php if($tb->id === ($branch?->id)): ?>
-                                            <i class="fa-solid fa-check text-[10px]"></i>
-                                        <?php endif; ?>
-                                    </button>
-                                </form>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                                <div class="px-3 py-2 text-xs text-slate-500">Nenhuma filial registada</div>
-                            <?php endif; ?>
-                            <?php if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin()): ?>
-                            <div class="border-t border-slate-800 mt-1 pt-1">
-                                <a href="<?php echo e(route('branches.index')); ?>" class="block px-3 py-1.5 rounded-xl text-[11px] text-slate-400 hover:text-white hover:bg-slate-800 transition font-bold">
-                                    <i class="fa-solid fa-gear text-[10px] mr-1"></i> Gerir Filiais
-                                </a>
+                    <!-- ═══ Global Search Bar — grows to fill all space ═══ -->
+                    <div class="flex-1 relative" x-data="{ focused: false }">
+                        <div class="relative flex items-center">
+                            <!-- Search icon -->
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none z-10"
+                               :class="searchLoading ? 'animate-pulse text-emerald-500' : ''"></i>
+
+                            <input type="text"
+                                   id="global-search"
+                                   x-model="searchQuery"
+                                   @focus="focused = true"
+                                   @blur="setTimeout(() => { focused = false; }, 250)"
+                                   @input="onSearchInput($event.target.value)"
+                                   @keydown.escape="searchOpen = false; searchQuery = ''; searchResults = []"
+                                   @keydown.slash.window.prevent="$el.focus()"
+                                   placeholder="Pesquisar produtos, vendas, clientes… (Tecla /)"
+                                   autocomplete="off"
+                                   class="w-full pl-9 pr-4 py-2 text-sm bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/50 rounded-xl text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 dark:focus:border-emerald-500 transition-all duration-150">
+
+                            <!-- Clear button -->
+                            <button x-show="searchQuery.length > 0"
+                                    @click="searchQuery = ''; searchResults = []; searchOpen = false; $el.previousElementSibling.focus()"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
+                                <i class="fa-solid fa-xmark text-xs"></i>
+                            </button>
+                        </div>
+
+                        <!-- ─── Search Results Dropdown ─── -->
+                        <div x-show="(focused || searchOpen) && (searchQuery.length >= 2 || searchQuery.length === 0)"
+                             x-cloak
+                             @click.away="searchOpen = false"
+                             class="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-50 overflow-hidden"
+                             style="max-height: 420px; overflow-y: auto;">
+
+                            <!-- Quick access (when empty) -->
+                            <template x-if="searchQuery.length < 2">
+                                <div class="p-3">
+                                    <div class="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 px-1 mb-2 tracking-wider">Acesso Rápido</div>
+                                    <div class="grid grid-cols-2 gap-1">
+                                        <a href="<?php echo e(route('sales.create')); ?>" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition font-medium">
+                                            <span class="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-plus-circle text-xs"></i></span>
+                                            Nova Venda
+                                        </a>
+                                        <a href="<?php echo e(route('products.index')); ?>" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition font-medium">
+                                            <span class="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-box-open text-xs"></i></span>
+                                            Produtos
+                                        </a>
+                                        <a href="<?php echo e(route('expenses.index')); ?>" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition font-medium">
+                                            <span class="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-money-bill text-xs"></i></span>
+                                            Despesas
+                                        </a>
+                                        <a href="<?php echo e(route('reports.index')); ?>" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition font-medium">
+                                            <span class="w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-500/15 text-violet-600 dark:text-violet-400 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-chart-bar text-xs"></i></span>
+                                            Relatórios
+                                        </a>
+                                        <a href="<?php echo e(route('debts.index')); ?>" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition font-medium">
+                                            <span class="w-7 h-7 rounded-lg bg-rose-100 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-hand-holding-dollar text-xs"></i></span>
+                                            Fiados
+                                        </a>
+                                        <a href="<?php echo e(route('stock-movements.index')); ?>" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition font-medium">
+                                            <span class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-boxes-stacked text-xs"></i></span>
+                                            Stock
+                                        </a>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Loading state -->
+                            <div x-show="searchLoading && searchQuery.length >= 2" class="flex items-center justify-center gap-2 py-8 text-xs text-slate-400">
+                                <i class="fa-solid fa-circle-notch animate-spin text-emerald-500"></i>
+                                <span>A pesquisar…</span>
                             </div>
-                            <?php endif; ?>
+
+                            <!-- Search results -->
+                            <template x-if="!searchLoading && searchQuery.length >= 2">
+                                <div>
+                                    <template x-if="searchResults.length === 0">
+                                        <div class="px-5 py-8 text-center">
+                                            <i class="fa-solid fa-magnifying-glass text-2xl text-slate-300 dark:text-slate-600 mb-2"></i>
+                                            <p class="text-xs text-slate-400">Nenhum resultado para "<span x-text="searchQuery"></span>"</p>
+                                            <a :href="`<?php echo e(route('search.index')); ?>?q=${encodeURIComponent(searchQuery)}`" class="mt-2 inline-block text-xs text-emerald-600 dark:text-emerald-400 font-bold hover:underline">Ver pesquisa completa →</a>
+                                        </div>
+                                    </template>
+                                    <template x-for="(group, gIdx) in searchResults" :key="gIdx">
+                                        <div>
+                                            <div class="px-4 py-1.5 text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 tracking-wider bg-slate-50 dark:bg-slate-800/50" x-text="group.label"></div>
+                                            <template x-for="(item, iIdx) in group.items" :key="iIdx">
+                                                <a :href="item.url"
+                                                   class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 transition border-b border-slate-100 dark:border-slate-800/50 last:border-0">
+                                                    <span class="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-xs"
+                                                          :class="{
+                                                              'bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400': item.type === 'product',
+                                                              'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400': item.type === 'sale',
+                                                              'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400': item.type === 'expense' || item.type === 'order',
+                                                              'bg-violet-100 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400': item.type === 'customer' || item.type === 'user',
+                                                              'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400': !['product','sale','expense','order','customer','user'].includes(item.type)
+                                                          }">
+                                                        <i :class="{
+                                                            'fa-solid fa-box-open': item.type === 'product',
+                                                            'fa-solid fa-receipt': item.type === 'sale',
+                                                            'fa-solid fa-money-bill': item.type === 'expense',
+                                                            'fa-solid fa-clipboard-list': item.type === 'order',
+                                                            'fa-solid fa-user': item.type === 'customer' || item.type === 'user',
+                                                            'fa-solid fa-file': !['product','sale','expense','order','customer','user'].includes(item.type)
+                                                        }"></i>
+                                                    </span>
+                                                    <div class="min-w-0">
+                                                        <div class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate" x-text="item.title"></div>
+                                                        <div class="text-[11px] text-slate-400 truncate" x-text="item.subtitle || item.description || ''"></div>
+                                                    </div>
+                                                    <div x-show="item.price" class="ml-auto flex-shrink-0 text-xs font-bold text-emerald-600 dark:text-emerald-400" x-text="item.price ? parseFloat(item.price).toLocaleString('pt-MZ', {minimumFractionDigits:2}) + ' MT' : ''"></div>
+                                                </a>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <!-- Footer link -->
+                                    <div class="px-4 py-2.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30">
+                                        <a :href="`<?php echo e(route('search.index')); ?>?q=${encodeURIComponent(searchQuery)}`"
+                                           class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1">
+                                            <i class="fa-solid fa-magnifying-glass text-[10px]"></i>
+                                            Ver todos os resultados para "<span x-text="searchQuery"></span>"
+                                        </a>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </div>
-                    <?php else: ?>
-                    <div class="hidden sm:flex items-center space-x-1.5 bg-slate-950/80 border border-slate-800/80 px-3 py-1.5 rounded-xl text-xs" title="Filial atribuída">
-                        <i class="fa-solid fa-store <?php echo e($theme['text_accent']); ?>"></i>
-                        <span class="text-slate-300 font-semibold"><?php echo e($branch?->name ?? 'Loja Principal'); ?></span>
-                    </div>
-                    <?php endif; ?>
+                    <!-- ═══ end search ═══ -->
 
-                    <!-- Subscription Trial / Plan Badge -->
-                    <?php if(!$isOwnerConsole): ?>
-                    <div class="flex items-center space-x-1.5 border <?php echo e($theme['badge']); ?> px-3 py-1.5 rounded-xl text-xs font-bold">
-                        <i class="fa-solid fa-crown text-[10px]"></i>
-                        <span><?php echo e($subscription?->plan?->name ?? 'Trial 30 Dias'); ?></span>
-                    </div>
-                    <?php endif; ?>
+                    <!-- Right Action Cluster -->
+                    <div class="flex items-center gap-2 flex-shrink-0">
 
-                    <!-- Direct POS Quick Action -->
-                    <?php if(!$isOwnerConsole && tenant_has_feature('pos') && (auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin() || auth()->user()->hasPermission('create_sales'))): ?>
-                    <a href="<?php echo e(route('pos.index')); ?>" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white border border-slate-700 transition">
-                        <i class="fa-solid fa-cash-register <?php echo e($theme['text_accent']); ?>"></i>
-                        <span>POS</span>
-                    </a>
-                    <?php endif; ?>
+                        <!-- Branch Selector -->
+                        <?php if(!$isOwnerConsole && auth()->user()->canSwitchBranch()): ?>
+                        <div class="relative" x-data="{ branchDropdown: false }">
+                            <button @click="branchDropdown = !branchDropdown" type="button"
+                                    class="hidden sm:flex items-center gap-1.5 h-9 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/60 text-xs text-slate-600 dark:text-slate-300 font-medium transition max-w-[130px]">
+                                <i class="fa-solid fa-store <?php echo e($theme['text_accent']); ?> text-[10px] flex-shrink-0"></i>
+                                <span class="truncate"><?php echo e($branch?->name ?? 'Filial'); ?></span>
+                                <i class="fa-solid fa-chevron-down text-[8px] text-slate-400 flex-shrink-0"></i>
+                            </button>
+                            <div x-show="branchDropdown" @click.away="branchDropdown = false" x-cloak
+                                 class="absolute right-0 mt-1.5 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-2 z-50 space-y-0.5">
+                                <div class="px-2 py-1 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Alternar Filial</div>
+                                <?php $__empty_1 = true; $__currentLoopData = $allTenantBranches; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $tb): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                    <form action="<?php echo e(route('branches.switch', $tb->id)); ?>" method="POST">
+                                        <?php echo csrf_field(); ?>
+                                        <button type="submit" class="w-full text-left px-3 py-2 rounded-xl text-xs flex items-center justify-between transition <?php echo e($tb->id === ($branch?->id) ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'); ?>">
+                                            <span class="truncate"><?php echo e($tb->name); ?></span>
+                                            <?php if($tb->id === ($branch?->id)): ?><i class="fa-solid fa-check text-[10px]"></i><?php endif; ?>
+                                        </button>
+                                    </form>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                    <div class="px-3 py-2 text-xs text-slate-400">Sem filiais</div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <?php elseif(!$isOwnerConsole && $branch): ?>
+                        <div class="hidden sm:flex items-center gap-1.5 h-9 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-xs text-slate-500 dark:text-slate-400 max-w-[120px]">
+                            <i class="fa-solid fa-store <?php echo e($theme['text_accent']); ?> text-[10px] flex-shrink-0"></i>
+                            <span class="truncate"><?php echo e($branch?->name); ?></span>
+                        </div>
+                        <?php endif; ?>
+
+                        <!-- Notification Bell -->
+                        <?php if(!$isOwnerConsole): ?>
+                        <div class="relative">
+                            <button @click="notifOpen = !notifOpen; userMenuOpen = false; if(notifOpen) loadNotifCounts();" type="button"
+                                    class="relative w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center transition border border-slate-200 dark:border-slate-700/60"
+                                    title="Notificações">
+                                <i class="fa-solid fa-bell text-sm"></i>
+                                <span x-show="(unreadNotifCount + (lowStockCount > 0 ? 1 : 0)) > 0"
+                                      class="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center leading-none shadow-xs"
+                                      x-text="Math.min(unreadNotifCount + (lowStockCount > 0 ? 1 : 0), 99)"></span>
+                            </button>
+                            <div x-show="notifOpen" @click.away="notifOpen = false" x-cloak
+                                 class="absolute right-0 mt-1.5 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-50 overflow-hidden">
+                                <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                                    <span class="text-xs font-bold text-slate-700 dark:text-white">Notificações</span>
+                                    <div class="flex items-center gap-2">
+                                        <button x-show="unreadNotifCount > 0" @click="markAllNotificationsRead()" type="button" class="text-[10px] text-blue-600 dark:text-blue-400 font-semibold hover:underline">
+                                            Marcar Lidas
+                                        </button>
+                                        <a href="<?php echo e(route('notifications.index')); ?>" class="text-[10px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">Central</a>
+                                    </div>
+                                </div>
+                                <div class="divide-y divide-slate-100 dark:divide-slate-800 max-h-72 overflow-y-auto">
+                                    <template x-for="n in recentNotifs" :key="n.id">
+                                        <a :href="n.action_url || '<?php echo e(route('notifications.index')); ?>'"
+                                           class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition"
+                                           :class="n.read ? 'opacity-60' : ''">
+                                            <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                <i class="fa-solid" :class="n.icon || 'fa-bell'"></i>
+                                            </div>
+                                            <div class="space-y-0.5 min-w-0 flex-1">
+                                                <div class="text-xs font-bold text-slate-700 dark:text-slate-200 truncate" x-text="n.title"></div>
+                                                <div class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2" x-text="n.message"></div>
+                                                <div class="text-[10px] text-slate-400" x-text="n.created_at"></div>
+                                            </div>
+                                        </a>
+                                    </template>
+                                    <template x-if="recentNotifs.length === 0">
+                                        <div>
+                                            <a x-show="lowStockCount > 0" href="<?php echo e(route('reports.low-stock')); ?>"
+                                               class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                                                <div class="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                    <i class="fa-solid fa-triangle-exclamation text-xs"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="text-xs font-bold text-slate-700 dark:text-slate-200">Stock Baixo & Validade</div>
+                                                    <div class="text-[11px] text-slate-500 mt-0.5" x-text="lowStockCount + ' produto(s) a expirar ou em baixo stock'"></div>
+                                                </div>
+                                            </a>
+                                            <div x-show="lowStockCount === 0 && unreadNotifCount === 0" class="px-4 py-6 text-center">
+                                                <i class="fa-solid fa-circle-check text-xl text-emerald-500 mb-1"></i>
+                                                <p class="text-xs text-slate-400">Sem notificações pendentes!</p>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                                <div class="px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                                    <a href="<?php echo e(route('notifications.index')); ?>" class="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline">Ver todas as notificações →</a>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+
+                        <!-- POS Button -->
+                        <?php if(!$isOwnerConsole && tenant_has_feature('pos') && (auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin() || auth()->user()->hasPermission('create_sales'))): ?>
+                        <a href="<?php echo e(route('pos.index')); ?>"
+                           class="hidden md:flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm shadow-emerald-600/20 flex-shrink-0">
+                            <i class="fa-solid fa-cash-register text-xs"></i>
+                            <span>POS</span>
+                        </a>
+                        <?php endif; ?>
+
+                        <!-- ═══ User Avatar Dropdown ═══ -->
+                        <div class="relative" x-data="{ userMenuOpen: false }">
+                            <button @click="userMenuOpen = !userMenuOpen; notifOpen = false"
+                                    type="button"
+                                    class="flex items-center gap-2 h-9 pl-1 pr-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/60 transition">
+                                <!-- Avatar initials -->
+                                <div class="w-7 h-7 rounded-lg <?php echo e($theme['btn'] ?? 'bg-emerald-600'); ?> flex items-center justify-center text-[11px] font-black text-white flex-shrink-0">
+                                    <?php echo e(strtoupper(substr(auth()->user()?->name ?? 'U', 0, 2))); ?>
+
+                                </div>
+                                <!-- Name + plan — hidden on small screens -->
+                                <div class="hidden md:block text-left min-w-0">
+                                    <div class="text-xs font-bold text-slate-700 dark:text-white leading-none truncate max-w-[100px]"><?php echo e(Str::words(auth()->user()?->name ?? 'Utilizador', 1, '')); ?></div>
+                                    <div class="flex items-center gap-1 mt-0.5">
+                                        <i class="fa-solid <?php echo e($subscription?->plan?->name ? 'fa-crown' : 'fa-circle-dot'); ?> text-[8px] <?php echo e($theme['text_accent']); ?>"></i>
+                                        <span class="text-[10px] text-slate-400 font-medium leading-none truncate"><?php echo e($subscription?->plan?->name ?? 'Trial'); ?></span>
+                                    </div>
+                                </div>
+                                <i class="fa-solid fa-chevron-down text-[9px] text-slate-400 transition" :class="userMenuOpen ? 'rotate-180' : ''"></i>
+                            </button>
+
+                            <!-- User Dropdown Menu -->
+                            <div x-show="userMenuOpen" @click.away="userMenuOpen = false" x-cloak
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="opacity-0 scale-95"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 class="absolute right-0 mt-1.5 w-60 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-50 overflow-hidden">
+
+                                <!-- User Header -->
+                                <div class="px-4 py-3.5 border-b border-slate-100 dark:border-slate-800">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-xl <?php echo e($theme['btn'] ?? 'bg-emerald-600'); ?> flex items-center justify-center text-sm font-black text-white flex-shrink-0">
+                                            <?php echo e(strtoupper(substr(auth()->user()?->name ?? 'U', 0, 2))); ?>
+
+                                        </div>
+                                        <div class="min-w-0">
+                                            <div class="text-sm font-bold text-slate-800 dark:text-white truncate"><?php echo e(auth()->user()?->name); ?></div>
+                                            <div class="text-[11px] text-slate-400 truncate"><?php echo e(auth()->user()?->email); ?></div>
+                                        </div>
+                                    </div>
+                                    <!-- Plan pill -->
+                                    <?php if(!$isOwnerConsole): ?>
+                                    <div class="mt-2.5 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border <?php echo e($theme['badge']); ?> w-fit">
+                                        <i class="fa-solid fa-crown text-[10px]"></i>
+                                        <span class="text-[11px] font-bold"><?php echo e($subscription?->plan?->name ?? 'Plano Trial'); ?></span>
+                                    </div>
+                                    <?php else: ?>
+                                    <div class="mt-2.5 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border <?php echo e($theme['badge']); ?> w-fit">
+                                        <i class="fa-solid fa-building-shield text-[10px]"></i>
+                                        <span class="text-[11px] font-bold">Owner Console</span>
+                                    </div>
+                                    <?php endif; ?>
+                                </div>
+
+                                <!-- Menu Links -->
+                                <div class="py-1">
+                                    <a href="<?php echo e(route('profile.edit')); ?>" @click="userMenuOpen = false"
+                                       class="flex items-center gap-3 px-4 py-2.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white transition">
+                                        <i class="fa-solid fa-user-circle w-4 text-center text-slate-400"></i>
+                                        <span>Perfil & Conta</span>
+                                    </a>
+                                    <?php if(!$isOwnerConsole): ?>
+                                    <a href="<?php echo e(route('admin.settings')); ?>" @click="userMenuOpen = false"
+                                       class="flex items-center gap-3 px-4 py-2.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white transition">
+                                        <i class="fa-solid fa-sliders w-4 text-center text-slate-400"></i>
+                                        <span>Definições</span>
+                                    </a>
+                                    <?php endif; ?>
+                                </div>
+
+                                <!-- Theme Toggle inside dropdown -->
+                                <div class="px-4 py-2.5 border-t border-slate-100 dark:border-slate-800">
+                                    <button @click="toggleTheme(); userMenuOpen = false" type="button"
+                                            class="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs text-slate-600 dark:text-slate-300 font-medium transition">
+                                        <div class="flex items-center gap-2">
+                                            <i x-show="isDarkMode" class="fa-solid fa-sun text-amber-400 w-4 text-center"></i>
+                                            <i x-show="!isDarkMode" class="fa-solid fa-moon text-indigo-500 w-4 text-center"></i>
+                                            <span x-text="isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'"></span>
+                                        </div>
+                                        <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-400 font-mono">T</span>
+                                    </button>
+                                </div>
+
+                                <!-- Logout -->
+                                <div class="border-t border-slate-100 dark:border-slate-800 py-1">
+                                    <form method="POST" action="<?php echo e(route('logout')); ?>">
+                                        <?php echo csrf_field(); ?>
+                                        <button type="submit"
+                                                class="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition font-medium">
+                                            <i class="fa-solid fa-power-off w-4 text-center"></i>
+                                            <span>Terminar Sessão</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- ═══ end user avatar ═══ -->
+
+                    </div>
+                    <!-- end right cluster -->
+
                 </div>
-
             </header>
 
             <!-- Main Content Scroll Area -->
             <main class="app-main flex-1 overflow-y-auto p-4 sm:p-8">
                 
-                <!-- Global Alerts -->
-                <?php if(session('success')): ?>
-                    <div class="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center justify-between backdrop-blur-sm">
-                        <div class="flex items-center space-x-2">
-                            <i class="fa-solid fa-circle-check text-base"></i>
-                            <span class="font-semibold"><?php echo e(session('success')); ?></span>
-                        </div>
-                    </div>
-                <?php endif; ?>
 
-                <?php if(session('error') || (isset($errors) && $errors->any())): ?>
-                    <div class="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs backdrop-blur-sm">
-                        <div class="flex items-center space-x-2 font-bold mb-1">
-                            <i class="fa-solid fa-triangle-exclamation text-base"></i>
-                            <span><?php echo e(session('error') ?? 'Ocorreram erros na submissão:'); ?></span>
-                        </div>
-                        <?php if(isset($errors) && $errors->any()): ?>
-                            <ul class="list-disc list-inside space-y-0.5 pl-6 mt-1 text-rose-300/90">
-                                <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                    <li><?php echo e($error); ?></li>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                            </ul>
-                        <?php endif; ?>
-                    </div>
-                <?php endif; ?>
 
                 <!-- Yield Page Content -->
                 <?php echo $__env->yieldContent('content'); ?>

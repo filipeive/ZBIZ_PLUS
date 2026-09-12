@@ -37,8 +37,8 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-300 mb-1">Tipo de Artigo / Oferta *</label>
                     <select name="type" x-model="itemType" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none">
-                        <option value="product">📦 Produto Físico (com controlo de stock)</option>
-                        <option value="service">🛠️ Serviço / Prestação / Mão de Obra</option>
+                        <option value="product">Produto Físico (com controlo de stock)</option>
+                        <option value="service">Serviço / Prestação / Mão de Obra</option>
                     </select>
                 </div>
 
@@ -210,7 +210,7 @@
                 <a href="<?php echo e(route('products.index')); ?>" class="w-1/3 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl text-center transition">
                     Cancelar
                 </a>
-                <button type="submit" class="w-2/3 py-3 rounded-xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-black text-sm shadow-lg shadow-emerald-500/20 transition">
+                <button type="submit" class="w-2/3 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 transition">
                     Gravar Artigo no Catálogo
                 </button>
             </div>

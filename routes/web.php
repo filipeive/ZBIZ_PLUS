@@ -99,10 +99,20 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         Route::patch('/photo', [ProfileController::class, 'updatePhoto'])->name('update-photo');
     });
 
-    Route::prefix('restaurant/tables')->name('restaurant.tables.')->middleware('permissions:manage_settings')->group(function () {
-        Route::get('/', [\App\Http\Controllers\RestaurantTableController::class, 'index'])->name('index');
-        Route::post('/', [\App\Http\Controllers\RestaurantTableController::class, 'store'])->name('store');
-        Route::patch('/{table}/status', [\App\Http\Controllers\RestaurantTableController::class, 'updateStatus'])->name('status');
+    Route::prefix('restaurant')->name('restaurant.')->group(function () {
+        Route::prefix('tables')->name('tables.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\RestaurantTableController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\RestaurantTableController::class, 'store'])->name('store');
+            Route::patch('/{table}/status', [\App\Http\Controllers\RestaurantTableController::class, 'updateStatus'])->name('status');
+            Route::post('/{table}/create-order', [\App\Http\Controllers\RestaurantTableController::class, 'createOrder'])->name('create-order');
+            Route::post('/{table}/clear', [\App\Http\Controllers\RestaurantTableController::class, 'clearTable'])->name('clear');
+            Route::delete('/{table}', [\App\Http\Controllers\RestaurantTableController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('kitchen')->name('kitchen.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\KitchenController::class, 'index'])->name('index');
+            Route::post('/orders/{order}/status', [\App\Http\Controllers\KitchenController::class, 'updateStatus'])->name('status');
+        });
     });
 
     // ===== PONTO DE VENDA - create_sales permission =====

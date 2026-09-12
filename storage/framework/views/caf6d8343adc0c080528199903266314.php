@@ -43,7 +43,7 @@
                 <i class="fa-solid fa-receipt"></i> Recibo Térmico (80mm)
             </a>
 
-            <button onclick="window.print()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-black text-xs shadow-lg transition flex items-center gap-2">
+            <button onclick="window.print()" class="px-5 py-2.5 rounded-xl <?php echo e($theme['btn']); ?> text-xs transition flex items-center gap-2">
                 <i class="fa-solid fa-print"></i> Imprimir A4 / PDF
             </button>
         </div>

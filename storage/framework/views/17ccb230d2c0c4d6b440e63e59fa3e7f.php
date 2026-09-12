@@ -89,7 +89,7 @@
                     </label>
                 </div>
 
-                <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black rounded-xl text-sm shadow-lg shadow-emerald-500/25 transition transform active:scale-95">
+                <button type="submit" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow-md transition transform active:scale-95">
                     Entrar no ZBIZ+
                 </button>
             </form>

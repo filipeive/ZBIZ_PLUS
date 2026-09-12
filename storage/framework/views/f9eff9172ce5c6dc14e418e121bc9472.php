@@ -363,7 +363,7 @@
                 
                 <template x-if="!customer">
                     <div class="space-y-1.5">
-                        <p class="text-[11px] text-amber-800 font-semibold">⚠️ É obrigatório associar um cliente registrado para conceder crédito.</p>
+                        <p class="text-[11px] text-amber-800 font-semibold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> É obrigatório associar um cliente registrado para conceder crédito.</p>
                         <button type="button" @click="showCheckoutModal = false; showCustomerModal = true"
                                 class="w-full py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs font-bold">
                             [F4] Selecionar Cliente Agora

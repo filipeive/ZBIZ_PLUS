@@ -50,7 +50,7 @@
                             </select>
                         </div>
                         <div class="md:col-span-3">
-                            <button type="button" class="w-full py-2.5 rounded-xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-black text-xs shadow-lg flex items-center justify-center gap-2" onclick="addItemToCart()">
+                            <button type="button" class="w-full py-2.5 rounded-xl <?php echo e($theme['btn']); ?> text-xs flex items-center justify-center gap-2" onclick="addItemToCart()">
                                 <i class="fa-solid fa-plus"></i> Adicionar
                             </button>
                         </div>
@@ -153,6 +153,18 @@ unset($__errorArgs, $__bag); ?>
                         <input type="date" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs" name="delivery_date" id="delivery_date" value="<?php echo e(old('delivery_date')); ?>">
                     </div>
 
+                    <?php if(current_tenant()?->business_type === 'restaurant'): ?>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="restaurant_table_id">Mesa</label>
+                            <select class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs" name="restaurant_table_id" id="restaurant_table_id">
+                                <option value="">Sem mesa / balcão</option>
+                                <?php $__currentLoopData = $restaurantTables; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $restaurantTable): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($restaurantTable->id); ?>" <?php if(old('restaurant_table_id') == $restaurantTable->id): echo 'selected'; endif; ?>><?php echo e($restaurantTable->name); ?> (<?php echo e($restaurantTable->capacity); ?> lugares)</option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </select>
+                        </div>
+                    <?php endif; ?>
+
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Prioridade *</label>
                         <select class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs" name="priority" id="priority" required>
@@ -188,7 +200,7 @@ unset($__errorArgs, $__bag); ?>
                         <span class="text-base font-black font-mono text-rose-400" id="remaining-amount">MT 0,00</span>
                     </div>
 
-                    <button type="submit" class="w-full py-3 rounded-2xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2">
+                    <button type="submit" class="w-full py-3 rounded-2xl <?php echo e($theme['btn']); ?> text-xs hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2">
                         <i class="fa-solid fa-floppy-disk"></i> Salvar Pedido
                     </button>
                 </div>
@@ -300,7 +312,7 @@ unset($__errorArgs, $__bag); ?>
             const validItems = cartItems.filter(item => item !== null);
             if (validItems.length === 0) {
                 e.preventDefault();
-                alert('Adicione pelo menos um item ao pedido.');
+                showToast('Adicione pelo menos um item ao pedido.', 'warning');
                 return false;
             }
             document.getElementById('items-json').value = JSON.stringify(validItems);

@@ -39,7 +39,7 @@
                 <input type="date" name="date_to" value="<?php echo e($dateTo); ?>" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
             </div>
             <div>
-                <button type="submit" class="w-full py-2 bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-1.5">
+                <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-filter"></i> Atualizar Fluxo
                 </button>
             </div>

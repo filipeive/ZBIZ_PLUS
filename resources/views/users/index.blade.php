@@ -16,7 +16,8 @@
 <div class="space-y-6" x-data="{
     showDeleteModal: false,
     deleteUserId: null,
-    deleteUserName: ''
+    deleteUserName: '',
+    viewMode: 'grid'
 }">
 
     <!-- Top Action Bar & Metrics -->
@@ -82,6 +83,16 @@
         </form>
 
         <div class="flex items-center gap-2">
+            <!-- View Switcher -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-1 flex items-center gap-1">
+                <button @click="viewMode = 'grid'" :class="viewMode === 'grid' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-border-all"></i> Grid
+                </button>
+                <button @click="viewMode = 'table'" :class="viewMode === 'table' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-list"></i> Tabela
+                </button>
+            </div>
+
             @if($isEmployeesView)
                 <a href="{{ route('users.employees.payroll', ['reference_month' => now()->startOfMonth()->format('Y-m-d')]) }}" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 font-bold text-xs rounded-2xl flex items-center gap-2 transition">
                     <i class="fa-solid fa-file-invoice-dollar"></i> Folha Salarial
@@ -93,8 +104,77 @@
         </div>
     </div>
 
-    <!-- Users Table -->
-    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden">
+    <!-- GRID VIEW CARDS -->
+    <div x-show="viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        @forelse($users as $user)
+            @php
+                $roleBadge = match($user->role?->name) {
+                    'admin' => 'bg-rose-500/10 text-rose-400 border-rose-500/30',
+                    'manager' => 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+                    'staff' => 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+                    default => 'bg-slate-800 text-slate-400 border-slate-700'
+                };
+            @endphp
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl flex flex-col justify-between hover:border-slate-700 transition group relative overflow-hidden">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <img src="{{ $user->avatar_url }}" alt="{{ $user->name }}" class="w-12 h-12 rounded-2xl object-cover border border-slate-800">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border {{ $roleBadge }}">
+                            {{ $user->role_display }}
+                        </span>
+                    </div>
+
+                    <h3 class="text-base font-black text-white font-heading">
+                        <a href="{{ route('users.show', $user) }}" class="hover:text-emerald-400 transition">{{ $user->employee_label }}</a>
+                    </h3>
+                    <p class="text-xs text-slate-400 font-mono mt-0.5">{{ $user->email }}</p>
+
+                    @if($isEmployeesView)
+                        <div class="mt-3 p-2.5 bg-slate-950/70 border border-slate-800 rounded-xl space-y-1 text-xs">
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400">Cargo:</span>
+                                <strong class="text-slate-200">{{ $user->job_title ?: '-' }}</strong>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400">Salário:</span>
+                                <strong class="text-emerald-400 font-mono">{{ $user->monthly_salary ? $user->formatted_monthly_salary : '-' }}</strong>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border {{ $user->is_active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border-rose-500/30' }}">
+                        {{ $user->status_display }}
+                    </span>
+
+                    <div class="flex items-center gap-1.5">
+                        <a href="{{ route('users.show', $user) }}" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition" title="Ver Perfil">
+                            <i class="fa-solid fa-eye text-xs"></i>
+                        </a>
+                        @if(auth()->user()->canEdit($user))
+                            <a href="{{ route('users.edit', $user) }}" class="w-8 h-8 rounded-xl bg-slate-800 text-amber-400 hover:text-white flex items-center justify-center transition" title="Editar">
+                                <i class="fa-solid fa-pen text-xs"></i>
+                            </a>
+                        @endif
+                        @if(auth()->user()->canDelete($user))
+                            <button type="button" @click="deleteUserId = {{ $user->id }}; deleteUserName = '{{ addslashes($user->name) }}'; showDeleteModal = true" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-rose-400 flex items-center justify-center transition" title="Excluir">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @empty
+            <div class="col-span-full py-16 text-center text-slate-500 bg-slate-900/50 border border-dashed border-slate-800 rounded-3xl">
+                <i class="fa-solid fa-users text-4xl mb-3 text-slate-600"></i>
+                <p class="text-sm">Nenhum registo encontrado.</p>
+            </div>
+        @endforelse
+    </div>
+
+    <!-- TABLE VIEW -->
+    <div x-show="viewMode === 'table'" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
                 <thead>
@@ -179,13 +259,13 @@
                 </tbody>
             </table>
         </div>
-
-        @if($users->hasPages())
-            <div class="mt-6 pt-4 border-t border-slate-800">
-                {{ $users->appends(request()->query())->links() }}
-            </div>
-        @endif
     </div>
+
+    @if($users->hasPages())
+        <div class="mt-6 pt-4 border-t border-slate-800">
+            {{ $users->appends(request()->query())->links() }}
+        </div>
+    @endif
 
     <!-- Modal Confirmar Eliminação -->
     <div x-cloak x-show="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">

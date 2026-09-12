@@ -8,42 +8,46 @@
 <?php $__env->startSection('content'); ?>
 <div class="space-y-6" x-data="{ timeRange: 'today' }">
     
-    <!-- Top Row: Welcome Banner & Sector Metrics -->
-    <div class="preserve-dark relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-slate-900/90 to-slate-800 border border-slate-800 p-6 sm:p-8 shadow-2xl">
-        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border <?php echo e($theme['badge']); ?> mb-3">
-                    <i class="fa-solid <?php echo e($theme['icon']); ?>"></i> <?php echo e($theme['sector_name']); ?>
+    <!-- Clean Executive Header Bar -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 mb-1.5">
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                    <i class="fa-solid <?php echo e($theme['icon']); ?> mr-1 text-emerald-600 dark:text-emerald-400"></i> <?php echo e(current_tenant()?->name ?? 'ZBIZ+'); ?>
 
                 </span>
-                <h2 class="text-2xl sm:text-3xl font-black font-heading text-white">
-                    Olá, <?php echo e(auth()->user()->name); ?>!
-                </h2>
-                <p class="text-xs sm:text-sm text-slate-400 mt-1 max-w-xl">
-                    Acompanhe o desempenho das suas vendas, stock em tempo real e saúde financeira da sua loja.
-                </p>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30">
+                    <i class="fa-solid fa-store mr-1"></i> <?php echo e(current_branch()?->name ?? 'Filial Ativa'); ?>
+
+                </span>
             </div>
+            <h1 class="text-xl sm:text-2xl font-black font-heading text-slate-900 dark:text-white">
+                Painel de Controlo
+            </h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Acompanhe vendas, stock e saúde financeira da filial ativa.
+            </p>
+        </div>
 
-            <!-- Quick Action Buttons -->
-            <div class="flex items-center gap-3">
-                <?php if(auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin()): ?>
-                <a href="<?php echo e(route('pos.index')); ?>" class="px-5 py-3 rounded-2xl bg-gradient-to-r <?php echo e($theme['gradient']); ?> text-slate-950 font-black text-xs shadow-xl shadow-emerald-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2">
-                    <i class="fa-solid fa-cash-register text-sm"></i> Abrir Caixa POS
-                </a>
-                <?php endif; ?>
+        <!-- Quick Action Buttons -->
+        <div class="flex items-center gap-2.5">
+            <?php if(auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin()): ?>
+            <a href="<?php echo e(route('pos.index')); ?>" class="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-2">
+                <i class="fa-solid fa-cash-register"></i> Terminal POS
+            </a>
+            <?php endif; ?>
 
-                <?php if(auth()->user()->isStockManager() || auth()->user()->isManager() || auth()->user()->isAdmin()): ?>
-                <a href="<?php echo e(route('products.create')); ?>" class="px-4 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 transition flex items-center gap-2">
-                    <i class="fa-solid fa-plus"></i> Novo Produto
-                </a>
-                <?php endif; ?>
+            <?php if(auth()->user()->isStockManager() || auth()->user()->isManager() || auth()->user()->isAdmin()): ?>
+            <a href="<?php echo e(route('products.create')); ?>" class="px-4 py-2.5 rounded-2xl bg-slate-900 dark:bg-primary text-primary dark:text-white hover:bg-slate-800 dark:hover:bg-slate-100 font-bold text-xs shadow-sm transition flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i> Novo Produto
+            </a>
+            <?php endif; ?>
 
-                <?php if(auth()->user()->isStockManager()): ?>
-                <a href="<?php echo e(route('stock-movements.index')); ?>" class="px-4 py-3 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs border border-emerald-500/30 transition flex items-center gap-2">
-                    <i class="fa-solid fa-boxes-stacked"></i> Movimento Stock
-                </a>
-                <?php endif; ?>
-            </div>
+            <?php if(auth()->user()->isStockManager()): ?>
+            <a href="<?php echo e(route('stock-movements.index')); ?>" class="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-700 transition flex items-center gap-2">
+                <i class="fa-solid fa-boxes-stacked"></i> Stock
+            </a>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -51,79 +55,78 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         
         <!-- Card 1: Vendas de Hoje -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl relative overflow-hidden group hover:border-slate-700 transition">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Vendas de Hoje</span>
-                <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-base">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Vendas de Hoje</span>
+                <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base">
                     <i class="fa-solid fa-sack-dollar"></i>
                 </div>
             </div>
             <div class="mt-4">
-                <div class="text-2xl sm:text-3xl font-black font-heading text-white">
+                <div class="text-2xl sm:text-3xl font-black font-heading text-slate-900 dark:text-white">
                     <?php echo e(number_format($todaySales ?? 0, 2, ',', '.')); ?> <span class="text-xs text-slate-400 font-normal">MT</span>
                 </div>
                 <div class="flex items-center gap-2 mt-2 text-xs">
-                    <span class="font-bold text-emerald-400 flex items-center">
+                    <span class="font-bold text-emerald-600 dark:text-emerald-400 flex items-center">
                         <i class="fa-solid <?php echo e($salesChangeIcon ?? 'fa-arrow-trend-up'); ?> mr-1"></i> <?php echo e($salesChangePercent ?? 0); ?>%
                     </span>
-                    <span class="text-slate-500">vs ontem</span>
+                    <span class="text-slate-400">vs ontem</span>
                 </div>
             </div>
         </div>
 
         <!-- Card 2: Faturação Mensal -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl relative overflow-hidden group hover:border-slate-700 transition">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total do Mês</span>
-                <div class="w-10 h-10 rounded-2xl bg-sky-500/10 text-sky-400 flex items-center justify-center text-base">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total do Mês</span>
+                <div class="w-10 h-10 rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center text-base">
                     <i class="fa-solid fa-chart-line"></i>
                 </div>
             </div>
             <div class="mt-4">
-                <div class="text-2xl sm:text-3xl font-black font-heading text-white">
+                <div class="text-2xl sm:text-3xl font-black font-heading text-slate-900 dark:text-white">
                     <?php echo e(number_format($monthSales ?? 0, 2, ',', '.')); ?> <span class="text-xs text-slate-400 font-normal">MT</span>
                 </div>
                 <div class="flex items-center gap-2 mt-2 text-xs">
-                    <span class="font-bold text-sky-400">
+                    <span class="font-bold text-sky-600 dark:text-sky-400">
                         <?php echo e(number_format($monthReceived ?? 0, 2, ',', '.')); ?> MT recebidos
                     </span>
                 </div>
             </div>
         </div>
 
-        <!-- Card 3: Lucro Bruto Estimado -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl relative overflow-hidden group hover:border-slate-700 transition">
+        <!-- Card 3: Lucro Real -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Lucro Real</span>
-                <div class="w-10 h-10 rounded-2xl bg-teal-500/10 text-teal-400 flex items-center justify-center text-base">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Lucro Real</span>
+                <div class="w-10 h-10 rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center text-base">
                     <i class="fa-solid fa-scale-balanced"></i>
                 </div>
             </div>
             <div class="mt-4">
-                <div class="text-2xl sm:text-3xl font-black font-heading text-white">
+                <div class="text-2xl sm:text-3xl font-black font-heading text-slate-900 dark:text-white">
                     <?php echo e(number_format($monthRealProfit ?? 0, 2, ',', '.')); ?> <span class="text-xs text-slate-400 font-normal">MT</span>
                 </div>
                 <div class="flex items-center gap-2 mt-2 text-xs">
                     <span class="text-slate-400">Margem Líquida:</span>
-                    <!--aredondear a margem líquida para 2 casas decimais e adicionar o símbolo de % -->
-                    <span class="font-bold text-teal-400"><?php echo e(number_format($monthNetMargin ?? 0, 2, ',', '.')); ?>%</span>
+                    <span class="font-bold text-teal-600 dark:text-teal-400"><?php echo e(number_format($monthNetMargin ?? 0, 2, ',', '.')); ?>%</span>
                 </div>
             </div>
         </div>
 
         <!-- Card 4: Contas a Receber (Fiados) -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl relative overflow-hidden group hover:border-slate-700 transition">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">A Receber (Fiado)</span>
-                <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-base">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">A Receber (Fiado)</span>
+                <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-base">
                     <i class="fa-solid fa-hand-holding-dollar"></i>
                 </div>
             </div>
             <div class="mt-4">
-                <div class="text-2xl sm:text-3xl font-black font-heading text-white">
+                <div class="text-2xl sm:text-3xl font-black font-heading text-slate-900 dark:text-white">
                     <?php echo e(number_format($accountsReceivable ?? 0, 2, ',', '.')); ?> <span class="text-xs text-slate-400 font-normal">MT</span>
                 </div>
-                <div class="flex items-center gap-2 mt-2 text-xs text-slate-500">
+                <div class="flex items-center gap-2 mt-2 text-xs text-slate-500 dark:text-slate-400">
                     <span>Capital de Giro: <?php echo e(number_format($currentCapital ?? 0, 0)); ?> MT</span>
                 </div>
             </div>
@@ -135,44 +138,44 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         <!-- Left: Sales Evolution Chart (2 Cols) -->
-        <div class="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
+        <div class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
             <div class="flex items-center justify-between mb-6">
                 <div>
-                    <h3 class="text-base font-black font-heading text-white">Evolução de Vendas</h3>
-                    <p class="text-xs text-slate-400">Desempenho diário de faturação</p>
+                    <h3 class="text-base font-black font-heading text-slate-900 dark:text-white">Evolução de Vendas</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Desempenho diário de faturação</p>
                 </div>
-                <span class="text-xs font-bold px-3 py-1 bg-slate-800 text-slate-300 rounded-xl">Últimos 7 Dias</span>
+                <span class="text-xs font-bold px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-700">Últimos 7 Dias</span>
             </div>
             <div class="h-64">
                 <canvas id="salesChart"></canvas>
             </div>
         </div>
 
-        <!-- Right: Low Stock Alerts (1 Col) -->
-        <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl flex flex-col justify-between">
+        <!-- Low Stock Alerts (1 Col) -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
             <div>
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-base font-black font-heading text-white flex items-center gap-2">
-                        <i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Stock Baixo
+                    <h3 class="text-base font-black font-heading text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Stock Baixo
                     </h3>
-                    <span class="text-xs font-bold text-amber-400 px-2 py-0.5 bg-amber-500/10 rounded-lg border border-amber-500/30">
+                    <span class="text-xs font-bold text-amber-700 dark:text-amber-400 px-2.5 py-0.5 bg-amber-50 dark:bg-amber-500/10 rounded-lg border border-amber-200 dark:border-amber-500/30">
                         <?php echo e(count($lowStockProducts ?? [])); ?> Alertas
                     </span>
                 </div>
 
                 <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
                     <?php $__empty_1 = true; $__currentLoopData = $lowStockProducts ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $prod): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                        <div class="p-3 bg-slate-950/60 border border-slate-800 rounded-2xl flex items-center justify-between text-xs">
+                        <div class="p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center justify-between text-xs">
                             <div class="min-w-0 pr-2">
-                                <div class="font-bold text-white truncate"><?php echo e($prod->name); ?></div>
-                                <div class="text-[10px] text-slate-400">Mínimo: <?php echo e($prod->min_stock_level); ?> un</div>
+                                <div class="font-bold text-slate-900 dark:text-white truncate"><?php echo e($prod->name); ?></div>
+                                <div class="text-[10px] text-slate-500 dark:text-slate-400">Mínimo: <?php echo e($prod->min_stock_level); ?> un</div>
                             </div>
-                            <span class="font-black text-xs px-2 py-1 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                            <span class="font-black text-xs px-2 py-1 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20">
                                 <?php echo e($prod->stock_quantity); ?> un
                             </span>
                         </div>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                        <div class="text-center py-10 text-slate-500 text-xs">
+                        <div class="text-center py-10 text-slate-400 text-xs">
                             <i class="fa-solid fa-circle-check text-2xl text-emerald-500/40 mb-2"></i>
                             <p>Todos os produtos estão com níveis saudáveis de stock!</p>
                         </div>
@@ -180,27 +183,95 @@
                 </div>
             </div>
 
-            <a href="<?php echo e(route('products.index')); ?>" class="mt-4 block text-center py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
+            <a href="<?php echo e(route('products.index')); ?>" class="mt-4 block text-center py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-slate-200 dark:border-slate-700 transition">
                 Gerir Catálogo Completo
+            </a>
+        </div>
+
+        <!-- Alertas de Validade (ANARME / Vencimentos) -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col justify-between"
+             x-data="expiryAlerts()"
+             x-init="init()">
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base font-black font-heading text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-rose-500"></i> Alertas de Validade
+                    </h3>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-rose-700 dark:text-rose-400 px-2.5 py-0.5 bg-rose-50 dark:bg-rose-500/10 rounded-lg border border-rose-200 dark:border-rose-500/30"
+                              x-text="totalCount + ' Vencimentos'"></span>
+                        <button type="button"
+                                @click="toggleMute()"
+                                :aria-label="muted ? 'Ativar som dos alertas' : 'Silenciar alertas'"
+                                :title="muted ? 'Ativar som dos alertas' : 'Silenciar alertas'"
+                                class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition flex items-center justify-center"
+                                aria-pressed="false"
+                                :aria-pressed="muted.toString()">
+                            <i class="fa-solid" :class="muted ? 'fa-volume-xmark text-slate-400' : 'fa-volume-high text-rose-500'" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-3 max-h-60 overflow-y-auto pr-1" x-show="!loading" x-transition>
+                    <template x-for="batch in batches" :key="batch.id">
+                        <div class="p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center justify-between text-xs">
+                            <div class="min-w-0 pr-2">
+                                <div class="font-bold text-slate-900 dark:text-white truncate" x-text="batch.product_name"></div>
+                                <div class="text-[10px] text-slate-500 dark:text-slate-400">
+                                    <span x-text="batch.expiry_date_formatted"></span>
+                                    <template x-if="batch.batch_number">
+                                        • Lote: <span class="font-mono" x-text="batch.batch_number"></span>
+                                    </template>
+                                </div>
+                            </div>
+                            <span class="font-bold text-[11px] px-2.5 py-1 rounded-xl shadow-sm" :class="batch.status_class" x-text="batch.status_label"></span>
+                        </div>
+                    </template>
+                    <div x-show="batches.length === 0 && !loading" class="text-center py-10 text-slate-400 text-xs">
+                        <i class="fa-solid fa-calendar-check text-2xl text-emerald-500/40 mb-2"></i>
+                        <p>Nenhum produto próximo do prazo de validade!</p>
+                    </div>
+                </div>
+
+                <div x-show="loading" class="space-y-3 max-h-60 overflow-y-auto pr-1" x-transition>
+                    <div class="p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-2xl animate-pulse">
+                        <div class="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-2"></div>
+                        <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
+                    </div>
+                    <div class="p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-2xl animate-pulse">
+                        <div class="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-2"></div>
+                        <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
+                    </div>
+                    <div class="p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-2xl animate-pulse">
+                        <div class="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-2"></div>
+                        <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
+                    </div>
+                </div>
+
+                <div x-show="error" class="p-3 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 rounded-2xl text-center text-xs text-rose-700 dark:text-rose-400" x-transition x-text="errorMessage"></div>
+            </div>
+
+            <a href="<?php echo e(route('reports.low-stock')); ?>" class="mt-4 block text-center py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-slate-200 dark:border-slate-700 transition">
+                Relatório de Validades ANARME
             </a>
         </div>
 
     </div>
 
     <!-- Recent Sales Table -->
-    <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
         <div class="flex items-center justify-between mb-4">
             <div>
-                <h3 class="text-base font-black font-heading text-white">Vendas Recentes</h3>
-                <p class="text-xs text-slate-400">Últimas transações registadas</p>
+                <h3 class="text-base font-black font-heading text-slate-900 dark:text-white">Vendas Recentes</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Últimas transações registadas</p>
             </div>
-            <a href="<?php echo e(route('sales.index')); ?>" class="text-xs font-bold text-emerald-400 hover:underline">Ver Todas</a>
+            <a href="<?php echo e(route('sales.index')); ?>" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline">Ver Todas</a>
         </div>
 
         <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
                 <thead>
-                    <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider">
+                    <tr class="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider">
                         <th class="pb-3">Data / Hora</th>
                         <th class="pb-3">Cliente</th>
                         <th class="pb-3">Operador</th>
@@ -208,34 +279,34 @@
                         <th class="pb-3 text-right">Total (MT)</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-800/60">
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
                     <?php $__empty_1 = true; $__currentLoopData = $recentSales ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $sale): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                        <tr class="hover:bg-slate-800/30 transition">
-                            <td class="py-3.5 text-slate-300 font-mono">
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition">
+                            <td class="py-3.5 text-slate-600 dark:text-slate-300 font-mono">
                                 <?php echo e($sale->created_at ? $sale->created_at->format('d/m H:i') : '-'); ?>
 
                             </td>
-                            <td class="py-3.5 text-white font-semibold">
+                            <td class="py-3.5 text-slate-900 dark:text-white font-semibold">
                                 <?php echo e($sale->customer_name ?? 'Consumidor Final'); ?>
 
                             </td>
-                            <td class="py-3.5 text-slate-400">
+                            <td class="py-3.5 text-slate-500 dark:text-slate-400">
                                 <?php echo e($sale->user?->name ?? 'Caixa'); ?>
 
                             </td>
                             <td class="py-3.5">
-                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase bg-slate-800 text-slate-300 border border-slate-700">
+                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                                     <?php echo e($sale->payment_method ?? 'Dinheiro'); ?>
 
                                 </span>
                             </td>
-                            <td class="py-3.5 text-right font-black text-white font-mono">
+                            <td class="py-3.5 text-right font-black text-slate-900 dark:text-white font-mono">
                                 <?php echo e(number_format($sale->total_amount, 2, ',', '.')); ?> MT
                             </td>
                         </tr>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                         <tr>
-                            <td colspan="5" class="py-8 text-center text-slate-500">
+                            <td colspan="5" class="py-8 text-center text-slate-400">
                                 Nenhuma venda registada hoje.
                             </td>
                         </tr>
@@ -334,7 +405,153 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
+});
     });
+</script>
+
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('expiryAlerts', () => ({
+        batches: [],
+        totalCount: 0,
+        expiredCount: 0,
+        expiringSoonCount: 0,
+        loading: true,
+        error: false,
+        errorMessage: '',
+        muted: false,
+        audioContext: null,
+        lastAlertKey: null,
+        lastToastKey: null,
+        pollInterval: null,
+        POLL_INTERVAL_MS: 30000,
+
+        async init() {
+            this.muted = localStorage.getItem('expiry_alerts_muted') === 'true';
+            await this.fetchAlerts();
+            this.startPolling();
+        },
+
+        async fetchAlerts() {
+            this.loading = true;
+            this.error = false;
+            try {
+                const response = await fetch('<?php echo e(route("dashboard.api.expiry_alerts")); ?>', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    credentials: 'same-origin',
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const data = await response.json();
+                this.batches = data.batches || [];
+                this.totalCount = data.total_count || 0;
+                this.expiredCount = data.expired_count || 0;
+                this.expiringSoonCount = data.expiring_soon_count || 0;
+                this.checkAndNotify(data);
+            } catch (err) {
+                this.error = true;
+                this.errorMessage = 'Erro ao carregar alertas de validade. Tentando novamente...';
+                console.error('Expiry alerts fetch error:', err);
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        checkAndNotify(data) {
+            const batches = data.batches || [];
+            const currentAlertKey = batches.map(batch => batch.id).sort().join(',');
+
+            if (batches.length === 0) {
+                this.lastToastKey = null;
+                return;
+            }
+
+            if (currentAlertKey === this.lastToastKey) return;
+
+            this.lastToastKey = currentAlertKey;
+            const expiredCount = batches.filter(batch => batch.is_expired).length;
+            const expiringCount = batches.length - expiredCount;
+            const earliestBatch = batches[0];
+            const details = [
+                expiredCount > 0 ? `${expiredCount} vencido(s)` : '',
+                expiringCount > 0 ? `${expiringCount} vence em até 90 dias` : '',
+            ].filter(Boolean).join(' e ');
+            const message = `${batches.length} lote(s) requerem atenção: ${details}. ${earliestBatch.product_name} vence em ${earliestBatch.status_label.toLowerCase()}.`;
+
+            if (typeof window.toast === 'function') {
+                window.toast({
+                    type: 'warning',
+                    title: 'Alertas de validade',
+                    message,
+                    icon: 'fa-solid fa-calendar-xmark',
+                    duration: 8000,
+                });
+            }
+
+            if (this.muted || expiredCount === 0) return;
+
+            const currentExpiredKey = batches
+                .filter(batch => batch.is_expired)
+                .map(batch => batch.id)
+                .sort()
+                .join(',');
+            if (currentExpiredKey === this.lastAlertKey) return;
+
+            this.lastAlertKey = currentExpiredKey;
+            this.playAlertSound();
+        },
+
+        playAlertSound() {
+            try {
+                if (!this.audioContext) {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.audioContext.state === 'suspended') {
+                    this.audioContext.resume();
+                }
+
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(880, this.audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(440, this.audioContext.currentTime + 0.3);
+
+                gainNode.gain.setValueAtTime(0.15, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.5);
+
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+
+                oscillator.start();
+                oscillator.stop(this.audioContext.currentTime + 0.5);
+            } catch (err) {
+                console.warn('Could not play alert sound:', err);
+            }
+        },
+
+        toggleMute() {
+            this.muted = !this.muted;
+            localStorage.setItem('expiry_alerts_muted', this.muted.toString());
+        },
+
+        startPolling() {
+            this.pollInterval = setInterval(() => this.fetchAlerts(), this.POLL_INTERVAL_MS);
+        },
+
+        destroy() {
+            if (this.pollInterval) {
+                clearInterval(this.pollInterval);
+            }
+            if (this.audioContext) {
+                this.audioContext.close();
+            }
+        },
+    }));
 });
 </script>
 <?php $__env->stopPush(); ?>
