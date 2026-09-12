@@ -3,10 +3,28 @@
 
 <?php
     $theme = tenant_theme();
+    $availableIcons = [
+        'fa-tag' => 'Etiqueta Geral',
+        'fa-box' => 'Caixa / Produto',
+        'fa-utensils' => 'Alimentação / Restauração',
+        'fa-pills' => 'Medicamentos / Saúde',
+        'fa-bottle-water' => 'Bebidas / Bar',
+        'fa-mobile-screen' => 'Eletrónicos / Telemóveis',
+        'fa-laptop' => 'Informática / Tech',
+        'fa-shirt' => 'Vestuário / Moda',
+        'fa-screwdriver-wrench' => 'Serviços / Manutenção',
+        'fa-cart-shopping' => 'Vendas / Mercado',
+        'fa-scissors' => 'Estética / Salão',
+        'fa-car' => 'Oficina / Automóvel',
+        'fa-store' => 'Loja / Comércio',
+        'fa-print' => 'Gráfica / Impressão',
+        'fa-spa' => 'Beleza / Spa',
+        'fa-gas-pump' => 'Combustível',
+    ];
 ?>
 
 <?php $__env->startSection('content'); ?>
-<div class="space-y-6" x-data="{ showModal: false, editMode: false, categoryId: null, categoryName: '', categoryDesc: '', categoryActive: true }">
+<div class="space-y-6" x-data="{ showModal: false, editMode: false, categoryId: null, categoryName: '', categoryDesc: '', categoryIcon: 'fa-tag', categoryActive: true }">
     
     <!-- Top Controls Bar -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
@@ -15,7 +33,7 @@
             <p class="text-xs text-slate-400">Organize os seus artigos para busca rápida e categorização no POS.</p>
         </div>
 
-        <button @click="editMode = false; categoryName = ''; categoryDesc = ''; categoryActive = true; showModal = true" 
+        <button @click="editMode = false; categoryName = ''; categoryDesc = ''; categoryIcon = 'fa-tag'; categoryActive = true; showModal = true" 
                 class="px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-sm transition flex items-center gap-2">
             <i class="fa-solid fa-plus"></i> Nova Categoria
         </button>
@@ -28,7 +46,7 @@
                 <div>
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-10 h-10 rounded-2xl bg-slate-800 text-slate-300 flex items-center justify-center text-sm font-bold border border-slate-700">
-                            <i class="fa-solid fa-tag <?php echo e($theme['text_accent']); ?>"></i>
+                            <i class="fa-solid <?php echo e($category->icon ?? 'fa-tag'); ?> <?php echo e($theme['text_accent']); ?>"></i>
                         </div>
                         <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border <?php echo e($category->is_active ? $theme['badge'] : 'bg-rose-500/10 text-rose-400 border-rose-500/30'); ?>">
                             <?php echo e($category->is_active ? 'Ativa' : 'Inativa'); ?>
@@ -46,7 +64,7 @@
                     </span>
 
                     <div class="flex items-center gap-2">
-                        <button @click="editMode = true; categoryId = <?php echo e($category->id); ?>; categoryName = '<?php echo e(addslashes($category->name)); ?>'; categoryDesc = '<?php echo e(addslashes($category->description ?? '')); ?>'; categoryActive = <?php echo e($category->is_active ? 'true' : 'false'); ?>; showModal = true"
+                        <button @click="editMode = true; categoryId = <?php echo e($category->id); ?>; categoryName = '<?php echo e(addslashes($category->name)); ?>'; categoryDesc = '<?php echo e(addslashes($category->description ?? '')); ?>'; categoryIcon = '<?php echo e($category->icon ?? 'fa-tag'); ?>'; categoryActive = <?php echo e($category->is_active ? 'true' : 'false'); ?>; showModal = true"
                                 class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition" title="Editar">
                             <i class="fa-solid fa-pen-to-square text-xs"></i>
                         </button>
@@ -79,19 +97,36 @@
 
             <form :action="editMode ? '<?php echo e(url('categories')); ?>/' + categoryId : '<?php echo e(route('categories.store')); ?>'" method="POST" class="space-y-4">
                 <?php echo csrf_field(); ?>
+                <input type="hidden" name="type" value="product">
+                <input type="hidden" name="color" value="#10b981">
+                <input type="hidden" name="icon" :value="categoryIcon">
                 <template x-if="editMode">
                     <input type="hidden" name="_method" value="PUT">
                 </template>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-300 mb-1">Nome da Categoria *</label>
-                    <input type="text" name="name" x-model="categoryName" required
+                    <input type="text" name="name" x-model="categoryName" required placeholder="Ex: Bebidas, Medicamentos, Serviços"
                            class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1">Descrição</label>
-                    <textarea name="description" x-model="categoryDesc" rows="3"
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">Ícone Representativo</label>
+                    <div class="grid grid-cols-6 gap-2 bg-slate-950 p-2.5 rounded-2xl border border-slate-800 max-h-36 overflow-y-auto">
+                        <?php $__currentLoopData = $availableIcons; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $iconClass => $iconLabel): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <button type="button" 
+                                    @click="categoryIcon = '<?php echo e($iconClass); ?>'" 
+                                    :class="categoryIcon === '<?php echo e($iconClass); ?>' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-sm' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'"
+                                    class="w-9 h-9 rounded-xl border flex items-center justify-center text-sm transition" title="<?php echo e($iconLabel); ?>">
+                                <i class="fa-solid <?php echo e($iconClass); ?>"></i>
+                            </button>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Descrição (opcional)</label>
+                    <textarea name="description" x-model="categoryDesc" rows="2" placeholder="Resumo dos produtos agrupados nesta categoria"
                               class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 <?php echo e($theme['ring']); ?> outline-none"></textarea>
                 </div>
 
@@ -102,7 +137,7 @@
 
                 <div class="flex gap-3 pt-2">
                     <button type="button" @click="showModal = false" class="w-1/3 py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs">Cancelar</button>
-                    <button type="submit" class="w-2/3 py-2.5 rounded-xl <?php echo e($theme['btn']); ?> text-xs hover:scale-105 active:scale-95 transition">Guardar</button>
+                    <button type="submit" class="w-2/3 py-2.5 rounded-xl <?php echo e($theme['btn']); ?> text-xs font-bold hover:scale-105 active:scale-95 transition">Guardar Categoria</button>
                 </div>
             </form>
         </div>
