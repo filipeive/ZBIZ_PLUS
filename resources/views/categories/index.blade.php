@@ -80,6 +80,9 @@
 
             <form :action="editMode ? '{{ url('categories') }}/' + categoryId : '{{ route('categories.store') }}'" method="POST" class="space-y-4">
                 @csrf
+                <input type="hidden" name="type" value="product">
+                <input type="hidden" name="color" value="#10b981">
+                <input type="hidden" name="icon" value="fa-tag">
                 <template x-if="editMode">
                     <input type="hidden" name="_method" value="PUT">
                 </template>

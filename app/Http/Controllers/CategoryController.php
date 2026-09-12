@@ -35,16 +35,32 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         try {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255|unique:categories,name',
-                'description' => 'nullable|string|max:500',
-                'type' => 'required|in:product,service',
-                'color' => 'required|string|max:7',
-                'icon' => 'required|string|max:100',
-                'status' => 'required|in:active,inactive'
+            $request->merge([
+                'color' => $request->input('color', '#10b981'),
+                'icon' => $request->input('icon', 'fa-tag'),
+                'type' => $request->input('type', 'product'),
+                'is_active' => $request->has('is_active') ? $request->boolean('is_active') : ($request->input('status') !== 'inactive'),
             ]);
 
-            Category::create($validated);
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string|max:500',
+                'type' => 'nullable|in:product,service',
+                'color' => 'nullable|string|max:7',
+                'icon' => 'nullable|string|max:100',
+                'is_active' => 'nullable|boolean',
+            ]);
+
+            Category::create([
+                'tenant_id' => current_tenant_id(),
+                'branch_id' => current_branch_id(),
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'type' => $validated['type'] ?? 'product',
+                'color' => $validated['color'] ?? '#10b981',
+                'icon' => $validated['icon'] ?? 'fa-tag',
+                'is_active' => $validated['is_active'] ?? true,
+            ]);
 
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
@@ -68,12 +84,13 @@ class CategoryController extends Controller
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Erro interno do servidor.'
+                    'message' => 'Erro interno do servidor: ' . $e->getMessage()
                 ], 500);
             }
-            return redirect()->back()->with('error', 'Erro interno do servidor.');
+            return redirect()->back()->with('error', 'Erro interno do servidor: ' . $e->getMessage());
         }
     }
+
     /**
      * Atualizar categoria existente
      */
@@ -81,21 +98,37 @@ class CategoryController extends Controller
         try {
             $category = Category::findOrFail($id);
 
+            $request->merge([
+                'color' => $request->input('color', $category->color ?? '#10b981'),
+                'icon' => $request->input('icon', $category->icon ?? 'fa-tag'),
+                'type' => $request->input('type', $category->type ?? 'product'),
+                'is_active' => $request->has('is_active') ? $request->boolean('is_active') : ($request->input('status') !== 'inactive'),
+            ]);
+
             $validated = $request->validate([
                 'name' => [
                     'required',
                     'string',
                     'max:255',
-                    Rule::unique('categories')->ignore($category->id),
+                    Rule::unique('categories')->where(function ($query) {
+                        return $query->where('tenant_id', current_tenant_id());
+                    })->ignore($category->id),
                 ],
                 'description' => 'nullable|string|max:500',
-                'type' => 'required|in:product,service',
-                'color' => 'required|string|max:7',
-                'icon' => 'required|string|max:100',
-                'status' => 'required|in:active,inactive'
+                'type' => 'nullable|in:product,service',
+                'color' => 'nullable|string|max:7',
+                'icon' => 'nullable|string|max:100',
+                'is_active' => 'nullable|boolean',
             ]);
 
-            $category->update($validated);
+            $category->update([
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'type' => $validated['type'] ?? $category->type ?? 'product',
+                'color' => $validated['color'] ?? $category->color ?? '#10b981',
+                'icon' => $validated['icon'] ?? $category->icon ?? 'fa-tag',
+                'is_active' => $validated['is_active'] ?? true,
+            ]);
 
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
