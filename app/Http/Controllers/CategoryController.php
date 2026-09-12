@@ -13,21 +13,35 @@ class CategoryController extends Controller
      */
     public function index()
     {
+        $branchId = current_branch_id();
         $categories = Category::withCount('products')
+                            ->where(function ($q) use ($branchId) {
+                                $q->whereNull('branch_id');
+                                if ($branchId) {
+                                    $q->orWhere('branch_id', $branchId);
+                                }
+                            })
                             ->orderBy('name')
                             ->get();
         
         return view('categories.index', compact('categories'));
     }
-    //creayte
+
     public function create()
     {
-        //products
-        $categories = Category::all();
-        $products = Category::where('type', 'product')->get();
-        $services = Category::where('type', 'service')->get();
+        $branchId = current_branch_id();
+        $baseQuery = Category::where(function ($q) use ($branchId) {
+            $q->whereNull('branch_id');
+            if ($branchId) {
+                $q->orWhere('branch_id', $branchId);
+            }
+        });
+        $categories = (clone $baseQuery)->get();
+        $products = (clone $baseQuery)->where('type', 'product')->get();
+        $services = (clone $baseQuery)->where('type', 'service')->get();
         return view('categories.create', compact('categories', 'products', 'services'));
     }
+
     /**
      * Criar nova categoria
      */
@@ -43,7 +57,19 @@ class CategoryController extends Controller
             ]);
 
             $validated = $request->validate([
-                'name' => 'required|string|max:255',
+                'name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('categories')->where(function ($query) {
+                        $q = $query->where('tenant_id', current_tenant_id());
+                        $branchId = current_branch_id();
+                        if ($branchId) {
+                            $q->where(fn($sub) => $sub->whereNull('branch_id')->orWhere('branch_id', $branchId));
+                        }
+                        return $q;
+                    }),
+                ],
                 'description' => 'nullable|string|max:500',
                 'type' => 'nullable|in:product,service',
                 'color' => 'nullable|string|max:7',
@@ -53,6 +79,7 @@ class CategoryController extends Controller
 
             Category::create([
                 'tenant_id' => current_tenant_id(),
+                'branch_id' => current_branch_id(),
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? null,
                 'type' => $validated['type'] ?? 'product',
@@ -110,7 +137,12 @@ class CategoryController extends Controller
                     'string',
                     'max:255',
                     Rule::unique('categories')->where(function ($query) {
-                        return $query->where('tenant_id', current_tenant_id());
+                        $q = $query->where('tenant_id', current_tenant_id());
+                        $branchId = current_branch_id();
+                        if ($branchId) {
+                            $q->where(fn($sub) => $sub->whereNull('branch_id')->orWhere('branch_id', $branchId));
+                        }
+                        return $q;
                     })->ignore($category->id),
                 ],
                 'description' => 'nullable|string|max:500',

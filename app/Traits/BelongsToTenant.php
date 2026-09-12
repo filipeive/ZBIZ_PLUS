@@ -21,7 +21,7 @@ trait BelongsToTenant
                 $model->tenant_id = $context->getTenantId();
             }
 
-            if ($context->getBranchId() && property_exists($model, 'branch_id') && empty($model->branch_id)) {
+            if ($context->getBranchId() && ($model->isFillable('branch_id') || property_exists($model, 'branch_id')) && empty($model->branch_id)) {
                 $model->branch_id = $context->getBranchId();
             }
         });
