@@ -53,7 +53,6 @@ class CategoryController extends Controller
 
             Category::create([
                 'tenant_id' => current_tenant_id(),
-                'branch_id' => current_branch_id(),
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? null,
                 'type' => $validated['type'] ?? 'product',
