@@ -5,6 +5,14 @@
 
 @php
     $theme = tenant_theme();
+    $cartItems = $order->items->map(function($it) {
+        return [
+            'product_id' => $it->product_id,
+            'name' => $it->item_name ?? ($it->product?->name ?? 'Artigo'),
+            'quantity' => (float) $it->quantity,
+            'price' => (float) $it->unit_price
+        ];
+    })->values();
 @endphp
 
 @section('content')
@@ -165,14 +173,7 @@
 </div>
 
 <script>
-    let cart = @json($order->items->map(function($it) {
-        return [
-            'product_id' => $it->product_id,
-            'name' => $it->item_name ?? ($it->product?->name ?? 'Artigo'),
-            'quantity' => (float) $it->quantity,
-            'price' => (float) $it->unit_price
-        ];
-    }));
+    let cart = @json($cartItems);
 
     function renderCart() {
         const tbody = document.getElementById('cart-items');

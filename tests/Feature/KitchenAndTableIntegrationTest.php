@@ -38,13 +38,20 @@ class KitchenAndTableIntegrationTest extends TestCase
             'is_active' => true,
         ]);
 
+        $role = \App\Models\Role::firstOrCreate([
+            'name' => 'admin',
+        ], [
+            'guard_name' => 'web',
+            'description' => 'Administrador'
+        ]);
+
         $this->user = User::create([
             'tenant_id' => $this->tenant->id,
             'branch_id' => $this->branch->id,
+            'role_id' => $role->id,
             'name' => 'Admin Chef',
             'email' => 'chef@restaurante.test',
             'password' => Hash::make('password'),
-            'role' => 'admin',
             'is_active' => true,
         ]);
     }
@@ -146,5 +153,17 @@ class KitchenAndTableIntegrationTest extends TestCase
 
         $order->refresh();
         $this->assertEquals('in_progress', $order->status);
+
+        // Test editing view renders cleanly without Blade ParseError
+        $editResponse = $this->actingAs($this->user)
+            ->withSession([
+                'tenant_id' => $this->tenant->id,
+                'branch_id' => $this->branch->id,
+                'user_permissions' => ['edit_orders', 'view_orders', 'manage_settings'],
+            ])
+            ->get(route('orders.edit', $order->id));
+
+        $editResponse->assertStatus(200);
+        $editResponse->assertSee('Editar Encomenda');
     }
 }

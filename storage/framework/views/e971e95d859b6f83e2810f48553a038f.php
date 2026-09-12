@@ -3,6 +3,14 @@
 
 <?php
     $theme = tenant_theme();
+    $cartItems = $order->items->map(function($it) {
+        return [
+            'product_id' => $it->product_id,
+            'name' => $it->item_name ?? ($it->product?->name ?? 'Artigo'),
+            'quantity' => (float) $it->quantity,
+            'price' => (float) $it->unit_price
+        ];
+    })->values();
 ?>
 
 <?php $__env->startSection('content'); ?>
@@ -171,9 +179,7 @@ unset($__errorArgs, $__bag); ?>
 </div>
 
 <script>
-    let cart = <?php echo json_encode($order->items->map(function($it) {
-        return [
-            'product_id' => $it->product_id, 'name' => $it->item_name ?? ($it->product?->name ?? 'Artigo'), 'quantity' => (float) $it->quantity) ?>;
+    let cart = <?php echo json_encode($cartItems, 15, 512) ?>;
 
     function renderCart() {
         const tbody = document.getElementById('cart-items');

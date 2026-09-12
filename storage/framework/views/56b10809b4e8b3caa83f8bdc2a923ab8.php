@@ -7,7 +7,7 @@
 ?>
 
 <?php $__env->startSection('content'); ?>
-<div class="space-y-6" x-data="{ viewMode: 'grid' }">
+<div class="space-y-6" x-data="{ viewMode: window.innerWidth < 768 ? 'grid' : (localStorage.getItem('preferredViewMode') || 'grid') }">
     
     <!-- Top Action Bar -->
     <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
