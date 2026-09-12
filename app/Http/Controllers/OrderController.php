@@ -461,45 +461,67 @@ class OrderController extends Controller
     // Atualiza um pedido existente
     public function update(Request $request, Order $order)
     {
+        $rawItems = $request->input('items');
+        if (is_string($rawItems)) {
+            $decoded = json_decode($rawItems, true);
+            if (is_array($decoded)) {
+                $request->merge(['items' => $decoded]);
+            }
+        }
+
         $validated = $request->validate([
             'customer_name' => 'required|string|max:100',
             'customer_phone' => 'nullable|string|max:20',
             'description' => 'required|string',
-            'delivery_date' => 'nullable|date|after_or_equal:today',
+            'delivery_date' => 'nullable|date',
             'priority' => 'required|in:low,medium,high,urgent',
             'notes' => 'nullable|string',
             'advance_payment' => 'nullable|numeric|min:0',
-            'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|numeric|min:1',
-            'items.*.unit_price' => 'required|numeric|min:0',
+            'items' => 'required',
         ]);
 
+        $items = $validated['items'];
+        if (is_string($items)) {
+            $items = json_decode($items, true);
+        }
+
+        if (!is_array($items) || empty($items)) {
+            return back()->withErrors(['items' => 'O pedido deve conter pelo menos um item.'])->withInput();
+        }
+
+        foreach ($items as $index => $itemData) {
+            if (empty($itemData['product_id']) || empty($itemData['quantity']) || !isset($itemData['unit_price'])) {
+                return back()->withErrors(['items' => "Item #" . ($index + 1) . " com dados incompletos."])->withInput();
+            }
+        }
+
         try {
-            DB::transaction(function () use ($validated, $order) {
+            DB::transaction(function () use ($validated, $items, $order) {
                 $totalAmount = 0;
-                foreach ($validated['items'] as $item) {
+                foreach ($items as $item) {
                     $totalAmount += $item['quantity'] * $item['unit_price'];
                 }
 
                 $order->update([
                     'customer_name' => $validated['customer_name'],
-                    'customer_phone' => $validated['customer_phone'],
+                    'customer_phone' => $validated['customer_phone'] ?? null,
                     'description' => $validated['description'],
                     'estimated_amount' => $totalAmount,
                     'advance_payment' => $validated['advance_payment'] ?? 0,
-                    'delivery_date' => $validated['delivery_date'],
+                    'delivery_date' => $validated['delivery_date'] ?? null,
                     'priority' => $validated['priority'],
-                    'notes' => $validated['notes'],
+                    'notes' => $validated['notes'] ?? null,
                 ]);
 
                 // Sincronizar itens (remove os antigos e adiciona os novos)
                 $order->items()->delete();
-                foreach ($validated['items'] as $itemData) {
+                foreach ($items as $itemData) {
                     $product = Product::find($itemData['product_id']);
                     $order->items()->create([
-                        'product_id' => $product->id,
-                        'item_name' => $product->name,
+                        'tenant_id' => $order->tenant_id,
+                        'branch_id' => $order->branch_id,
+                        'product_id' => $itemData['product_id'],
+                        'item_name' => $itemData['item_name'] ?? $product?->name ?? 'Artigo',
                         'quantity' => $itemData['quantity'],
                         'unit_price' => $itemData['unit_price'],
                         'total_price' => $itemData['quantity'] * $itemData['unit_price'],

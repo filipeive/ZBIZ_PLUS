@@ -79,7 +79,7 @@ class PermissionHelper
         $user = self::getAuthenticatedUser();
         if (!$user) return false;
 
-        if (self::isAdmin()) return true;
+        if (self::isAdmin() || (method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin())) return true;
 
         if (method_exists($user, 'hasPermission')) {
             return $user->hasPermission($permission);

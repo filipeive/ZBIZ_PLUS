@@ -39,10 +39,10 @@ class KitchenAndTableIntegrationTest extends TestCase
         ]);
 
         $role = \App\Models\Role::firstOrCreate([
-            'name' => 'admin',
+            'name' => 'super_admin',
         ], [
             'guard_name' => 'web',
-            'description' => 'Administrador'
+            'description' => 'Super Administrador'
         ]);
 
         $this->user = User::create([
@@ -53,6 +53,7 @@ class KitchenAndTableIntegrationTest extends TestCase
             'email' => 'chef@restaurante.test',
             'password' => Hash::make('password'),
             'is_active' => true,
+            'is_super_admin' => true,
         ]);
     }
 
@@ -165,5 +166,59 @@ class KitchenAndTableIntegrationTest extends TestCase
 
         $editResponse->assertStatus(200);
         $editResponse->assertSee('Editar Encomenda');
+    }
+
+    public function test_order_can_be_updated_with_json_items_string(): void
+    {
+        $product = \App\Models\Product::create([
+            'tenant_id' => $this->tenant->id,
+            'name' => 'Prato Grelhado',
+            'selling_price' => 500.00,
+            'type' => 'product',
+            'is_active' => true,
+        ]);
+
+        $order = Order::create([
+            'tenant_id' => $this->tenant->id,
+            'branch_id' => $this->branch->id,
+            'user_id' => $this->user->id,
+            'customer_name' => 'Cliente Teste',
+            'description' => 'Pedido Inicial',
+            'status' => 'pending',
+            'priority' => 'medium',
+            'estimated_amount' => 500.00,
+        ]);
+
+        $itemsJson = json_encode([
+            [
+                'product_id' => $product->id,
+                'item_name' => 'Prato Grelhado Especial',
+                'quantity' => 2,
+                'unit_price' => 500.00,
+            ]
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->withSession([
+                'tenant_id' => $this->tenant->id,
+                'branch_id' => $this->branch->id,
+                'user_permissions' => ['edit_orders', 'view_orders', 'manage_settings'],
+            ])
+            ->put(route('orders.update', $order->id), [
+                'customer_name' => 'Cliente Atualizado',
+                'description' => 'Pedido Atualizado',
+                'priority' => 'high',
+                'advance_payment' => 200,
+                'items' => $itemsJson,
+            ]);
+
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('orders.show', $order->id));
+
+        $order->refresh();
+        $this->assertEquals('Cliente Atualizado', $order->customer_name);
+        $this->assertEquals(1000.00, $order->estimated_amount);
+        $this->assertCount(1, $order->items);
+        $this->assertEquals(2, $order->items->first()->quantity);
     }
 }
