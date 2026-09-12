@@ -6,11 +6,30 @@
 @php
     $theme = tenant_theme();
     $availableIcons = [
+        // Comidas & Restauração
+        'fa-utensils' => 'Prato Principal / Geral',
+        'fa-burger' => 'Hambúrgueres / Fast Food',
+        'fa-pizza-slice' => 'Pizzas',
+        'fa-bowl-food' => 'Sopas / Massas / Refeições',
+        'fa-drumstick-bite' => 'Carnes / Grelhados / Churrasco',
+        'fa-fish' => 'Peixe & Marisco',
+        'fa-bread-slice' => 'Pães / Entradas / Petiscos',
+        'fa-ice-cream' => 'Gelados / Sobremesas',
+        'fa-cake-candles' => 'Bolos / Pastelaria',
+        'fa-carrot' => 'Saladas / Vegetariano',
+        
+        // Bebidas & Bar
+        'fa-bottle-water' => 'Água / Refrigerantes',
+        'fa-glass-water' => 'Sumos / Refrescos',
+        'fa-mug-hot' => 'Cafés / Chás / Pequeno Almoço',
+        'fa-beer-mug-empty' => 'Cervejas / Fino',
+        'fa-wine-glass' => 'Vinhos / Garrafeira',
+        'fa-martini-glass-citrus' => 'Cocktails / Destilados',
+
+        // Outros Setores
         'fa-tag' => 'Etiqueta Geral',
-        'fa-box' => 'Caixa / Produto',
-        'fa-utensils' => 'Alimentação / Restauração',
+        'fa-box' => 'Caixa / Mercadoria',
         'fa-pills' => 'Medicamentos / Saúde',
-        'fa-bottle-water' => 'Bebidas / Bar',
         'fa-mobile-screen' => 'Eletrónicos / Telemóveis',
         'fa-laptop' => 'Informática / Tech',
         'fa-shirt' => 'Vestuário / Moda',
@@ -20,8 +39,6 @@
         'fa-car' => 'Oficina / Automóvel',
         'fa-store' => 'Loja / Comércio',
         'fa-print' => 'Gráfica / Impressão',
-        'fa-spa' => 'Beleza / Spa',
-        'fa-gas-pump' => 'Combustível',
     ];
 @endphp
 
