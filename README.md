@@ -1,72 +1,198 @@
 # ZBIZ+ — Plataforma Empresarial Modular e SaaS Multissetorial
 
-> **ZBIZ+**: O Sistema de Gestão Inteligente que se Adapta ao Ritmo do Seu Negócio em Moçambique.
+> **ZBIZ+**: A Solução ERP & POS Inteligente concebida para o mercado de **Moçambique**, com suporte nativo a Farmácias (ANARME), Restauração com KDS/Mesas, Retalho Geral e Prestação de Serviços.
+
+![ZBIZ+ Banner](public/favicon.png)
+
+[![Versão](https://img.shields.io/badge/versão-v1.0.19-emerald.svg)](./docs/20_CHANGELOG.md)
+[![PHP](https://img.shields.io/badge/PHP-8.3-blue.svg)](https://www.php.net)
+[![Laravel](https://img.shields.io/badge/Laravel-12.x-red.svg)](https://laravel.com)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](docker-compose.yml)
+[![Licenciamento](https://img.shields.io/badge/Licença-Proprietária-gold.svg)](#-suporte--contacto)
 
 ---
 
 ## 🌟 Visão Geral
 
-O **ZBIZ+** é uma evolução tecnológica da experiência comprovada do ReproSys, transformado numa plataforma ERP/POS SaaS modular e escalável, concebida para atender os desafios operacionais, fiscais e económicos de pequenas, médias e grandes empresas em **Moçambique**.
+O **ZBIZ+** é uma evolução de nível empresarial do ReproSys, arquitetado como um Monólito Modular Multi-Tenant com isolamento estrito de dados por empresa e filial. Desenvolvido para resolver os desafios reais do comércio e serviços em Moçambique: conectividade instável, necessidade de conformidade regulatória (ANARME), gestão de múltiplos balcões/filiais e reconciliação financeira (M-Pesa e e-Mola).
 
-### 🧩 Ecossistema Modular:
-* **ZBIZ Core:** Núcleo ERP, multi-empresa, filiais, livro-razão imutável, gestão de salários e despesas.
-* **ZBIZ POS:** Caixa de alta velocidade, leitor de código de barras, atalhos rápidos e modo *Offline-First*.
-* **ZBIZ Pharmacy:** Vertical regulatório de farmácias com rastreabilidade de Lotes, Validades (alertas 30/60/90 dias), saída FEFO e conformidade com diretrizes da **ANARME**.
-* **ZBIZ Retail:** Gestão de comércio, stock centralizado por filial e inventário dinâmico.
-* **ZBIZ Repro / Services:** Ordens de trabalho, insumos vinculados e conversão de pedidos com adiantamento/sinal.
-* **ZBIZ Finance & Payments:** Integração nativa com **M-Pesa** (C2B STK Push), **e-Mola** e reconciliação automática.
-* **ZBIZ Analytics:** Inteligência de vendas, margem de lucro real e prevenção de rotura de stock.
-
----
-
-## 📚 Documentação Técnica de Engenharia
-
-Toda a arquitetura e governança do projeto estão documentadas na pasta [`docs/`](./docs):
-
-* [`00_ENGINEERING_GUIDE.md`](./docs/00_ENGINEERING_GUIDE.md) — A Constituição Técnica do Projeto
-* [`01_PRODUCT_VISION.md`](./docs/01_PRODUCT_VISION.md) — Visão de Produto, Personas e Módulos
-* [`02_MARKET_RESEARCH_MOZAMBIQUE.md`](./docs/02_MARKET_RESEARCH_MOZAMBIQUE.md) — Pesquisa de Mercado e Concorrência
-* [`03_ROADMAP.md`](./docs/03_ROADMAP.md) — Cronograma de Desenvolvimento Faseado
-* [`04_ARCHITECTURE.md`](./docs/04_ARCHITECTURE.md) — Padrão Arquitetural Modular Monolith
-* [`05_MULTI_TENANCY.md`](./docs/05_MULTI_TENANCY.md) — Isolamento de Dados por Tenant Scope
-* [`06_DATABASE_SCHEMA.md`](./docs/06_DATABASE_SCHEMA.md) — Dicionário de Dados e Relacionamentos
-* [`07_VERTICAL_MODULES.md`](./docs/07_VERTICAL_MODULES.md) — Módulos Verticais por Segmento
-* [`08_POS_SPECIFICATION.md`](./docs/08_POS_SPECIFICATION.md) — Especificação do POS e Sincronização Offline
-* [`09_PHARMACY_REGULATORY_GUIDE.md`](./docs/09_PHARMACY_REGULATORY_GUIDE.md) — Diretrizes ANARME, Lotes e FEFO
-* [`10_BILLING_TAX_MOZAMBIQUE.md`](./docs/10_BILLING_TAX_MOZAMBIQUE.md) — NUIT, IVA (16%) e Faturação Fiscal
-* [`11_PAYMENTS_MPESA_EMOLA.md`](./docs/11_PAYMENTS_MPESA_EMOLA.md) — Arquitetura de Pagamentos Móveis
-* [`12_MIGRATION_FROM_REPROSYS.md`](./docs/12_MIGRATION_FROM_REPROSYS.md) — Guia de Importação de Dados do ReproSys
-* [`adr/`](./docs/adr) — Architecture Decision Records (ADRs)
+### 🧩 Módulos Verticais Especializados:
+* **💊 ZBIZ Farmácia:** Rastreabilidade estrita de Lotes, Validades (alertas dinâmicos de 30/60/90 dias), algoritmo FEFO (*First Expire, First Out*), dosagem, substância ativa e relatórios de psicotrópicos em conformidade com as diretrizes da **ANARME**.
+* **🍽️ ZBIZ Restauração:** Gestão de mesas em tempo real, visualização de ocupação, comanda eletrónica e painel de cozinha (KDS - Kitchen Display System).
+* **🛒 ZBIZ Retalho & Supermercado:** Frente de Caixa (POS 2.0) de alta velocidade, suporte a leitores de código de barras, atalhos de teclado, inventário por filial e transferências entre lojas.
+* **🖨️ ZBIZ Serviços & Reprografia:** Gestão de ordens de serviço, insumos de produção vinculados, adiantamentos/sinal e faturação modular.
+* **💳 Pagamentos Nacionais:** Suporte a pagamentos em Dinheiro, M-Pesa (C2B STK Push), e-Mola, Cartão POS (POS físico) e Vendas a Crédito com gestão de amortizações.
+* **🏢 SaaS & Centro de Controlo do Proprietário:** Emissão de chaves de licença seriais offline (certificados PDF oficiais), upgrade instantâneo de planos e modo suporte (*impersonate*) com 1 clique.
 
 ---
 
-## 🚀 Instalação & Desenvolvimento
+## 🚀 Opções de Instalação & Onboarding
 
+O ZBIZ+ oferece 4 métodos de arranque adaptados a cada perfil de operação:
+
+### 🖥️ Método 1: Onboarding Rápido em Modo Kiosk / App Nativo (Recomendado para Clientes)
+
+Para postos de venda em farmácias e lojas, o operador não deve navegar com barras de browser, abas ou risco de fechar acidentalmente. Os instaladores configuram o sistema como uma **App Nativa Kiosk** com atalho no ambiente de trabalho e suporte a **impressão térmica silenciosa**.
+
+#### No Windows:
+1. Faça duplo clique no ficheiro:
+   ```cmd
+   install-windows.bat
+   ```
+2. O instalador detectará o Microsoft Edge ou Google Chrome e perguntará:
+   - **URL do Servidor:** Pressione `ENTER` para usar o servidor Nuvem (`http://146.235.224.99/zbiz_plus`) ou digite o IP local.
+   - **Formato:** Modo App (Janela limpa nativa) ou Modo Kiosk Total (Tela cheia travada).
+   - **Inicialização Automática:** Opção de abrir o ZBIZ+ assim que o computador ligar.
+3. Um atalho **"ZBIZ+ Terminal POS"** com o ícone oficial será gerado na Área de Trabalho.
+
+#### No Linux (Ubuntu, Mint, Debian, etc.):
+1. Torne o script executável e execute:
+   ```bash
+   chmod +x install-linux.sh
+   ./install-linux.sh
+   ```
+2. Selecione a opção `[1]` para configurar o Terminal Kiosk.
+3. O lançador `.desktop` será integrado ao seu menu de aplicativos e à sua Área de Trabalho com permissões confiadas.
+
+---
+
+### 🐳 Método 2: Instalação via Docker (Orquestração Completa)
+
+Ideal para servidores locais ou ambientes de desenvolvimento que exijam zero configuração manual de dependências.
+
+#### Pré-requisitos:
+* Docker e Docker Compose instalados.
+
+#### Passos:
 ```bash
-# 1. Clonar repositório
-git clone git@github.com:filipeive/ZBIZ_PLUS.git
+# 1. Clonar o repositório
+git clone https://github.com/filipeive/ZBIZ_PLUS.git
 cd ZBIZ_PLUS
 
-# 2. Instalar dependências PHP e Node.js
-composer install
-npm install
+# 2. Iniciar a stack (App ZBIZ+ PHP 8.3 + Banco MySQL 8.0)
+docker compose up -d
 
-# 3. Configurar ambiente
-cp .env.example .env
-php artisan key:generate
+# 3. Verificar o estado dos containers
+docker compose ps
+```
 
-# 4. Executar migrações
-php artisan migrate --seed
+Aceda à aplicação no seu navegador: **`http://localhost:8000`**
 
-# 5. Executar testes
-php artisan test
+O container executa automaticamente:
+- Verificação de saúde do MySQL
+- Migração automática das tabelas (`php artisan migrate --force`)
+- Geração de chave de segurança (`APP_KEY`) caso não exista
+- Configuração de permissões nas pastas `storage` e `bootstrap/cache`
+- Criação dos links de storage
 
-# 6. Iniciar servidor de desenvolvimento
-php artisan serve
+Para parar os serviços:
+```bash
+docker compose down
 ```
 
 ---
 
-## 🛡️ Licença
+### ⚙️ Método 3: Instalação Manual (Servidor Tradicional PHP 8.3 + MySQL)
 
-Propriedade exclusiva — ZBIZ+ Moçambique.
+#### Pré-requisitos:
+* PHP 8.3 com extensões: `bcmath`, `ctype`, `fileinfo`, `json`, `mbstring`, `openssl`, `pdo_mysql`, `tokenizer`, `xml`, `gd`, `zip`, `intl`
+* Composer 2.x
+* MySQL 8.0 ou MariaDB 10.4+
+* Servidor Web (Nginx ou Apache com `mod_rewrite`)
+
+#### Execução:
+```bash
+# 1. Clonar o repositório
+git clone https://github.com/filipeive/ZBIZ_PLUS.git
+cd ZBIZ_PLUS
+
+# 2. Instalar dependências PHP
+composer install --optimize-autoloader --no-dev
+
+# 3. Configurar ficheiro de ambiente
+cp .env.example .env
+php artisan key:generate
+
+# 4. Ajustar variáveis no .env
+# DB_CONNECTION=mysql
+# DB_HOST=127.0.0.1
+# DB_DATABASE=zbizplus_db
+# DB_USERNAME=fdsms
+# DB_PASSWORD=fdsadmin
+
+# 5. Executar migrações e dados base
+php artisan migrate --force
+php artisan db:seed --class=PlanSeeder --force
+php artisan db:seed --class=OperationalMultiBranchSeeder --force
+
+# 6. Criar link simbólico para storage
+php artisan storage:link
+
+# 7. Ajustar permissões
+sudo chown -R www-data:www-data storage bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache
+```
+
+---
+
+### 🌐 Método 4: Deploy em Produção via Script
+
+Para atualizar o servidor em nuvem (`146.235.224.99`) de forma atômica e segura:
+
+```bash
+# 1. Enviar os commits locais para o GitHub
+git push origin main
+
+# 2. Executar o script de deploy automatizado
+./deploy.sh
+```
+
+O `deploy.sh` realiza no servidor:
+- Sincronização segura via chave SSH (`git fetch & reset --hard`)
+- Instalação otimizada de pacotes (`composer install --no-dev`)
+- Execução de novas migrações de base de dados
+- Limpeza e regeração de caches de produção (`config:cache`, `route:cache`, `view:cache`)
+- Ajuste de permissões de ficheiros
+- Recarregamento sem interrupção do PHP 8.3-FPM e Nginx
+
+---
+
+## 🔑 Credenciais Padrão do Sistema (Ambiente de Testes)
+
+| Papel / Perfil | E-mail de Acesso | Palavra-passe | Empresa / Âmbito |
+| :--- | :--- | :--- | :--- |
+| **Super Administrador SaaS** | `superadmin@zbizpos.com` | `password123` | Plataforma Global / Centro de Controlo |
+| **Farmácia Central (Admin)** | `admin@farmaciacentral.co.mz` | `password123` | Farmácia Muzinga (ANARME / Lotes) |
+| **Farmácia Central (Caixa)** | `caixa@farmaciacentral.co.mz` | `password123` | Frente de Caixa Farmácia |
+| **Retalho Zambézia (Admin)** | `admin@superzambezia.co.mz` | `password123` | Supermercado Zambézia |
+| **FDS Multiservices (Admin)** | `admin@fdsmultiservices.co.mz`| `password123` | Reprografia, Brindes & Serviços |
+
+---
+
+## 📚 Documentação de Arquitetura & Engenharia
+
+A documentação detalhada de governança e regras de negócio está na pasta [`docs/`](./docs):
+
+* [`00_SYSTEM_STATUS_AND_ARCHITECTURE_2026.md`](./docs/00_SYSTEM_STATUS_AND_ARCHITECTURE_2026.md) — Relatório de Estado do Sistema e Arquitetura Completa
+* [`03_ROADMAP.md`](./docs/03_ROADMAP.md) — Cronograma de Desenvolvimento (Fases 1 a 10 Concluídas)
+* [`06_DATABASE_SCHEMA.md`](./docs/06_DATABASE_SCHEMA.md) — Dicionário Oficial de Base de Dados (30+ Tabelas e Relacionamentos)
+* [`07_VERTICAL_MODULES.md`](./docs/07_VERTICAL_MODULES.md) — Especificação dos Módulos Farmácia, Restauração, Retalho e Serviços
+* [`09_PHARMACY_REGULATORY_GUIDE.md`](./docs/09_PHARMACY_REGULATORY_GUIDE.md) — Diretrizes ANARME, Lotes, FEFO e Psicotrópicos
+* [`13_OWNER_CONTROL_CENTER_AND_OFFLINE_LICENSES.md`](./docs/13_OWNER_CONTROL_CENTER_AND_OFFLINE_LICENSES.md) — Centro de Licenças e Suporte Impersonate
+* [`APRESENTACAO_CLIENTE_FARMACIA.md`](./docs/APRESENTACAO_CLIENTE_FARMACIA.md) — Apresentação Comercial para Proprietários de Farmácias
+* [`20_CHANGELOG.md`](./docs/20_CHANGELOG.md) — Registo Histórico de Versões
+
+---
+
+## 🛡️ Suporte & Contacto
+
+O **ZBIZ+** é desenvolvido e mantido com rigor de engenharia por:
+
+* **Desenvolvido por:** **Fdsmultiservices**
+* **WhatsApp / Linha Direta:** [(+258) 86 213 4230](https://wa.me/258862134230)
+* **Correio Eletrónico:** [fdsmultiservices@gmail.com](mailto:fdsmultiservices@gmail.com)
+* **Localização:** Quelimane / Maputo — Moçambique
+
+---
+
+*ZBIZ+ · Enterprise Cloud & POS Suite v1.0.19 · Desenvolvido por Fdsmultiservices*

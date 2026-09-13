@@ -2,51 +2,55 @@
 
 set -euo pipefail
 
-# Deploy script para o servidor de produção.
-# Este script assume que o commit já foi enviado ao remoto.
+# ==============================================================================
+# Script de Deploy de Produção - ZBIZ+
+# Desenvolvido por Fdsmultiservices
+# Suporte: (+258) 86 213 4230 | fdsmultiservices@gmail.com
+# ==============================================================================
 
 SERVER="${SERVER:-ubuntu@146.235.224.99}"
 KEY="${KEY:-/home/fdev-ms/.ssh/oracle-2025}"
-PROJECT_DIR="${PROJECT_DIR:-/var/www/html/reprosys}"
+PROJECT_DIR="${PROJECT_DIR:-/var/www/html/zbiz_plus}"
 BRANCH="${BRANCH:-main}"
 
-echo "Verificando estado do repositório local..."
+echo "🔍 Verificando estado do repositório local..."
 
 LOCAL_HEAD="$(git rev-parse HEAD)"
 REMOTE_HEAD="$(git ls-remote origin -h "refs/heads/$BRANCH" | awk '{print $1}')"
 
 if [[ -z "$REMOTE_HEAD" ]]; then
-    echo "Erro: não foi possível obter a branch origin/$BRANCH."
+    echo "❌ Erro: não foi possível obter a branch origin/$BRANCH."
     exit 1
 fi
 
 if [[ "$LOCAL_HEAD" != "$REMOTE_HEAD" ]]; then
-    echo "Erro: o commit local ainda não está em origin/$BRANCH."
-    echo "Faça primeiro: git push origin $BRANCH"
+    echo "⚠️ Atenção: o commit local ($LOCAL_HEAD) difere de origin/$BRANCH ($REMOTE_HEAD)."
+    echo "Certifique-se de executar 'git push origin $BRANCH' antes de fazer o deploy."
     exit 1
 fi
 
-echo "Commit confirmado em origin/$BRANCH."
-echo "🚀 Iniciando deploy para produção..."
+echo "✅ Commit confirmado em origin/$BRANCH ($LOCAL_HEAD)."
+echo "🚀 Iniciando deploy do ZBIZ+ para o servidor de produção ($SERVER)..."
 
 ssh -i "$KEY" "$SERVER" "cd $PROJECT_DIR && \
-    echo '🔧 Corrigindo permissões do git...' && \
+    echo '🔧 Ajustando permissões de trabalho...' && \
     sudo chown -R ubuntu:ubuntu .git && \
-    echo '📥 Atualizando código (force sync)...' && \
+    echo '📥 Sincronizando código-fonte (git fetch & reset)...' && \
     git fetch origin $BRANCH && \
     git reset --hard origin/$BRANCH && \
-    echo '📦 Instalando dependências...' && \
+    echo '📦 Instalando dependências PHP otimizadas...' && \
     composer install --optimize-autoloader --no-dev --no-interaction && \
-    echo '🧱 Criando tabelas de suporte legadas faltantes...' && \
-    php artisan migrate --path=database/migrations/2026_04_15_123000_create_missing_framework_support_tables.php --force && \
-    echo '🧭 Sincronizando baseline legado de migrations...' && \
-    php artisan migrations:sync-legacy --write && \
-    echo '🗃️ Executando migrations...' && \
+    echo '🗃️ Executando migrações de base de dados...' && \
     php artisan migrate --force && \
-    echo '🧹 Limpando caches antigos...' && \
+    echo '🧹 Limpando caches obsoletos...' && \
     php artisan optimize:clear && \
-    echo '⚡ Regerando caches...' && \
+    echo '⚡ Regerando caches de produção (config, route, view)...' && \
     php artisan config:cache && \
     php artisan route:cache && \
     php artisan view:cache && \
-    echo '✅ Deploy concluído com sucesso!'"
+    echo '🔒 Protegendo permissões de storage e bootstrap/cache...' && \
+    sudo chown -R ubuntu:www-data storage bootstrap/cache && \
+    sudo chmod -R 775 storage bootstrap/cache && \
+    echo '🔄 Recarregando PHP-FPM e Nginx...' && \
+    sudo systemctl reload php8.3-fpm nginx && \
+    echo '🎉 Deploy do ZBIZ+ concluído com sucesso!'"
