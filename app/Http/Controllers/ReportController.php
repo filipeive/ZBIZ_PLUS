@@ -25,7 +25,11 @@ class ReportController extends Controller
 
     private function getUserIdFilter()
     {
-        return auth()->user()->isAdmin() ? null : auth()->id();
+        $user = auth()->user();
+        if ($user && ($user->isAdmin() || $user->isSuperAdmin() || $user->isManager())) {
+            return null;
+        }
+        return auth()->id();
     }
 
     private function getBranchIdFilter(): ?int
@@ -148,6 +152,7 @@ class ReportController extends Controller
     public function monthlySales()
     {
         $branchId = $this->getBranchIdFilter();
+        $userId = $this->getUserIdFilter();
         $monthRaw = DB::connection()->getDriverName() === 'sqlite'
             ? "strftime('%Y-%m', sale_date) as month"
             : "DATE_FORMAT(sale_date, '%Y-%m') as month";
@@ -157,6 +162,7 @@ class ReportController extends Controller
             DB::raw("SUM(total_amount) as total")
         )
         ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+        ->when($userId, fn ($q) => $q->where('user_id', $userId))
         ->groupBy('month')
         ->orderBy('month', 'desc')
         ->get();
@@ -168,12 +174,14 @@ class ReportController extends Controller
         $dateFrom = $request->input('date_from', now()->startOfMonth()->format('Y-m-d'));
         $dateTo = $request->input('date_to', now()->format('Y-m-d'));
         $branchId = $this->getBranchIdFilter();
+        $userId = $this->getUserIdFilter();
 
         $sales = Product::select('products.name')
             ->join('sale_items', 'products.id', '=', 'sale_items.product_id')
             ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
             ->whereBetween('sales.sale_date', [$dateFrom, $dateTo])
             ->when($branchId, fn ($q) => $q->where('sales.branch_id', $branchId))
+            ->when($userId, fn ($q) => $q->where('sales.user_id', $userId))
             ->groupBy('products.name')
             ->selectRaw('SUM(sale_items.quantity) as quantity_sold, SUM(sale_items.total_price) as total_revenue')
             ->orderByDesc('quantity_sold')
@@ -1040,16 +1048,24 @@ class ReportController extends Controller
 
         $tenantId = auth()->user()?->tenant_id ?? current_tenant_id();
         $branchId = $this->getBranchIdFilter();
+        $userId = $this->getUserIdFilter();
 
         $query = Sale::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->with(['user', 'items.product'])
-            ->whereBetween('sale_date', [$dateFrom, $dateTo]);
+            ->whereDate('sale_date', '>=', $dateFrom)
+            ->whereDate('sale_date', '<=', $dateTo);
 
         if ($request->filled('branch_id')) {
             $query->where('branch_id', $request->branch_id);
         } elseif ($branchId) {
             $query->where('branch_id', $branchId);
+        }
+
+        if ($userId) {
+            $query->where('user_id', $userId);
+        } elseif ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
         }
 
         // Filtros específicos

@@ -51,8 +51,8 @@
         </div>
     </div>
 
-    <!-- 4 KPI Stat Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+    <!-- KPI Stat Cards (Ajusta colunas dinamicamente para ocupar todo o espaço disponível) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 {{ (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin() || auth()->user()->isManager()) ? 'lg:grid-cols-4' : 'lg:grid-cols-3' }} gap-4 sm:gap-6">
         
         <!-- Card 1: Vendas de Hoje -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">

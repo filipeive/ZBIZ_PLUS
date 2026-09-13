@@ -40,7 +40,7 @@ class SaleController extends Controller
             $query->where('branch_id', $branchId);
         }
 
-        if (! $user?->isAdmin() && ! $user?->isManager()) {
+        if (! $user?->isAdmin() && ! $user?->isSuperAdmin() && ! $user?->isManager()) {
             $query->where('user_id', $user?->id);
         }
         
