@@ -7,6 +7,8 @@
     
     <meta name="description" content="O ERP inteligente para o comércio, farmácias, gráficas e serviços em Moçambique. Frente de caixa POS, M-Pesa, faturas e controle multi-filiais.">
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -26,8 +28,8 @@
     <!-- Navigation -->
     <nav class="relative z-20 max-w-7xl mx-auto px-6 py-5 flex items-center justify-between border-b border-slate-800/60 backdrop-blur-md">
         <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                <i class="fa-solid fa-bolt text-slate-950 text-lg font-black"></i>
+            <div class="w-10 h-10 rounded-xl bg-slate-900 border border-emerald-500/30 flex items-center justify-center shadow-lg shadow-emerald-500/20 overflow-hidden">
+                <img src="{{ asset('favicon.png') }}" alt="Z+" class="w-full h-full object-cover">
             </div>
             <span class="text-2xl font-black font-heading tracking-tight text-white">ZBIZ<span class="text-emerald-400">+</span></span>
             <span class="hidden sm:inline-block text-[10px] uppercase font-bold tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">Moçambique SaaS</span>

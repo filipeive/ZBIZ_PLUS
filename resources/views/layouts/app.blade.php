@@ -41,6 +41,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
     <!-- Theme Preload Script -->
     <script>
@@ -805,7 +807,7 @@
                             @if(!empty($theme['logo_url']))
                                 <img src="{{ $theme['logo_url'] }}" alt="Logo" class="w-full h-full object-contain p-0.5">
                             @else
-                                <i class="fa-solid fa-bolt text-white text-sm"></i>
+                                <img src="{{ asset('favicon.png') }}" alt="Z+" class="w-full h-full object-cover">
                             @endif
                         </div>
                         <div class="min-w-0">

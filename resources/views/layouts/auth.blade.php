@@ -31,6 +31,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -46,8 +48,8 @@
     <div class="relative z-10 w-full max-w-lg">
         <div class="mb-8 text-center">
             <a href="{{ url('/') }}" class="inline-flex items-center gap-3" aria-label="Página Inicial">
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 shadow-lg shadow-emerald-500/20">
-                    <i class="fa-solid fa-bolt text-lg text-slate-950 font-black"></i>
+                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 border border-emerald-500/30 shadow-lg shadow-emerald-500/20 overflow-hidden">
+                    <img src="{{ asset('favicon.png') }}" alt="Z+" class="w-full h-full object-cover">
                 </div>
                 <span class="font-heading text-3xl font-black tracking-tight text-white">ZBIZ<span class="text-emerald-400">+</span></span>
             </a>

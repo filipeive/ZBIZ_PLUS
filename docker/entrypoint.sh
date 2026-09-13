@@ -56,3 +56,4 @@ fi
 echo "🟢 ZBIZ+ pronto para conexões na porta 80!"
 
 exec "$@"
+

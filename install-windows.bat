@@ -191,3 +191,4 @@ echo Obrigado por utilizar as soluções Fdsmultiservices.
 echo Pressione qualquer tecla para encerrar.
 pause >nul
 exit /b 0
+
