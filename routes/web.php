@@ -27,6 +27,7 @@ use App\Http\Controllers\DocumentTemplateController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\LicenseActivationController;
 use App\Http\Controllers\Owner\TenantControlCenterController;
+use App\Http\Controllers\QuotationController;
 
 
 
@@ -217,6 +218,7 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         Route::middleware('permissions:view_sales')->group(function () {
             Route::get('/', [SaleController::class, 'index'])->name('index');
             Route::get('/{sale}', [SaleController::class, 'show'])->name('show');
+            Route::get('/{sale}/invoice-pdf', [SaleController::class, 'downloadInvoicePdf'])->name('invoice-pdf');
             Route::get('/{sale}/print', [SaleController::class, 'print'])->name('print');
             Route::get('/{sale}/duplicate', [SaleController::class, 'duplicate'])->name('duplicate');
 
@@ -305,6 +307,16 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
                     ->name('discount.validate');
             });
         });
+    });
+
+    // ===== COTAÇÕES & PROPOSTAS COMERCIAIS =====
+    Route::prefix('quotations')->name('quotations.')->middleware('feature:sales')->group(function () {
+        Route::get('/', [QuotationController::class, 'index'])->name('index');
+        Route::get('/create', [QuotationController::class, 'create'])->name('create');
+        Route::post('/', [QuotationController::class, 'store'])->name('store');
+        Route::get('/{quotation}', [QuotationController::class, 'show'])->name('show');
+        Route::get('/{quotation}/pdf', [QuotationController::class, 'downloadPdf'])->name('pdf');
+        Route::post('/{quotation}/convert', [QuotationController::class, 'convertToSale'])->name('convert');
     });
 
     // ===== DÍVIDAS =====
@@ -534,12 +546,18 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         Route::post('/admin/settings', [AdminController::class, 'saveSettings'])->name('admin.settings.save');
         Route::prefix('documents/templates')->name('documents.templates.')->group(function () {
             Route::get('/', [DocumentTemplateController::class, 'index'])->name('index');
+            Route::post('/settings', [DocumentTemplateController::class, 'updateSettings'])->name('settings.update');
+            Route::get('/preview/invoice/{type?}', [DocumentTemplateController::class, 'previewInvoice'])->name('preview.invoice');
+            Route::get('/preview/quotation', [DocumentTemplateController::class, 'previewQuotation'])->name('preview.quotation');
             Route::post('/rent-contract', [DocumentTemplateController::class, 'updateRentContract'])->name('rent-contract.update');
             Route::get('/rent-contract/print', [DocumentTemplateController::class, 'printRentContract'])->name('rent-contract.print');
             Route::get('/physical-receipt-book/pdf', [DocumentTemplateController::class, 'printPhysicalReceiptBook'])->name('physical-receipt.print');
         });
         Route::prefix('document-templates')->name('document-templates.')->group(function () {
             Route::get('/', [DocumentTemplateController::class, 'index'])->name('index');
+            Route::post('/settings', [DocumentTemplateController::class, 'updateSettings'])->name('settings.update');
+            Route::get('/preview/invoice/{type?}', [DocumentTemplateController::class, 'previewInvoice'])->name('preview.invoice');
+            Route::get('/preview/quotation', [DocumentTemplateController::class, 'previewQuotation'])->name('preview.quotation');
         });
     });
 

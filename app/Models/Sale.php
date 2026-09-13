@@ -14,23 +14,28 @@ class Sale extends Model
     protected $fillable = [
         'customer_id',
         'tenant_id', 'branch_id',
-        'user_id', 'customer_name', 'customer_phone',
+        'user_id', 'customer_name', 'customer_phone', 'customer_nuit', 'customer_address',
         'subtotal', 'discount_amount', 'discount_percentage', 
         'discount_type', 'discount_reason', 'total_amount', 
+        'tax_regime', 'tax_rate', 'tax_amount', 'tax_exemption_reason', 'prices_include_tax',
+        'invoice_type', 'invoice_number', 'due_date', 'quotation_id',
         'payment_method', 'notes', 'sale_date'
     ];
 
     protected $casts = [
-        'subtotal' => 'decimal:2',
-        'discount_amount' => 'decimal:2',
+        'subtotal'            => 'decimal:2',
+        'discount_amount'     => 'decimal:2',
         'discount_percentage' => 'decimal:2',
-        'total_amount' => 'decimal:2',
-        'sale_date' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'total_amount'        => 'decimal:2',
+        'tax_rate'            => 'decimal:2',
+        'tax_amount'          => 'decimal:2',
+        'prices_include_tax'  => 'boolean',
+        'due_date'            => 'date',
+        'sale_date'           => 'datetime',
+        'created_at'          => 'datetime',
+        'updated_at'          => 'datetime',
     ];
 
-    
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
@@ -39,6 +44,11 @@ class Sale extends Model
     public function branch(): BelongsTo
     {
         return $this->belongsTo(Branch::class);
+    }
+
+    public function quotation(): BelongsTo
+    {
+        return $this->belongsTo(Quotation::class);
     }
 
     public function debt(): \Illuminate\Database\Eloquent\Relations\HasOne
@@ -206,5 +216,46 @@ class Sale extends Model
     {
         if ($this->subtotal == 0) return 0;
         return ($this->discount_amount / $this->subtotal) * 100;
+    }
+
+    /**
+     * Obter o título formal do documento de faturação
+     */
+    public function getOfficialInvoiceTitleAttribute(): string
+    {
+        return match ($this->invoice_type) {
+            'invoice', 'credit_invoice' => 'Factura Comercial',
+            'proforma'                  => 'Factura Proforma',
+            default                     => 'Factura-Recibo',
+        };
+    }
+
+    /**
+     * Gerar próximo número sequencial anual de faturação para o tenant.
+     * Formatos: FR-YYYY/0001 (Factura-Recibo), FT-YYYY/0001 (Factura a Prazo), FP-YYYY/0001 (Proforma)
+     */
+    public static function generateNextInvoiceNumber(int $tenantId, string $type = 'cash_invoice'): string
+    {
+        $year = date('Y');
+        $seriesCode = match ($type) {
+            'invoice', 'credit_invoice' => 'FT',
+            'proforma'                  => 'FP',
+            default                     => 'FR',
+        };
+
+        $prefix = "{$seriesCode}-{$year}/";
+
+        $lastSale = self::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('invoice_number', 'like', "{$prefix}%")
+            ->orderBy('id', 'desc')
+            ->first();
+
+        $nextSeq = 1;
+        if ($lastSale && preg_match("/{$seriesCode}-{$year}\/(\d+)/", $lastSale->invoice_number, $matches)) {
+            $nextSeq = ((int) $matches[1]) + 1;
+        }
+
+        return $prefix . str_pad((string)$nextSeq, 4, '0', STR_PAD_LEFT);
     }
 }

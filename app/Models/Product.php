@@ -20,6 +20,7 @@ class Product extends Model
         'category_id', 'linked_product_id', 'barcode', 'sku', 'name', 'description', 'type', 
         'purchase_price', 'selling_price', 'promotional_price', 'is_on_promotion', 'promotion_discount_percent', 'promotion_ends_at',
         'stock_quantity', 'min_stock_level', 'unit', 'is_active',
+        'is_tax_exempt', 'tax_rate',
         'deleted_at', 'original_name',
     ];
 
@@ -31,6 +32,8 @@ class Product extends Model
         'promotion_discount_percent'  => 'decimal:2',
         'promotion_ends_at'           => 'datetime',
         'is_active'                   => 'boolean',
+        'is_tax_exempt'               => 'boolean',
+        'tax_rate'                    => 'decimal:2',
     ];
 
     /**

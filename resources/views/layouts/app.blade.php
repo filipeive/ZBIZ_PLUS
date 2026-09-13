@@ -910,6 +910,12 @@
                                 <span>Vendas & Faturação</span>
                             </a>
 
+                            <a href="{{ route('quotations.index') }}"
+                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('quotations.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
+                                <i class="fa-solid fa-file-signature w-4 text-center {{ request()->routeIs('quotations.*') ? $theme['text_accent'] : '' }}"></i>
+                                <span>Cotações & Propostas</span>
+                            </a>
+
 	                            @if(tenant_has_feature('debts') && (auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isCashier()))
                             <a href="{{ route('debts.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('debts.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">

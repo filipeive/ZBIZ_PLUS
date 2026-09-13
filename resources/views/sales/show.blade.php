@@ -41,11 +41,16 @@
             @endif
 
             <a href="{{ route('pos.receipt', $sale->id) }}" target="_blank" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 transition flex items-center gap-2">
-                <i class="fa-solid fa-receipt"></i> Recibo Térmico (80mm)
+                <i class="fa-solid fa-receipt"></i> Talão Térmico (80mm)
             </a>
 
-            <button onclick="window.print()" class="px-5 py-2.5 rounded-xl {{ $theme['btn'] }} text-xs transition flex items-center gap-2">
-                <i class="fa-solid fa-print"></i> Imprimir A4 / PDF
+            <a href="{{ route('sales.invoice-pdf', $sale->id) }}" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs transition flex items-center gap-2 shadow-lg shadow-emerald-900/30">
+                <i class="fa-solid fa-file-pdf"></i>
+                <span>Factura A4 (PDF)</span>
+            </a>
+
+            <button onclick="window.print()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition flex items-center gap-2">
+                <i class="fa-solid fa-print"></i> Imprimir
             </button>
         </div>
     </div>
@@ -56,10 +61,15 @@
         <!-- Header Banner: Invoice Meta & Grand Total -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-800">
             <div class="space-y-1.5">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
                     <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $theme['badge'] }} inline-flex items-center gap-1.5">
-                        <i class="fa-solid fa-circle-check text-emerald-400"></i> Venda Finalizada
+                        <i class="fa-solid fa-circle-check text-emerald-400"></i> {{ $sale->official_invoice_title }}
                     </span>
+                    @if($sale->invoice_number)
+                        <span class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-slate-800 border border-slate-700 text-sky-400">
+                            {{ $sale->invoice_number }}
+                        </span>
+                    @endif
                     @if($sale->discount_amount > 0)
                         <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/10 border border-amber-500/30 text-amber-300">
                             <i class="fa-solid fa-tags"></i> Desconto Aplicado
@@ -67,11 +77,14 @@
                     @endif
                 </div>
                 <h2 class="text-3xl font-black font-heading text-white tracking-tight">
-                    Fatura / Venda #{{ str_pad($sale->id, 5, '0', STR_PAD_LEFT) }}
+                    {{ $sale->official_invoice_title }} {{ $sale->invoice_number ? $sale->invoice_number : ('#' . str_pad($sale->id, 5, '0', STR_PAD_LEFT)) }}
                 </h2>
                 <div class="text-xs text-slate-400 flex flex-wrap items-center gap-x-4 gap-y-1">
                     <span><i class="fa-regular fa-calendar me-1"></i> {{ $sale->sale_date ? \Carbon\Carbon::parse($sale->sale_date)->format('d/m/Y') : ($sale->created_at ? $sale->created_at->format('d/m/Y') : '-') }}</span>
                     <span><i class="fa-regular fa-clock me-1"></i> {{ $sale->created_at ? $sale->created_at->format('H:i:s') : '-' }}</span>
+                    @if($sale->customer_nuit)
+                        <span><i class="fa-solid fa-id-card me-1 text-slate-500"></i> NUIT: {{ $sale->customer_nuit }}</span>
+                    @endif
                     @if($sale->branch)
                         <span><i class="fa-solid fa-location-dot me-1 text-slate-500"></i> {{ $sale->branch->name }} ({{ $sale->branch->code ?? 'Matriz' }})</span>
                     @endif

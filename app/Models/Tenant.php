@@ -173,4 +173,69 @@ class Tenant extends Model
     {
         return in_array($this->status, ['active', 'trial']);
     }
+
+    public function quotations(): HasMany
+    {
+        return $this->hasMany(Quotation::class);
+    }
+
+    /**
+     * Obter as configurações e identidade de documentos da empresa.
+     */
+    public function getDocumentSettings(): array
+    {
+        $settings = is_array($this->settings) ? $this->settings : [];
+
+        $defaultBankAccounts = [
+            [
+                'bank_name' => 'Millennium BIM',
+                'account_number' => '409128391',
+                'nib' => '000100000040912839122',
+                'iban' => 'MZ59000100000040912839122',
+            ],
+            [
+                'bank_name' => 'BCI - Banco Comercial de Investimentos',
+                'account_number' => '230491823',
+                'nib' => '000800000023049182344',
+                'iban' => 'MZ59000800000023049182344',
+            ]
+        ];
+
+        $defaultMobileWallets = [
+            [
+                'wallet_name' => 'M-Pesa (Vodacom)',
+                'phone_number' => $this->phone ?? '84 724 0296',
+                'holder_name' => $this->name,
+            ],
+            [
+                'wallet_name' => 'E-Mola (Movitel)',
+                'phone_number' => '86 213 4230',
+                'holder_name' => $this->name,
+            ]
+        ];
+
+        return [
+            'company_name'           => $settings['company_name'] ?? $this->name,
+            'legal_name'             => $settings['legal_name'] ?? $this->name,
+            'nuit'                   => $settings['nuit'] ?? $this->nuit,
+            'email'                  => $settings['email'] ?? $this->email,
+            'phone'                  => $settings['phone'] ?? $this->phone,
+            'address'                => $settings['address'] ?? $this->address,
+            'city'                   => $settings['city'] ?? 'Quelimane',
+            'province'               => $settings['province'] ?? 'Zambézia',
+            'logo_url'               => $settings['document_logo'] ?? null,
+            'primary_color'          => $settings['document_color'] ?? '#059669',
+            'tax_regime'             => $settings['tax_regime'] ?? 'normal', // normal (16%), exempt, simplified
+            'tax_rate'               => (float)($settings['tax_rate'] ?? 16.0),
+            'prices_include_tax'     => (bool)($settings['prices_include_tax'] ?? true),
+            'tax_exemption_reason'   => $settings['tax_exemption_reason'] ?? 'Artigo 9º do CIVA (Regime de Isenção)',
+            'quotation_validity_days'=> (int)($settings['quotation_validity_days'] ?? 15),
+            'invoice_due_days'       => (int)($settings['invoice_due_days'] ?? 30),
+            'quotation_terms'        => $settings['quotation_terms'] ?? 'Validade da proposta: 15 dias. Preços expressos em Meticais (MZN). A adjudicação implica a aceitação das condições comerciais aqui expressas.',
+            'invoice_terms'          => $settings['invoice_terms'] ?? 'A mercadoria viaja por conta e risco do cliente. Os pagamentos devem ser efetuados nas contas bancárias ou carteiras móveis indicadas neste documento.',
+            'footer_notes'           => $settings['footer_notes'] ?? 'Software ZBIZ+ Enterprise emitido com segurança por Fdsmultiservices. Obrigado pela preferência!',
+            'bank_accounts'          => $settings['bank_accounts'] ?? $defaultBankAccounts,
+            'mobile_wallets'         => $settings['mobile_wallets'] ?? $defaultMobileWallets,
+        ];
+    }
 }

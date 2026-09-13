@@ -10,15 +10,19 @@ class SaleItem extends Model
         'tenant_id', 'branch_id',
         'sale_id', 'product_id', 'quantity', 'original_unit_price',
         'unit_price', 'discount_amount', 'discount_percentage', 
-        'discount_type', 'discount_reason', 'total_price'
+        'discount_type', 'discount_reason', 'total_price',
+        'tax_rate', 'tax_amount', 'is_tax_exempt'
     ];
 
     protected $casts = [
         'original_unit_price' => 'decimal:2',
-        'unit_price' => 'decimal:2',
-        'discount_amount' => 'decimal:2',
+        'unit_price'          => 'decimal:2',
+        'discount_amount'     => 'decimal:2',
         'discount_percentage' => 'decimal:2',
-        'total_price' => 'decimal:2',
+        'total_price'         => 'decimal:2',
+        'tax_rate'            => 'decimal:2',
+        'tax_amount'          => 'decimal:2',
+        'is_tax_exempt'       => 'boolean',
     ];
 
     public function sale(): BelongsTo

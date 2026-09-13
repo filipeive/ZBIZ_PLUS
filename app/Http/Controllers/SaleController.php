@@ -11,6 +11,7 @@ use App\Models\SaleItem;
 use App\Models\StockMovement;
 use App\Services\DiscountService;
 use App\Services\FinancialService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -853,5 +854,31 @@ class SaleController extends Controller
                   ->groupBy('date')
                   ->orderBy('date')
                   ->get();
+    }
+
+    /**
+     * Descarregar Factura / Factura-Recibo Oficial em PDF A4
+     */
+    public function downloadInvoicePdf(Sale $sale)
+    {
+        $tenant = auth()->user()?->tenant ?? $sale->tenant;
+        abort_unless($sale->tenant_id === $tenant?->id, 403);
+
+        $sale->load(['items.product', 'customer', 'user', 'branch']);
+
+        // Se ainda não tiver invoice_number, atribuir sequencial no ato
+        if (empty($sale->invoice_number)) {
+            $invoiceType = $sale->payment_method === 'credit' ? 'invoice' : 'cash_invoice';
+            $sale->update([
+                'invoice_type'   => $invoiceType,
+                'invoice_number' => Sale::generateNextInvoiceNumber($tenant->id, $invoiceType),
+            ]);
+        }
+
+        $pdf = Pdf::loadView('documents.templates.invoice_pdf', compact('sale', 'tenant'))
+            ->setPaper('a4', 'portrait');
+
+        $cleanNumber = str_replace('/', '_', $sale->invoice_number ?? ('VD-' . $sale->id));
+        return $pdf->download("Factura_{$cleanNumber}.pdf");
     }
 }
