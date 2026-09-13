@@ -31,8 +31,9 @@ use App\Http\Controllers\Owner\TenantControlCenterController;
 
 
 
-Route::get('/', function() { return view('welcome'); });
-Route::get('/reprosys', function() { return view('welcome'); });
+Route::match(['GET', 'HEAD'], '/', function() { return view('welcome'); });
+Route::match(['GET', 'HEAD'], '/zbiz_plus', function() { return view('welcome'); });
+Route::match(['GET', 'HEAD'], '/reprosys', function() { return view('welcome'); });
 
 // Registro protegido com senha administrativa
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
