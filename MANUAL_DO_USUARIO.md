@@ -1,711 +1,245 @@
-# 📖 Manual do Usuário - ReproSys v2.0.0
+# 📖 Manual do Usuário — ZBIZ+ Enterprise Cloud & POS Suite
 
-**Guia Completo para Usuários**  
-FDSMULTSERVICES+ - Sistema de Reprografia e Serigrafia
-
----
-
-## 📑 Sumário
-
-1. [Começando](#começando)
-2. [Autenticação](#autenticação)
-3. [Dashboard](#dashboard)
-4. [Gestão de Produtos](#gestão-de-produtos)
-5. [Gestão de Vendas](#gestão-de-vendas)
-6. [Gestão de Estoque](#gestão-de-estoque)
-7. [Gestão de Despesas](#gestão-de-despesas)
-8. [Gestão de Dívidas](#gestão-de-dívidas)
-9. [Relatórios](#relatórios)
-10. [Perfil de Usuário](#perfil-de-usuário)
-11. [Dicas e Atalhos](#dicas-e-atalhos)
+**Versão 1.0.19 — Guia Completo para Gestores, Operadores de Caixa e Administradores**  
+**Desenvolvido por:** Fdsmultiservices  
+**Suporte Técnico Oficial:** (+258) 86 213 4230 | (+258) 84 724 0296 | fdsmultiservices@gmail.com  
+**Servidor em Produção (Nuvem):** [http://146.235.224.99/zbiz_plus](http://146.235.224.99/zbiz_plus)  
 
 ---
 
-## 🎯 Começando
+## 📑 Índice Geral
 
-### Requisitos Mínimos
-
-- Navegador web moderno (Chrome, Firefox, Safari, Edge)
-- Conexão com a internet
-- Acesso credencial ao sistema
-
-### Primeira Vez?
-
-1. Abra o navegador
-2. Acesse: `http://seu-servidor/reprosys`
-3. Faça login com suas credenciais
-4. Explore o dashboard
-5. Comece a registrar dados
-
----
-
-## 🔐 Autenticação
-
-### Login
-
-**Passo 1:** Navegue até a página de login  
-**Passo 2:** Insira seu email  
-**Passo 3:** Insira sua senha  
-**Passo 4:** Clique em "Entrar"
-
-```
-┌─────────────────────────────────────┐
-│   FDSMULTSERVICES+                  │
-│   Sistema de Reprografia Completo   │
-├─────────────────────────────────────┤
-│ Email: _______________              │
-│ Senha: _______________              │
-│                                     │
-│ ☐ Lembrar-me                       │
-│                                     │
-│        [    ENTRAR    ]             │
-│                                     │
-│ Novo funcionário?                   │
-│ Solicitar acesso                    │
-└─────────────────────────────────────┘
-```
-
-### Recuperar Senha
-
-1. Clique em "Esqueceu a senha?"
-2. Insira seu email
-3. Verifique seu email
-4. Clique no link de recuperação
-5. Defina uma nova senha
-6. Faça login novamente
-
-### Logout
-
-1. Clique no ícone de perfil (canto superior direito)
-2. Selecione "Sair"
-3. Você será desconectado
+1. [Apresentação do Sistema](#1-apresentação-do-sistema)
+2. [Setores e Verticais Suportadas](#2-setores-e-verticais-suportadas)
+3. [Primeiro Acesso, Autenticação e Segurança](#3-primeiro-acesso-autenticação-e-segurança)
+4. [Licenciamento, Contador de Teste e Certificado Oficial](#4-licenciamento-contador-de-teste-e-certificado-oficial)
+5. [Terminal de Venda / Frente de Caixa (POS)](#5-terminal-de-venda--frente-de-caixa-pos)
+6. [Módulo Específico: Restaurante, Bar e Cafetaria](#6-módulo-específico-restaurante-bar-e-cafetaria)
+7. [Módulo Específico: Farmácia e Cuidados de Saúde](#7-módulo-específico-farmácia-e-cuidados-de-saúde)
+8. [Gestão de Produtos, Preços e Estoque](#8-gestão-de-produtos-preços-e-estoque)
+9. [Gestão Financeira: Despesas, Dívidas e Fecho de Caixa](#9-gestão-financeira-despesas-dívidas-e-fecho-de-caixa)
+10. [Relatórios Gerenciais e Fiscais](#10-relatórios-gerenciais-e-fiscais)
+11. [Consola do Dono / Painel Multi-Empresa](#11-consola-do-dono--painel-multi-empresa)
+12. [Atalhos de Teclado e Dicas de Produtividade](#12-atalhos-de-teclado-e-dicas-de-produtividade)
+13. [Perguntas Frequentes (FAQ) e Suporte Técnico](#13-perguntas-frequentes-faq-e-suporte-técnico)
 
 ---
 
-## 🏠 Dashboard
+## 1. Apresentação do Sistema
 
-O Dashboard é a página principal do sistema. Aqui você vê:
+O **ZBIZ+ Enterprise Suite** é uma plataforma SaaS e On-Premise integrada de gestão empresarial (ERP) e frente de caixa (POS) desenvolvida para a realidade económica de Moçambique.
 
-### Widgets de Resumo
-
-**Vendas Hoje**
-- Número de transações
-- Valor total em vendas
-- Tendência (↑ ↓)
-
-**Despesas Hoje**
-- Quantidade de despesas
-- Valor total
-- Comparação com período anterior
-
-**Receita Líquida**
-- Total de vendas menos despesas
-- Percentual de lucro
-- Gráfico comparativo
-
-**Devedores**
-- Clientes com débitos
-- Valor total em aberto
-- Quantidade de dívidas
-
-### Gráficos
-
-**Vendas vs. Despesas**
-- Comparação mensal
-- Análise de tendências
-- Projeção
-
-**Produtos Mais Vendidos**
-- Top 5 produtos
-- Quantidade vendida
-- Receita gerada
-
-**Categoria de Despesas**
-- Distribuição por tipo
-- Percentual de cada categoria
-
-### Ações Rápidas
-
-Botões para ações frequentes:
-- ➕ Nova Venda
-- ➕ Nova Despesa
-- ➕ Novo Produto
-- 📊 Ver Relatórios
+### Principais Características:
+* **Operação Híbrida**: Acesso via Nuvem com suporte a terminal de secretária local (Modo App Nativo e Kiosk).
+* **Faturação & Moeda Nacional**: Cálculos em Meticais (MT / MZN), conformidade com regras de IVA e impressão térmica direta (ESC/POS 80mm e 58mm).
+* **Meios de Pagamento Nacionais**: Suporte nativo a Dinheiro, Cartão (POS Bancário), M-Pesa e E-Mola.
+* **Multi-Empresa & Multi-Filial**: Gestão centralizada para empresas com múltiplos balcões e lojas.
 
 ---
 
-## 📦 Gestão de Produtos
+## 2. Setores e Verticais Suportadas
 
-### Visualizar Produtos
+O ZBIZ+ adapta a interface e os recursos conforme o setor da sua empresa configurado no registo:
 
-**Caminho:** Produtos → Lista de Produtos
-
-A tela mostra:
-- ✅ Nome do produto
-- 📋 Tipo (Produto/Serviço)
-- 💰 Preço
-- 📊 Categoria
-- ⚙️ Ações (Editar, Deletar)
-
-### Filtrar Produtos
-
-Use os filtros no topo:
-
-```
-[Tipo ▼] [Categoria ▼] [Status ▼] [🔍 Buscar...]
-```
-
-### Adicionar Novo Produto
-
-**Passo 1:** Clique em "+ Novo Produto"
-
-**Passo 2:** Preencha o formulário
-
-| Campo | Descrição | Exemplo |
-|-------|-----------|---------|
-| Nome | Nome do produto | Folha A4 Branca |
-| Descrição | Detalhe do produto | Papel 75g para cópia |
-| Tipo | Produto ou Serviço | ◉ Produto ◯ Serviço |
-| Categoria | Selecione categoria | Papel |
-| Preço | Valor unitário | 0.50 |
-| Estoque Inicial | Quantidade disponível | 1000 |
-
-**Passo 3:** Clique em "Salvar"
-
-### Editar Produto
-
-1. Localize o produto na lista
-2. Clique no ícone ✏️ (Editar)
-3. Modifique os dados
-4. Clique em "Atualizar"
-
-### Deletar Produto
-
-1. Localize o produto
-2. Clique no ícone 🗑️ (Deletar)
-3. Confirme a exclusão
-
-⚠️ **Atenção:** Produtos com vendas não podem ser deletados
+1. 🛒 **Retalho Geral & Supermercados (`retail`)**: Venda rápida com código de barras, controlo de unidades, packs e caixas.
+2. 💊 **Farmácia & Saúde (`pharmacy`)**: Controlo rigoroso de lotes, datas de validade, retenção de receitas médicas e dosagens.
+3. 🍽️ **Restaurante, Bar & Lounge (`restaurant`)**: Gestão de mesas com cores de ocupação, pedidos de balcão e divisão de contas.
+4. 🔧 **Oficina Mecânica & Auto (`workshop`)**: Ordens de serviço (OS), peças aplicadas e mão de obra.
+5. 👗 **Boutique & Vestuário (`clothing`)**: Gestão por tamanhos, cores e coleções.
 
 ---
 
-## 🛒 Gestão de Vendas
+## 3. Primeiro Acesso, Autenticação e Segurança
 
-### Criar Nova Venda
+### 3.1 Pré-Registo de Nova Empresa
+1. Aceda à página inicial e clique em **"Criar Conta Grátis"** ou aceda diretamente a `/register`.
+2. Preencha os 3 passos guiados:
+   - **Passo 1**: Nome da Empresa, NUIT, Província/Cidade, Endereço e Setor de Atividade.
+   - **Passo 2**: Nome do Administrador, Telemóvel (84/85/86/87/82) e E-mail comercial.
+   - **Passo 3**: Criação da Senha de Acesso.
+3. **Aprovação de Segurança**: O pré-registo é analisado pela equipa da Fdsmultiservices. Assim que for aprovado, você recebe um **SMS no seu telemóvel** com as credenciais confirmadas e o link de acesso liberado.
 
-**Passo 1:** Acesse Vendas → "+ Nova Venda"
+### 3.2 Iniciar Sessão (Login)
+1. Aceda a `/login`.
+2. Insira o seu e-mail e palavra-passe.
+3. Se a sua empresa estiver ativa ou em período de teste aprovado, você será direcionado para o Dashboard Geral da sua empresa.
 
-**Passo 2:** Selecione produtos
-
-```
-┌─────────────────────────────────────┐
-│ PRODUTOS DISPONÍVEIS                │
-├─────────────────────────────────────┤
-│ [Folha A4]        Preço: 0.50 MT   │
-│ Quantidade: [__] Adicionar          │
-│                                     │
-│ [Papel Ofício]    Preço: 0.45 MT   │
-│ Quantidade: [__] Adicionar          │
-│                                     │
-│ [Envelopes]       Preço: 1.00 MT   │
-│ Quantidade: [__] Adicionar          │
-└─────────────────────────────────────┘
-```
-
-**Passo 3:** Insira quantidades
-
-**Passo 4:** Revise o carrinho
-
-```
-┌──────────────────────────────┐
-│ CARRINHO                     │
-├──────────────────────────────┤
-│ Folha A4 x 100 = 50.00 MT   │
-│ Papel Ofício x 50 = 22.50 MT│
-├──────────────────────────────┤
-│ SUBTOTAL:      72.50 MT     │
-│ DESCONTO: ___  0.00 MT      │
-│ ────────────────────────     │
-│ TOTAL:         72.50 MT     │
-└──────────────────────────────┘
-```
-
-**Passo 5:** Selecione forma de pagamento
-
-- 💳 À Vista
-- 📅 À Prazo (defina data)
-- 💰 Múltiplas formas
-
-**Passo 6:** Clique em "Concluir Venda"
-
-### Visualizar Histórico de Vendas
-
-**Caminho:** Vendas → Histórico
-
-Veja todas as vendas realizadas com:
-- Data e hora
-- Produtos vendidos
-- Valor total
-- Cliente (se registrado)
-- Status
-
-### Funções de Vendas
-
-#### Buscar Venda
-
-Use a barra de busca para encontrar vendas por:
-- Data
-- Valor
-- Cliente
-- Produto
-
-#### Filtrar Vendas
-
-```
-[Data Inicial ▼] [Data Final ▼] 
-[Status ▼] [Método de Pagamento ▼]
-```
-
-#### Imprimir Comprovante
-
-1. Localize a venda
-2. Clique no ícone 🖨️
-3. Ajuste preferências de impressão
-4. Clique em "Imprimir"
-
-#### Exportar Dados
-
-1. Clique em "Exportar"
-2. Escolha formato: PDF ou Excel
-3. Defina período
-4. Clique em "Baixar"
+### 3.3 Recuperação de Acesso
+Caso se esqueça da senha, clique em **"Recuperar Palavra-passe"** ou solicite suporte imediato via WhatsApp da Fdsmultiservices: `(+258) 86 213 4230`.
 
 ---
 
-## 📊 Gestão de Estoque
+## 4. Licenciamento, Contador de Teste e Certificado Oficial
 
-### Visualizar Estoque
+### 4.1 Indicadores no Topo da Tela (Navbar)
+O sistema apresenta de forma transparente o status do seu plano no cabeçalho superior:
+* 🟢 **Teste Ativo (> 7 dias)**: Exibe badge verde `[● Teste: X dias]`.
+* 🟡 **Alerta de Expiração (≤ 7 dias)**: Exibe badge âmbar `[● Teste: X dias]`.
+* 🔴 **Reta Final (≤ 3 dias)**: Exibe badge vermelho pulsante alertando para a renovação.
+* 🔴 **Licença Vencida**: Badge `[● Expirado]` acompanhado de banner informativo no topo.
 
-**Caminho:** Estoque → Produtos
+### 4.2 Página de Perfil e Subscrição (`/profile`)
+Ao clicar no badge ou no seu avatar no menu superior, você visualiza:
+- Dias restantes com barra de progresso visual.
+- Dados da empresa (Razão Social, NUIT, Ramo e Modalidade).
+- Botão direto para **Activar Código de Licença**.
+- Botão direto de WhatsApp para falar com a área comercial da Fdsmultiservices.
 
-Veja:
-- Produto
-- Quantidade em estoque
-- Quantidade mínima
-- Últimas movimentações
+### 4.3 Ativação de Licença Definitiva (`ZBIZ-XXXX-XXXX-XXXX-XXXX`)
+Quando subscreve ou renova um plano:
+1. Aceda a **Activar Licença** (`/license/activate`).
+2. Digite a Chave Serial de 16 caracteres recebida por SMS (ex: `ZBIZ-NJDK-M3RU-HPKH-VQQP`).
+3. O sistema valida imediatamente a assinatura criptográfica e atualiza o seu plano para `active`.
 
-### Entrada de Estoque
-
-**Passo 1:** Clique em "+ Entrada"
-
-**Passo 2:** Preencha dados
-
-| Campo | Descrição |
-|-------|-----------|
-| Produto | Selecione o produto |
-| Quantidade | Quantos itens entram |
-| Data | Data da entrada |
-| Referência | Nota fiscal, pedido, etc. |
-| Observações | Notas adicionais |
-
-**Passo 3:** Clique em "Registrar"
-
-### Saída de Estoque
-
-**Passo 1:** Clique em "+ Saída"
-
-**Passo 2:** Similiar à entrada, mas para saída
-
-### Ajuste de Estoque
-
-Usado para correções de inventário:
-
-1. Clique em "Ajuste"
-2. Selecione o produto
-3. Insira quantidade atual real
-4. Sistema calcula diferença
-5. Clique em "Confirmar"
-
-### Alertas de Estoque
-
-Você recebe notificações quando:
-- ⚠️ Estoque abaixo do mínimo
-- 📉 Produto em falta
-- 📈 Estoque próximo do máximo
+### 4.4 Certificado Oficial em PDF
+Os gestores podem descarregar o certificado timbrado em PDF de alta resolução com carimbo de autenticidade, assinatura e chave serial, útil para auditorias fiscais e comprovação de licenciamento do software.
 
 ---
 
-## 💰 Gestão de Despesas
+## 5. Terminal de Venda / Frente de Caixa (POS)
 
-### Registrar Despesa
+Aceda ao POS através do botão destacado **"Terminal POS"** no topo da tela ou pelo atalho de secretária gerado pelo instalador Windows.
 
-**Passo 1:** Acesse Despesas → "+ Nova Despesa"
-
-**Passo 2:** Preencha o formulário
-
-| Campo | Descrição | Obrigatório |
-|-------|-----------|-------------|
-| Descrição | O que foi gasto | ✅ |
-| Categoria | Tipo de despesa | ✅ |
-| Valor | Quantidade gasto | ✅ |
-| Data | Data do gasto | ✅ |
-| Recibo Nº | Número do recibo | ❌ |
-| Notas | Observações | ❌ |
-| Anexo | Foto/PDF do recibo | ❌ |
-
-**Passo 3:** Clique em "Salvar"
-
-### Categorias de Despesas
-
-Exemplos:
-- 🏢 Aluguel
-- ⚡ Energia
-- 💧 Água
-- 🚚 Transporte
-- 📱 Comunicação
-- 🛠️ Manutenção
-- 👥 Salários
-- 📦 Suprimentos
-- 🧹 Limpeza
-- 📚 Educação
-
-### Editar Despesa
-
-1. Localize na lista
-2. Clique em ✏️
-3. Modifique dados
-4. Clique em "Atualizar"
-
-### Deletar Despesa
-
-1. Clique em 🗑️
-2. Confirme exclusão
-
-### Filtrar Despesas
-
-```
-[Período ▼] [Categoria ▼] [Status ▼]
-[🔍 Buscar por descrição...]
-```
+### 5.1 Realizar uma Venda Rápida
+1. **Localizar Produto**:
+   - Bipar o código de barras com o leitor USB.
+   - Ou digitar o nome/código na barra de pesquisa rápida (`Ctrl+K`).
+   - Ou clicar no cartão visual do produto na grelha de categorias.
+2. **Ajustar Quantidades**: Utilize os botões `+` e `-` no carrinho lateral ou digite a quantidade diretamente.
+3. **Finalizar Venda**:
+   - Clique em **"Cobrar"** ou pressione a tecla `F4` / `Enter`.
+   - Escolha o método de pagamento:
+     - 💵 **Dinheiro**: Digite o valor entregue para cálculo automático do troco.
+     - 📱 **M-Pesa / E-Mola**: Confirme a referência da transação móvel.
+     - 💳 **POS / Cartão**: Confirme o comprovativo da máquina de cartão.
+     - ⏳ **A Prazo (Conta Corrente / Dívida)**: Selecione o cliente cadastrado.
+4. **Impressão de Recibo**: O recibo é impresso imediatamente na impressora térmica configurada.
 
 ---
 
-## 💳 Gestão de Dívidas
+## 6. Módulo Específico: Restaurante, Bar e Cafetaria
 
-### Registrar Dívida
+Se a sua empresa opera no ramo de alimentação e bebidas:
 
-**Passo 1:** Acesse Dívidas → "+ Nova Dívida"
+### 6.1 Painel Gráfico de Mesas
+* O mapa do salão exibe as mesas organizadas por zonas (Salão Principal, Esplanada, Balcão/Bar).
+* **Cores das Mesas**:
+  - 🟢 **Verde (Livre)**: Mesa disponível para novos clientes.
+  - 🔴 **Vermelho (Ocupada)**: Mesa com conta aberta e pedidos em consumo.
+  - 🟡 **Amarelo (Em Pagamento)**: Conta solicitada aguardando encerramento.
 
-**Passo 2:** Preencha formulário
+### 6.2 Lançar Pedidos na Mesa
+1. Clique sobre a mesa livre (ex: **Mesa 03**).
+2. Adicione os itens solicitados (Bebidas, Pratos, Entradas).
+3. Clique em **"Confirmar Pedido"** (os pedidos podem ser direcionados para o ecrã da cozinha/KDS).
+4. A mesa passa automaticamente para o status **Ocupada**.
 
-| Campo | Descrição |
-|-------|-----------|
-| Cliente | Nome do devedor |
-| Telefone | Contato |
-| Documento | ID/Bilhete |
-| Valor Original | Débito inicial |
-| Data | Quando começou |
-| Data Vencimento | Prazo de pagamento |
-| Descrição | Motivo da dívida |
+### 6.3 Transferir Mesa ou Juntar Contas
+Caso o cliente mude de lugar, utilize a opção **"Transferir Mesa"** e selecione o novo número. Todos os itens em aberto são transferidos automaticamente.
 
-**Passo 3:** Clique em "Registrar"
-
-### Status da Dívida
-
-- 🟢 **Ativa** - Débito pendente
-- 🟡 **Parcial** - Pagamento parcial
-- 🟢 **Paga** - Débito quitado
-- 🔴 **Vencida** - Prazo expirado
-- ⚫ **Cancelada** - Não vai ser cobrada
-
-### Registrar Pagamento
-
-1. Clique na dívida
-2. Clique em "+ Registrar Pagamento"
-3. Insira valor pago
-4. Selecione forma de pagamento
-5. Clique em "Confirmar"
-
-### Visualizar Dívidas
-
-**Caminho:** Dívidas → Lista
-
-Veja:
-- Cliente
-- Valor original
-- Valor pago
-- Saldo devedor
-- Status
-- Data vencimento
-
-### Filtros e Busca
-
-```
-[Status ▼] [Ordenar por ▼]
-[🔍 Buscar cliente...]
-```
-
-### Relatório de Dívidas
-
-1. Clique em "Relatório"
-2. Escolha período
-3. Veja gráficos e estatísticas
-4. Exporte em PDF/Excel
+### 6.4 Fecho de Mesa e Divisão de Conta
+1. Abra a mesa ocupada e clique em **"Emitir Pré-Conta"** para conferência do cliente.
+2. Ao receber o pagamento, clique em **"Fechar Conta"**, selecione os meios de pagamento (permite dividir: parte em M-Pesa e parte em Dinheiro) e imprima a fatura final.
 
 ---
 
-## 📊 Relatórios
+## 7. Módulo Específico: Farmácia e Cuidados de Saúde
 
-### Dashboard de Relatórios
+Para estabelecimentos farmacêuticos licenciados:
 
-Acesse: Relatórios → Dashboard
+### 7.1 Lotes e Datas de Validade (FEFO)
+* O sistema aplica a regra **FEFO** (*First Expired, First Out*): os lotes que vencem primeiro são sugeridos prioritariamente no caixa.
+* O cadastro exige: Número do Lote, Laboratório Fabricante e Data de Validade.
 
-Veja visão geral com:
-- Total de vendas
-- Total de despesas
-- Lucro/Prejuízo
-- Dívidas pendentes
-- Estoque total
-
-### Fluxo de Caixa
-
-**Passo 1:** Clique em "Fluxo de Caixa"
-
-**Passo 2:** Selecione período
-
-```
-[Data Inicial] → [Data Final]
-```
-
-**Passo 3:** Visualize gráficos
-
-**Gráfico 1: Entradas vs Saídas**
-- Linha com tendências
-- Valores diários/mensais
-- Comparação
-
-**Gráfico 2: Composição de Receita**
-- Quanto vem de cada produto
-- Percentual por categoria
-
-**Gráfico 3: Distribuição de Despesas**
-- Por categoria
-- Valor e percentual
-
-**Passo 4:** Exporte dados
-
-```
-[📄 PDF] [📊 Excel] [📋 CSV]
-```
-
-### Relatório de Vendas
-
-**Inclui:**
-- Quantidade de vendas
-- Receita total
-- Produtos mais vendidos
-- Cliente de maior valor
-- Ticket médio
-
-### Relatório de Produtos
-
-**Mostra:**
-- Produtos mais movimentados
-- Estoque atual
-- Valor em estoque
-- Giro de estoque
-
-### Relatório de Dívidas
-
-**Contém:**
-- Total em dívida
-- Dívidas por cliente
-- Dívidas vencidas
-- Histórico de pagamentos
+### 7.2 Medicamentos Controlados e Prescrições
+* Ao vender itens de receita médica obrigatória, o POS solicita:
+  - Nome do Médico Prescritor e Número da Ordem dos Médicos.
+  - Nome e Identificação do Paciente.
+  - Registo em relatório de substâncias sujeitas a controlo sanitário.
 
 ---
 
-## 👤 Perfil de Usuário
+## 8. Gestão de Produtos, Preços e Estoque
 
-### Acessar Perfil
+### 8.1 Cadastrar Novo Produto
+1. Aceda a **Produtos** → **Novo Produto**.
+2. Preencha: Nome, Código de Barras (EAN), Categoria, Preço de Custo e Preço de Venda.
+3. Defina o **Estoque Mínimo de Alerta** (o sistema avisa quando o estoque estiver próximo de esgotar).
+4. Guarde o produto.
 
-1. Clique no ícone 👤 (canto superior direito)
-2. Selecione "Meu Perfil"
-
-### Editar Perfil
-
-**Informações Pessoais:**
-- Nome completo
-- Email
-- Telefone
-- Foto de perfil
-
-**Segurança:**
-- Alterar senha
-- Autenticação em dois fatores
-
-### Alterar Senha
-
-1. Clique em "Segurança"
-2. Clique em "Alterar Senha"
-3. Insira senha atual
-4. Insira nova senha
-5. Confirme nova senha
-6. Clique em "Atualizar"
-
-**Requisitos de senha:**
-- ✅ Mínimo 8 caracteres
-- ✅ Pelo menos 1 letra maiúscula
-- ✅ Pelo menos 1 número
-- ✅ Pelo menos 1 caractere especial
+### 8.2 Entradas e Ajustes de Estoque
+* **Entrada por Compra**: Registe a chegada de mercadoria com o fornecedor e valor de custo para atualização automática do custo médio.
+* **Ajuste de Inventário**: Para regularizar quebras, avarias ou contagens físicas periódicas.
 
 ---
 
-## ⚙️ Configurações
+## 9. Gestão Financeira: Despesas, Dívidas e Fecho de Caixa
 
-### Acessar Configurações
+### 9.1 Abertura e Fecho de Caixa (Turno de Balcão)
+* **Abertura**: O operador inicia o turno informando o fundo de maneio inicial (troco em caixa).
+* **Fecho Cego**: No fim do expediente, o operador conta e declara os valores físicos sem ver o total do sistema. O gestor pode auditar eventuais quebras ou sobras de caixa.
 
-Caminho: Configurações → Geral
+### 9.2 Controlo de Devedores (Vendas a Crédito)
+* Registe clientes autorizados a comprar a prazo.
+* Emita extratos de conta corrente detalhados.
+* Ao receber amortizações, lance o valor abatendo o saldo devedor com emissão do recibo de quitação.
 
-### Opções Disponíveis
-
-**Empresa:**
-- Nome
-- Logo
-- Telefone
-- Email
-- Endereço
-
-**Localização:**
-- Moeda (MT, €, $)
-- Fuso horário
-- Idioma
-
-**Formato:**
-- Idioma da interface
-- Formato de data
-- Formato numérico
-
-**Notificações:**
-- ☑️ Vendas abaixo de meta
-- ☑️ Estoque baixo
-- ☑️ Dívidas vencidas
-- ☑️ Despesas altas
+### 9.3 Controlo de Despesas Operacionais
+Lance despesas do dia-a-dia (energia, água, internet, salários, materiais) categorizadas para apuração precisa do Lucro Líquido no final do mês.
 
 ---
 
-## 💡 Dicas e Atalhos
+## 10. Relatórios Gerenciais e Fiscais
 
-### Atalhos de Teclado
-
-
-Esta secção aplica-se apenas a empresas configuradas com o setor **Restaurante & Bar**.
-
-| Tecla | Ação |
-|-------|------|
-| `Ctrl+K` | Abrir busca global |
-| `Ctrl+Shift+T` | Alternar tema |
-| `Ctrl+,` | Configurações |
-| `Alt+E` | Escapar/Fechar modal |
-| `Tab` | Navegar entre campos |
-| `Enter` | Confirmar |
-
-### Dicas Úteis
-
-1. **Busca Rápida:** Use `Ctrl+K` para buscar qualquer coisa no sistema
-
-2. **Tema Escuro:** Clique no ícone de tema para alternar entre claro/escuro
-
-3. **Export Automático:** Configure exportações agendadas nos relatórios
-
-4. **Backup:** Realiza backup automático diariamente às 00:00
-
-5. **Modo Offline:** Os dados são sincronizados quando reconectar
-
-6. **Impressão:** Use `Ctrl+P` para imprimir qualquer página
-
-7. **Voltar:** Use `Alt+Seta Esquerda` ou clique no botão "Voltar"
-
-### Boas Práticas
-
-✅ **Faça:**
-- Registre vendas no mesmo dia
-- Revise estoque semanalmente
-- Gere relatórios mensais
-- Altere senha regularmente
-- Faça backup dos dados
-- Use categorias corretas
-
-❌ **Não faça:**
-- Compartilhe suas credenciais
-- Delete dados sem confirmar
-- Ignore alertas de estoque
-- Deixe dívidas sem registrar
-- Use a conta de admin para tudo
+Aceda ao menu **Relatórios** para consultar:
+* 📈 **Demonstração do Fluxo de Caixa**: Entradas vs Saídas diárias, semanais e mensais.
+* 🏆 **Curva ABC de Produtos**: Descubra os produtos mais rentáveis e os que têm menor giro.
+* 👥 **Desempenho por Operador**: Vendas realizadas, tickets médios e descontos concedidos por cada funcionário.
+* 📄 **Exportação**: Todos os relatórios podem ser exportados com um clique para **Excel (.xlsx)** ou **PDF**.
 
 ---
 
-## 🆘 Suporte e Ajuda
+## 11. Consola do Dono / Painel Multi-Empresa
 
-### Documentação Técnica
-
-- 📖 [README do Projeto](README.md)
-- 🔧 [Guia de Instalação](INSTALL.md)
-
-### Contato para Suporte
-
-- **Email:** filipeive@example.com
-- **Telefone:** +258 87 XXX XXXX
-- **Portal:** http://163.192.7.41/
-- **Chat:** Disponível no sistema
-
-### Reportar Problemas
-
-1. Descreva o problema
-2. Inclua passos para reproduzir
-3. Captura de tela se possível
-4. Versão do navegador
-5. Envie ao suporte
+Para administradores que gerenciam múltiplas filiais ou clientes:
+* **Visão Consolidada**: Acesso a `/owner/tenants` com monitorização de status de cada filial.
+* **Aprovação de Testes**: Definição flexível do período experimental (7, 14, 30 ou 60 dias) e envio automático de SMS com credenciais.
+* **Acesso como Suporte (Impersonate)**: O administrador pode entrar com um clique no painel da empresa cliente para prestar suporte técnico direto sem precisar saber a senha pessoal do utilizador.
+* **Emissão e Revogação de Licenças**: Geração imediata de chaves seriais e emissão de certificados oficiais em PDF.
 
 ---
 
-## 📝 Changelog
+## 12. Atalhos de Teclado e Dicas de Produtividade
 
-### Versão 2.0.0 (Novembro 2025)
-- ✨ Nova interface com Tailwind CSS
-- 📊 Dashboard melhorado
-- 🔍 Busca avançada
-- 📱 Responsivo para mobile
-- 🔐 Melhorias de segurança
-- ⚡ Melhor performance
-
----
-
-## 📄 Termos de Uso
-
-Este sistema é propriedade de **FDSMULTSERVICES+** e desenvolvido por **Eng. Filipe dos Santos**.
-
-Você concorda em:
-- ✅ Usar apenas para fins legítimos
-- ✅ Não compartilhar credenciais
-- ✅ Manter dados confidenciais
-- ✅ Reportar vulnerabilidades
-- ✅ Cumprir licença MIT
+| Tecla de Atalho | Ação Executada |
+| :--- | :--- |
+| `Ctrl + K` | Abrir busca rápida global de produtos e comandos |
+| `F4` ou `Enter` | Ir para a tela de pagamento no Terminal POS |
+| `Esc` | Cancelar modal, fechar pop-up ou limpar busca |
+| `F8` | Abrir gaveta de dinheiro (se configurada) |
+| `Ctrl + P` | Imprimir documento / relatório atual |
+| `Tab` | Avançar para o próximo campo de formulário |
 
 ---
 
-**Versão do Manual:** 2.0.0  
-**Última Atualização:** Novembro de 2025  
-**Desenvolvido por:** Eng. Filipe dos Santos  
-**FDSMULTSERVICES+**
+## 13. Perguntas Frequentes (FAQ) e Suporte Técnico
+
+### P: O que acontece quando o período de teste ou a licença expira?
+**R:** O sistema entra automaticamente em **Modo Somente-Leitura**. Nenhum dado é apagado e continuará a conseguir consultar todo o seu histórico e relatórios. Apenas as operações de venda e gravação de novos registos ficam bloqueadas até a ativação da nova licença.
+
+### P: Como posso instalar o ZBIZ+ nos computadores de caixa da minha loja?
+**R:** Consulte o guia anexo [INSTRUCOES_DE_INSTALACAO_E_USO.md](file:///home/fdev-ms/Filipe/ZBIZ_PLUS/INSTRUCOES_DE_INSTALACAO_E_USO.md). No Windows, basta rodar o arquivo `install-windows.bat` e escolher a Opção `1` para ter o atalho de secretária profissional em segundos.
+
+### P: O sistema emite faturas em conformidade com o IVA de Moçambique?
+**R:** Sim, o ZBIZ+ permite configurar as taxas vigentes de IVA (16%), isenções e retenções na fonte, calculando os impostos automaticamente em cada fatura.
 
 ---
 
-### 🎓 Precisa de Ajuda?
+### 📞 Contactos de Apoio e Assistência Técnica
 
-- 📞 Ligue para suporte
-- 📧 Envie um email
-- 💬 Acesse o chat online
-- 🌐 Visite o portal web
+A equipa de engenharia e suporte da **Fdsmultiservices** está pronta para atendê-lo:
 
-**Estamos aqui para ajudar!** 
+* 📱 **WhatsApp / Linha Direta:** `(+258) 86 213 4230`
+* 📱 **Linha Alternativa:** `(+258) 84 724 0296`
+* ✉️ **E-mail:** `fdsmultiservices@gmail.com`
+* 🌐 **Portal ZBIZ+ Nuvem:** [http://146.235.224.99/zbiz_plus](http://146.235.224.99/zbiz_plus)
