@@ -20,9 +20,11 @@
         </div>
 
         <div class="flex items-center gap-2.5">
+            @if(\App\Helpers\PermissionHelper::userCan('view_reports'))
             <a href="{{ route('reports.index') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
                 <i class="fa-solid fa-arrow-left"></i> Central de Relatórios
             </a>
+            @endif
             <button type="button" onclick="window.print()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-2">
                 <i class="fa-solid fa-print"></i> Imprimir / PDF
             </button>

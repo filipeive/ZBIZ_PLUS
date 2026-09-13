@@ -442,38 +442,45 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
     });
 
     // ===== RELATÓRIOS =====
-    Route::prefix('reports')->name('reports.')->middleware('permissions:view_reports')->group(function () {
-        // ===== DASHBOARD PRINCIPAL =====
-        Route::get('/', [ReportController::class, 'index'])->name('index');
-        Route::get('/dashboard', [ReportController::class, 'dashboard'])->name('dashboard');
+    Route::prefix('reports')->name('reports.')->group(function () {
+        // Relatórios Operacionais / Leitura de Stock (acessíveis a quem pode visualizar produtos/dashboard)
+        Route::middleware('permissions:view_products')->group(function () {
+            Route::get('/low-stock', [ReportController::class, 'lowStock'])->name('low-stock');
+            Route::get('/inventory', [ReportController::class, 'inventory'])->name('inventory');
+        });
 
-        // ===== RELATÓRIOS BÁSICOS =====
-        Route::get('/daily-sales', [ReportController::class, 'dailySales'])->name('daily-sales');
-        Route::get('/monthly-sales', [ReportController::class, 'monthlySales'])->name('monthly-sales');
-        Route::get('/sales-by-product', [ReportController::class, 'salesByProduct'])->name('sales-by-product');
-        Route::get('/inventory', [ReportController::class, 'inventory'])->name('inventory');
-        Route::get('/low-stock', [ReportController::class, 'lowStock'])->name('low-stock');
+        // Relatórios Gerenciais e Financeiros (exigem permissão explícita view_reports)
+        Route::middleware('permissions:view_reports')->group(function () {
+            // ===== DASHBOARD PRINCIPAL =====
+            Route::get('/', [ReportController::class, 'index'])->name('index');
+            Route::get('/dashboard', [ReportController::class, 'dashboard'])->name('dashboard');
 
-        // ===== RELATÓRIOS FINANCEIROS =====
-        Route::get('/profit-loss', [ReportController::class, 'profitLoss'])->name('profit-loss')->middleware('feature:reports_advanced');
-        Route::get('/cash-flow', [ReportController::class, 'cashFlow'])->name('cash-flow')->middleware('feature:reports_advanced');
+            // ===== RELATÓRIOS BÁSICOS =====
+            Route::get('/daily-sales', [ReportController::class, 'dailySales'])->name('daily-sales');
+            Route::get('/monthly-sales', [ReportController::class, 'monthlySales'])->name('monthly-sales');
+            Route::get('/sales-by-product', [ReportController::class, 'salesByProduct'])->name('sales-by-product');
 
-        // ===== ANÁLISES AVANÇADAS =====
-        Route::get('/customer-profitability', [ReportController::class, 'customerProfitability'])->name('customer-profitability')->middleware('feature:reports_advanced');
-        Route::get('/abc-analysis', [ReportController::class, 'abcAnalysis'])->name('abc-analysis')->middleware('feature:reports_advanced');
-        Route::get('/period-comparison', [ReportController::class, 'periodComparison'])->name('period-comparison')->middleware('feature:reports_advanced');
-        Route::get('/business-insights', [ReportController::class, 'businessInsights'])->name('business-insights')->middleware('feature:reports_advanced');
+            // ===== RELATÓRIOS FINANCEIROS =====
+            Route::get('/profit-loss', [ReportController::class, 'profitLoss'])->name('profit-loss')->middleware('feature:reports_advanced');
+            Route::get('/cash-flow', [ReportController::class, 'cashFlow'])->name('cash-flow')->middleware('feature:reports_advanced');
 
-        // ===== RELATÓRIOS ESPECIALIZADOS =====
-        Route::get('/sales-specialized', [ReportController::class, 'salesReport'])->name('sales-specialized')->middleware('feature:reports_advanced');
-        Route::get('/expenses-specialized', [ReportController::class, 'expensesReport'])->name('expenses-specialized')->middleware('feature:reports_advanced');
-        Route::get('/comparison-specialized', [ReportController::class, 'comparisonReport'])->name('comparison-specialized')->middleware('feature:reports_advanced');
+            // ===== ANÁLISES AVANÇADAS =====
+            Route::get('/customer-profitability', [ReportController::class, 'customerProfitability'])->name('customer-profitability')->middleware('feature:reports_advanced');
+            Route::get('/abc-analysis', [ReportController::class, 'abcAnalysis'])->name('abc-analysis')->middleware('feature:reports_advanced');
+            Route::get('/period-comparison', [ReportController::class, 'periodComparison'])->name('period-comparison')->middleware('feature:reports_advanced');
+            Route::get('/business-insights', [ReportController::class, 'businessInsights'])->name('business-insights')->middleware('feature:reports_advanced');
 
-        // ===== EXPORTAÇÕES =====
-        Route::get('/export', [ReportController::class, 'export'])->name('export');
-        Route::get('/export-excel', [ReportController::class, 'exportExcel'])->name('export.excel');
-        Route::get('/export-pdf', [ReportController::class, 'exportPDF'])->name('export.pdf');
-        Route::get('/export-csv', [ReportController::class, 'exportCSV'])->name('export.csv');
+            // ===== RELATÓRIOS ESPECIALIZADOS =====
+            Route::get('/sales-specialized', [ReportController::class, 'salesReport'])->name('sales-specialized')->middleware('feature:reports_advanced');
+            Route::get('/expenses-specialized', [ReportController::class, 'expensesReport'])->name('expenses-specialized')->middleware('feature:reports_advanced');
+            Route::get('/comparison-specialized', [ReportController::class, 'comparisonReport'])->name('comparison-specialized')->middleware('feature:reports_advanced');
+
+            // ===== EXPORTAÇÕES =====
+            Route::get('/export', [ReportController::class, 'export'])->name('export');
+            Route::get('/export-excel', [ReportController::class, 'exportExcel'])->name('export.excel');
+            Route::get('/export-pdf', [ReportController::class, 'exportPDF'])->name('export.pdf');
+            Route::get('/export-csv', [ReportController::class, 'exportCSV'])->name('export.csv');
+        });
     });
 
 

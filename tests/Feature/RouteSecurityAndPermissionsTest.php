@@ -102,6 +102,20 @@ class RouteSecurityAndPermissionsTest extends TestCase
         $response->assertSessionHasErrors('permission');
     }
 
+    public function test_cashier_can_access_low_stock_report_in_read_only_mode(): void
+    {
+        $response = $this->actingAs($this->cashierUser)
+            ->withSession([
+                'tenant_id' => $this->tenant->id,
+                'branch_id' => $this->branch->id,
+            ])
+            ->get(route('reports.low-stock'));
+
+        $response->assertStatus(200);
+        $response->assertSeeText('Alertas de Stock & Validade');
+        $response->assertDontSeeText('Novo Produto');
+    }
+
     public function test_cashier_is_blocked_from_creating_products(): void
     {
         $response = $this->actingAs($this->cashierUser)

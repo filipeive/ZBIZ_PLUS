@@ -13,18 +13,22 @@
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Produtos com stock abaixo do mínimo e lotes prestes a expirar.</p>
         </div>
         <div class="flex items-center gap-2">
+            @if(\App\Helpers\PermissionHelper::userCan('view_reports'))
             <a href="{{ route('reports.index') }}"
                class="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 transition">
                 <i class="fa-solid fa-arrow-left text-[11px]"></i> Relatórios
             </a>
+            @endif
             <button onclick="window.print()"
                     class="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 transition">
                 <i class="fa-solid fa-print text-[11px]"></i> Imprimir
             </button>
+            @if(\App\Helpers\PermissionHelper::userCan('create_products'))
             <a href="{{ route('products.create') }}"
                class="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm">
                 <i class="fa-solid fa-plus text-[11px]"></i> Novo Produto
             </a>
+            @endif
         </div>
     </div>
 
@@ -173,16 +177,20 @@
                                                title="Ver Detalhes">
                                                 <i class="fa-solid fa-eye text-[10px]"></i>
                                             </a>
+                                            @if(\App\Helpers\PermissionHelper::userCan('edit_products'))
                                             <a href="{{ route('products.edit', $product) }}"
                                                class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-amber-100 dark:hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 flex items-center justify-center transition"
                                                title="Editar">
                                                 <i class="fa-solid fa-pen text-[10px]"></i>
                                             </a>
+                                            @endif
+                                            @if(\App\Helpers\PermissionHelper::userCan('create_stock_movements') || \App\Helpers\PermissionHelper::userCan('adjust_stock'))
                                             <a href="{{ route('stock-movements.create', ['product_id' => $product->id]) }}"
                                                class="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-500/20 flex items-center justify-center transition"
                                                title="Entrada de Stock">
                                                 <i class="fa-solid fa-plus text-[10px]"></i>
                                             </a>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -199,7 +207,9 @@
                     <i class="fa-solid fa-lightbulb text-amber-500 mt-0.5 flex-shrink-0"></i>
                     <div class="text-xs text-amber-700 dark:text-amber-300">
                         <strong>Ação Recomendada:</strong> É necessário repor aproximadamente <strong>{{ number_format($totalDeficit) }} unidades</strong> no total para atingir os níveis mínimos definidos.
+                        @if(\App\Helpers\PermissionHelper::userCan('create_orders'))
                         <a href="{{ route('orders.create') }}" class="ml-2 font-bold underline">Criar Encomenda →</a>
+                        @endif
                     </div>
                 </div>
                 @endif
@@ -297,7 +307,7 @@
                                                title="Ver Produto">
                                                 <i class="fa-solid fa-eye text-[10px]"></i>
                                             </a>
-                                            @if($isExpired)
+                                            @if($isExpired && (\App\Helpers\PermissionHelper::userCan('create_stock_movements') || \App\Helpers\PermissionHelper::userCan('manage_stock') || \App\Helpers\PermissionHelper::userCan('adjust_stock')))
                                             <a href="{{ route('stock-movements.create', ['product_id' => $batch->product_id, 'type' => 'out', 'reason' => 'expired']) }}"
                                                class="w-7 h-7 rounded-lg bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-200 flex items-center justify-center transition"
                                                title="Registar Saída por Vencimento">
