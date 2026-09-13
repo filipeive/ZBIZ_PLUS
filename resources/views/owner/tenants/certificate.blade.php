@@ -53,8 +53,13 @@
                 <i class="fa-solid" :class="copiedMsg ? 'fa-check text-emerald-400' : 'fa-comment-sms'"></i>
                 <span x-text="copiedMsg ? 'Mensagem Copiada!' : 'Copiar Mensagem SMS'"></span>
             </button>
+            <a href="{{ route('owner.tenants.licenses.certificate-pdf', [$tenant, $license]) }}" 
+               class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs transition flex items-center gap-2 shadow-md">
+                <i class="fa-solid fa-file-pdf"></i>
+                <span>Descarregar PDF</span>
+            </a>
             <button type="button" onclick="window.print()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition flex items-center gap-2 border border-slate-700">
-                <i class="fa-solid fa-print"></i> Imprimir PDF
+                <i class="fa-solid fa-print"></i> Imprimir
             </button>
         </div>
     </div>

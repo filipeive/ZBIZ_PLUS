@@ -67,6 +67,10 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         Route::post('/tenants/{tenant}/licenses', [TenantControlCenterController::class, 'issueLicense'])->name('tenants.licenses.issue');
         Route::patch('/tenants/{tenant}/licenses/{license}/revoke', [TenantControlCenterController::class, 'revokeLicense'])->name('tenants.licenses.revoke');
         Route::get('/tenants/{tenant}/licenses/{license}/certificate', [TenantControlCenterController::class, 'certificate'])->name('tenants.licenses.certificate');
+        Route::get('/tenants/{tenant}/licenses/{license}/certificate-pdf', [TenantControlCenterController::class, 'downloadCertificatePdf'])->name('tenants.licenses.certificate-pdf');
+        Route::post('/tenants/{tenant}/simulate-expiration', [TenantControlCenterController::class, 'simulateExpiration'])->name('tenants.simulate-expiration');
+        Route::post('/tenants/{tenant}/suspend', [TenantControlCenterController::class, 'suspendTenant'])->name('tenants.suspend');
+        Route::post('/tenants/{tenant}/reactivate', [TenantControlCenterController::class, 'reactivateTenant'])->name('tenants.reactivate');
     });
 
     Route::get('/license/activate', [LicenseActivationController::class, 'create'])->name('license.activate');

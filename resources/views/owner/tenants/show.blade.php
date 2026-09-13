@@ -41,11 +41,11 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
             <!-- Impersonate Support Button -->
             <form method="POST" action="{{ route('owner.tenants.impersonate', $tenant) }}" class="inline">
                 @csrf
-                <button type="submit" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-400 hover:text-sky-300 text-xs font-bold transition flex items-center gap-2 border border-slate-700">
+                <button type="submit" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-400 hover:text-sky-300 text-xs font-bold transition flex items-center gap-2 border border-slate-700" title="Aceder como este tenant para testar o ecrã e as permissões">
                     <i class="fa-solid fa-right-to-bracket"></i> Entrar como Suporte
                 </button>
             </form>
@@ -55,9 +55,37 @@
                    class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition flex items-center gap-2 border border-slate-700">
                     <i class="fa-solid fa-file-shield text-emerald-400"></i> Certificado
                 </a>
+                <a href="{{ route('owner.tenants.licenses.certificate-pdf', [$tenant, $latestLicense]) }}" 
+                   class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-2 shadow-md">
+                    <i class="fa-solid fa-file-pdf"></i> Baixar PDF
+                </a>
             @endif
 
-            <a href="{{ route('owner.tenants.index') }}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition flex items-center gap-2">
+            <!-- Quick Lifecycle Testing Actions -->
+            @if($tenant->license_status === 'expired' || $tenant->status === 'suspended')
+                <form method="POST" action="{{ route('owner.tenants.reactivate', $tenant) }}" class="inline">
+                    @csrf
+                    <button type="submit" class="px-4 py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/40 text-xs font-bold transition flex items-center gap-2" onclick="return confirm('Deseja reativar esta empresa por 1 ano?')">
+                        <i class="fa-solid fa-rotate-left"></i> Reativar 1 Ano
+                    </button>
+                </form>
+            @else
+                <form method="POST" action="{{ route('owner.tenants.simulate-expiration', $tenant) }}" class="inline">
+                    @csrf
+                    <button type="submit" class="px-3.5 py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-bold transition flex items-center gap-1.5" onclick="return confirm('Simular expiração da licença desta empresa agora?')" title="Simular expiração para testar bloqueios e telas">
+                        <i class="fa-solid fa-hourglass-end"></i> Simular Expiração
+                    </button>
+                </form>
+
+                <form method="POST" action="{{ route('owner.tenants.suspend', $tenant) }}" class="inline">
+                    @csrf
+                    <button type="submit" class="px-3.5 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold transition flex items-center gap-1.5" onclick="return confirm('Suspender totalmente o acesso desta empresa?')" title="Suspender acesso">
+                        <i class="fa-solid fa-ban"></i> Suspender
+                    </button>
+                </form>
+            @endif
+
+            <a href="{{ route('owner.tenants.index') }}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition flex items-center gap-2 border border-slate-700">
                 <i class="fa-solid fa-arrow-left"></i> Voltar à Lista
             </a>
         </div>
@@ -378,6 +406,13 @@
                                            title="Ver Certificado Oficial">
                                             <i class="fa-solid fa-file-shield text-emerald-400"></i>
                                             <span>Certificado</span>
+                                        </a>
+
+                                        <a href="{{ route('owner.tenants.licenses.certificate-pdf', [$tenant, $license]) }}" 
+                                           class="px-2.5 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 font-bold text-[11px] border border-emerald-500/30 transition flex items-center gap-1"
+                                           title="Descarregar Certificado em PDF">
+                                            <i class="fa-solid fa-file-pdf"></i>
+                                            <span>PDF</span>
                                         </a>
 
                                         @if($license->status !== 'revoked')

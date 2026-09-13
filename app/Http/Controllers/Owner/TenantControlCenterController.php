@@ -200,6 +200,93 @@ class TenantControlCenterController extends Controller
         return view('owner.tenants.certificate', compact('tenant', 'license'));
     }
 
+    public function downloadCertificatePdf(Tenant $tenant, LicenseKey $license)
+    {
+        $this->authorizeOwner();
+        abort_unless($license->tenant_id === $tenant->id, 404);
+
+        $license->load(['plan', 'tenant', 'issuer']);
+
+        $pdf = app('dompdf.wrapper');
+        $pdf->loadView('owner.tenants.certificate_pdf', compact('tenant', 'license'))
+            ->setPaper('a4', 'portrait');
+
+        $cleanTenant = Str::slug($tenant->name);
+        $cleanKey = $license->key_code ?? ('LIC-' . $license->id);
+
+        return $pdf->download("Certificado_ZBIZ_{$cleanTenant}_{$cleanKey}.pdf");
+    }
+
+    public function simulateExpiration(Tenant $tenant): RedirectResponse
+    {
+        $this->authorizeOwner();
+
+        $pastDate = now()->subDay();
+
+        $tenant->update([
+            'status' => 'active',
+            'license_status' => 'expired',
+            'license_expires_at' => $pastDate,
+            'trial_ends_at' => $pastDate,
+            'subscription_ends_at' => $pastDate,
+        ]);
+
+        if ($tenant->currentSubscription) {
+            $tenant->currentSubscription->update([
+                'status' => 'expired',
+                'current_period_ends_at' => $pastDate,
+                'trial_ends_at' => $pastDate,
+            ]);
+        }
+
+        return redirect()->route('owner.tenants.show', $tenant)
+            ->with('warning', "Expiração simulada com sucesso! A empresa '{$tenant->name}' está agora com a licença/teste expirada (somente-leitura com bloqueio de vendas e gravações).");
+    }
+
+    public function suspendTenant(Tenant $tenant): RedirectResponse
+    {
+        $this->authorizeOwner();
+
+        $tenant->update([
+            'status' => 'suspended',
+            'license_status' => 'suspended',
+        ]);
+
+        if ($tenant->currentSubscription) {
+            $tenant->currentSubscription->update([
+                'status' => 'suspended',
+            ]);
+        }
+
+        return redirect()->route('owner.tenants.show', $tenant)
+            ->with('warning', "Empresa '{$tenant->name}' suspensa com sucesso! O acesso a todos os módulos operacionais foi bloqueado.");
+    }
+
+    public function reactivateTenant(Tenant $tenant): RedirectResponse
+    {
+        $this->authorizeOwner();
+
+        $futureDate = now()->addYear();
+
+        $tenant->update([
+            'status' => 'active',
+            'license_status' => 'active',
+            'license_expires_at' => $futureDate,
+            'subscription_ends_at' => $futureDate,
+        ]);
+
+        if ($tenant->currentSubscription) {
+            $tenant->currentSubscription->update([
+                'status' => 'active',
+                'current_period_starts_at' => now(),
+                'current_period_ends_at' => $futureDate,
+            ]);
+        }
+
+        return redirect()->route('owner.tenants.show', $tenant)
+            ->with('success', "Empresa '{$tenant->name}' reativada com sucesso por 1 ano!");
+    }
+
     public function show(Tenant $tenant): View
     {
         $this->authorizeOwner();

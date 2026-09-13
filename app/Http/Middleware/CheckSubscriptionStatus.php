@@ -29,8 +29,8 @@ class CheckSubscriptionStatus
             return $this->blocked($request, 'tenant_pending', 'O pré-registo da sua empresa está sob análise da Fdsmultiservices. Aguarde a confirmação por SMS.');
         }
 
-        if (($tenant->license_status ?? 'active') === 'suspended') {
-            return $this->blocked($request, 'license_suspended', 'A licença desta empresa está suspensa. Contacte o suporte para reativação.');
+        if (($tenant->license_status ?? 'active') === 'suspended' || in_array($tenant->status, ['suspended', 'cancelled'])) {
+            return $this->blocked($request, 'license_suspended', 'A conta desta empresa está suspensa. Contacte a Fdsmultiservices para regularização e reativação.');
         }
 
         if ($tenant->license_expires_at && $tenant->license_expires_at->isPast()) {
@@ -42,6 +42,15 @@ class CheckSubscriptionStatus
             }
 
             return $this->blocked($request, 'license_expired', 'A licença desta instalação expirou. Ative uma nova licença para continuar.');
+        }
+
+        if ($tenant->status === 'trial' && $tenant->trial_ends_at && $tenant->trial_ends_at->isPast()) {
+            if ($request->isMethodSafe()) {
+                session()->flash('warning', 'O período experimental desta empresa terminou. O sistema está em modo somente-leitura. Ative uma licença para desbloquear todas as operações.');
+                return $next($request);
+            }
+
+            return $this->blocked($request, 'trial_expired', 'O período de teste expirou. Ative uma licença para realizar esta operação.');
         }
 
         $subscription = Subscription::where('tenant_id', $tenant->id)->latest()->first();
