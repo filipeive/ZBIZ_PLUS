@@ -26,8 +26,8 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
   - Documentação consolidada da arquitetura atual (Laravel 12, MySQL/SQLite, Multi-Tenancy estrito, Livro-Razão imutável, módulos verticais e Control Center do Dono).
 - **Atualização do Roadmap & Verticais (`docs/03_ROADMAP.md`, `docs/07_VERTICAL_MODULES.md`, `docs/09_PHARMACY_REGULATORY_GUIDE.md`):**
   - Alinhamento de todos os documentos com os módulos em produção (Restauração, Farmácia, Retalho, Serviços Universais).
-- **Rodapé e Marca d'Água Oficial do Desenvolvedor (`resources/views/layouts/app.blade.php` e `docs/`):**
-  - Adicionado rodapé permanente na aplicação web com versão do sistema (`v1.0.18`), canal de suporte técnico (`(+258) 84 999 1122`) e assinatura terminal de engenharia: `fdev-ms@fdevms:~/Filipe/reprosys$`.
+- **Rodapé e Assinatura Oficial do Desenvolvedor (`resources/views/layouts/app.blade.php` e `docs/`):**
+  - Adicionado rodapé permanente na aplicação web com versão do sistema (`v1.0.18`), crédito "Desenvolvido por Fdsmultiservices", WhatsApp direto (`(+258) 86 213 4230`) e email de assistência (`fdsmultiservices@gmail.com`).
 
 ---
 

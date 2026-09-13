@@ -83,8 +83,9 @@ O **ZBIZ+** é uma plataforma empresarial completa de **Gestão Comercial (ERP),
 ---
 
 ────────────────────────────────────────────────────────────────────────────  
-**Desenvolvido por: fdev-ms (FDS Multiservices)**  
-*Engenharia de Software & Suporte Técnico:* `fdev-ms@fdevms:~/Filipe/reprosys$`  
-*Contacto & Assistência:* (+258) 84 999 1122 · Quelimane / Moçambique  
+**Desenvolvido por: Fdsmultiservices**  
+*WhatsApp & Suporte Técnico:* (+258) 86 213 4230 · Quelimane / Moçambique  
+*Email:* `fdsmultiservices@gmail.com`  
 *Plataforma ZBIZ+ Enterprise Cloud & POS Suite — Versão 1.0.18*  
 ────────────────────────────────────────────────────────────────────────────  
+

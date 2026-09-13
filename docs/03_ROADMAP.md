@@ -3,11 +3,21 @@
 
 ---
 
+## CRONOGRAMA DE FASES INCREMENTAIS
 ## 1. ESTADO ATUAL DO PROJETO (VERSÃO 1.0.18)
 
 O **ZBIZ+** evoluiu de um sistema de reprografia monoposto (antigo ReproSys) para um **ERP & POS SaaS Multi-Tenant e Multissetorial** moderno, robusto e em produção para o mercado de Moçambique.
 
 ```text
+FASE 0: Auditoria & Estratégia [CONCLUÍDO]
+FASE 1: Setup do Repositório ZBIZ_PLUS & Documentação Base [EM ANDAMENTO]
+FASE 2: Fundação Multi-Tenancy & Segurança (TenantScope, RLS, BelongsToTenant)
+FASE 3: ZBIZ Core & Multi-Branch (Empresas, Filiais, Caixa, Transações Ledger)
+FASE 4: Motor de Licenciamento SaaS & Planos (M-Pesa / Subscrições)
+FASE 5: ZBIZ POS 2.0 (Interface Rápida, Scanner, Offline Sync)
+FASE 6: Vertical 1 — Retalho & Reprografia (Migração ReproSys)
+FASE 7: Vertical 2 — ZBIZ Pharmacy (Lotes, Validade, ANARME)
+FASE 8: Faturação Fiscal Moçambicana (AT, NUIT, IVA 16%, Séries)
 [CONCLUÍDO] FASE 0: Auditoria & Estratégia de Arquitetura Monolítica Modular
 [CONCLUÍDO] FASE 1: Setup do Repositório ZBIZ_PLUS & Documentação Técnica Base
 [CONCLUÍDO] FASE 2: Fundação Multi-Tenancy & Isolamento Seguro (BelongsToTenant, TenantScope, RLS)
@@ -21,6 +31,12 @@ O **ZBIZ+** evoluiu de um sistema de reprografia monoposto (antigo ReproSys) par
 [EM EVOLUÇÃO] FASE 10: Certificação Fiscal Avançada (Séries Fiscais AT Moçambique, Assinatura RSA em Licenças)
 ```
 
+## MARCOS DE ENTREGA (MILESTONES)
+* **M1 (v0.1.0):** Core Multi-Tenant com isolamento comprovado por testes.
+* **M2 (v0.2.0):** Multi-Branch, Gestão de Caixa e Transações Imutáveis.
+* **M3 (v0.3.0):** POS 2.0 com suporte a leitor e talão de impressão térmica.
+* **M4 (v0.4.0):** Módulo de Farmácia com gestão de lotes e alertas de validade.
+* **M5 (v1.0.0):** Lançamento Comercial SaaS com integração de pagamentos M-Pesa.
 ---
 
 ## 2. HISTÓRICO DE MARCOS DE ENTREGA (MILESTONES)
@@ -45,8 +61,8 @@ O **ZBIZ+** evoluiu de um sistema de reprografia monoposto (antigo ReproSys) par
 ---
 
 ────────────────────────────────────────────────────────────────────────────  
-**Desenvolvido por: fdev-ms (FDS Multiservices)**  
-*Engenharia de Software & Suporte Técnico:* `fdev-ms@fdevms:~/Filipe/reprosys$`  
-*Contacto & Assistência:* (+258) 84 999 1122 · Quelimane / Moçambique  
+**Desenvolvido por: Fdsmultiservices**  
+*WhatsApp & Suporte Técnico:* (+258) 86 213 4230 · Quelimane / Moçambique  
+*Email:* `fdsmultiservices@gmail.com`  
 *Plataforma ZBIZ+ Enterprise Cloud & POS Suite — Versão 1.0.18*  
 ────────────────────────────────────────────────────────────────────────────  

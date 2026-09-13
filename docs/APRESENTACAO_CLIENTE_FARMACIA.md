@@ -148,12 +148,16 @@ O ZBIZ+ disponibiliza duas modalidades simples de contratação:
 
 Estamos disponíveis para realizar uma demonstração do sistema diretamente no seu balcão ou via chamada remota, apresentando todas as telas e simulando vendas reais na sua farmácia.
 
+* **WhatsApp / Telefone:** (+258) 86 213 4230
+* **Email:** fdsmultiservices@gmail.com
+* **Localização:** Quelimane / Moçambique
+
 ---
 
 ────────────────────────────────────────────────────────────────────────────  
-**Desenvolvido por: fdev-ms (FDS Multiservices)**  
-*Engenharia de Software & Suporte Técnico:* `fdev-ms@fdevms:~/Filipe/reprosys$`  
-*Contacto & Assistência Técnica:* (+258) 84 999 1122 · Quelimane / Moçambique  
-*Email de Apoio:* `filipe.santos@fdsmultiservices.com`  
+**Desenvolvido por: Fdsmultiservices**  
+*WhatsApp & Apoio Técnico:* (+258) 86 213 4230 · Quelimane / Moçambique  
+*Email de Contacto:* `fdsmultiservices@gmail.com`  
 *Plataforma ZBIZ+ Enterprise Cloud & POS Suite — Módulo Pharmacy 2026*  
 ────────────────────────────────────────────────────────────────────────────  
+

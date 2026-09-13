@@ -1540,6 +1540,8 @@
             <!-- Main Content Scroll Area -->
             <main class="app-main flex-1 overflow-y-auto p-4 sm:p-8">
                 
+
+
                 <!-- Yield Page Content -->
                 @yield('content')
 
@@ -1552,16 +1554,16 @@
                     </div>
 
                     <div class="flex flex-wrap items-center justify-center gap-3 text-slate-500 dark:text-slate-400">
-                        <span class="font-mono text-[10px] text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-900/90 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-800" title="Terminal Signature">
-                            fdev-ms@fdevms:~/Filipe/reprosys$
+                        <span class="hover:text-emerald-500 transition cursor-default" title="Desenvolvido por Fdsmultiservices">
+                            <i class="fa-solid fa-code text-[10px] text-emerald-500 mr-1"></i>Desenvolvido por <strong>Fdsmultiservices</strong>
                         </span>
                         <span class="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
-                        <span class="hover:text-emerald-500 transition cursor-default" title="Desenvolvido por fdev-ms (FDS Multiservices)">
-                            <i class="fa-solid fa-code text-[10px] text-emerald-500 mr-1"></i>Desenvolvido por <strong>fdev-ms</strong>
-                        </span>
+                        <a href="https://wa.me/258862134230" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-500 transition flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold" title="WhatsApp Suporte">
+                            <i class="fa-brands fa-whatsapp text-xs"></i> (+258) 86 213 4230
+                        </a>
                         <span class="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
-                        <a href="tel:+258849991122" class="hover:text-emerald-500 transition flex items-center gap-1" title="Contacto de Suporte Técnico & Engenharia">
-                            <i class="fa-solid fa-headset text-[10px] text-emerald-500"></i> Suporte: (+258) 84 999 1122
+                        <a href="mailto:fdsmultiservices@gmail.com" class="hover:text-emerald-500 transition flex items-center gap-1" title="Email de Suporte">
+                            <i class="fa-solid fa-envelope text-[10px]"></i> fdsmultiservices@gmail.com
                         </a>
                     </div>
                 </footer>

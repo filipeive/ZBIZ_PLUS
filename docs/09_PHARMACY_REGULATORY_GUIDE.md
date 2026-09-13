@@ -1,10 +1,20 @@
+# GUIA REGULATÓRIO DE FARMÁCIA (ANARME)
 # GUIA REGULATÓRIO & OPERACIONAL DE FARMÁCIA (ANARME / MISAU)
 ## `docs/09_PHARMACY_REGULATORY_GUIDE.md`
 
 ---
 
 ## 1. ENQUADRAMENTO LEGAL EM MOÇAMBIQUE
+* Regulamentado pela **ANARME** (Agência Nacional Reguladora de Medicamentos) — Decreto n.º 84/2021.
+* Exigência de rastreabilidade completa por lote e prazo de validade.
 
+## 2. REQUISITOS TÉCNICOS NO ZBIZ PHARMACY
+1. **Alertas de Validade em 3 Níveis:**
+   * Amarelo: Medicamentos a vencer em 90 dias.
+   * Laranja: Medicamentos a vencer em 60 dias.
+   * Vermelho / Bloqueado: Medicamentos a vencer em 30 dias ou vencidos.
+2. **Saída FEFO (*First Expired, First Out*):** O POS sugere automaticamente a baixa do lote que expira primeiro.
+3. **Livro de Psicotrópicos & Estupefacientes:** Registo de número de receita, médico prescritor e upload da imagem da prescrição.
 A atividade farmacêutica em Moçambique é estritamente regulamentada pela **ANARME** (Agência Nacional Reguladora de Medicamentos — Decreto n.º 84/2021) e pelas directrizes do **Ministério da Saúde (MISAU)**.
 
 As farmácias privadas e postos de medicamentos têm obrigações mandatórias de:
@@ -57,8 +67,8 @@ Tudo é faturado diretamente no POS sem exigir baixa física de inventário, int
 ---
 
 ────────────────────────────────────────────────────────────────────────────  
-**Desenvolvido por: fdev-ms (FDS Multiservices)**  
-*Engenharia de Software & Suporte Técnico:* `fdev-ms@fdevms:~/Filipe/reprosys$`  
-*Contacto & Assistência:* (+258) 84 999 1122 · Quelimane / Moçambique  
+**Desenvolvido por: Fdsmultiservices**  
+*WhatsApp & Suporte Técnico:* (+258) 86 213 4230 · Quelimane / Moçambique  
+*Email:* `fdsmultiservices@gmail.com`  
 *Plataforma ZBIZ+ Enterprise Cloud & POS Suite — Versão 1.0.18*  
 ────────────────────────────────────────────────────────────────────────────  
