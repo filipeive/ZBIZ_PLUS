@@ -95,7 +95,8 @@
             </div>
         </div>
 
-        <!-- Card 3: Lucro Real -->
+        <!-- Card 3: Lucro Real (Visível apenas para Administrador/Gerente da Tenant) -->
+        @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin() || auth()->user()->isManager())
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
             <div class="flex items-center justify-between">
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Lucro Real</span>
@@ -113,6 +114,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <!-- Card 4: Contas a Receber (Fiados) -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
