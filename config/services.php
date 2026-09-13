@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'httpsms' => [
+        'key' => env('HTTPSMS_KEY', env('HTTPSMS_API_KEY')),
+        'from' => env('HTTPSMS_FROM', '+258862134230'),
+    ],
+
 ];
