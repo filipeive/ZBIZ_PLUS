@@ -43,6 +43,9 @@
             <a href="{{ route('reports.profit-loss') }}" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 rounded-xl border border-slate-200 dark:border-slate-700 transition">
                 <i class="fa-solid fa-scale-balanced text-sky-600 dark:text-sky-400 mr-1.5"></i> DRE / Lucros
             </a>
+            <a href="{{ route('reports.roi') }}" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 rounded-xl border border-slate-200 dark:border-slate-700 transition">
+                <i class="fa-solid fa-chart-pie text-teal-600 dark:text-teal-400 mr-1.5"></i> Relatório ROI
+            </a>
         </div>
     </div>
 
@@ -90,6 +93,21 @@
             </div>
             <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-teal-600 dark:text-teal-400">
                 <span>Aceder ao Relatório</span>
+                <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
+            </div>
+        </a>
+
+        <!-- Hub Card 3.5: ROI & Retorno sobre Investimento -->
+        <a href="{{ route('reports.roi') }}" class="bg-white dark:bg-slate-900 border border-teal-500/30 rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-teal-500/60 transition group flex flex-col justify-between bg-gradient-to-br from-white to-teal-50/20 dark:from-slate-900 dark:to-teal-950/20">
+            <div>
+                <div class="w-12 h-12 rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </div>
+                <h3 class="text-base font-black text-slate-900 dark:text-white font-heading">Retorno sobre Investimento (ROI)</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Análise percentual de rentabilidade sobre capital investido em produtos (CMV) e despesas operacionais.</p>
+            </div>
+            <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-teal-600 dark:text-teal-400">
+                <span>Aceder ao Relatório ROI</span>
                 <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
             </div>
         </a>

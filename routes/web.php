@@ -460,8 +460,9 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
             Route::get('/monthly-sales', [ReportController::class, 'monthlySales'])->name('monthly-sales');
             Route::get('/sales-by-product', [ReportController::class, 'salesByProduct'])->name('sales-by-product');
 
-            // ===== RELATÓRIOS FINANCEIROS =====
+            // ===== RELATÓRIOS FINANCEIROS & ROI =====
             Route::get('/profit-loss', [ReportController::class, 'profitLoss'])->name('profit-loss')->middleware('feature:reports_advanced');
+            Route::get('/roi', [ReportController::class, 'profitLoss'])->name('roi')->middleware('feature:reports_advanced');
             Route::get('/cash-flow', [ReportController::class, 'cashFlow'])->name('cash-flow')->middleware('feature:reports_advanced');
 
             // ===== ANÁLISES AVANÇADAS =====

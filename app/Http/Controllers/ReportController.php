@@ -245,6 +245,11 @@ class ReportController extends Controller
         $accountsReceivable = $metrics['accounts_receivable'];
         $currentCapital = $metrics['current_liquidity'];
         $totalRealValue = $metrics['total_real_value'];
+
+        // ROI (Return on Investment)
+        $totalInvestment = $costOfGoodsSold + $totalExpenses;
+        $roi = $totalInvestment > 0 ? (($netProfit / $totalInvestment) * 100) : 0;
+        $cogsRoi = $costOfGoodsSold > 0 ? (($netProfit / $costOfGoodsSold) * 100) : 0;
         
         return [
             'totalSales' => $totalSales,
@@ -254,10 +259,13 @@ class ReportController extends Controller
             'netCashFlow' => $totalReceived - $totalOutflows,
             'costOfGoodsSold' => $costOfGoodsSold,
             'totalExpenses' => $totalExpenses,
+            'totalInvestment' => $totalInvestment,
             'grossProfit' => $grossProfit,
             'netProfit' => $netProfit,
             'grossMargin' => $grossMargin,
             'netMargin' => $netMargin,
+            'roi' => $roi,
+            'cogsRoi' => $cogsRoi,
             'averageTicket' => $averageTicket,
             'revenueGrowth' => $revenueGrowth,
             'accountsReceivable' => $accountsReceivable,
@@ -391,9 +399,12 @@ class ReportController extends Controller
         // Lucro operacional
         $operatingProfit = $grossProfit - $totalOperatingExpenses;
 
-        // Margens
+        // Margens & ROI
         $grossMargin = $salesRevenue > 0 ? (($grossProfit / $salesRevenue) * 100) : 0;
         $operatingMargin = $salesRevenue > 0 ? (($operatingProfit / $salesRevenue) * 100) : 0;
+        $totalInvestment = $costOfGoodsSold + $totalOperatingExpenses;
+        $roi = $totalInvestment > 0 ? (($operatingProfit / $totalInvestment) * 100) : 0;
+        $cogsRoi = $costOfGoodsSold > 0 ? (($operatingProfit / $costOfGoodsSold) * 100) : 0;
 
         // Análise por produto
         $productProfitability = Product::select('products.name')
@@ -415,6 +426,7 @@ class ReportController extends Controller
             'dateFrom', 'dateTo', 'salesRevenue', 'costOfGoodsSold', 
             'grossProfit', 'grossMargin', 'expensesByCategory', 
             'totalOperatingExpenses', 'operatingProfit', 'operatingMargin',
+            'totalInvestment', 'roi', 'cogsRoi',
             'productProfitability'
         ));
     }

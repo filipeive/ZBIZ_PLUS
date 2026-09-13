@@ -59,8 +59,8 @@
         </form>
     </div>
 
-    <!-- 4 KPI Summary Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+    <!-- 5 KPI Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
         <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Receitas Brutas</span>
             <div class="text-2xl font-black font-heading text-white font-mono mt-2">{{ number_format($salesRevenue, 2, ',', '.') }} MT</div>
@@ -88,6 +88,18 @@
             </div>
             <div class="text-xs {{ $operatingProfit >= 0 ? 'text-emerald-400/80' : 'text-rose-400/80' }} mt-1 font-semibold">
                 Margem Líquida: {{ number_format($operatingMargin, 1) }}%
+            </div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-teal-500/30 rounded-3xl p-5 shadow-lg backdrop-blur-xl bg-gradient-to-br from-slate-900 via-slate-900 to-teal-950/40">
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-pie"></i> ROI (Retorno)
+            </span>
+            <div class="text-2xl font-black font-heading {{ $roi >= 20 ? 'text-teal-300' : ($roi >= 0 ? 'text-amber-400' : 'text-rose-400') }} font-mono mt-2">
+                {{ number_format($roi, 1) }}%
+            </div>
+            <div class="text-xs text-slate-400 mt-1">
+                ROI CMV: <span class="font-bold text-white">{{ number_format($cogsRoi, 1) }}%</span>
             </div>
         </div>
     </div>
@@ -123,6 +135,67 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- Indicadores & Análise de ROI / Retorno sobre Investimento -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-xl">
+        <div class="border-b border-slate-800 pb-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h3 class="text-base font-black font-heading text-white flex items-center gap-2">
+                    <i class="fa-solid fa-calculator text-teal-400"></i> Análise Integrada de ROI (Return on Investment)
+                </h3>
+                <p class="text-xs text-slate-400">Métrica de eficiência comercial que avalia o retorno do capital investido em mercadorias e operações.</p>
+            </div>
+            <span class="px-3 py-1 text-xs font-bold rounded-xl {{ $roi >= 30 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : ($roi >= 15 ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30' : 'bg-rose-500/10 text-rose-400 border border-rose-500/30') }}">
+                {{ $roi >= 30 ? 'Excelente Retorno' : ($roi >= 15 ? 'Retorno Moderado' : 'Atenção ao Retorno') }}
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800/80">
+                <span class="text-xs font-bold text-slate-400 uppercase">Investimento Total (CMV + Despesas)</span>
+                <div class="text-xl font-black font-mono text-white mt-2">{{ number_format($totalInvestment, 2, ',', '.') }} MT</div>
+                <p class="text-[11px] text-slate-500 mt-1">Capital total alocado para gerar faturamento.</p>
+            </div>
+
+            <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800/80">
+                <span class="text-xs font-bold text-slate-400 uppercase">ROI Global Operacional</span>
+                <div class="text-xl font-black font-mono {{ $roi >= 0 ? 'text-teal-400' : 'text-rose-400' }} mt-2">{{ number_format($roi, 1) }}%</div>
+                <p class="text-[11px] text-slate-500 mt-1">Fórmula: (Lucro Operacional / Investimento Total) × 100</p>
+            </div>
+
+            <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800/80">
+                <span class="text-xs font-bold text-slate-400 uppercase">ROI sobre Custo de Produtos (CMV)</span>
+                <div class="text-xl font-black font-mono text-emerald-400 mt-2">{{ number_format($cogsRoi, 1) }}%</div>
+                <p class="text-[11px] text-slate-500 mt-1">Fórmula: (Lucro Operacional / CMV) × 100</p>
+            </div>
+        </div>
+
+        <!-- Performance Guidance -->
+        <div class="space-y-2 text-xs">
+            @if($roi >= 30)
+                <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 flex items-center gap-3">
+                    <i class="fa-solid fa-circle-check text-base"></i>
+                    <div>
+                        <span class="font-bold">Desempenho Excelente (ROI ≥ 30%):</span> Sua operação está gerando alto retorno sobre o capital empregado. Mantenha o controlo de custos operacionais.
+                    </div>
+                </div>
+            @elseif($roi >= 15)
+                <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 flex items-center gap-3">
+                    <i class="fa-solid fa-triangle-exclamation text-base"></i>
+                    <div>
+                        <span class="font-bold">Desempenho Moderado (ROI 15% - 30%):</span> Operação rentável, mas pode-se otimizar margens de revenda e negociar preços com fornecedores.
+                    </div>
+                </div>
+            @else
+                <div class="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 flex items-center gap-3">
+                    <i class="fa-solid fa-circle-xmark text-base"></i>
+                    <div>
+                        <span class="font-bold">Atenção ao Retorno (ROI &lt; 15%):</span> O retorno sobre o investimento é baixo em relação às despesas. Avalie reajuste de preços de venda ou contenção de custos.
+                    </div>
+                </div>
+            @endif
+        </div>
     </div>
 
     <!-- DRE Structured Table -->
@@ -178,7 +251,7 @@
             <div class="p-5 rounded-2xl bg-slate-900 border-2 {{ $operatingProfit >= 0 ? 'border-emerald-500/50' : 'border-rose-500/50' }} flex items-center justify-between">
                 <div>
                     <div class="text-xs uppercase font-bold text-slate-400">5. RESULTADO LÍQUIDO OPERACIONAL</div>
-                    <div class="text-xs text-slate-500 mt-0.5">Margem Líquida Real: {{ number_format($operatingMargin, 1) }}%</div>
+                    <div class="text-xs text-slate-500 mt-0.5">Margem Líquida Real: {{ number_format($operatingMargin, 1) }}% | ROI: {{ number_format($roi, 1) }}%</div>
                 </div>
                 <span class="text-xl sm:text-2xl font-black font-mono {{ $operatingProfit >= 0 ? 'text-emerald-400' : 'text-rose-400' }}">
                     {{ number_format($operatingProfit, 2, ',', '.') }} MT
@@ -187,6 +260,52 @@
 
         </div>
     </div>
+
+    @if(isset($productProfitability) && $productProfitability->count() > 0)
+    <!-- Tabela de Lucratividade & ROI por Produto -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-xl">
+        <div class="border-b border-slate-800 pb-4 mb-6">
+            <h3 class="text-base font-black font-heading text-white">Lucratividade & ROI por Produto</h3>
+            <p class="text-xs text-slate-400">Desempenho financeiro individual dos artigos mais vendidos no período.</p>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left text-slate-300">
+                <thead class="text-[11px] uppercase bg-slate-950 text-slate-400 font-bold border-b border-slate-800">
+                    <tr>
+                        <th class="py-3 px-4">Produto</th>
+                        <th class="py-3 px-4 text-center">Qtd Vendida</th>
+                        <th class="py-3 px-4 text-right">Faturamento (MT)</th>
+                        <th class="py-3 px-4 text-right">Custo Total (CMV)</th>
+                        <th class="py-3 px-4 text-right">Lucro Bruto (MT)</th>
+                        <th class="py-3 px-4 text-right">ROI (%)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60 font-medium">
+                    @foreach($productProfitability->take(15) as $prod)
+                        @php
+                            $prodCost = $prod->cost ?? 0;
+                            $prodProfit = $prod->profit ?? 0;
+                            $prodRoi = $prodCost > 0 ? (($prodProfit / $prodCost) * 100) : 0;
+                        @endphp
+                        <tr class="hover:bg-slate-800/40 transition">
+                            <td class="py-3 px-4 font-bold text-white">{{ $prod->name }}</td>
+                            <td class="py-3 px-4 text-center font-mono text-slate-300">{{ number_format($prod->quantity_sold, 0) }}</td>
+                            <td class="py-3 px-4 text-right font-mono text-slate-200">{{ number_format($prod->revenue, 2, ',', '.') }} MT</td>
+                            <td class="py-3 px-4 text-right font-mono text-amber-400">{{ number_format($prodCost, 2, ',', '.') }} MT</td>
+                            <td class="py-3 px-4 text-right font-mono font-bold {{ $prodProfit >= 0 ? 'text-emerald-400' : 'text-rose-400' }}">
+                                {{ number_format($prodProfit, 2, ',', '.') }} MT
+                            </td>
+                            <td class="py-3 px-4 text-right font-mono font-bold text-teal-400">
+                                {{ number_format($prodRoi, 1) }}%
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
 
 </div>
 
