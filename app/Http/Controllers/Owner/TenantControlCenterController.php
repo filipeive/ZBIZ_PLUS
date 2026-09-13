@@ -387,6 +387,7 @@ class TenantControlCenterController extends Controller
         return redirect()
             ->route('owner.tenants.show', $tenant)
             ->with('success', 'Licença emitida com sucesso.')
+            ->with('issued_license_key_code', $issued['key_code'])
             ->with('issued_license_token', $issued['token']);
     }
 

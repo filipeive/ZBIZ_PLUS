@@ -11,6 +11,7 @@ class LicenseKey extends Model
         'tenant_id',
         'plan_id',
         'issued_by_user_id',
+        'key_code',
         'key_hash',
         'mode',
         'status',
@@ -23,6 +24,41 @@ class LicenseKey extends Model
         'signature',
         'notes',
     ];
+
+    public static function generateUniqueKeyCode(): string
+    {
+        do {
+            $parts = [];
+            for ($i = 0; $i < 4; $i++) {
+                $parts[] = strtoupper(\Illuminate\Support\Str::random(4));
+            }
+            $keyCode = 'ZBIZ-' . implode('-', $parts);
+        } while (static::where('key_code', $keyCode)->exists());
+
+        return $keyCode;
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function ($license) {
+            if (empty($license->key_code)) {
+                $license->key_code = static::generateUniqueKeyCode();
+            }
+        });
+    }
+
+    public function getKeyCodeAttribute($value): string
+    {
+        if (!empty($value)) {
+            return $value;
+        }
+
+        $code = static::generateUniqueKeyCode();
+        $this->attributes['key_code'] = $code;
+        $this->saveQuietly();
+
+        return $code;
+    }
 
     protected $casts = [
         'starts_at' => 'datetime',

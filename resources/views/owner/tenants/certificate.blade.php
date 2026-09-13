@@ -3,31 +3,58 @@
 @section('title', 'Certificado de Licença - ' . $tenant->name)
 @section('page-title', 'Certificado de Licença de Software')
 
+@php
+    $targetPhone = $tenant->users()->first()?->phone ?? $tenant->phone ?? '';
+    $rawPhone = preg_replace('/[^0-9]/', '', $targetPhone);
+    if (strlen($rawPhone) === 9 && str_starts_with($rawPhone, '8')) {
+        $rawPhone = '258' . $rawPhone;
+    }
+    $smsNotice = "Olá {$tenant->name}, a sua licença do ZBIZ+ (" . ($license->plan?->name ?? 'Plano Empresarial') . ") foi emitida com sucesso!\n\nCódigo de Ativação:\n{$license->key_code}\n\nValidade: " . ($license->expires_at?->format('d/m/Y') ?? 'Vitalício') . "\nAtivar em: " . url('/license/activate');
+@endphp
+
 @section('content')
 <div class="max-w-4xl mx-auto space-y-6" x-data="{
     copiedKey: false,
+    copiedMsg: false,
     copyKey(text) {
         navigator.clipboard.writeText(text);
         this.copiedKey = true;
         setTimeout(() => this.copiedKey = false, 2500);
+    },
+    copyMessage(text) {
+        navigator.clipboard.writeText(text);
+        this.copiedMsg = true;
+        setTimeout(() => this.copiedMsg = false, 2500);
     }
 }">
     <!-- Actions Bar (Hidden on print) -->
-    <div class="flex items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl print:hidden">
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl print:hidden">
         <div class="flex items-center gap-3">
             <a href="{{ route('owner.tenants.show', $tenant) }}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition flex items-center gap-2">
                 <i class="fa-solid fa-arrow-left"></i> Voltar ao Tenant
             </a>
             <span class="text-xs text-slate-400">Emissão para <strong class="text-white">{{ $tenant->name }}</strong></span>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
             <button type="button" @click="copyKey('{{ $license->key_code }}')" 
                     class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition flex items-center gap-2 shadow-md">
                 <i class="fa-solid" :class="copiedKey ? 'fa-check' : 'fa-copy'"></i>
                 <span x-text="copiedKey ? 'Chave Copiada!' : 'Copiar Chave Serial'"></span>
             </button>
+            @if($rawPhone)
+                <a href="https://wa.me/{{ $rawPhone }}?text={{ rawurlencode($smsNotice) }}" target="_blank"
+                   class="px-4 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold text-xs transition flex items-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-sm"></i>
+                    <span>Mandar no WhatsApp</span>
+                </a>
+            @endif
+            <button type="button" @click="copyMessage(`{{ addslashes($smsNotice) }}`)" 
+                    class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs transition flex items-center gap-2 border border-slate-700">
+                <i class="fa-solid" :class="copiedMsg ? 'fa-check text-emerald-400' : 'fa-comment-sms'"></i>
+                <span x-text="copiedMsg ? 'Mensagem Copiada!' : 'Copiar Mensagem SMS'"></span>
+            </button>
             <button type="button" onclick="window.print()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition flex items-center gap-2 border border-slate-700">
-                <i class="fa-solid fa-print"></i> Imprimir / Guardar PDF
+                <i class="fa-solid fa-print"></i> Imprimir PDF
             </button>
         </div>
     </div>
@@ -73,12 +100,26 @@
             </div>
 
             <!-- License Key In Mega Display Box -->
-            <div class="p-6 rounded-2xl bg-slate-950 border-2 border-dashed border-emerald-500/40 text-center space-y-2 print:bg-slate-50 print:border-slate-400">
+            <div class="p-6 rounded-2xl bg-slate-950 border-2 border-dashed border-emerald-500/40 text-center space-y-3 print:bg-slate-50 print:border-slate-400">
                 <span class="text-[10px] uppercase font-black tracking-widest text-emerald-400 print:text-emerald-700 block">
                     CHAVE SERIAL DE LICENÇA (SOFTWARE SERIAL KEY)
                 </span>
                 <div class="text-2xl sm:text-3xl font-black font-mono tracking-widest text-white print:text-black select-all py-1">
-                    {{ $license->key_code ?? 'ZBIZ-ORIGINAL-LICENSE' }}
+                    {{ $license->key_code }}
+                </div>
+                <div class="flex items-center justify-center gap-2 print:hidden">
+                    <button type="button" @click="copyKey('{{ $license->key_code }}')" 
+                            class="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold transition flex items-center gap-1.5">
+                        <i class="fa-solid" :class="copiedKey ? 'fa-check' : 'fa-copy'"></i>
+                        <span x-text="copiedKey ? 'Copiado!' : 'Copiar Chave'"></span>
+                    </button>
+                    @if($rawPhone)
+                    <a href="https://wa.me/{{ $rawPhone }}?text={{ rawurlencode($smsNotice) }}" target="_blank"
+                       class="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold transition flex items-center gap-1.5">
+                        <i class="fa-brands fa-whatsapp text-sm"></i>
+                        <span>Enviar no WhatsApp</span>
+                    </a>
+                    @endif
                 </div>
                 <p class="text-[11px] text-slate-500 print:text-slate-600">
                     Insira este código na tela de ativação (<code class="font-bold">/license/activate</code>) para desbloqueio ou renovação.

@@ -341,12 +341,10 @@
                             <tr class="hover:bg-slate-800/30 transition">
                                 <td class="py-3">
                                     <div class="font-mono font-bold text-emerald-400 flex items-center gap-1.5">
-                                        <span>{{ $license->key_code ?? 'CERT-LEGACY' }}</span>
-                                        @if($license->key_code)
-                                            <button type="button" @click="copyRowKey('{{ $license->key_code }}', {{ $license->id }})" title="Copiar Chave" class="text-slate-400 hover:text-white transition">
-                                                <i class="fa-solid" :class="copiedKeyId === {{ $license->id }} ? 'fa-check text-emerald-400' : 'fa-copy text-[11px]'"></i>
-                                            </button>
-                                        @endif
+                                        <span>{{ $license->key_code }}</span>
+                                        <button type="button" @click="copyRowKey('{{ $license->key_code }}', {{ $license->id }})" title="Copiar Chave" class="text-slate-400 hover:text-white transition">
+                                            <i class="fa-solid" :class="copiedKeyId === {{ $license->id }} ? 'fa-check text-emerald-400' : 'fa-copy text-[11px]'"></i>
+                                        </button>
                                     </div>
                                 </td>
                                 <td class="py-3 font-semibold text-slate-200">{{ $license->plan?->name ?? 'Sem plano' }}</td>
@@ -359,6 +357,22 @@
                                 <td class="py-3 text-slate-400 font-mono text-[11px]">{{ $license->starts_at?->format('d/m/Y') }} - {{ $license->expires_at?->format('d/m/Y') }}</td>
                                 <td class="py-3 text-right">
                                     <div class="inline-flex items-center gap-1.5">
+                                        @php
+                                            $destRowPhone = preg_replace('/[^0-9]/', '', $tenant->users()->first()?->phone ?? $tenant->phone ?? '');
+                                            if (strlen($destRowPhone) === 9 && str_starts_with($destRowPhone, '8')) {
+                                                $destRowPhone = '258' . $destRowPhone;
+                                            }
+                                            $rowSmsMsg = "Olá {$tenant->name}, a sua licença do ZBIZ+ (" . ($license->plan?->name ?? 'Plano Empresarial') . ") está pronta! Código de Ativação: {$license->key_code}. Validade: " . ($license->expires_at?->format('d/m/Y') ?? 'Vitalício') . ". Ativar em: " . url('/license/activate');
+                                        @endphp
+                                        @if($destRowPhone)
+                                            <a href="https://wa.me/{{ $destRowPhone }}?text={{ rawurlencode($rowSmsMsg) }}" target="_blank"
+                                               class="px-2 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold transition flex items-center gap-1"
+                                               title="Enviar dados da licença no WhatsApp">
+                                                <i class="fa-brands fa-whatsapp text-xs"></i>
+                                                <span class="hidden sm:inline">WhatsApp</span>
+                                            </a>
+                                        @endif
+
                                         <a href="{{ route('owner.tenants.licenses.certificate', [$tenant, $license]) }}" 
                                            class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-[11px] border border-slate-700 transition flex items-center gap-1"
                                            title="Ver Certificado Oficial">
