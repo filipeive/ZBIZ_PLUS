@@ -11,8 +11,6 @@ use App\Models\QuotationItem;
 use App\Models\Tenant;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class DocumentTemplateController extends Controller
 {

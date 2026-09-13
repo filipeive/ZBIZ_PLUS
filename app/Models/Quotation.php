@@ -170,3 +170,4 @@ class Quotation extends Model
         return !in_array($this->status, ['converted', 'rejected']);
     }
 }
+
