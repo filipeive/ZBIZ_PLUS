@@ -24,6 +24,26 @@ class PermissionService
     }
 
     /**
+     * Retorna o mapa consolidado de permissões por role para o tenant atual.
+     */
+    public static function getRolePermissionsMap(?object $tenant = null): array
+    {
+        $defaultPermissions = config('auth_permissions.role_permissions', []);
+        $tenantObj = $tenant ?? current_tenant();
+        $custom = $tenantObj?->settings['role_permissions'] ?? null;
+
+        if (is_array($custom) && !empty($custom)) {
+            foreach ($custom as $role => $perms) {
+                if (is_array($perms)) {
+                    $defaultPermissions[$role] = array_values(array_unique($perms));
+                }
+            }
+        }
+
+        return $defaultPermissions;
+    }
+
+    /**
      * Obtém todas as permissões do usuário, utilizando cache.
      * Admins recebem todas as permissões do sistema.
      */
@@ -39,9 +59,10 @@ class PermissionService
         }
 
         $roleName = $this->getRoleName();
+        $tenantId = $this->user->tenant_id ?? 0;
 
-        return Cache::remember("user_permissions_{$this->user->id}", $this->cacheTime, function () use ($roleName) {
-            $rolePermissions = config('auth_permissions.role_permissions', []);
+        return Cache::remember("user_permissions_{$this->user->id}_t{$tenantId}", $this->cacheTime, function () use ($roleName) {
+            $rolePermissions = self::getRolePermissionsMap($this->user->tenant);
             return $rolePermissions[$roleName] ?? [];
         });
     }
@@ -122,6 +143,8 @@ class PermissionService
     public function clearCache(): void
     {
         if ($this->user) {
+            $tenantId = $this->user->tenant_id ?? 0;
+            Cache::forget("user_permissions_{$this->user->id}_t{$tenantId}");
             Cache::forget("user_permissions_{$this->user->id}");
         }
     }

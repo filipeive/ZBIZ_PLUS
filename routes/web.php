@@ -120,26 +120,35 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         Route::get('/sales/create', [SaleController::class, 'create'])->name('sales.create');
     });
 
-    // ===== PRODUTOS - Permissões ajustadas =====
+    // ===== PRODUTOS - Permissões e ordenação ajustadas =====
     Route::prefix('products')->name('products.')->middleware('feature:stock_basic')->group(function () {
-        // Relatório e exportação - view_products permission
+        // Rotas estáticas primeiro (evita que /{product} capture /create ou /report)
+        Route::middleware('permissions:create_products')->group(function () {
+            Route::get('/create', [ProductController::class, 'create'])->name('create');
+            Route::post('/', [ProductController::class, 'store'])->name('store');
+        });
 
-        // Criar produtos - create_products permission
-        Route::get('/create', [ProductController::class, 'create'])->name('create');
-        Route::post('/', [ProductController::class, 'store'])->name('store');
-
-        // Editar produtos - edit_products permission
-        Route::get('/{product}/edit', [ProductController::class, 'edit'])->name('edit');
-        Route::put('/{product}', [ProductController::class, 'update'])->name('update');
-        Route::post('/{product}/adjust-stock', [ProductController::class, 'adjustStock'])->name('adjust-stock');
-        Route::post('/{product}/duplicate', [ProductController::class, 'duplicate'])->name('duplicate');
-        Route::post('/bulk-toggle', [ProductController::class, 'bulkToggle'])->name('bulk-toggle');
         Route::middleware('permissions:view_products')->group(function () {
+            Route::get('/', [ProductController::class, 'index'])->name('index');
             Route::get('/report', [ProductController::class, 'report'])->name('report');
             Route::get('/export/{format}', [ProductController::class, 'exportProducts'])->name('export');
-            Route::get('/', [ProductController::class, 'index'])->name('index');
-            Route::get('/{product}', [ProductController::class, 'show'])->name('show');
             Route::get('/search', [ProductController::class, 'search'])->name('search');
+        });
+
+        Route::middleware('permissions:edit_products')->group(function () {
+            Route::post('/bulk-toggle', [ProductController::class, 'bulkToggle'])->name('bulk-toggle');
+        });
+
+        // Rotas com wildcard {product} DEPOIS das rotas estáticas
+        Route::middleware('permissions:view_products')->group(function () {
+            Route::get('/{product}', [ProductController::class, 'show'])->name('show');
+        });
+
+        Route::middleware('permissions:edit_products')->group(function () {
+            Route::get('/{product}/edit', [ProductController::class, 'edit'])->name('edit');
+            Route::put('/{product}', [ProductController::class, 'update'])->name('update');
+            Route::post('/{product}/adjust-stock', [ProductController::class, 'adjustStock'])->name('adjust-stock');
+            Route::post('/{product}/duplicate', [ProductController::class, 'duplicate'])->name('duplicate');
         });
 
         // Deletar produtos - delete_products permission
@@ -160,7 +169,7 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
     });
 
     // ===== PEDIDOS =====
-    Route::prefix('orders')->name('orders.')->middleware('auth')->group(function () {
+    Route::prefix('orders')->name('orders.')->middleware(['auth', 'permissions:view_orders'])->group(function () {
         // GET Routes
         Route::get('/', [OrderController::class, 'index'])->name('index');
         Route::get('/create', [OrderController::class, 'create'])->name('create')->middleware('permissions:create_orders');
@@ -309,10 +318,12 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
             Route::post('/from-sale', [DebtController::class, 'storeFromSale'])->name('store-from-sale');
         });
 
-        // Visualizar dívidas - todos podem ver
-        Route::get('/', [DebtController::class, 'index'])->name('index');
-        Route::get('/{debt}', [DebtController::class, 'show'])->name('show');
-        Route::get('/{debt}/details', [DebtController::class, 'showDetails'])->name('details');
+        // Visualizar dívidas - view_debts permission
+        Route::middleware('permissions:view_debts')->group(function () {
+            Route::get('/', [DebtController::class, 'index'])->name('index');
+            Route::get('/{debt}', [DebtController::class, 'show'])->name('show');
+            Route::get('/{debt}/details', [DebtController::class, 'showDetails'])->name('details');
+        });
 
         // Gerenciar pagamentos - manage_payments permission
         Route::middleware('permissions:manage_payments')->group(function () {
@@ -343,7 +354,6 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         Route::get('/search/employees', [DebtController::class, 'searchEmployees'])->name('search-employees');
         Route::get('/search/customers', [DebtController::class, 'searchCustomers'])->name('search-customers');
         Route::post('/update-overdue-status', [DebtController::class, 'updateOverdueStatus'])->name('update-overdue-status');
-        Route::post('/{debt}/create-manual-sale', [DebtController::class, 'createManualSale'])->name('create-manual-sale');
     });
 
     // ===== FINANÇAS =====
@@ -363,7 +373,7 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
     });
 
     // ===== FILIAIS / LOJAS (MULTI-BRANCH) =====
-    Route::prefix('branches')->name('branches.')->middleware('feature:multi_branch')->group(function () {
+    Route::prefix('branches')->name('branches.')->middleware(['feature:multi_branch', 'permissions:manage_settings'])->group(function () {
         Route::get('/', [BranchController::class, 'index'])->name('index');
         Route::get('/create', [BranchController::class, 'create'])->name('create');
         Route::post('/', [BranchController::class, 'store'])->name('store');
@@ -374,12 +384,13 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
     });
 
     // ===== CATEGORIAS DE DESPESAS =====
-    Route::resource('expense-categories', ExpenseCategoryController::class);
-
+    Route::middleware('permissions:manage_categories')->group(function () {
+        Route::resource('expense-categories', ExpenseCategoryController::class);
+    });
 
     // ===== DESPESAS =====
-    Route::prefix('expenses')->name('expenses.')->group(function () {
-        // Visualizar despesas - todos podem
+    Route::prefix('expenses')->name('expenses.')->middleware('permissions:view_expenses')->group(function () {
+        // Visualizar despesas - view_expenses permission
         Route::get('/', [ExpenseController::class, 'index'])->name('index');
         Route::get('/operational', [ExpenseController::class, 'operational'])->name('operational');
 
@@ -431,7 +442,7 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
     });
 
     // ===== RELATÓRIOS =====
-    Route::prefix('reports')->name('reports.')->group(function () {
+    Route::prefix('reports')->name('reports.')->middleware('permissions:view_reports')->group(function () {
         // ===== DASHBOARD PRINCIPAL =====
         Route::get('/', [ReportController::class, 'index'])->name('index');
         Route::get('/dashboard', [ReportController::class, 'dashboard'])->name('dashboard');

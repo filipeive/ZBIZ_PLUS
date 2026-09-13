@@ -16,8 +16,10 @@ class AdminController extends Controller
     {
         $tenant = current_tenant();
         $settings = $this->settingsForTenant($tenant);
+        $allPermissions = config('auth_permissions.all_permissions', []);
+        $rolePermissions = \App\Services\PermissionService::getRolePermissionsMap($tenant);
         
-        return view('settings.index', compact('tenant', 'settings'));
+        return view('settings.index', compact('tenant', 'settings', 'allPermissions', 'rolePermissions'));
     }
 
     /**
@@ -47,9 +49,15 @@ class AdminController extends Controller
             'allow_debt'            => 'nullable|boolean',
             'allow_discount'        => 'nullable|boolean',
             'enable_notifications'  => 'nullable|boolean',
+            'role_permissions'      => 'nullable|array',
         ]);
 
         $settings = $tenant?->settings ?? [];
+
+        if ($request->has('role_permissions') && is_array($request->role_permissions)) {
+            $settings['role_permissions'] = $request->role_permissions;
+            \Illuminate\Support\Facades\Cache::flush();
+        }
 
         if ($request->boolean('remove_logo') || $request->has('remove_logo')) {
             unset($settings['logo_path']);

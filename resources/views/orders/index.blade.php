@@ -49,7 +49,7 @@
                 </a>
             @endif
             
-            @if()
+            @if(auth()->user()->role === 'admin')
             <a href="{{ route('orders.report') }}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs border border-slate-700/80 transition flex items-center gap-2">
                 <i class="fa-solid fa-chart-pie text-sky-400"></i> Relatórios
             </a>

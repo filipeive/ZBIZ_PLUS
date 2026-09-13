@@ -34,6 +34,11 @@ class SalesReportScopingTest extends TestCase
             'slug' => 'empresa-teste',
             'business_type' => 'retail',
             'status' => 'active',
+            'settings' => [
+                'role_permissions' => [
+                    'cashier' => ['view_sales', 'create_sales', 'view_reports']
+                ]
+            ]
         ]);
 
         $this->branch = Branch::create([

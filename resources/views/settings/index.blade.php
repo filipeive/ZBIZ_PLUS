@@ -253,6 +253,74 @@
                     </div>
                 </div>
 
+                <!-- Role Access Control & Permissions Card -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-xl space-y-5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-3 gap-2">
+                        <div>
+                            <h3 class="text-sm font-black text-white font-heading flex items-center gap-2">
+                                <i class="fa-solid fa-user-shield text-indigo-400"></i> Controle de Acessos & Permissões por Função (Role)
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Defina quais módulos e ações cada perfil de utilizador pode aceder no sistema.</p>
+                        </div>
+                        <span class="px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-xl text-xs font-bold self-start sm:self-auto">
+                            <i class="fa-solid fa-lock text-[10px] mr-1"></i> Multi-Nível
+                        </span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-separate border-spacing-y-1">
+                            <thead>
+                                <tr class="text-slate-400 uppercase text-[10px] tracking-wider font-bold">
+                                    <th class="pb-2 px-3">Funcionalidade / Permissão</th>
+                                    <th class="pb-2 px-3 text-center">Gerente</th>
+                                    <th class="pb-2 px-3 text-center">Caixa / Operador</th>
+                                    <th class="pb-2 px-3 text-center">Gestor Stock</th>
+                                    <th class="pb-2 px-3 text-center">Funcionário</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60">
+                                @php
+                                    $roles = [
+                                        'manager' => 'Gerente',
+                                        'cashier' => 'Caixa',
+                                        'stock_manager' => 'Gestor Stock',
+                                        'staff' => 'Funcionário'
+                                    ];
+                                @endphp
+                                @foreach($allPermissions ?? [] as $permKey => $permLabel)
+                                    <tr class="hover:bg-slate-800/40 transition rounded-xl">
+                                        <td class="py-2.5 px-3 font-semibold text-slate-200">
+                                            <span class="block text-xs font-bold text-white">{{ $permLabel }}</span>
+                                            <span class="text-[10px] text-slate-500 font-mono">{{ $permKey }}</span>
+                                        </td>
+                                        @foreach($roles as $roleKey => $roleName)
+                                            <td class="py-2.5 px-3 text-center">
+                                                @php
+                                                    $isChecked = in_array($permKey, $rolePermissions[$roleKey] ?? []);
+                                                @endphp
+                                                <input type="checkbox" 
+                                                       name="role_permissions[{{ $roleKey }}][]" 
+                                                       value="{{ $permKey }}"
+                                                       {{ $isChecked ? 'checked' : '' }}
+                                                       class="w-4 h-4 text-emerald-500 bg-slate-950 border-slate-700 rounded focus:ring-emerald-500 cursor-pointer">
+                                            </td>
+                                        @endforeach
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800 flex items-center justify-between">
+                        <span class="text-[11px] text-slate-400">
+                            <i class="fa-solid fa-circle-info text-sky-400 mr-1"></i> Administradores têm acesso total incondicional a todas as áreas.
+                        </span>
+                        <button type="submit" class="px-6 py-3 rounded-2xl {{ $theme['btn'] }} text-xs hover:scale-105 active:scale-95 transition flex items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> Guardar Permissões
+                        </button>
+                    </div>
+                </div>
+
             </div>
 
         </div>
