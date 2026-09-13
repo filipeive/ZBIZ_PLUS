@@ -124,7 +124,7 @@ class FinancialService
     //  ACCOUNT RESOLUTION
     // ──────────────────────────────────────────────
 
-    public function getDefaultAccountForPaymentMethod(?string $paymentMethod): ?FinancialAccount
+    public function getDefaultAccountForPaymentMethod(?string $paymentMethod, ?int $branchId = null): ?FinancialAccount
     {
         $slug = match ($paymentMethod) {
             'cash', 'card', 'transfer', null => 'caixa-principal',
@@ -136,7 +136,15 @@ class FinancialService
             return null;
         }
 
-        return FinancialAccount::where('slug', $slug)->where('is_active', true)->first();
+        $query = FinancialAccount::where('slug', $slug)->where('is_active', true);
+        if ($branchId) {
+            $branchAccount = (clone $query)->where('branch_id', $branchId)->first();
+            if ($branchAccount) {
+                return $branchAccount;
+            }
+        }
+
+        return $query->first() ?? FinancialAccount::where('is_active', true)->first();
     }
 
     // ──────────────────────────────────────────────
@@ -185,42 +193,59 @@ class FinancialService
      */
     public function createTransaction(array $data, bool $validateBalance = false): FinancialTransaction
     {
-        $direction = $data['direction'];
-        $amount = (float) $data['amount'];
-        $accountId = $data['financial_account_id'];
+        return DB::transaction(function () use ($data, $validateBalance) {
+            $direction = $data['direction'];
+            $amount = (float) $data['amount'];
+            $accountId = $data['financial_account_id'];
+            $tenantId = $data['tenant_id'] ?? current_tenant_id() ?? auth()->user()?->tenant_id;
+            $branchId = $data['branch_id'] ?? current_branch_id() ?? auth()->user()?->branch_id;
 
-        // Validate balance for outflows if requested
-        if ($validateBalance && $direction === 'out') {
-            $balance = $this->getLockedBalance($accountId);
-            if ($balance < $amount) {
-                throw new \Exception(
-                    "Saldo insuficiente na conta. Saldo atual: MT " .
-                    number_format($balance, 2, ',', '.') .
-                    " | Valor solicitado: MT " .
-                    number_format($amount, 2, ',', '.')
-                );
+            $account = FinancialAccount::lockForUpdate()->find($accountId);
+            if (!$account) {
+                throw new \Exception("Conta financeira não encontrada (ID: {$accountId})");
             }
-        }
 
-        $transaction = FinancialTransaction::create([
-            'financial_account_id' => $accountId,
-            'user_id'              => $data['user_id'] ?? auth()->id(),
-            'type'                 => $data['type'],
-            'direction'            => $direction,
-            'amount'               => $amount,
-            'transaction_date'     => $data['transaction_date'],
-            'description'          => $data['description'],
-            'reference_type'       => $data['reference_type'] ?? null,
-            'reference_id'         => $data['reference_id'] ?? null,
-            'payment_method'       => $data['payment_method'] ?? null,
-            'notes'                => $data['notes'] ?? null,
-            'status'               => $data['status'] ?? 'confirmed',
-            'include_in_metrics'   => $data['include_in_metrics'] ?? true,
-        ]);
+            // Validate balance for outflows if requested
+            if ($validateBalance && $direction === 'out') {
+                if ($account->current_balance < $amount) {
+                    throw new \Exception(
+                        "Saldo insuficiente na conta. Saldo atual: MT " .
+                        number_format($account->current_balance, 2, ',', '.') .
+                        " | Valor solicitado: MT " .
+                        number_format($amount, 2, ',', '.')
+                    );
+                }
+            }
 
-        $this->updateBalanceSnapshot($transaction);
+            // Update account balance atomically
+            if ($direction === 'in') {
+                $account->increment('current_balance', $amount);
+            } else {
+                $account->decrement('current_balance', $amount);
+            }
+            $account->refresh();
 
-        return $transaction;
+            $transaction = FinancialTransaction::create([
+                'tenant_id'            => $tenantId,
+                'branch_id'            => $branchId,
+                'financial_account_id' => $accountId,
+                'user_id'              => $data['user_id'] ?? auth()->id(),
+                'type'                 => $data['type'],
+                'direction'            => $direction,
+                'amount'               => $amount,
+                'transaction_date'     => $data['transaction_date'] ?? now()->toDateString(),
+                'description'          => $data['description'],
+                'reference_type'       => $data['reference_type'] ?? null,
+                'reference_id'         => $data['reference_id'] ?? null,
+                'payment_method'       => $data['payment_method'] ?? 'cash',
+                'notes'                => $data['notes'] ?? null,
+                'status'               => $data['status'] ?? 'confirmed',
+                'balance_after'        => $account->current_balance,
+                'include_in_metrics'   => $data['include_in_metrics'] ?? true,
+            ]);
+
+            return $transaction;
+        });
     }
 
     /** Snapshot balance after transaction for audit trail */
@@ -410,10 +435,22 @@ class FinancialService
      */
     public function reverseTransactionsForReference(string $referenceType, int $referenceId): void
     {
-        FinancialTransaction::where('reference_type', $referenceType)
+        $transactions = FinancialTransaction::where('reference_type', $referenceType)
             ->where('reference_id', $referenceId)
             ->where('status', '!=', 'reversed')
-            ->update(['status' => 'reversed', 'deleted_at' => now()]);
+            ->get();
+
+        foreach ($transactions as $tx) {
+            $account = $tx->account;
+            if ($account) {
+                if ($tx->direction === 'in') {
+                    $account->decrement('current_balance', $tx->amount);
+                } else {
+                    $account->increment('current_balance', $tx->amount);
+                }
+            }
+            $tx->update(['status' => 'reversed', 'deleted_at' => now()]);
+        }
     }
 
     /** Backward-compatible alias */
@@ -424,11 +461,23 @@ class FinancialService
 
     public function reverseTypedReferenceTransactions(string $referenceType, int $referenceId, string $type): void
     {
-        FinancialTransaction::where('reference_type', $referenceType)
+        $transactions = FinancialTransaction::where('reference_type', $referenceType)
             ->where('reference_id', $referenceId)
             ->where('type', $type)
             ->where('status', '!=', 'reversed')
-            ->update(['status' => 'reversed', 'deleted_at' => now()]);
+            ->get();
+
+        foreach ($transactions as $tx) {
+            $account = $tx->account;
+            if ($account) {
+                if ($tx->direction === 'in') {
+                    $account->decrement('current_balance', $tx->amount);
+                } else {
+                    $account->increment('current_balance', $tx->amount);
+                }
+            }
+            $tx->update(['status' => 'reversed', 'deleted_at' => now()]);
+        }
     }
 
     /** Backward-compatible alias */

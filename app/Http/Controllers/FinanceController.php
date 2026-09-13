@@ -18,9 +18,26 @@ class FinanceController extends Controller
     {
     }
 
-    public function index()
+    public function index(Request $request)
     {
+        $user = auth()->user();
+        $tenantId = current_tenant_id() ?? $user?->tenant_id;
+
+        // Determinar filtro de filial
+        $branchReq = $request->input('branch_id');
+        if ($branchReq === 'all') {
+            $branchIdFilter = null;
+        } elseif ($branchReq !== null && $branchReq !== '') {
+            $branchIdFilter = (int) $branchReq;
+        } else {
+            $branchIdFilter = current_branch_id() ?? $user?->branch_id;
+        }
+
+        // Restrição de utilizador (não admin/gerente vê apenas os seus registos)
+        $userIdFilter = ($user->isAdmin() || $user->isSuperAdmin() || $user->isManager()) ? null : $user->id;
+
         $accounts = FinancialAccount::operational()
+            ->when($branchIdFilter, fn ($q) => $q->where('branch_id', $branchIdFilter))
             ->orderBy('sort_order')
             ->get();
 
@@ -32,18 +49,6 @@ class FinanceController extends Controller
         $transactionTypes = $this->financialService->transactionTypes();
         $manualTransactionTypes = $this->financialService->manualTransactionTypes();
 
-        // Filtro de usuário para métricas se não for admin
-        $userIdFilter = auth()->user()->isAdmin() ? null : auth()->id();
-
-        $currentCapital = $this->financialService->getCurrentCapital();
-        $receivables = $this->financialService->getAccountsReceivable($userIdFilter);
-        $monthSummary = $this->financialService->getMonthSummary(null, $userIdFilter);
-
-        // Use centralized FinancialService for today's totals
-        $todayStr = today()->toDateString();
-        $todayInflow = $this->financialService->sumTransactions($todayStr, $todayStr, 'in', true, $userIdFilter);
-        $todayOutflow = $this->financialService->sumTransactions($todayStr, $todayStr, 'out', true, $userIdFilter);
-
         $filters = [
             'date_from' => request('date_from', now()->startOfMonth()->format('Y-m-d')),
             'date_to' => request('date_to', now()->format('Y-m-d')),
@@ -51,16 +56,33 @@ class FinanceController extends Controller
             'direction' => request('direction'),
             'type' => request('type'),
             'search' => request('search'),
+            'branch_id' => $branchReq ?? ($branchIdFilter ?? 'all'),
         ];
 
-        // Show only confirmed transactions (excludes reversed/soft-deleted)
+        // Métricas financeiras globais e consolidadas por filial
+        $metrics = $this->financialService->getGlobalMetrics($filters['date_from'], $filters['date_to'], $userIdFilter, $branchIdFilter);
+        $currentCapital = $metrics['current_liquidity'];
+        $receivables = $metrics['accounts_receivable'];
+        $totalRealValue = $metrics['total_real_value'];
+        $monthSummary = [
+            'inflows' => $metrics['inflows'],
+            'outflows' => $metrics['outflows'],
+            'net' => $metrics['net_cash_flow'],
+        ];
+
+        // Resumo do dia corrente
+        $todayStr = today()->toDateString();
+        $todayInflow = $this->financialService->sumTransactions($todayStr, $todayStr, 'in', true, $userIdFilter, $branchIdFilter);
+        $todayOutflow = $this->financialService->sumTransactions($todayStr, $todayStr, 'out', true, $userIdFilter, $branchIdFilter);
+
+        // Mostrar apenas transações confirmadas (exclui revertidas/soft-deleted)
         $query = FinancialTransaction::with(['account', 'user'])
             ->where('status', 'confirmed')
-            ->whereBetween('transaction_date', [$filters['date_from'], $filters['date_to']]);
+            ->whereBetween('transaction_date', [$filters['date_from'], $filters['date_to']])
+            ->when($branchIdFilter, fn ($q) => $q->where('branch_id', $branchIdFilter));
 
-        // Restrição para não-admins
-        if (! auth()->user()->isAdmin()) {
-            $query->where('user_id', auth()->id());
+        if ($userIdFilter) {
+            $query->where('user_id', $userIdFilter);
         }
 
         $transactions = $query->when($filters['financial_account_id'], fn ($query, $accountId) => $query->where('financial_account_id', $accountId))
@@ -77,21 +99,13 @@ class FinanceController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        // Use centralized cash flow chart data
-        $cashFlowChart = $this->financialService->getCashFlowChartData(7, $userIdFilter);
+        // Dados centralizados do gráfico de fluxo de caixa
+        $cashFlowChart = $this->financialService->getCashFlowChartData(7, $userIdFilter, $branchIdFilter);
         $cashFlowLabels = $cashFlowChart['labels'];
         $cashFlowInflows = $cashFlowChart['inflowsData'];
         $cashFlowOutflows = $cashFlowChart['outflowsData'];
 
-        $metrics = $this->financialService->getGlobalMetrics($filters['date_from'], $filters['date_to']);
-        $currentCapital = $metrics['current_liquidity'];
-        $receivables = $metrics['accounts_receivable'];
-        $totalRealValue = $metrics['total_real_value'];
-        $monthSummary = [
-            'inflows' => $metrics['inflows'],
-            'outflows' => $metrics['outflows'],
-            'net' => $metrics['net_cash_flow'],
-        ];
+        $branches = \App\Models\Branch::where('tenant_id', $tenantId)->orderBy('name')->get();
 
         return view('finances.index', compact(
             'accounts',
@@ -108,6 +122,8 @@ class FinanceController extends Controller
             'cashFlowLabels',
             'cashFlowInflows',
             'cashFlowOutflows',
+            'branches',
+            'branchIdFilter'
         ));
     }
 

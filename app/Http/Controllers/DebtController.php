@@ -28,21 +28,27 @@ class DebtController extends Controller
             $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
             $branchId = current_branch_id() ?? auth()->user()?->branch_id;
 
-            $query = Debt::withoutGlobalScopes()
-                ->where('tenant_id', $tenantId)
-                ->latest('created_at');
-
-            // Filtrar por filial se solicitado ou para operadores não-gestores
-            if ($request->filled('branch_id')) {
-                $query->where('branch_id', $request->branch_id);
-            } elseif ($branchId && !(auth()->user()?->isAdmin() || auth()->user()?->isManager())) {
-                $query->where(function ($q) use ($branchId) {
-                    $q->where('branch_id', $branchId)
-                      ->orWhereNull('branch_id');
-                });
+            $effectiveBranchId = $request->input('branch_id', $branchId);
+            if ($effectiveBranchId === 'all') {
+                $effectiveBranchId = null;
+            } elseif ($effectiveBranchId) {
+                $effectiveBranchId = (int) $effectiveBranchId;
             }
 
-            // Filtros
+            $tenantScope = function($q) use ($tenantId, $effectiveBranchId) {
+                $q->withoutGlobalScopes()->where('tenant_id', $tenantId);
+                if ($effectiveBranchId) {
+                    $q->where(function($sub) use ($effectiveBranchId) {
+                        $sub->where('branch_id', $effectiveBranchId)->orWhereNull('branch_id');
+                    });
+                }
+            };
+
+            $query = Debt::query();
+            $tenantScope($query);
+            $query->latest('created_at');
+
+            // Filtros adicionais de pesquisa
             if ($request->filled('debt_type')) {
                 $query->where('debt_type', $request->debt_type);
             }
@@ -70,66 +76,53 @@ class DebtController extends Controller
             $debts = $query->paginate(15)->withQueryString();
             $debts->load(['user', 'employee']);
 
-            $tenantScope = function($q) use ($tenantId, $branchId) {
-                $q->withoutGlobalScopes()->where('tenant_id', $tenantId);
-                if ($branchId) {
-                    $q->where(function($sub) use ($branchId) {
-                        $sub->where('branch_id', $branchId)->orWhereNull('branch_id');
-                    });
-                }
+            $baseStatsQuery = function() use ($tenantScope) {
+                $q = Debt::query();
+                $tenantScope($q);
+                return $q;
             };
 
             // Estatísticas
             $stats = [
-                'total_active' => Debt::withoutGlobalScopes()
-                    ->where('tenant_id', $tenantId)
+                'total_active' => $baseStatsQuery()
                     ->whereIn('status', ['active', 'partially_paid'])
                     ->sum('remaining_amount') ?? 0,
-                'total_overdue' => Debt::withoutGlobalScopes()
-                    ->where('tenant_id', $tenantId)
+                'total_overdue' => $baseStatsQuery()
                     ->whereIn('status', ['active', 'partially_paid'])
                     ->where('due_date', '<', now()->toDateString())
                     ->sum('remaining_amount') ?? 0,
-                'count_active' => Debt::withoutGlobalScopes()
-                    ->where('tenant_id', $tenantId)
+                'count_active' => $baseStatsQuery()
                     ->whereIn('status', ['active', 'partially_paid'])
                     ->count(),
-                'count_paid_this_month' => Debt::withoutGlobalScopes()
-                    ->where('tenant_id', $tenantId)
+                'count_paid_this_month' => $baseStatsQuery()
                     ->where('status', 'paid')
                     ->whereMonth('updated_at', now()->month)
                     ->count(),
                 'product_debts' => [
-                    'total_active' => Debt::withoutGlobalScopes()
-                        ->where('tenant_id', $tenantId)
+                    'total_active' => $baseStatsQuery()
                         ->where('debt_type', 'product')
                         ->whereIn('status', ['active', 'partially_paid'])
                         ->sum('remaining_amount') ?? 0,
-                    'count_active' => Debt::withoutGlobalScopes()
-                        ->where('tenant_id', $tenantId)
+                    'count_active' => $baseStatsQuery()
                         ->where('debt_type', 'product')
                         ->whereIn('status', ['active', 'partially_paid'])
                         ->count(),
-                    'total_overdue' => Debt::withoutGlobalScopes()
-                        ->where('tenant_id', $tenantId)
+                    'total_overdue' => $baseStatsQuery()
                         ->where('debt_type', 'product')
                         ->whereIn('status', ['active', 'partially_paid'])
                         ->where('due_date', '<', now()->toDateString())
                         ->sum('remaining_amount') ?? 0,
                 ],
                 'money_debts' => [
-                    'total_active' => Debt::withoutGlobalScopes()
-                        ->where('tenant_id', $tenantId)
+                    'total_active' => $baseStatsQuery()
                         ->where('debt_type', 'money')
                         ->whereIn('status', ['active', 'partially_paid'])
                         ->sum('remaining_amount') ?? 0,
-                    'count_active' => Debt::withoutGlobalScopes()
-                        ->where('tenant_id', $tenantId)
+                    'count_active' => $baseStatsQuery()
                         ->where('debt_type', 'money')
                         ->whereIn('status', ['active', 'partially_paid'])
                         ->count(),
-                    'total_overdue' => Debt::withoutGlobalScopes()
-                        ->where('tenant_id', $tenantId)
+                    'total_overdue' => $baseStatsQuery()
                         ->where('debt_type', 'money')
                         ->whereIn('status', ['active', 'partially_paid'])
                         ->where('due_date', '<', now()->toDateString())

@@ -13,13 +13,25 @@
     <!-- Top Action & Quick Shortcut Pills -->
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
         <div>
-            <h2 class="text-lg font-black font-heading text-white flex items-center gap-2">
-                <i class="fa-solid fa-wallet {{ $theme['text_accent'] }}"></i> Painel de Gestão Financeira & Caixa
-            </h2>
+            <div class="flex flex-wrap items-center gap-2">
+                <h2 class="text-lg font-black font-heading text-white flex items-center gap-2">
+                    <i class="fa-solid fa-wallet {{ $theme['text_accent'] }}"></i> Painel de Gestão Financeira & Caixa
+                </h2>
+                @if(current_branch())
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                        <i class="fa-solid fa-store mr-1"></i> {{ current_branch()->name }}
+                    </span>
+                @else
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/30">
+                        <i class="fa-solid fa-globe mr-1"></i> Todas as Filiais
+                    </span>
+                @endif
+            </div>
             <p class="text-xs text-slate-400 mt-0.5">Visão consolidada de liquidez em caixa, contas ativas, carteiras móveis e extrato de movimentos auditados.</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
+
             <a href="{{ route('sales.index') }}" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5">
                 <i class="fa-solid fa-cart-shopping text-emerald-400"></i> Vendas
             </a>
