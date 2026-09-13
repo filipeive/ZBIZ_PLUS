@@ -142,6 +142,51 @@ class FinancialLedgerService
     }
 
     /**
+     * Sincronizar recebimento de Dívida no Livro-Razão.
+     */
+    public function syncDebtPayment(DebtPayment $payment): ?FinancialTransaction
+    {
+        $debt = $payment->debt;
+        $tenantId = $debt ? $debt->tenant_id : current_tenant_id();
+        $branchId = $debt ? $debt->branch_id : current_branch_id();
+
+        $accountSlug = match ($payment->payment_method) {
+            'mpesa', 'emola' => 'carteira-movel',
+            default          => 'caixa-principal',
+        };
+
+        $account = FinancialAccount::where('slug', $accountSlug)->where('is_active', true)->first();
+        if (!$account) {
+            $account = FinancialAccount::where('is_active', true)->first();
+        }
+
+        if (!$account) {
+            return null;
+        }
+
+        return $this->recordTransaction([
+            'tenant_id'            => $tenantId,
+            'branch_id'            => $branchId,
+            'financial_account_id' => $account->id,
+            'user_id'              => $payment->user_id,
+            'type'                 => 'debt_payment_receipt',
+            'direction'            => 'in',
+            'amount'               => $payment->amount,
+            'transaction_date'     => optional($payment->payment_date)->format('Y-m-d') ?? now()->toDateString(),
+            'description'          => "Recebimento da dívida #{$payment->debt_id}",
+            'reference_type'       => DebtPayment::class,
+            'reference_id'         => $payment->id,
+            'payment_method'       => $payment->payment_method ?? 'cash',
+            'notes'                => $payment->notes,
+        ]);
+    }
+
+    public function syncDebtPaymentTransaction(DebtPayment $payment): ?FinancialTransaction
+    {
+        return $this->syncDebtPayment($payment);
+    }
+
+    /**
      * Métricas Financeiras Consolidadas ou por Filial.
      */
     public function getMetrics(?int $branchId = null, ?string $dateFrom = null, ?string $dateTo = null): array
@@ -157,7 +202,7 @@ class FinancialLedgerService
         }
         $currentLiquidity = (float)$accountsQuery->sum('current_balance');
 
-        $debtsQuery = Debt::where('status', 'active');
+        $debtsQuery = Debt::whereIn('status', ['active', 'partially_paid']);
         if ($branchId) {
             $debtsQuery->where('branch_id', $branchId);
         }

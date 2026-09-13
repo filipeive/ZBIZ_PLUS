@@ -37,7 +37,7 @@ class FinancialService
             ->sum(fn ($account) => $account->current_balance);
 
         // 2. Accounts Receivable (Real value from Debts)
-        $accountsReceivable = (float) Debt::where('status', 'active')
+        $accountsReceivable = (float) Debt::whereIn('status', ['active', 'partially_paid'])
             ->when($userId, fn($q) => $q->where('user_id', $userId))
             ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
             ->sum('remaining_amount');

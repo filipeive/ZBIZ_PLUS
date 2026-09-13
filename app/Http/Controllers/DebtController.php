@@ -83,16 +83,16 @@ class DebtController extends Controller
             $stats = [
                 'total_active' => Debt::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
-                    ->where('status', 'active')
+                    ->whereIn('status', ['active', 'partially_paid'])
                     ->sum('remaining_amount') ?? 0,
                 'total_overdue' => Debt::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
-                    ->where('status', 'active')
+                    ->whereIn('status', ['active', 'partially_paid'])
                     ->where('due_date', '<', now()->toDateString())
                     ->sum('remaining_amount') ?? 0,
                 'count_active' => Debt::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
-                    ->where('status', 'active')
+                    ->whereIn('status', ['active', 'partially_paid'])
                     ->count(),
                 'count_paid_this_month' => Debt::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
@@ -103,17 +103,17 @@ class DebtController extends Controller
                     'total_active' => Debt::withoutGlobalScopes()
                         ->where('tenant_id', $tenantId)
                         ->where('debt_type', 'product')
-                        ->where('status', 'active')
+                        ->whereIn('status', ['active', 'partially_paid'])
                         ->sum('remaining_amount') ?? 0,
                     'count_active' => Debt::withoutGlobalScopes()
                         ->where('tenant_id', $tenantId)
                         ->where('debt_type', 'product')
-                        ->where('status', 'active')
+                        ->whereIn('status', ['active', 'partially_paid'])
                         ->count(),
                     'total_overdue' => Debt::withoutGlobalScopes()
                         ->where('tenant_id', $tenantId)
                         ->where('debt_type', 'product')
-                        ->where('status', 'active')
+                        ->whereIn('status', ['active', 'partially_paid'])
                         ->where('due_date', '<', now()->toDateString())
                         ->sum('remaining_amount') ?? 0,
                 ],
@@ -121,17 +121,17 @@ class DebtController extends Controller
                     'total_active' => Debt::withoutGlobalScopes()
                         ->where('tenant_id', $tenantId)
                         ->where('debt_type', 'money')
-                        ->where('status', 'active')
+                        ->whereIn('status', ['active', 'partially_paid'])
                         ->sum('remaining_amount') ?? 0,
                     'count_active' => Debt::withoutGlobalScopes()
                         ->where('tenant_id', $tenantId)
                         ->where('debt_type', 'money')
-                        ->where('status', 'active')
+                        ->whereIn('status', ['active', 'partially_paid'])
                         ->count(),
                     'total_overdue' => Debt::withoutGlobalScopes()
                         ->where('tenant_id', $tenantId)
                         ->where('debt_type', 'money')
-                        ->where('status', 'active')
+                        ->whereIn('status', ['active', 'partially_paid'])
                         ->where('due_date', '<', now()->toDateString())
                         ->sum('remaining_amount') ?? 0,
                 ],
@@ -342,11 +342,17 @@ class DebtController extends Controller
         $this->financialService->syncDebtPaymentTransaction($payment);
 
         $debt->remaining_amount -= $amount;
-        if ($debt->remaining_amount <= 0) {
+        if ($debt->remaining_amount <= 0.01) {
             $debt->status = 'paid';
             $debt->remaining_amount = 0;
+        } else {
+            $debt->status = 'partially_paid';
         }
         $debt->save();
+
+        if ($debt->customer) {
+            $debt->customer->recalculateDebt();
+        }
     }
 
     /**
@@ -408,9 +414,15 @@ class DebtController extends Controller
                 if ($debt->isProductDebt() && ! $debt->generated_sale_id && $request->has('create_sale')) {
                     $this->createSaleFromDebt($debt);
                 }
+            } else {
+                $debt->status = 'partially_paid';
             }
 
             $debt->save();
+
+            if ($debt->customer) {
+                $debt->customer->recalculateDebt();
+            }
 
             // Garantir que a transação financeira seja criada se houver pagamento
             if (isset($payment)) {

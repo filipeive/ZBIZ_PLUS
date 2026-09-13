@@ -6,7 +6,7 @@
 ?>
 
 <?php $__env->startSection('content'); ?>
-<div class="space-y-6" x-data="{ showModal: false, viewMode: 'grid' }">
+<div class="space-y-6" x-data="{ showModal: false, viewMode: window.innerWidth < 768 ? 'grid' : (localStorage.getItem('preferredViewMode') || 'grid') }">
     
     <!-- Top Action & Filter Bar -->
     <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl space-y-4">
@@ -33,9 +33,11 @@
                 <a href="<?php echo e(route('reports.low-stock')); ?>" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs border border-slate-700 transition flex items-center gap-2">
                     <i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Stock Baixo
                 </a>
+                <?php if(\App\Helpers\PermissionHelper::userCan('create_stock_movements') || \App\Helpers\PermissionHelper::userCan('manage_stock')): ?>
                 <button @click="showModal = true" class="px-5 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-sm transition flex items-center gap-2">
                     <i class="fa-solid fa-plus-minus"></i> Novo Ajuste / Entrada
                 </button>
+                <?php endif; ?>
             </div>
         </div>
 

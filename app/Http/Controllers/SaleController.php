@@ -119,6 +119,7 @@ class SaleController extends Controller
             'customer_name' => 'nullable|string|max:100',
             'customer_phone' => 'nullable|string|max:20',
             'payment_method' => 'required|in:cash,card,transfer,credit,mpesa,emola,split',
+            'amount_paid' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string|max:500',
             'items' => 'required|string',
             'sale_date' => 'nullable|date',
@@ -192,6 +193,7 @@ class SaleController extends Controller
                     'customer_name' => $validated['customer_name'] ?: 'Cliente Avulso',
                     'customer_phone' => $validated['customer_phone'],
                     'payment_method' => $validated['payment_method'],
+                    'amount_paid' => (float)($validated['amount_paid'] ?? 0),
                     'notes' => $validated['notes'],
                     'sale_date' => $saleDate,
                     'subtotal' => 0, // Será calculado
@@ -696,6 +698,10 @@ class SaleController extends Controller
         $tenantId = $sale->tenant_id ?? current_tenant_id();
         $branchId = $sale->branch_id ?? current_branch_id();
 
+        $initialPayment = min((float)$sale->total_amount, max(0, (float)$sale->amount_paid));
+        $remainingAmount = max(0, (float)$sale->total_amount - $initialPayment);
+        $status = ($remainingAmount <= 0.01) ? 'paid' : (($initialPayment > 0) ? 'partially_paid' : 'active');
+
         $debt = Debt::create([
             'tenant_id' => $tenantId,
             'branch_id' => $branchId,
@@ -705,14 +711,32 @@ class SaleController extends Controller
             'customer_name' => $sale->customer_name,
             'customer_phone' => $sale->customer_phone,
             'original_amount' => $sale->total_amount,
-            'remaining_amount' => $sale->total_amount,
+            'remaining_amount' => $remainingAmount,
+            'paid_amount' => $initialPayment,
             'debt_date' => $saleDate->format('Y-m-d'),
             'due_date' => $saleDate->copy()->addDays(30)->format('Y-m-d'),
-            'status' => 'active',
+            'status' => $status,
             'description' => "Venda a crédito #{$sale->id}",
             'notes' => $sale->notes,
             'sale_id' => $sale->id,
         ]);
+
+        if ($initialPayment > 0) {
+            $payment = DebtPayment::create([
+                'debt_id'        => $debt->id,
+                'user_id'        => $sale->user_id,
+                'amount'         => $initialPayment,
+                'payment_method' => 'cash',
+                'payment_date'   => $saleDate,
+                'notes'          => "Entrada inicial da venda a crédito #{$sale->id}",
+            ]);
+
+            $this->financialService->syncDebtPaymentTransaction($payment);
+        }
+
+        if ($sale->customer) {
+            $sale->customer->recalculateDebt();
+        }
 
         foreach ($sale->items as $item) {
             DebtItem::create([

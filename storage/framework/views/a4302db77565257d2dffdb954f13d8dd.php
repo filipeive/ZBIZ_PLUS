@@ -15,7 +15,7 @@
     showDeleteModal: false,
     deleteUserId: null,
     deleteUserName: '',
-    viewMode: 'grid'
+    viewMode: window.innerWidth < 768 ? 'grid' : (localStorage.getItem('preferredViewMode') || 'grid')
 }">
 
     <!-- Top Action Bar & Metrics -->

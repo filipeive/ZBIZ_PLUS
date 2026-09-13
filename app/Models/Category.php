@@ -21,9 +21,9 @@ class Category extends Model
     ];
 
     protected $casts = [
-        'is_active'  => 'boolean',
-        'created_at' => 'date',
-        'updated_at' => 'date',
+        'is_active' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function products(): HasMany

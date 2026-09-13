@@ -94,4 +94,29 @@ class CustomerAndCreditTest extends TestCase
         $this->assertEquals(2000.00, $customer->fresh()->current_debt);
         $this->assertEquals(3000.00, $customer->fresh()->available_credit);
     }
+
+    public function test_customer_debt_recalculation_includes_partially_paid_debts(): void
+    {
+        $customer = Customer::create([
+            'name'         => 'Maria Silva',
+            'phone'        => '849999999',
+            'credit_limit' => 5000.00,
+            'current_debt' => 0,
+        ]);
+
+        Debt::create([
+            'customer_id'      => $customer->id,
+            'customer_name'    => $customer->name,
+            'original_amount'  => 1000.00,
+            'remaining_amount' => 600.00,
+            'paid_amount'      => 400.00,
+            'debt_date'        => now()->toDateString(),
+            'status'           => 'partially_paid',
+        ]);
+
+        $customer->recalculateDebt();
+
+        $this->assertEquals(600.00, $customer->fresh()->current_debt);
+        $this->assertEquals(4400.00, $customer->fresh()->available_credit);
+    }
 }

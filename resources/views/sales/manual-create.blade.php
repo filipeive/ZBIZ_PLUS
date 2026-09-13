@@ -283,9 +283,18 @@
                     <template x-if="paymentMethod === 'credit'">
                         <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl space-y-2 text-xs">
                             <div class="text-amber-400 font-bold flex items-center gap-1.5">
-                                <i class="fa-solid fa-circle-exclamation"></i> Venda a Crédito
+                                <i class="fa-solid fa-circle-exclamation"></i> Venda a Crédito / Fiado
                             </div>
                             <p class="text-[11px] text-slate-400">O saldo da venda será registrado como dívida ativa vinculada ao cliente.</p>
+                            <div class="space-y-1 pt-1">
+                                <label class="block text-[11px] font-bold text-slate-300">Entrada / Valor Pago Agora (MT)</label>
+                                <input type="number" step="10" min="0" :max="finalTotalAmount" name="amount_paid" x-model.number="amountPaid"
+                                       class="w-full px-3 py-1.5 bg-slate-950 border border-amber-500/40 rounded-xl text-xs font-mono font-bold text-right text-emerald-400 focus:ring-1 focus:ring-amber-500 outline-none">
+                            </div>
+                            <div class="flex justify-between text-xs font-bold text-amber-300 pt-1">
+                                <span>Saldo da Dívida:</span>
+                                <span x-text="formatCurrency(Math.max(0, finalTotalAmount - (amountPaid || 0)))"></span>
+                            </div>
                         </div>
                     </template>
 
@@ -314,6 +323,7 @@ document.addEventListener('alpine:init', () => {
         customerPhone: '',
         notes: '',
         paymentMethod: 'cash',
+        amountPaid: 0,
         generalDiscountType: 'fixed',
         generalDiscountInput: 0,
         items: [],

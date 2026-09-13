@@ -63,7 +63,7 @@ class Customer extends Model
 
     public function recalculateDebt(): void
     {
-        $totalActiveDebt = (float)$this->debts()->where('status', 'active')->sum('remaining_amount');
+        $totalActiveDebt = (float)$this->debts()->whereIn('status', ['active', 'partially_paid'])->sum('remaining_amount');
         $this->update(['current_debt' => $totalActiveDebt]);
     }
 }

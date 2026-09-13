@@ -129,8 +129,13 @@
                     </span>
                 </div>
                 <div class="text-xs text-slate-400 space-y-0.5 font-mono">
-                    <div>Recebido: <span class="text-white font-bold"><?php echo e(number_format($sale->amount_paid ?: $sale->total_amount, 2, ',', '.')); ?> MT</span></div>
-                    <div>Troco Devolvido: <span class="text-slate-300"><?php echo e(number_format($sale->change_amount ?? 0, 2, ',', '.')); ?> MT</span></div>
+                    <?php if($sale->payment_method === 'credit'): ?>
+                        <div>Entrada / Pago: <span class="text-emerald-400 font-bold"><?php echo e(number_format($sale->amount_paid, 2, ',', '.')); ?> MT</span></div>
+                        <div>Saldo Fiado: <span class="text-amber-400 font-bold"><?php echo e(number_format(max(0, $sale->total_amount - $sale->amount_paid), 2, ',', '.')); ?> MT</span></div>
+                    <?php else: ?>
+                        <div>Recebido: <span class="text-white font-bold"><?php echo e(number_format($sale->amount_paid ?: $sale->total_amount, 2, ',', '.')); ?> MT</span></div>
+                        <div>Troco Devolvido: <span class="text-slate-300"><?php echo e(number_format($sale->change_amount ?? 0, 2, ',', '.')); ?> MT</span></div>
+                    <?php endif; ?>
                 </div>
             </div>
 

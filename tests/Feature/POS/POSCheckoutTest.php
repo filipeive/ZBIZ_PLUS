@@ -297,4 +297,38 @@ class POSCheckoutTest extends TestCase
         $this->assertEquals(500.00, $this->customer->fresh()->current_debt);
         $this->assertEquals(4500.00, $this->customer->fresh()->available_credit);
     }
+
+    public function test_pos_credit_sale_with_partial_downpayment_updates_debt_and_cash_ledger(): void
+    {
+        $this->actingAs($this->cashier);
+
+        $payload = [
+            'customer_id'    => $this->customer->id,
+            'items'          => [
+                [
+                    'product_id' => $this->product1->id,
+                    'quantity'   => 5,
+                    'unit_price' => 100.00,
+                    'discount'   => 0,
+                ]
+            ],
+            'discount_amount'=> 0,
+            'payment_method' => 'credit',
+            'amount_paid'    => 150.00, // 150 MT downpayment out of 500 MT
+        ];
+
+        $response = $this->postJson('/pos/sale', $payload);
+        $response->assertOk();
+
+        $this->assertEquals(1, Debt::count());
+        $debt = Debt::first();
+        $this->assertEquals(500.00, $debt->original_amount);
+        $this->assertEquals(150.00, $debt->paid_amount);
+        $this->assertEquals(350.00, $debt->remaining_amount);
+        $this->assertEquals('partially_paid', $debt->status);
+
+        $this->assertEquals(350.00, $this->customer->fresh()->current_debt);
+        $this->assertEquals(4650.00, $this->customer->fresh()->available_credit);
+        $this->assertEquals(150.00, $this->cashAccount->fresh()->current_balance);
+    }
 }

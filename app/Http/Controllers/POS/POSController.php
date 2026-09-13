@@ -8,6 +8,7 @@ use App\Models\CashShift;
 use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Debt;
+use App\Models\DebtPayment;
 use App\Models\FinancialAccount;
 use App\Models\Product;
 use App\Models\ProductBranch;
@@ -287,6 +288,10 @@ class POSController extends Controller
 
             // 5. Se for venda a crédito (Fiado), gerar Dívida
             if ($validated['payment_method'] === 'credit') {
+                $initialPayment = min((float)$totalAmount, max(0, (float)$amountPaid));
+                $remainingAmount = max(0, (float)$totalAmount - $initialPayment);
+                $debtStatus = ($remainingAmount <= 0.01) ? 'paid' : (($initialPayment > 0) ? 'partially_paid' : 'active');
+
                 $debt = Debt::create([
                     'tenant_id'        => $tenantId,
                     'branch_id'        => $branchId,
@@ -295,13 +300,26 @@ class POSController extends Controller
                     'customer_name'    => $customerName,
                     'sale_id'          => $sale->id,
                     'original_amount'  => $totalAmount,
-                    'remaining_amount' => $totalAmount,
-                    'paid_amount'      => 0,
+                    'remaining_amount' => $remainingAmount,
+                    'paid_amount'      => $initialPayment,
                     'debt_date'        => now()->toDateString(),
                     'due_date'         => now()->addDays(30)->toDateString(),
-                    'status'           => 'active',
+                    'status'           => $debtStatus,
                     'description'      => "Venda a crédito POS #{$sale->id}",
                 ]);
+
+                if ($initialPayment > 0) {
+                    $payment = DebtPayment::create([
+                        'debt_id'        => $debt->id,
+                        'user_id'        => $userId,
+                        'amount'         => $initialPayment,
+                        'payment_method' => 'cash',
+                        'payment_date'   => now(),
+                        'notes'          => "Entrada inicial da venda a crédito POS #{$sale->id}",
+                    ]);
+
+                    $this->ledgerService->syncDebtPaymentTransaction($payment);
+                }
 
                 if ($customer) {
                     $customer->recalculateDebt();

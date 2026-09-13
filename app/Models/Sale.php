@@ -25,9 +25,9 @@ class Sale extends Model
         'discount_amount' => 'decimal:2',
         'discount_percentage' => 'decimal:2',
         'total_amount' => 'decimal:2',
-        'sale_date' => 'date',
-        'created_at' => 'date',
-        'updated_at' => 'date',
+        'sale_date' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     

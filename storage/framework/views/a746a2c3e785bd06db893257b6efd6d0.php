@@ -55,7 +55,7 @@
     <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs transition-colors overflow-hidden">
         <div class="border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-2">
-                <button id="btn-tab-notifications" onclick="switchTab('notifications')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all text-success dark:bg-slate-100 dark:text-slate-900 shadow-xs">
+                <button id="btn-tab-notifications" onclick="switchTab('notifications')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all text-success dark:bg-success/10 dark:text-success shadow-xs">
                     <i class="fa-solid fa-inbox mr-1.5"></i> Notificações Do Usuário (<?php echo e($notifications->total()); ?>)
                 </button>
                 <button id="btn-tab-expiring" onclick="switchTab('expiring')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">

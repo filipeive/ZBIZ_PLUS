@@ -105,12 +105,12 @@ class Debt extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('status', 'active');
+        return $query->whereIn('status', ['active', 'partially_paid']);
     }
 
     public function scopeOverdue($query)
     {
-        return $query->where('status', 'active')
+        return $query->whereIn('status', ['active', 'partially_paid'])
                     ->where('due_date', '<', now()->toDateString());
     }
 
@@ -153,7 +153,12 @@ class Debt extends Model
 
     public function getAmountPaidAttribute(): float
     {
-        return $this->original_amount - $this->remaining_amount;
+        return max(0, (float)($this->original_amount - $this->remaining_amount));
+    }
+
+    public function getPaidAmountAttribute(): float
+    {
+        return $this->getAmountPaidAttribute();
     }
 
     public function getPaymentProgressAttribute(): float
@@ -169,6 +174,7 @@ class Debt extends Model
     {
         return match ($this->status) {
             'active' => $this->is_overdue ? 'bg-danger' : 'bg-warning',
+            'partially_paid' => 'bg-info',
             'paid' => 'bg-success',
             'cancelled' => 'bg-secondary',
             'overdue' => 'bg-danger',
@@ -184,6 +190,7 @@ class Debt extends Model
         
         return match ($this->status) {
             'active' => 'Ativa',
+            'partially_paid' => 'Parcialmente Paga',
             'paid' => 'Paga',
             'cancelled' => 'Cancelada',
             'overdue' => 'Vencida',
@@ -222,22 +229,22 @@ class Debt extends Model
 
     public function canBeEdited(): bool
     {
-        return in_array($this->status, ['active']);
+        return in_array($this->status, ['active', 'partially_paid']);
     }
 
     public function canReceivePayment(): bool
     {
-        return $this->status === 'active' && $this->remaining_amount > 0;
+        return in_array($this->status, ['active', 'partially_paid']) && $this->remaining_amount > 0;
     }
 
     public function canBeCancelled(): bool
     {
-        return in_array($this->status, ['active']);
+        return in_array($this->status, ['active', 'partially_paid']);
     }
 
     public function canBeMarkedAsPaid(): bool
     {
-        return $this->status === 'active' && $this->remaining_amount > 0;
+        return in_array($this->status, ['active', 'partially_paid']) && $this->remaining_amount > 0;
     }
 
     /* public function hasItems(): bool
