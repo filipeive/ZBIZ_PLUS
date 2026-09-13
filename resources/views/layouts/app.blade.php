@@ -807,6 +807,7 @@
                             @if(!empty($theme['logo_url']))
                                 <img src="{{ $theme['logo_url'] }}" alt="Logo" class="w-full h-full object-contain p-0.5">
                             @else
+                                <i class="fa-solid fa-bolt text-white text-sm"></i>
                                 <img src="{{ asset('favicon.png') }}" alt="Z+" class="w-full h-full object-cover">
                             @endif
                         </div>

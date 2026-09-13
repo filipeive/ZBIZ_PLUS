@@ -48,6 +48,8 @@
     <div class="relative z-10 w-full max-w-lg">
         <div class="mb-8 text-center">
             <a href="{{ url('/') }}" class="inline-flex items-center gap-3" aria-label="Página Inicial">
+                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-bolt text-lg text-slate-950 font-black"></i>
                 <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 border border-emerald-500/30 shadow-lg shadow-emerald-500/20 overflow-hidden">
                     <img src="{{ asset('favicon.png') }}" alt="Z+" class="w-full h-full object-cover">
                 </div>

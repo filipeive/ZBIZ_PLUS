@@ -28,6 +28,8 @@
     <!-- Navigation -->
     <nav class="relative z-20 max-w-7xl mx-auto px-6 py-5 flex items-center justify-between border-b border-slate-800/60 backdrop-blur-md">
         <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <i class="fa-solid fa-bolt text-slate-950 text-lg font-black"></i>
             <div class="w-10 h-10 rounded-xl bg-slate-900 border border-emerald-500/30 flex items-center justify-center shadow-lg shadow-emerald-500/20 overflow-hidden">
                 <img src="{{ asset('favicon.png') }}" alt="Z+" class="w-full h-full object-cover">
             </div>
