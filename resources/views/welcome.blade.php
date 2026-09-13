@@ -51,8 +51,8 @@
                 </a>
             @else
                 <a href="{{ route('login') }}" class="text-slate-300 hover:text-white font-semibold text-sm px-3 py-2 transition">Entrar</a>
-                <a href="{{ route('register') }}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition shadow-md hover:scale-105 active:scale-95">
-                    Experimentar 30 Dias Grátis
+                <a href="{{ route('register') }}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition shadow-md hover:scale-105 active:scale-95 flex items-center gap-2">
+                    <i class="fa-solid fa-mobile-screen text-xs"></i> Fazer Pré-Registo
                 </a>
             @endauth
         </div>
@@ -75,13 +75,16 @@
 
         <!-- CTA Buttons -->
         <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="{{ route('register') }}" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-4 rounded-2xl text-base shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5 flex items-center justify-center">
-                <i class="fa-solid fa-rocket mr-2"></i> Criar Conta Grátis (30 Dias)
+            <a href="{{ route('register') }}" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-4 rounded-2xl text-base shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-mobile-screen"></i> Fazer Pré-Registo Empresarial
             </a>
-            <a href="{{ route('login') }}" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold px-8 py-4 rounded-2xl text-base transition">
-                <i class="fa-solid fa-desktop mr-2"></i> Aceder ao Sistema
+            <a href="{{ route('login') }}" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold px-8 py-4 rounded-2xl text-base transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-desktop"></i> Aceder ao Sistema
             </a>
         </div>
+        <p class="mt-4 text-xs text-emerald-400/90 font-medium flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-paper-plane text-emerald-400"></i> As credenciais de acesso oficiais são enviadas por SMS para o seu telemóvel (+258) e por e-mail.
+        </p>
 
         <!-- Badges / Mozambique Market Trust -->
         <div class="mt-12 flex flex-wrap items-center justify-center gap-8 text-xs font-semibold text-slate-400">
@@ -107,6 +110,9 @@
             <button @click="sector = 'pharmacy'" :class="sector === 'pharmacy' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/30' : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800'" class="px-5 py-3 rounded-xl font-black text-sm flex items-center gap-2 transition">
                 <i class="fa-solid fa-prescription-bottle-medical"></i> Farmácias & Drogarias
             </button>
+            <button @click="sector = 'restaurant'" :class="sector === 'restaurant' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/30' : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800'" class="px-5 py-3 rounded-xl font-black text-sm flex items-center gap-2 transition">
+                <i class="fa-solid fa-utensils"></i> Restaurantes & Bares
+            </button>
             <button @click="sector = 'reprography'" :class="sector === 'reprography' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/30' : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800'" class="px-5 py-3 rounded-xl font-black text-sm flex items-center gap-2 transition">
                 <i class="fa-solid fa-print"></i> Gráficas & Serigrafia
             </button>
@@ -123,17 +129,20 @@
                 <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl font-bold mb-6">
                     <i class="fa-solid fa-gauge-high" x-show="sector === 'retail'"></i>
                     <i class="fa-solid fa-calendar-check" x-show="sector === 'pharmacy'"></i>
+                    <i class="fa-solid fa-utensils" x-show="sector === 'restaurant'"></i>
                     <i class="fa-solid fa-layer-group" x-show="sector === 'reprography'"></i>
                     <i class="fa-solid fa-file-invoice-dollar" x-show="sector === 'services'"></i>
                 </div>
                 <h3 class="text-xl font-bold text-white mb-2" x-text="
                     sector === 'pharmacy' ? 'Controlo de Lotes & Validades (FEFO)' :
+                    (sector === 'restaurant' ? 'Gestão de Mesas em Tempo Real & KDS' :
                     (sector === 'reprography' ? 'Vinculação Automática de Insumos' :
-                    (sector === 'services' ? 'Orçamentos & Ordens de Serviço' : 'Controle de Stock Multi-Loja'))"></h3>
+                    (sector === 'services' ? 'Orçamentos & Ordens de Serviço' : 'Controle de Stock Multi-Loja')))"></h3>
                 <p class="text-slate-400 text-sm leading-relaxed" x-text="
                     sector === 'pharmacy' ? 'Dispensação prioritária dos medicamentos mais próximos do vencimento, evitando perdas financeiras e cumprindo as exigências ANARME.' :
+                    (sector === 'restaurant' ? 'Acompanhamento do mapa de mesas, visualização de ocupação, comanda eletrónica e painel de cozinha (KDS).' :
                     (sector === 'reprography' ? 'Dedução automática de folhas de papel, toner e tintas no momento em que um serviço de cópia ou impressão é registado.' :
-                    (sector === 'services' ? 'Emissão de cotações com conversão direta em fatura e recibo no ato da quitação.' : 'Visibilidade unificada do inventário entre a loja principal, armazém e filiais secundárias.'))"></p>
+                    (sector === 'services' ? 'Emissão de cotações com conversão direta em fatura e recibo no ato da quitação.' : 'Visibilidade unificada do inventário entre a loja principal, armazém e filiais secundárias.')))"></p>
             </div>
 
             <!-- Card 2 -->
@@ -186,7 +195,7 @@
                     </ul>
                 </div>
                 <a href="{{ route('register', ['plan' => 'starter']) }}" class="mt-8 block text-center bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-xs transition">
-                    Começar Grátis (30 Dias)
+                    Solicitar Acesso (Starter)
                 </a>
             </div>
 
@@ -207,7 +216,7 @@
                     </ul>
                 </div>
                 <a href="{{ route('register', ['plan' => 'pro']) }}" class="mt-8 block text-center bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-xs transition">
-                    Começar Grátis (30 Dias)
+                    Solicitar Acesso (Pro)
                 </a>
             </div>
 
@@ -231,7 +240,7 @@
                     </ul>
                 </div>
                 <a href="{{ route('register', ['plan' => 'pharmacy_plus', 'sector' => 'pharmacy']) }}" class="mt-8 block text-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-md">
-                    Começar Grátis (30 Dias)
+                    Solicitar Acesso (Pharmacy+)
                 </a>
             </div>
 
@@ -252,7 +261,7 @@
                     </ul>
                 </div>
                 <a href="{{ route('register', ['plan' => 'business']) }}" class="mt-8 block text-center bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-xs transition">
-                    Começar Grátis (30 Dias)
+                    Solicitar Acesso (Business)
                 </a>
             </div>
 
@@ -260,8 +269,26 @@
     </section>
 
     <!-- Footer -->
-    <footer class="relative z-10 border-t border-slate-900 bg-slate-950/80 py-10 px-6 text-center text-xs text-slate-500">
-        <p>&copy; {{ date('Y') }} <strong>ZBIZ+</strong> — Plataforma Empresarial SaaS para Moçambique. Todos os direitos reservados.</p>
+    <footer class="relative z-10 border-t border-slate-900 bg-slate-950/90 py-10 px-6 text-xs text-slate-400">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <img src="{{ asset('favicon.png') }}" alt="ZBIZ+" class="w-6 h-6 rounded-md">
+                <span class="font-bold text-white tracking-wide">ZBIZ+</span>
+                <span class="text-slate-600">|</span>
+                <span>&copy; {{ date('Y') }} Todos os direitos reservados.</span>
+            </div>
+            <div class="flex flex-wrap items-center justify-center gap-4 text-slate-400">
+                <span>Desenvolvido por <strong class="text-emerald-400">Fdsmultiservices</strong></span>
+                <span class="text-slate-700">•</span>
+                <a href="https://wa.me/258862134230" target="_blank" class="hover:text-emerald-400 transition flex items-center gap-1.5">
+                    <i class="fa-brands fa-whatsapp text-emerald-400"></i> (+258) 86 213 4230
+                </a>
+                <span class="text-slate-700">•</span>
+                <a href="mailto:fdsmultiservices@gmail.com" class="hover:text-emerald-400 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-envelope text-orange-400"></i> fdsmultiservices@gmail.com
+                </a>
+            </div>
+        </div>
     </footer>
 
 </body>

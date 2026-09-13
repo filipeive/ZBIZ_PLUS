@@ -38,6 +38,7 @@ Route::match(['GET', 'HEAD'], '/reprosys', function() { return view('welcome'); 
 // Registro protegido com senha administrativa
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
+Route::get('/register/success', [RegisterController::class, 'showSuccess'])->name('register.success');
 Route::post('/register/verify-admin', [RegisterController::class, 'verifyAdminPasswordAjax'])->name('register.verify-admin');
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

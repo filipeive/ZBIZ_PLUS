@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Entrar - ZBIZ+</title>
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -12,7 +13,7 @@
         .font-heading { font-family: 'Outfit', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-950 min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+<body class="bg-slate-950 min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
     
     <!-- Background Glow Effect -->
     <div class="fixed inset-0 bg-[radial-gradient(ellipse_60%_60%_at_50%_40%,rgba(16,185,129,0.12),rgba(255,255,255,0))] pointer-events-none"></div>
@@ -21,11 +22,9 @@
         
         <!-- Header Brand -->
         <div class="text-center mb-8">
-            <a href="/" class="inline-flex items-center space-x-2">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                    <i class="fa-solid fa-bolt text-slate-950 text-lg font-black"></i>
-                </div>
-                <span class="text-3xl font-black font-heading text-white">ZBIZ<span class="text-emerald-400">+</span></span>
+            <a href="/" class="inline-flex items-center space-x-2.5">
+                <img src="{{ asset('favicon.png') }}" alt="ZBIZ+" class="w-10 h-10 rounded-xl shadow-lg shadow-emerald-500/20 object-contain bg-slate-900 border border-slate-800 p-0.5">
+                <span class="text-3xl font-black font-heading text-white tracking-tight">ZBIZ<span class="text-emerald-400">+</span></span>
             </a>
             <p class="text-xs text-slate-400 mt-2">Acesse a sua conta empresarial</p>
         </div>
@@ -96,8 +95,22 @@
             <div class="mt-6 pt-6 border-t border-slate-800/80 text-center">
                 <p class="text-xs text-slate-400">
                     Ainda não tem conta empresarial?
-                    <a href="{{ route('register') }}" class="text-emerald-400 font-bold hover:underline ml-1">Criar Grátis (30 Dias)</a>
+                    <a href="{{ route('register') }}" class="text-emerald-400 font-bold hover:underline ml-1">Fazer Pré-Registo</a>
                 </p>
+            </div>
+        </div>
+
+        <!-- Footer Watermark -->
+        <div class="mt-8 text-center text-[11px] text-slate-500 space-y-1">
+            <p>Desenvolvido por <strong class="text-slate-400">Fdsmultiservices</strong></p>
+            <div class="flex items-center justify-center gap-3 text-slate-500">
+                <a href="https://wa.me/258862134230" target="_blank" class="hover:text-emerald-400 transition inline-flex items-center gap-1">
+                    <i class="fa-brands fa-whatsapp text-emerald-400"></i> (+258) 86 213 4230
+                </a>
+                <span>•</span>
+                <a href="mailto:fdsmultiservices@gmail.com" class="hover:text-emerald-400 transition inline-flex items-center gap-1">
+                    <i class="fa-solid fa-envelope text-orange-400"></i> fdsmultiservices@gmail.com
+                </a>
             </div>
         </div>
     </div>

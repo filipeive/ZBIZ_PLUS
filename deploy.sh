@@ -42,6 +42,8 @@ ssh -i "$KEY" "$SERVER" "cd $PROJECT_DIR && \
     composer install --optimize-autoloader --no-dev --no-interaction && \
     echo '🗃️ Executando migrações de base de dados...' && \
     php artisan migrate --force && \
+    echo '🔗 Assegurando link simbólico de storage/public...' && \
+    php artisan storage:link || true && \
     echo '🧹 Limpando caches obsoletos...' && \
     php artisan optimize:clear && \
     echo '⚡ Regerando caches de produção (config, route, view)...' && \
