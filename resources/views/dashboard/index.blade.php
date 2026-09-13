@@ -52,13 +52,31 @@
     </div>
 
     <!-- KPI Stat Cards (Ajusta colunas dinamicamente para ocupar todo o espaço disponível) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 {{ (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin() || auth()->user()->isManager()) ? 'lg:grid-cols-4' : 'lg:grid-cols-3' }} gap-4 sm:gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 {{ (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin() || auth()->user()->isManager()) ? 'lg:grid-cols-5' : 'lg:grid-cols-4' }} gap-4 sm:gap-6">
         
-        <!-- Card 1: Vendas de Hoje -->
+        <!-- Card 1: Saldo em Caixa Real (Disponível Líquido) -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Saldo em Caixa (Real)</span>
+                <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base">
+                    <i class="fa-solid fa-vault"></i>
+                </div>
+            </div>
+            <div class="mt-4">
+                <div class="text-2xl sm:text-3xl font-black font-heading text-emerald-600 dark:text-emerald-400">
+                    {{ number_format($currentCapital ?? 0, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
+                </div>
+                <div class="flex items-center gap-2 mt-2 text-xs text-slate-500 dark:text-slate-400">
+                    <span>Dinheiro real recebido líquido</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Vendas de Hoje -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
             <div class="flex items-center justify-between">
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Vendas de Hoje</span>
-                <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base">
+                <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-base">
                     <i class="fa-solid fa-sack-dollar"></i>
                 </div>
             </div>
@@ -75,7 +93,7 @@
             </div>
         </div>
 
-        <!-- Card 2: Faturação Mensal -->
+        <!-- Card 3: Faturação Mensal -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
             <div class="flex items-center justify-between">
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total do Mês</span>
@@ -95,7 +113,7 @@
             </div>
         </div>
 
-        <!-- Card 3: Lucro Real (Visível apenas para Administrador/Gerente da Tenant) -->
+        <!-- Card 4: Lucro Real (Visível apenas para Administrador/Gerente da Tenant) -->
         @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin() || auth()->user()->isManager())
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
             <div class="flex items-center justify-between">
@@ -116,7 +134,7 @@
         </div>
         @endif
 
-        <!-- Card 4: Contas a Receber (Fiados) -->
+        <!-- Card 5: Contas a Receber (Fiados) -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
             <div class="flex items-center justify-between">
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">A Receber (Fiado)</span>
@@ -129,7 +147,7 @@
                     {{ number_format($accountsReceivable ?? 0, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
                 </div>
                 <div class="flex items-center gap-2 mt-2 text-xs text-slate-500 dark:text-slate-400">
-                    <span>Capital de Giro: {{ number_format($currentCapital ?? 0, 0) }} MT</span>
+                    <span>Total pendente em dívidas</span>
                 </div>
             </div>
         </div>
