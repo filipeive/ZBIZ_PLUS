@@ -61,6 +61,7 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         Route::post('/tenants', [TenantControlCenterController::class, 'store'])->name('tenants.store');
         Route::get('/tenants/{tenant}', [TenantControlCenterController::class, 'show'])->name('tenants.show');
         Route::put('/tenants/{tenant}', [TenantControlCenterController::class, 'update'])->name('tenants.update');
+        Route::post('/tenants/{tenant}/approve-trial', [TenantControlCenterController::class, 'approveTrial'])->name('tenants.approve-trial');
         Route::post('/tenants/{tenant}/impersonate', [TenantControlCenterController::class, 'impersonate'])->name('tenants.impersonate');
         Route::post('/tenants/leave-impersonate', [TenantControlCenterController::class, 'leaveImpersonate'])->name('tenants.leave-impersonate');
         Route::post('/tenants/{tenant}/licenses', [TenantControlCenterController::class, 'issueLicense'])->name('tenants.licenses.issue');

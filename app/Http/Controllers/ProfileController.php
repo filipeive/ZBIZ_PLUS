@@ -18,11 +18,15 @@ class ProfileController extends Controller
     public function edit(Request $request): View
     {
         $user = $request->user();
-        $roles = \App\Models\Role::all(); // Carregar todas as funções disponíveis
+        $roles = \App\Models\Role::all();
+        $tenant = $user->tenant?->load(['currentSubscription.plan', 'latestLicenseKey']);
+        $subscription = $tenant?->activeSubscription() ?? $tenant?->currentSubscription;
 
         return view('profile.edit', [
             'user' => $user,
             'roles' => $roles,
+            'tenant' => $tenant,
+            'subscription' => $subscription,
         ]);
     }
 

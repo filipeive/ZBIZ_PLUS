@@ -34,6 +34,17 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
         
         if ($user instanceof User) {
+            // Verificar se a empresa ou utilizador está pendente de aprovação
+            if (!$user->isSuperAdmin() && ($user->tenant?->isPending() || !$user->is_active)) {
+                Auth::guard('web')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return redirect()->route('login')->withErrors([
+                    'email' => 'O pré-registo da sua empresa está sob análise da Fdsmultiservices. Assim que for aprovado pelo administrador, receberá um SMS com o link de acesso. Suporte: (+258) 86 213 4230.',
+                ]);
+            }
+
             // Sincronizar Tenant e Filial do Usuário na Sessão
             $request->session()->put('current_tenant_id', $user->tenant_id);
             $request->session()->put('current_branch_id', $user->branch_id);

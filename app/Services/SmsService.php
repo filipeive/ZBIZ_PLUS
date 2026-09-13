@@ -118,6 +118,55 @@ class SmsService
     }
 
     /**
+     * Envia SMS oficial ao cliente quando o dono aprova a sua conta e define o tempo de teste.
+     */
+    public static function sendApprovalSms(
+        string $to,
+        string $name,
+        string $companyName,
+        string $planName,
+        int $days,
+        string $loginEmail,
+        ?string $tempPassword = null
+    ): array {
+        $appUrl = rtrim(config('app.url', url('/')), '/');
+        $passText = $tempPassword ? "\nSenha de Acesso: {$tempPassword}" : "\nUse a senha definida no registo.";
+
+        $message = "ZBIZ+ | Acesso Aprovado!\n"
+                 . "Ola {$name}! A empresa {$companyName} foi aprovada para avaliacao.\n"
+                 . "Plano: {$planName} ({$days} dias gratis)\n"
+                 . "Utilizador: {$loginEmail}"
+                 . $passText . "\n"
+                 . "Aceda: {$appUrl}/login\n"
+                 . "Suporte: (+258) 86 213 4230";
+
+        return self::sendSms($to, $message);
+    }
+
+    /**
+     * Envia SMS com código de ativação / chave de licença após confirmação de pagamento.
+     */
+    public static function sendLicenseSms(
+        string $to,
+        string $name,
+        string $companyName,
+        string $planName,
+        string $licenseKey,
+        string $expiresAtDate
+    ): array {
+        $appUrl = rtrim(config('app.url', url('/')), '/');
+        $message = "ZBIZ+ | Licenca Ativada!\n"
+                 . "Ola {$name}, o pagamento da empresa {$companyName} foi confirmado!\n"
+                 . "Plano: {$planName}\n"
+                 . "Chave de Ativacao: {$licenseKey}\n"
+                 . "Validade: {$expiresAtDate}\n"
+                 . "Ativar em: {$appUrl}/license/activate\n"
+                 . "Suporte: (+258) 86 213 4230";
+
+        return self::sendSms($to, $message);
+    }
+
+    /**
      * Normaliza números de telemóvel para formato E.164 (+258 Moçambique por defeito).
      */
     public static function normalizePhone(string $phone): ?string

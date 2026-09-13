@@ -109,14 +109,26 @@ class LicenseService
                 throw new RuntimeException('Chave de licença expirada.');
             }
 
+            $tenantModel = $license->tenant;
+            $planModel = $license->plan;
+
             return [
                 'payload' => $license->payload ?? [
-                    'tenant' => ['id' => $license->tenant_id],
-                    'plan' => ['id' => $license->plan_id],
+                    'tenant' => [
+                        'id' => $license->tenant_id,
+                        'slug' => $tenantModel?->slug,
+                        'name' => $tenantModel?->name,
+                    ],
+                    'plan' => [
+                        'id' => $license->plan_id,
+                        'slug' => $planModel?->slug,
+                        'name' => $planModel?->name,
+                    ],
+                    'mode' => $license->mode ?? 'cloud',
                     'starts_at' => $license->starts_at?->toIso8601String(),
                     'expires_at' => $license->expires_at?->toIso8601String(),
                 ],
-                'signature' => $license->signature,
+                'signature' => $license->signature ?? '',
                 'key_hash' => $license->key_hash,
                 'license_model' => $license,
             ];
@@ -157,14 +169,25 @@ class LicenseService
         $verified = $this->verifyToken($token);
         $payload = $verified['payload'];
 
-        $tenant ??= Tenant::where('slug', data_get($payload, 'tenant.slug'))->first();
+        $tenantSlug = data_get($payload, 'tenant.slug');
+        $tenantId = data_get($payload, 'tenant.id');
 
-        if (!$tenant) {
-            throw new RuntimeException('Tenant da licença não encontrado nesta instalação.');
+        if ($tenant) {
+            if ($tenantId && (int)$tenant->id !== (int)$tenantId) {
+                throw new RuntimeException('Esta licença foi emitida para outra empresa.');
+            }
+            if ($tenantSlug && $tenant->slug !== $tenantSlug) {
+                throw new RuntimeException('Esta licença foi emitida para outra empresa.');
+            }
+        } else {
+            $tenant = $tenantSlug ? Tenant::where('slug', $tenantSlug)->first() : null;
+            if (!$tenant && $tenantId) {
+                $tenant = Tenant::find($tenantId);
+            }
         }
 
-        if ($tenant->slug !== data_get($payload, 'tenant.slug')) {
-            throw new RuntimeException('Esta licença pertence a outro tenant.');
+        if (!$tenant) {
+            throw new RuntimeException('Empresa da licença não encontrada nesta instalação.');
         }
 
         $plan = Plan::where('slug', data_get($payload, 'plan.slug'))->first();

@@ -107,14 +107,66 @@ class Tenant extends Model
         return $this->business_type === 'retail';
     }
 
+    public function isRestaurant(): bool
+    {
+        return $this->business_type === 'restaurant';
+    }
+
     public function isReprography(): bool
     {
         return in_array($this->business_type, ['reprography', 'services']);
     }
 
+    public function getBusinessTypeLabelAttribute(): string
+    {
+        return match($this->business_type) {
+            'retail' => 'Comércio & Retalho',
+            'pharmacy' => 'Farmácia & Saúde',
+            'reprography' => 'Papelaria & Tipografia',
+            'restaurant' => 'Restaurante & Bar',
+            'services' => 'Prestação de Serviços',
+            default => 'Outro / Geral',
+        };
+    }
+
     public function isTrial(): bool
     {
         return $this->status === 'trial' && ($this->trial_ends_at === null || $this->trial_ends_at->isFuture());
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    public function trialDaysRemaining(): int
+    {
+        if (!$this->trial_ends_at) {
+            return 0;
+        }
+
+        if ($this->trial_ends_at->isPast()) {
+            return 0;
+        }
+
+        return (int) ceil(now()->floatDiffInDays($this->trial_ends_at));
+    }
+
+    public function trialPercentage(): float
+    {
+        if (!$this->trial_ends_at || !$this->created_at) {
+            return 0;
+        }
+
+        $totalSeconds = $this->created_at->diffInSeconds($this->trial_ends_at);
+        if ($totalSeconds <= 0) {
+            return 100;
+        }
+
+        $elapsedSeconds = $this->created_at->diffInSeconds(now());
+        $percent = ($elapsedSeconds / $totalSeconds) * 100;
+
+        return min(100, max(0, round($percent, 1)));
     }
 
     public function isActive(): bool

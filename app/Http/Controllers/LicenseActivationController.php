@@ -18,7 +18,10 @@ class LicenseActivationController extends Controller
     public function store(Request $request, LicenseService $licenses): RedirectResponse
     {
         $validated = $request->validate([
-            'license_key' => 'required|string|min:80',
+            'license_key' => 'required|string|min:19',
+        ], [
+            'license_key.required' => 'Por favor, insira a chave de licença ou o código de ativação.',
+            'license_key.min' => 'A chave de licença deve conter pelo menos 19 caracteres (formato: ZBIZ-XXXX-XXXX-XXXX-XXXX).',
         ]);
 
         try {

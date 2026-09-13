@@ -63,6 +63,48 @@
         </div>
     </div>
 
+    <!-- Pending Pre-Registration Approval Card -->
+    @if($tenant->status === 'pending')
+        <div class="rounded-3xl border border-amber-500/40 bg-amber-500/10 p-6 space-y-4 shadow-xl" x-data="{ trialDays: 14 }">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-amber-500/20 flex items-center justify-center text-amber-400">
+                        <i class="fa-solid fa-hourglass-half text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-black text-amber-300 font-heading">Pré-Registo a Aguardar Aprovação</h3>
+                        <p class="text-xs text-slate-400">Defina o tempo de teste e clique no botão para aprovar e enviar o SMS com as credenciais para o telemóvel <strong>{{ $tenant->phone }}</strong>.</p>
+                    </div>
+                </div>
+            </div>
+
+            <form action="{{ route('owner.tenants.approve-trial', $tenant) }}" method="POST" class="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2">
+                @csrf
+                <div>
+                    <label class="block text-[10px] uppercase font-bold text-slate-300 mb-1">Dias de Teste Grátis *</label>
+                    <input type="number" name="trial_days" x-model="trialDays" min="1" max="365" required class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase font-bold text-slate-300 mb-1">Plano Aprovado *</label>
+                    <select name="plan_id" required class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs">
+                        @foreach($plans as $p)
+                            <option value="{{ $p->id }}" {{ ($tenant->currentSubscription?->plan_id === $p->id) ? 'selected' : '' }}>{{ $p->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase font-bold text-slate-300 mb-1">Nova Senha (Opcional)</label>
+                    <input type="text" name="temp_password" placeholder="Em branco: mantém senha do registo" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-md">
+                        <i class="fa-solid fa-check"></i> Aprovar & Disparar SMS
+                    </button>
+                </div>
+            </form>
+        </div>
+    @endif
+
     <!-- License Just Issued Alert Card -->
     @if(session('issued_license_key_code') || session('issued_license_token'))
         <div class="rounded-3xl border border-emerald-500/30 bg-emerald-500/10 p-6 space-y-4 shadow-xl">

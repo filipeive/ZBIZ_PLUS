@@ -10,13 +10,46 @@
 @section('content')
 <div class="space-y-6" x-data="{
     createModalOpen: false,
+    approveModalOpen: false,
+    selectedTenant: null,
+    trialDays: 14,
+    selectedPlanId: '',
     copiedKeyId: null,
+    openApproveModal(tenant, planId) {
+        this.selectedTenant = tenant;
+        this.selectedPlanId = planId || '{{ $plans->first()?->id }}';
+        this.trialDays = 14;
+        this.approveModalOpen = true;
+    },
     copyKey(text, id) {
         navigator.clipboard.writeText(text);
         this.copiedKeyId = id;
         setTimeout(() => this.copiedKeyId = null, 2500);
     }
 }">
+
+    @if(($stats['pending'] ?? 0) > 0)
+    <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-bell-concierge text-lg animate-bounce"></i>
+            </div>
+            <div>
+                <h4 class="text-xs font-bold text-amber-300 flex items-center gap-2">
+                    <span>{{ $stats['pending'] }} Pré-Registo(s) a Aguardar Aprovação</span>
+                    <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-500 text-slate-950 uppercase">Ação Requerida</span>
+                </h4>
+                <p class="text-[11px] text-slate-400 mt-0.5">
+                    Defina o período de avaliação para que o cliente receba o SMS com as credenciais e o link de acesso oficial.
+                </p>
+            </div>
+        </div>
+        <a href="{{ route('owner.tenants.index', ['status' => 'pending']) }}" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition flex items-center gap-1.5 whitespace-nowrap">
+            <i class="fa-solid fa-list-check"></i>
+            <span>Ver Pendentes</span>
+        </a>
+    </div>
+    @endif
 
     <!-- Top Executive KPI Grid -->
     <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3.5">
@@ -25,6 +58,14 @@
             <div class="mt-2 flex items-baseline justify-between">
                 <span class="text-2xl font-black font-heading text-white">{{ $stats['total'] }}</span>
                 <span class="text-[11px] font-bold text-emerald-400">{{ $stats['active'] }} ativas</span>
+            </div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-slate-900/90 border {{ ($stats['pending'] ?? 0) > 0 ? 'border-amber-500/50 bg-amber-500/5' : 'border-slate-800' }} shadow-xl flex flex-col justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pré-Registos</span>
+            <div class="mt-2 flex items-baseline justify-between">
+                <span class="text-2xl font-black font-heading {{ ($stats['pending'] ?? 0) > 0 ? 'text-amber-400' : 'text-white' }}">{{ $stats['pending'] ?? 0 }}</span>
+                <span class="text-[11px] font-bold {{ ($stats['pending'] ?? 0) > 0 ? 'text-amber-400' : 'text-slate-500' }}">pendentes</span>
             </div>
         </div>
 
@@ -87,7 +128,7 @@
 
             <select name="status" class="px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs" onchange="this.form.submit()">
                 <option value="">Todos os Estados</option>
-                @foreach(['active' => 'Ativos', 'trial' => 'Trial', 'suspended' => 'Suspensos', 'cancelled' => 'Cancelados'] as $value => $label)
+                @foreach(['pending' => 'Pendentes de Aprovação', 'active' => 'Ativos', 'trial' => 'Em Teste (Trial)', 'suspended' => 'Suspensos', 'cancelled' => 'Cancelados'] as $value => $label)
                     <option value="{{ $value }}" {{ request('status') === $value ? 'selected' : '' }}>{{ $label }}</option>
                 @endforeach
             </select>
@@ -133,6 +174,7 @@
                             $statusClass = match($tenant->status) {
                                 'active' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
                                 'trial' => 'bg-sky-500/10 text-sky-400 border-sky-500/30',
+                                'pending' => 'bg-amber-500/10 text-amber-400 border-amber-500/30',
                                 'suspended' => 'bg-rose-500/10 text-rose-400 border-rose-500/30',
                                 default => 'bg-slate-800 text-slate-400 border-slate-700',
                             };
@@ -206,6 +248,23 @@
 
                             <td class="py-3.5 text-right">
                                 <div class="inline-flex items-center gap-1.5">
+                                    @if($tenant->status === 'pending')
+                                    <!-- Botão Aprovar Teste com Modal -->
+                                    <button type="button" 
+                                            @click="openApproveModal({
+                                                id: {{ $tenant->id }},
+                                                name: '{{ addslashes($tenant->name) }}',
+                                                email: '{{ addslashes($tenant->email ?? '') }}',
+                                                phone: '{{ addslashes($tenant->phone ?? '') }}',
+                                                business_type: '{{ $tenant->business_type }}',
+                                                admin_name: '{{ addslashes($tenant->users->first()?->name ?? 'Gestor') }}'
+                                            }, {{ $subscription?->plan_id ?? ($plans->first()?->id ?? 1) }})"
+                                            class="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm transition flex items-center gap-1.5 animate-pulse"
+                                            title="Definir tempo de teste e aprovar acesso via SMS">
+                                        <i class="fa-solid fa-check-circle text-xs"></i>
+                                        <span>Aprovar Teste</span>
+                                    </button>
+                                    @else
                                     <!-- Impersonate Support Button -->
                                     <form method="POST" action="{{ route('owner.tenants.impersonate', $tenant) }}" class="inline">
                                         @csrf
@@ -214,6 +273,7 @@
                                             <span>Suporte</span>
                                         </button>
                                     </form>
+                                    @endif
 
                                     <!-- Manage Button -->
                                     <a href="{{ route('owner.tenants.show', $tenant) }}" class="px-3 py-1.5 rounded-xl {{ $theme['btn'] }} text-[11px] hover:scale-105 active:scale-95 transition flex items-center gap-1">
@@ -361,6 +421,114 @@
                     </button>
                 </div>
             </form>
+        </div>
+    <!-- Modal: Aprovar Pré-Registo & Enviar SMS -->
+    <div x-cloak x-show="approveModalOpen" 
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto"
+         @keydown.escape.window="approveModalOpen = false">
+        
+        <div class="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6"
+             @click.outside="approveModalOpen = false">
+            
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                        <i class="fa-solid fa-check-circle text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-black font-heading text-white">Aprovar Pré-Registo & Enviar SMS</h3>
+                        <p class="text-xs text-slate-400">Defina o período de avaliação para ativar a empresa.</p>
+                    </div>
+                </div>
+                <button type="button" @click="approveModalOpen = false" class="text-slate-400 hover:text-white text-sm">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <template x-if="selectedTenant">
+                <form :action="`/owner/tenants/${selectedTenant.id}/approve-trial`" method="POST" class="space-y-4">
+                    @csrf
+
+                    <!-- Card com Dados do Pré-Registo -->
+                    <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 text-xs space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Empresa:</span>
+                            <strong class="text-white" x-text="selectedTenant.name"></strong>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Responsável:</span>
+                            <span class="text-slate-300" x-text="selectedTenant.admin_name || 'Gestor'"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Telemóvel (Recebe SMS):</span>
+                            <strong class="text-emerald-400 font-mono" x-text="selectedTenant.phone || 'Sem telemóvel'"></strong>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">E-mail:</span>
+                            <span class="text-slate-300 font-mono" x-text="selectedTenant.email || ''"></span>
+                        </div>
+                    </div>
+
+                    <!-- Definição de Tempo de Avaliação (Dias) -->
+                    <div>
+                        <label class="block text-[11px] uppercase font-bold text-slate-300 mb-1.5">
+                            Tempo de Avaliação Gratuita (Dias) *
+                        </label>
+                        <div class="flex gap-2 mb-2">
+                            <button type="button" @click="trialDays = 7" 
+                                    :class="trialDays === 7 ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
+                                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition">7 Dias</button>
+                            <button type="button" @click="trialDays = 14" 
+                                    :class="trialDays === 14 ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
+                                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition">14 Dias</button>
+                            <button type="button" @click="trialDays = 30" 
+                                    :class="trialDays === 30 ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
+                                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition">30 Dias</button>
+                            <button type="button" @click="trialDays = 60" 
+                                    :class="trialDays === 60 ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
+                                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition">60 Dias</button>
+                        </div>
+                        <input type="number" name="trial_days" x-model="trialDays" min="1" max="365" required
+                               class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:ring-1 focus:ring-emerald-500">
+                        <p class="text-[10px] text-slate-500 mt-1">O cliente terá acesso completo ao sistema até este período expirar.</p>
+                    </div>
+
+                    <!-- Plano Atribuído -->
+                    <div>
+                        <label class="block text-[11px] uppercase font-bold text-slate-300 mb-1.5">Plano Atribuído *</label>
+                        <select name="plan_id" x-model="selectedPlanId" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs">
+                            @foreach($plans as $plan)
+                                <option value="{{ $plan->id }}">{{ $plan->name }} ({{ number_format($plan->monthly_price, 0) }} MT/mês)</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Nova Senha Opcional -->
+                    <div>
+                        <label class="block text-[11px] uppercase font-bold text-slate-300 mb-1.5">
+                            Definir Nova Senha (Opcional)
+                        </label>
+                        <input type="text" name="temp_password" placeholder="Deixe em branco para manter a senha do registo"
+                               class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs placeholder:text-slate-600">
+                        <p class="text-[10px] text-slate-500 mt-1">Se preenchido, esta senha será enviada no SMS oficial ao cliente.</p>
+                    </div>
+
+                    <!-- Aviso de Disparo de SMS -->
+                    <div class="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-xl flex items-center gap-2.5 text-xs text-emerald-300">
+                        <i class="fa-solid fa-paper-plane text-emerald-400"></i>
+                        <span>Um SMS com o link de acesso e confirmação do teste será enviado imediatamente para o telemóvel do cliente.</span>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+                        <button type="button" @click="approveModalOpen = false" class="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white text-xs font-bold">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-2 shadow-lg shadow-emerald-600/20">
+                            <i class="fa-solid fa-check"></i> Aprovar Empresa & Enviar SMS
+                        </button>
+                    </div>
+                </form>
+            </template>
         </div>
     </div>
 

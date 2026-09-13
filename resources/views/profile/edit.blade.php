@@ -5,6 +5,13 @@
 
 @php
     $theme = tenant_theme();
+    $tenant = $tenant ?? current_tenant();
+    $subscription = $subscription ?? $tenant?->activeSubscription() ?? $tenant?->currentSubscription;
+    $isTrial = $tenant?->isTrial() || $tenant?->status === 'trial' || $subscription?->isTrial() || $subscription?->status === 'trialing';
+    $trialDaysLeft = $tenant?->trialDaysRemaining() ?? $subscription?->daysRemaining() ?? 0;
+    $trialPercentage = $tenant?->trialPercentage() ?? $subscription?->trialPercentage() ?? 0;
+    $planName = $subscription?->plan?->name ?? 'Plano Inicial';
+    $latestKey = $tenant?->latestLicenseKey;
 @endphp
 
 @section('content')
@@ -15,6 +22,98 @@
     newPasswordVisible: false,
     confirmPasswordVisible: false
 }">
+
+    <!-- Banner de Subscrição / Período de Avaliação -->
+    @if($isTrial)
+        <div class="relative overflow-hidden rounded-3xl border {{ $trialDaysLeft <= 3 ? 'border-rose-500/40 bg-rose-950/20' : ($trialDaysLeft <= 7 ? 'border-amber-500/40 bg-amber-950/20' : 'border-emerald-500/40 bg-emerald-950/20') }} p-6 shadow-2xl backdrop-blur-xl">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-2xl {{ $trialDaysLeft <= 3 ? 'bg-rose-500/20 text-rose-400' : ($trialDaysLeft <= 7 ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400') }} flex items-center justify-center flex-shrink-0 text-xl shadow-inner">
+                        <i class="fa-solid fa-clock-rotate-left {{ $trialDaysLeft <= 3 ? 'animate-pulse' : '' }}"></i>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-full {{ $trialDaysLeft <= 3 ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' : ($trialDaysLeft <= 7 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40') }}">
+                                {{ $trialDaysLeft > 0 ? 'Período de Avaliação / Teste' : 'Período Experimental Expirado' }}
+                            </span>
+                            <span class="text-xs font-bold text-slate-300">
+                                Plano: <strong class="text-white">{{ $planName }}</strong>
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-black text-white">
+                            @if($trialDaysLeft > 0)
+                                Restam <span class="{{ $trialDaysLeft <= 3 ? 'text-rose-400' : ($trialDaysLeft <= 7 ? 'text-amber-400' : 'text-emerald-400') }}">{{ $trialDaysLeft }} {{ $trialDaysLeft == 1 ? 'dia' : 'dias' }}</span> de teste gratuito
+                            @else
+                                O seu período de teste terminou.
+                            @endif
+                        </h3>
+                        <p class="text-xs text-slate-400 leading-relaxed max-w-2xl">
+                            A sua conta para a empresa <strong class="text-slate-200">{{ $tenant?->name }}</strong> está configurada em modo de demonstração.
+                            Quando efectuar o pagamento, receberá o código de activação de licença por SMS (<span class="font-mono text-slate-300">ZBIZ-XXXX-XXXX-XXXX-XXXX</span>) para activar a versão completa.
+                        </p>
+                        @if($tenant?->trial_ends_at || $subscription?->trial_ends_at)
+                            <div class="text-[11px] text-slate-400 flex items-center gap-2 pt-1">
+                                <i class="fa-solid fa-calendar-check text-slate-500"></i>
+                                <span>Término do teste: <strong class="text-slate-200">{{ ($tenant?->trial_ends_at ?? $subscription?->trial_ends_at)->format('d/m/Y \à\s H:i') }}</strong></span>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-shrink-0">
+                    <a href="{{ route('license.activate') }}" 
+                       class="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2 transition transform active:scale-95">
+                        <i class="fa-solid fa-key"></i>
+                        <span>Activar Código de Licença</span>
+                    </a>
+                    <a href="https://wa.me/258862134230?text={{ rawurlencode('Olá Fdsmultiservices, gostaria de efetuar o pagamento da licença do ZBIZ+ para a minha empresa ' . ($tenant?->name ?? '')) }}" 
+                       target="_blank" 
+                       class="px-5 py-3 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold text-xs flex items-center justify-center gap-2 transition">
+                        <i class="fa-brands fa-whatsapp text-sm"></i>
+                        <span>Pagar / Apoio WhatsApp</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Barra de Progresso do Teste -->
+            <div class="mt-4 pt-4 border-t border-slate-800/80">
+                <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1.5 font-medium">
+                    <span>Progresso do período experimental</span>
+                    <span class="font-bold text-slate-300">{{ $trialPercentage }}% decorrido ({{ $trialDaysLeft }} {{ $trialDaysLeft == 1 ? 'dia restante' : 'dias restantes' }})</span>
+                </div>
+                <div class="w-full bg-slate-800/80 rounded-full h-2 overflow-hidden">
+                    <div class="h-2 rounded-full transition-all duration-500 {{ $trialDaysLeft <= 3 ? 'bg-rose-500' : ($trialDaysLeft <= 7 ? 'bg-amber-500' : 'bg-emerald-500') }}" 
+                         style="width: {{ $trialPercentage }}%"></div>
+                </div>
+            </div>
+        </div>
+    @elseif($tenant)
+        <div class="rounded-3xl border border-emerald-500/30 bg-emerald-950/10 p-6 shadow-xl backdrop-blur-xl">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center text-xl flex-shrink-0">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                                Subscrição Activa
+                            </span>
+                            <span class="text-xs text-slate-400">Plano: <strong class="text-white">{{ $planName }}</strong></span>
+                        </div>
+                        <h3 class="text-base font-black text-white mt-0.5">Empresa Licenciada & Totalmente Operacional</h3>
+                        <p class="text-xs text-slate-400">A sua instalação tem todas as funcionalidades do plano activas.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('license.activate') }}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-bold transition flex items-center gap-2">
+                        <i class="fa-solid fa-key text-emerald-400"></i>
+                        <span>Inserir Nova Chave</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
@@ -71,6 +170,73 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Cartão da Empresa & Licença -->
+            @if($tenant)
+            <div class="mt-6 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl text-left space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
+                            <i class="fa-solid fa-building text-xs"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-black uppercase tracking-wider text-white">Empresa & Licença</h4>
+                            <p class="text-[10px] text-slate-400">Informações da subscrição</p>
+                        </div>
+                    </div>
+                    <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full {{ $isTrial ? ($trialDaysLeft <= 3 ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/30') : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' }}">
+                        {{ $isTrial ? 'Trial' : 'Activo' }}
+                    </span>
+                </div>
+
+                <div class="space-y-2.5 text-xs text-slate-400">
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-slate-500 block">Razão Social / Nome</span>
+                        <span class="font-bold text-white text-sm">{{ $tenant->name }}</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-500 block">Ramo de Actividade</span>
+                            <span class="font-semibold text-slate-300">{{ $tenant->business_type_label ?? 'Geral' }}</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-500 block">NUIT</span>
+                            <span class="font-semibold text-slate-300">{{ $tenant->nuit ?? 'Não registado' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800/80">
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-500 block">Modalidade</span>
+                            <span class="font-mono text-emerald-400 text-xs uppercase font-bold">{{ $tenant->installation_mode ?? 'Cloud' }}</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-500 block">Plano</span>
+                            <span class="font-bold text-slate-200">{{ $planName }}</span>
+                        </div>
+                    </div>
+
+                    @if($latestKey)
+                    <div class="pt-2 border-t border-slate-800/80">
+                        <span class="text-[10px] uppercase font-bold text-slate-500 block">Chave de Licença Registada</span>
+                        <div class="mt-1 flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] text-emerald-400">
+                            <span>{{ $latestKey->key_code ?? 'Chave activada' }}</span>
+                            <i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+
+                <div class="pt-3 border-t border-slate-800/80">
+                    <a href="{{ route('license.activate') }}" 
+                       class="w-full px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-key {{ $theme['text_accent'] }}"></i>
+                        <span>Activar Código / Licença</span>
+                    </a>
+                </div>
+            </div>
+            @endif
         </div>
 
         <!-- Formulários de Edição -->

@@ -65,6 +65,28 @@ class Subscription extends Model
         return !$this->isActive();
     }
 
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    public function trialPercentage(): float
+    {
+        if (!$this->trial_ends_at || !$this->trial_starts_at) {
+            return 0;
+        }
+
+        $totalSeconds = $this->trial_starts_at->diffInSeconds($this->trial_ends_at);
+        if ($totalSeconds <= 0) {
+            return 100;
+        }
+
+        $elapsedSeconds = $this->trial_starts_at->diffInSeconds(now());
+        $percent = ($elapsedSeconds / $totalSeconds) * 100;
+
+        return min(100, max(0, round($percent, 1)));
+    }
+
     public function daysRemaining(): int
     {
         $targetDate = $this->status === 'trialing' ? $this->trial_ends_at : $this->current_period_ends_at;

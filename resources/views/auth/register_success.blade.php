@@ -36,36 +36,34 @@
         <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 shadow-2xl backdrop-blur-xl">
             
             <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-emerald-500/10 border-2 border-emerald-500/30 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
-                    <i class="fa-solid fa-check"></i>
+                <div class="w-16 h-16 bg-amber-500/10 border-2 border-amber-500/30 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                    <i class="fa-solid fa-hourglass-half"></i>
                 </div>
-                <h1 class="text-2xl font-black font-heading text-white">Pré-Registo Concluído!</h1>
-                <p class="text-xs text-slate-400 mt-1">A sua empresa foi configurada e está pronta para operar.</p>
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold mb-3">
+                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+                    <span>Aguardando Aprovação da Fdsmultiservices</span>
+                </div>
+                <h1 class="text-2xl font-black font-heading text-white">Pré-Registo Submetido!</h1>
+                <p class="text-xs text-slate-400 mt-1 max-w-md mx-auto">
+                    A sua solicitação foi recebida pelo administrador da plataforma. Iremos definir o seu período de teste e enviar um SMS com o link oficial de acesso.
+                </p>
             </div>
 
-            <!-- SMS Delivery Alert -->
-            @if(session('reg_sms_sent'))
-                <div class="mb-6 p-4 bg-emerald-950/40 border border-emerald-500/40 rounded-2xl flex items-start gap-3.5">
-                    <div class="text-emerald-400 text-lg mt-0.5"><i class="fa-solid fa-mobile-screen-button"></i></div>
-                    <div class="text-xs">
-                        <div class="font-bold text-emerald-300">Credenciais Enviadas por SMS</div>
-                        <p class="text-slate-300 mt-0.5">Enviámos uma mensagem SMS oficial com os seus dados de acesso para o telemóvel <strong class="text-white">{{ session('reg_phone') }}</strong>.</p>
-                    </div>
+            <!-- SMS Delivery Notice -->
+            <div class="mb-6 p-4 bg-emerald-950/30 border border-emerald-500/30 rounded-2xl flex items-start gap-3.5">
+                <div class="text-emerald-400 text-lg mt-0.5"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                <div class="text-xs">
+                    <div class="font-bold text-emerald-300">Como funciona o próximo passo?</div>
+                    <p class="text-slate-300 mt-1 leading-relaxed">
+                        Assim que a nossa equipa aprovar o seu pedido, receberá uma mensagem <strong>SMS</strong> no telemóvel <strong class="text-white font-mono">{{ session('reg_phone') }}</strong> com o link de ativação e a confirmação dos dias de teste do plano <strong class="text-emerald-400">{{ session('reg_plan_name', 'ZBIZ Starter') }}</strong>.
+                    </p>
                 </div>
-            @else
-                <div class="mb-6 p-4 bg-amber-950/30 border border-amber-500/30 rounded-2xl flex items-start gap-3.5">
-                    <div class="text-amber-400 text-lg mt-0.5"><i class="fa-solid fa-circle-info"></i></div>
-                    <div class="text-xs">
-                        <div class="font-bold text-amber-300">Aviso de Envio de SMS</div>
-                        <p class="text-slate-300 mt-0.5">O telemóvel registado foi <strong class="text-white">{{ session('reg_phone') }}</strong>. Guarde as credenciais abaixo para acesso.</p>
-                    </div>
-                </div>
-            @endif
+            </div>
 
-            <!-- Credentials Box -->
-            <div class="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-5 mb-6 space-y-3.5" x-data="{ showPass: false, copied: false }">
+            <!-- Registration Summary Box -->
+            <div class="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-5 mb-6 space-y-3">
                 <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2 border-b border-slate-800 pb-2 flex justify-between items-center">
-                    <span>Resumo das Credenciais</span>
+                    <span>Resumo da Solicitação</span>
                     <span class="text-emerald-400 font-normal">Plano: {{ session('reg_plan_name', 'ZBIZ Starter') }}</span>
                 </div>
 
@@ -80,49 +78,47 @@
                 </div>
 
                 <div class="flex justify-between items-center text-xs pt-1">
-                    <span class="text-slate-400">E-mail (Login):</span>
-                    <div class="flex items-center gap-2">
-                        <span class="font-mono font-bold text-emerald-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">{{ session('reg_email') }}</span>
-                    </div>
+                    <span class="text-slate-400">Telemóvel (SMS):</span>
+                    <span class="font-mono font-bold text-emerald-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">{{ session('reg_phone') }}</span>
                 </div>
 
                 <div class="flex justify-between items-center text-xs pt-1">
-                    <span class="text-slate-400">Senha:</span>
-                    <div class="flex items-center gap-2">
-                        <span class="font-mono font-bold text-slate-200 bg-slate-900 px-2 py-0.5 rounded border border-slate-800" x-text="showPass ? '{{ session('reg_password') }}' : '••••••••'"></span>
-                        <button type="button" @click="showPass = !showPass" class="text-slate-400 hover:text-white text-xs px-1.5 py-0.5 rounded transition">
-                            <i :class="showPass ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
-                        </button>
-                    </div>
+                    <span class="text-slate-400">E-mail Registado:</span>
+                    <span class="font-mono text-slate-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">{{ session('reg_email') }}</span>
                 </div>
 
-                <!-- Copy credentials button -->
-                <div class="pt-3">
-                    <button type="button" 
-                            @click="navigator.clipboard.writeText('ZBIZ+ Login:\nEmail: {{ session('reg_email') }}\nSenha: {{ session('reg_password') }}\nLink: {{ url('/login') }}'); copied = true; setTimeout(() => copied = false, 3000)"
-                            class="w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition">
-                        <i :class="copied ? 'fa-solid fa-check text-emerald-400' : 'fa-solid fa-copy'"></i>
-                        <span x-text="copied ? 'Credenciais Copiadas!' : 'Copiar Credenciais'"></span>
-                    </button>
+                <div class="flex justify-between items-center text-xs pt-1">
+                    <span class="text-slate-400">Estado:</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                        Pendente de Validação
+                    </span>
                 </div>
             </div>
 
             <!-- Action buttons -->
             <div class="space-y-3">
-                <a href="{{ route('dashboard.index') }}" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 transition transform active:scale-95">
-                    <i class="fa-solid fa-gauge-high"></i> Entrar no Painel de Controlo
+                <a href="https://wa.me/258862134230?text={{ urlencode('Olá Fdsmultiservices, acabei de fazer o pré-registo no ZBIZ+ para a empresa ' . session('reg_company_name') . ' e gostaria de acelerar a aprovação do meu acesso.') }}" 
+                   target="_blank"
+                   class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 transition transform active:scale-95">
+                    <i class="fa-brands fa-whatsapp text-lg"></i>
+                    <span>Contactar Administrador no WhatsApp</span>
                 </a>
-                <a href="{{ route('pos.index') }}" class="w-full py-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition">
-                    <i class="fa-solid fa-cash-register"></i> Aceder à Frente de Caixa (POS)
+                
+                <a href="/" 
+                   class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 transition">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Voltar à Página Inicial</span>
                 </a>
             </div>
 
-            <!-- Support footer -->
-            <div class="mt-6 pt-5 border-t border-slate-800/60 text-center text-xs text-slate-400">
-                <span>Dúvidas ou Suporte Imediato? Contacte-nos via WhatsApp: </span>
+            <!-- Support info -->
+            <div class="mt-6 pt-4 border-t border-slate-800/60 text-center text-xs text-slate-400">
+                <span>Dúvidas ou Suporte Imediato? WhatsApp: </span>
                 <a href="https://wa.me/258862134230" target="_blank" class="text-emerald-400 font-bold hover:underline">
                     (+258) 86 213 4230
                 </a>
+                <span class="text-slate-600 mx-1">•</span>
+                <span>Email: fdsmultiservices@gmail.com</span>
             </div>
 
         </div>

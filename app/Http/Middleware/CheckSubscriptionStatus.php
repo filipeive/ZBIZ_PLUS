@@ -25,6 +25,10 @@ class CheckSubscriptionStatus
             return $next($request);
         }
 
+        if ($tenant->isPending()) {
+            return $this->blocked($request, 'tenant_pending', 'O pré-registo da sua empresa está sob análise da Fdsmultiservices. Aguarde a confirmação por SMS.');
+        }
+
         if (($tenant->license_status ?? 'active') === 'suspended') {
             return $this->blocked($request, 'license_suspended', 'A licença desta empresa está suspensa. Contacte o suporte para reativação.');
         }

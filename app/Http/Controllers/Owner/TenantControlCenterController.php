@@ -11,6 +11,7 @@ use App\Models\Subscription;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Billing\LicenseService;
+use App\Services\SmsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -53,6 +54,7 @@ class TenantControlCenterController extends Controller
             'total' => Tenant::count(),
             'active' => Tenant::where('status', 'active')->count(),
             'trial' => Tenant::where('status', 'trial')->count(),
+            'pending' => Tenant::where('status', 'pending')->count(),
             'suspended' => Tenant::where('status', 'suspended')->count(),
             'offline' => Tenant::where('installation_mode', 'offline')->count(),
             'expiring' => Tenant::whereNotNull('license_expires_at')
@@ -224,7 +226,7 @@ class TenantControlCenterController extends Controller
             'phone' => 'nullable|string|max:30',
             'nuit' => 'nullable|string|max:20',
             'business_type' => 'required|string|in:retail,pharmacy,reprography,restaurant,services,other',
-            'status' => 'required|string|in:trial,active,suspended,cancelled',
+            'status' => 'required|string|in:pending,trial,active,suspended,cancelled',
             'installation_mode' => 'required|string|in:cloud,local_online,offline',
             'license_expires_at' => 'nullable|date',
             'plan_id' => 'nullable|exists:plans,id',
@@ -247,7 +249,7 @@ class TenantControlCenterController extends Controller
             Subscription::updateOrCreate(
                 ['tenant_id' => $tenant->id, 'plan_id' => $validated['plan_id']],
                 [
-                    'status' => $validated['status'] === 'trial' ? 'trialing' : ($validated['status'] === 'active' ? 'active' : 'suspended'),
+                    'status' => $validated['status'] === 'trial' ? 'trialing' : ($validated['status'] === 'active' ? 'active' : ($validated['status'] === 'pending' ? 'pending' : 'suspended')),
                     'trial_starts_at' => $validated['status'] === 'trial' ? now() : null,
                     'trial_ends_at' => $validated['status'] === 'trial' ? Carbon::parse($validated['license_expires_at'] ?? now()->addDays(30)) : null,
                     'current_period_starts_at' => $validated['status'] === 'active' ? now() : null,
@@ -259,6 +261,80 @@ class TenantControlCenterController extends Controller
         }
 
         return redirect()->route('owner.tenants.show', $tenant)->with('success', 'Tenant atualizado com sucesso.');
+    }
+
+    public function approveTrial(Request $request, Tenant $tenant): RedirectResponse
+    {
+        $this->authorizeOwner();
+
+        $validated = $request->validate([
+            'trial_days'    => 'required|integer|min:1|max:365',
+            'plan_id'       => 'required|exists:plans,id',
+            'temp_password' => 'nullable|string|min:6',
+        ], [
+            'trial_days.required' => 'Defina o número de dias do período de teste.',
+            'trial_days.min'      => 'O período de teste deve ser de pelo menos 1 dia.',
+            'plan_id.required'    => 'Selecione o plano aprovado.',
+        ]);
+
+        $days = (int) $validated['trial_days'];
+        $trialEndsAt = now()->addDays($days);
+        $plan = Plan::findOrFail($validated['plan_id']);
+
+        DB::transaction(function () use ($tenant, $plan, $trialEndsAt, $validated) {
+            // 1. Atualizar Tenant
+            $tenant->update([
+                'status'               => 'trial',
+                'license_status'       => 'active',
+                'trial_ends_at'        => $trialEndsAt,
+                'subscription_ends_at' => $trialEndsAt,
+                'license_expires_at'   => $trialEndsAt,
+            ]);
+
+            // 2. Atualizar ou Criar Subscrição
+            Subscription::updateOrCreate(
+                ['tenant_id' => $tenant->id],
+                [
+                    'plan_id'                => $plan->id,
+                    'status'                 => 'trialing',
+                    'trial_starts_at'        => now(),
+                    'trial_ends_at'          => $trialEndsAt,
+                    'payment_method'         => 'manual',
+                    'last_payment_reference' => 'TRIAL-APPROVAL-' . auth()->id(),
+                ]
+            );
+
+            // 3. Ativar o primeiro utilizador administrador do Tenant
+            $adminUser = $tenant->users()->first();
+            if ($adminUser) {
+                $userData = ['is_active' => true];
+                if (!empty($validated['temp_password'])) {
+                    $userData['password'] = Hash::make($validated['temp_password']);
+                }
+                $adminUser->update($userData);
+            }
+        });
+
+        // 4. Disparar SMS com link oficial e credenciais para o telemóvel do cliente
+        $adminUser = $tenant->users()->first();
+        $targetPhone = $adminUser?->phone ?? $tenant->phone;
+
+        if ($targetPhone) {
+            SmsService::sendApprovalSms(
+                $targetPhone,
+                $adminUser?->name ?? 'Gestor',
+                $tenant->name,
+                $plan->name,
+                $days,
+                $adminUser?->email ?? $tenant->email ?? '',
+                $validated['temp_password'] ?? null
+            );
+        }
+
+        return redirect()->back()->with(
+            'success',
+            "Empresa '{$tenant->name}' aprovada com {$days} dias de teste! SMS enviado para {$targetPhone}."
+        );
     }
 
     public function issueLicense(Request $request, Tenant $tenant, LicenseService $licenses): RedirectResponse
@@ -285,6 +361,28 @@ class TenantControlCenterController extends Controller
             $validated['issued_to'] ?? $tenant->name,
             $validated['notes'] ?? null
         );
+
+        // Atualizar status da empresa para ativo após emissão da licença
+        $tenant->update([
+            'status' => 'active',
+            'license_status' => 'active',
+            'license_expires_at' => $validated['expires_at'],
+            'subscription_ends_at' => $validated['expires_at'],
+        ]);
+
+        // Enviar SMS com código de ativação da licença após pagamento
+        $adminUser = $tenant->users()->first();
+        $targetPhone = $adminUser?->phone ?? $tenant->phone;
+        if ($targetPhone) {
+            SmsService::sendLicenseSms(
+                $targetPhone,
+                $adminUser?->name ?? 'Cliente',
+                $tenant->name,
+                $plan->name,
+                $issued['key_code'],
+                Carbon::parse($validated['expires_at'])->format('d/m/Y')
+            );
+        }
 
         return redirect()
             ->route('owner.tenants.show', $tenant)

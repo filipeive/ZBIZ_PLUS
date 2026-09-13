@@ -75,17 +75,20 @@ class RegisterController extends Controller
             }
 
             $tenant = Tenant::create([
-                'name'          => $validated['company_name'],
-                'slug'          => $slug,
-                'subdomain'     => $slug,
-                'business_type' => $validated['business_type'],
-                'nuit'          => $validated['nuit'] ?? null,
-                'email'         => $validated['email'],
-                'phone'         => $validated['phone'],
-                'address'       => ($validated['city'] ?? '') . ', ' . $validated['province'],
-                'currency'      => 'MZN',
-                'status'        => 'trial',
-                'trial_ends_at' => now()->addDays(30),
+                'name'                 => $validated['company_name'],
+                'slug'                 => $slug,
+                'subdomain'            => $slug,
+                'business_type'        => $validated['business_type'],
+                'nuit'                 => $validated['nuit'] ?? null,
+                'email'                => $validated['email'],
+                'phone'                => $validated['phone'],
+                'address'              => ($validated['city'] ?? '') . ', ' . $validated['province'],
+                'currency'             => 'MZN',
+                'status'               => 'pending', // Aguarda aprovação do dono
+                'installation_mode'    => 'cloud',
+                'license_status'       => 'pending',
+                'trial_ends_at'        => null,
+                'subscription_ends_at' => null,
             ]);
 
             // 2. Criar a Filial Principal (Sede)
@@ -137,7 +140,7 @@ class RegisterController extends Controller
             // 6. Obter Role de Administrador do Tenant
             $role = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web'], ['description' => 'Administrador da Empresa']);
 
-            // 7. Criar o Usuário Administrador
+            // 7. Criar o Usuário Administrador (inativo até aprovação do dono)
             $user = User::create([
                 'tenant_id'         => $tenant->id,
                 'branch_id'         => $branch->id,
@@ -146,14 +149,20 @@ class RegisterController extends Controller
                 'phone'             => $validated['phone'],
                 'password'          => Hash::make($validated['password']),
                 'role_id'           => $role->id,
-                'is_active'         => true,
+                'is_active'         => false, // Ativado apenas após aprovação
                 'email_verified_at' => now(),
             ]);
 
-            // 8. Ativar Plano com 30 Dias de Avaliação no Plano Selecionado
+            // 8. Registar Subscrição Inicial Pendente
             $plan = Plan::where('slug', $validated['plan_slug'])->first() ?? Plan::first();
             if ($plan) {
-                $this->subscriptionService->startTrial($tenant, $plan, 30);
+                \App\Models\Subscription::create([
+                    'tenant_id'              => $tenant->id,
+                    'plan_id'                => $plan->id,
+                    'status'                 => 'pending',
+                    'payment_method'         => 'manual',
+                    'last_payment_reference' => 'PRE-REGISTO',
+                ]);
             }
 
             return compact('tenant', 'user', 'plan');
@@ -163,41 +172,41 @@ class RegisterController extends Controller
         $tenant = $createdData['tenant'];
         $plan = $createdData['plan'];
 
-        // 9. Enviar Credenciais de Acesso por SMS para o Telemóvel do Cliente
-        [$smsSent, $smsFeedback] = SmsService::sendCredentialsSms(
-            $validated['phone'],
-            $user->name,
-            $tenant->name,
-            $user->email,
-            $validated['password']
-        );
+        // 9. Notificar a equipe Fdsmultiservices sobre novo pré-registo a aguardar aprovação
+        try {
+            SmsService::sendSms(
+                '+258862134230',
+                "ZBIZ+ | Novo Pre-Registo!\n"
+                . "Empresa: {$tenant->name}\n"
+                . "Gestor: {$user->name} ({$user->phone})\n"
+                . "Plano: {$plan->name}\n"
+                . "Aceda ao Painel do Dono para aprovar o teste.",
+                $tenant->id
+            );
+        } catch (\Throwable $e) {
+            // Log silenciado para não interromper o fluxo do utilizador
+        }
 
-        // 10. Iniciar sessão do utilizador
-        Auth::login($user);
-
-        // 11. Gravar dados na sessão para a tela de confirmação
+        // 10. Gravar dados na sessão para a tela de confirmação (NÃO LOGAR O USUÁRIO)
         session([
-            'reg_success'      => true,
+            'reg_pending'      => true,
             'reg_company_name' => $tenant->name,
             'reg_admin_name'   => $user->name,
             'reg_email'        => $user->email,
-            'reg_password'     => $validated['password'],
             'reg_phone'        => SmsService::normalizePhone($validated['phone']) ?? $validated['phone'],
             'reg_plan_name'    => $plan?->name ?? 'ZBIZ Starter',
-            'reg_sms_sent'     => $smsSent,
-            'reg_sms_feedback' => $smsFeedback,
         ]);
 
         return redirect()->route('register.success');
     }
 
     /**
-     * Exibir tela de confirmação de Pré-Registo e envio de SMS.
+     * Exibir tela de confirmação de Pré-Registo Submetido.
      */
     public function showSuccess()
     {
-        if (!session('reg_success')) {
-            return redirect()->route('dashboard.index');
+        if (!session('reg_pending')) {
+            return redirect()->route('login');
         }
 
         return view('auth.register_success');

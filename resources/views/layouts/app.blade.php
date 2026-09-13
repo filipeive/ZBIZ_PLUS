@@ -1429,6 +1429,25 @@
                         </div>
                         @endif
 
+                        <!-- Período de Teste Badge -->
+                        @php
+                            $isTrialAccount = !$isOwnerConsole && ($tenant?->isTrial() || $tenant?->status === 'trial' || $subscription?->isTrial() || $subscription?->status === 'trialing');
+                            $trialDaysLeft = $isTrialAccount ? ($tenant?->trialDaysRemaining() ?? $subscription?->daysRemaining() ?? 0) : null;
+                        @endphp
+                        @if($isTrialAccount && $trialDaysLeft !== null)
+                            <a href="{{ route('profile.edit') }}" 
+                               class="flex items-center gap-1.5 h-9 px-3 rounded-xl border text-xs font-bold transition shadow-xs {{ $trialDaysLeft <= 3 ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20' : ($trialDaysLeft <= 7 ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20') }}"
+                               title="Plano de Teste: {{ $trialDaysLeft }} dia(s) restante(s). Clique para ver detalhes e ativar licença.">
+                                <span class="relative flex h-2 w-2">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 {{ $trialDaysLeft <= 3 ? 'bg-rose-500' : ($trialDaysLeft <= 7 ? 'bg-amber-500' : 'bg-emerald-500') }}"></span>
+                                    <span class="relative inline-flex rounded-full h-2 w-2 {{ $trialDaysLeft <= 3 ? 'bg-rose-500' : ($trialDaysLeft <= 7 ? 'bg-amber-500' : 'bg-emerald-500') }}"></span>
+                                </span>
+                                <i class="fa-solid fa-clock-rotate-left text-[11px]"></i>
+                                <span class="hidden sm:inline">Teste:</span>
+                                <span>{{ $trialDaysLeft > 0 ? $trialDaysLeft . ($trialDaysLeft == 1 ? ' dia' : ' dias') : 'Expirado' }}</span>
+                            </a>
+                        @endif
+
                         <!-- POS Button -->
                         @if(!$isOwnerConsole && tenant_has_feature('pos') && (auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin() || auth()->user()->hasPermission('create_sales')))
                         <a href="{{ route('pos.index') }}"
@@ -1451,8 +1470,10 @@
                                 <div class="hidden md:block text-left min-w-0">
                                     <div class="text-xs font-bold text-slate-700 dark:text-white leading-none truncate max-w-[100px]">{{ Str::words(auth()->user()?->name ?? 'Utilizador', 1, '') }}</div>
                                     <div class="flex items-center gap-1 mt-0.5">
-                                        <i class="fa-solid {{ $subscription?->plan?->name ? 'fa-crown' : 'fa-circle-dot' }} text-[8px] {{ $theme['text_accent'] }}"></i>
-                                        <span class="text-[10px] text-slate-400 font-medium leading-none truncate">{{ $subscription?->plan?->name ?? 'Trial' }}</span>
+                                        <i class="fa-solid {{ $isTrialAccount ? 'fa-clock-rotate-left' : ($subscription?->plan?->name ? 'fa-crown' : 'fa-circle-dot') }} text-[8px] {{ $isTrialAccount ? ($trialDaysLeft <= 3 ? 'text-rose-500' : ($trialDaysLeft <= 7 ? 'text-amber-500' : 'text-emerald-500')) : $theme['text_accent'] }}"></i>
+                                        <span class="text-[10px] text-slate-400 font-medium leading-none truncate">
+                                            {{ $isTrialAccount ? ('Teste ' . ($trialDaysLeft > 0 ? $trialDaysLeft . 'd' : 'exp.')) : ($subscription?->plan?->name ?? 'Activo') }}
+                                        </span>
                                     </div>
                                 </div>
                                 <i class="fa-solid fa-chevron-down text-[9px] text-slate-400 transition" :class="userMenuOpen ? 'rotate-180' : ''"></i>
@@ -1478,10 +1499,22 @@
                                     </div>
                                     <!-- Plan pill -->
                                     @if(!$isOwnerConsole)
-                                    <div class="mt-2.5 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border {{ $theme['badge'] }} w-fit">
-                                        <i class="fa-solid fa-crown text-[10px]"></i>
-                                        <span class="text-[11px] font-bold">{{ $subscription?->plan?->name ?? 'Plano Trial' }}</span>
-                                    </div>
+                                        @if($isTrialAccount)
+                                        <div class="mt-2.5">
+                                            <div class="flex items-center justify-between gap-1.5 px-2.5 py-1.5 rounded-xl border {{ $trialDaysLeft <= 3 ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400' : ($trialDaysLeft <= 7 ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400') }} w-full">
+                                                <div class="flex items-center gap-1.5 text-[11px] font-bold truncate">
+                                                    <i class="fa-solid fa-clock-rotate-left text-[10px] flex-shrink-0"></i>
+                                                    <span class="truncate">{{ $trialDaysLeft > 0 ? 'Teste: ' . $trialDaysLeft . ($trialDaysLeft == 1 ? ' dia' : ' dias') : 'Teste Expirado' }}</span>
+                                                </div>
+                                                <a href="{{ route('license.activate') }}" class="text-[10px] underline font-extrabold hover:opacity-80 flex-shrink-0">Activar</a>
+                                            </div>
+                                        </div>
+                                        @else
+                                        <div class="mt-2.5 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border {{ $theme['badge'] }} w-fit">
+                                            <i class="fa-solid fa-crown text-[10px]"></i>
+                                            <span class="text-[11px] font-bold">{{ $subscription?->plan?->name ?? 'Plano Activo' }}</span>
+                                        </div>
+                                        @endif
                                     @else
                                     <div class="mt-2.5 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border {{ $theme['badge'] }} w-fit">
                                         <i class="fa-solid fa-building-shield text-[10px]"></i>
