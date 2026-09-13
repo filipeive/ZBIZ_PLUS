@@ -1540,10 +1540,31 @@
             <!-- Main Content Scroll Area -->
             <main class="app-main flex-1 overflow-y-auto p-4 sm:p-8">
                 
-
-
                 <!-- Yield Page Content -->
                 @yield('content')
+
+                <!-- System Footer & Developer Watermark -->
+                <footer class="mt-12 pt-6 pb-6 border-t border-slate-200/70 dark:border-slate-800/80 text-[11px] text-slate-500 dark:text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-slate-700 dark:text-slate-300">ZBIZ+</span>
+                        <span class="hidden sm:inline">· Enterprise Cloud & POS Suite</span>
+                        <span class="px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono text-[10px] font-bold">v1.0.18</span>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-center gap-3 text-slate-500 dark:text-slate-400">
+                        <span class="font-mono text-[10px] text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-900/90 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-800" title="Terminal Signature">
+                            fdev-ms@fdevms:~/Filipe/reprosys$
+                        </span>
+                        <span class="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+                        <span class="hover:text-emerald-500 transition cursor-default" title="Desenvolvido por fdev-ms (FDS Multiservices)">
+                            <i class="fa-solid fa-code text-[10px] text-emerald-500 mr-1"></i>Desenvolvido por <strong>fdev-ms</strong>
+                        </span>
+                        <span class="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+                        <a href="tel:+258849991122" class="hover:text-emerald-500 transition flex items-center gap-1" title="Contacto de Suporte Técnico & Engenharia">
+                            <i class="fa-solid fa-headset text-[10px] text-emerald-500"></i> Suporte: (+258) 84 999 1122
+                        </a>
+                    </div>
+                </footer>
 
             </main>
 

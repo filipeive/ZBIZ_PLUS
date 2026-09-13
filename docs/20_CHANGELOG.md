@@ -17,6 +17,20 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - Adicionado vínculo opcional entre encomendas e mesas; a mesa é marcada como ocupada ao abrir uma comanda.
 - Documentada a operação restaurante em `docs/07_VERTICAL_MODULES.md`.
 
+## [1.0.19] - 2026-09-13 - Apresentação Executiva ZBIZ+ Pharmacy, Atualização da Arquitetura e Marca d'Água do Desenvolvedor
+### Added & Improved
+- **Apresentação Comercial & Operacional para Farmácias (`docs/APRESENTACAO_CLIENTE_FARMACIA.md`):**
+  - Criação de documento executivo completo pronto para apresentação comercial a proprietários e directores técnicos de farmácias em Moçambique.
+  - Explicação detalhada de todos os pilares: Prevenção de perdas por validade (Alertas a 90/60/30d), algoritmo FEFO, POS de alta velocidade, conformidade regulatória com a ANARME (DCI e psicotrópicos), venda integrada de serviços de saúde (tensão, injeções, curativos), fiados e operação offline sem internet.
+- **Relatório Atualizado do Estado do Sistema (`docs/00_SYSTEM_STATUS_AND_ARCHITECTURE_2026.md`):**
+  - Documentação consolidada da arquitetura atual (Laravel 12, MySQL/SQLite, Multi-Tenancy estrito, Livro-Razão imutável, módulos verticais e Control Center do Dono).
+- **Atualização do Roadmap & Verticais (`docs/03_ROADMAP.md`, `docs/07_VERTICAL_MODULES.md`, `docs/09_PHARMACY_REGULATORY_GUIDE.md`):**
+  - Alinhamento de todos os documentos com os módulos em produção (Restauração, Farmácia, Retalho, Serviços Universais).
+- **Rodapé e Marca d'Água Oficial do Desenvolvedor (`resources/views/layouts/app.blade.php` e `docs/`):**
+  - Adicionado rodapé permanente na aplicação web com versão do sistema (`v1.0.18`), canal de suporte técnico (`(+258) 84 999 1122`) e assinatura terminal de engenharia: `fdev-ms@fdevms:~/Filipe/reprosys$`.
+
+---
+
 ## [1.0.18] - 2026-09-02 - Control Center SaaS Executivo, Criação Rápida de Tenants, Impersonate e Certificados de Licença
 ### Added & Improved
 - **Visualização e Cópia Instantânea de Chaves de Licença de Software (`owner/tenants/index.blade.php` e `owner/tenants/show.blade.php`):**

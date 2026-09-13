@@ -49,7 +49,7 @@
             <div class="flex items-center space-x-2 text-xs">
                 <span class="px-2 py-0.5 rounded-full font-bold flex items-center gap-1"
                       :class="isOnline ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'">
-                    <span class="w-2 h-2 rounded-full" :class="isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'"></span>
+                    <i class="fa-solid fa-wifi" :class="isOnline ? 'text-emerald-400' : 'text-rose-400'"></i>
                     <span x-text="isOnline ? 'ONLINE' : 'OFFLINE (Vendas em Cache)'"></span>
                 </span>
                 <template x-if="offlineQueue.length > 0">
@@ -58,9 +58,9 @@
                     </button>
                 </template>
             </div>
-
-            <a href="{{ route('dashboard.index') }}" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded transition">
-                <i class="fa-solid fa-arrow-left mr-1"></i> Voltar ao ERP
+            <!-- Botão para rota dashboard com ícone e texto  e com cor de desligar e ligar-->
+            <a href="{{ route('dashboard.index') }}" class="text-xs btn bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded transition">
+                <i class="fa-solid fa-power-off mr-1"></i> Sair
             </a>
         </div>
     </header>
