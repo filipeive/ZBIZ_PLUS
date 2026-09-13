@@ -35,9 +35,11 @@
                 <a href="{{ route('reports.low-stock') }}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs border border-slate-700 transition flex items-center gap-2">
                     <i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Stock Baixo
                 </a>
+                @if(\App\Helpers\PermissionHelper::userCan('create_stock_movements') || \App\Helpers\PermissionHelper::userCan('manage_stock'))
                 <button @click="showModal = true" class="px-5 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-sm transition flex items-center gap-2">
                     <i class="fa-solid fa-plus-minus"></i> Novo Ajuste / Entrada
                 </button>
+                @endif
             </div>
         </div>
 

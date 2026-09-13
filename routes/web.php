@@ -421,16 +421,16 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
 
     // ===== MOVIMENTAÇÕES DE ESTOQUE =====
     Route::prefix('stock-movements')->name('stock-movements.')->middleware('feature:stock_basic')->group(function () {
-        // Visualizar movimentações - view_stock_movements permission
-        Route::middleware('permissions:view_stock_movements')->group(function () {
-            Route::get('/', [StockMovementController::class, 'index'])->name('index');
-            Route::get('/{stockMovement}', [StockMovementController::class, 'show'])->name('show');
-        });
-
         // Criar movimentações - create_stock_movements permission
         Route::middleware('permissions:create_stock_movements')->group(function () {
             Route::get('/create', [StockMovementController::class, 'create'])->name('create');
             Route::post('/', [StockMovementController::class, 'store'])->name('store');
+        });
+
+        // Visualizar movimentações - view_stock_movements permission
+        Route::middleware('permissions:view_stock_movements')->group(function () {
+            Route::get('/', [StockMovementController::class, 'index'])->name('index');
+            Route::get('/{stockMovement}', [StockMovementController::class, 'show'])->name('show');
         });
 
         // Gerenciar estoque - manage_stock permission (admin only)

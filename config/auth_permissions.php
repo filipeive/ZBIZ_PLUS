@@ -114,6 +114,7 @@ return [
             'manage_payments',
             'view_orders',
             'create_orders',
+            'view_stock_movements',
         ],
         
         'staff' => [
@@ -123,6 +124,7 @@ return [
             'create_sales',
             'view_orders',
             'create_orders',
+            'view_stock_movements',
         ],
     ],
     

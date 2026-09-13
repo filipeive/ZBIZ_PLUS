@@ -17,6 +17,12 @@ class StockMovementController extends Controller
             ->where('tenant_id', $tenantId)
             ->with(['product', 'user']);
 
+        // Restrição para Caixa/Operador ou Funcionário: Visualiza apenas movimentações efetuadas por si próprio
+        $user = auth()->user();
+        if ($user && ($user->isCashier() || (!$user->isAdmin() && !$user->isManager() && !$user->isStockManager()))) {
+            $query->where('user_id', $user->id);
+        }
+
         if ($request->filled('product')) {
             $query->whereHas('product', function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->product . '%');

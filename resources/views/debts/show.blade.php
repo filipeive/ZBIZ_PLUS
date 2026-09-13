@@ -8,7 +8,7 @@
 @endphp
 
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6" x-data="{ showPayModal: false }">
+<div class="w-full mx-auto space-y-6" x-data="{ showPayModal: false }">
     
     <!-- Top Bar -->
     <div class="flex items-center justify-between bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">

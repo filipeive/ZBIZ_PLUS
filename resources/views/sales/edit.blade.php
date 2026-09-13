@@ -71,6 +71,12 @@
                                     <option value="cash"
                                         {{ old('payment_method', $sale->payment_method) == 'cash' ? 'selected' : '' }}>
                                         Dinheiro</option>
+                                    <option value="mpesa"
+                                        {{ old('payment_method', $sale->payment_method) == 'mpesa' ? 'selected' : '' }}>
+                                        M-Pesa</option>
+                                    <option value="emola"
+                                        {{ old('payment_method', $sale->payment_method) == 'emola' ? 'selected' : '' }}>
+                                        e-Mola</option>
                                     <option value="card"
                                         {{ old('payment_method', $sale->payment_method) == 'card' ? 'selected' : '' }}>
                                         Cartão</option>
@@ -79,7 +85,7 @@
                                         Transferência</option>
                                     <option value="credit"
                                         {{ old('payment_method', $sale->payment_method) == 'credit' ? 'selected' : '' }}>
-                                        Crédito</option>
+                                        Crédito (Fiado)</option>
                                 </select>
                                 @error('payment_method')
                                     <div class="invalid-feedback">{{ $message }}</div>

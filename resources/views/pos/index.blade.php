@@ -335,19 +335,22 @@
             <!-- Payment Methods -->
             <div class="space-y-2">
                 <label class="text-xs font-bold text-gray-700">Forma de Pagamento:</label>
-                <div class="grid grid-cols-4 gap-2">
+                <div class="grid grid-cols-5 gap-1.5">
                     <button type="button" @click="paymentMethod = 'cash'; amountPaid = totalAmount"
                             :class="paymentMethod === 'cash' ? 'bg-slate-900 text-white shadow' : 'bg-gray-100 text-gray-700'"
-                            class="py-2 rounded text-xs font-bold border transition">Dinheiro</button>
+                            class="py-2 rounded text-[11px] font-bold border transition">Dinheiro</button>
                     <button type="button" @click="paymentMethod = 'mpesa'; amountPaid = totalAmount"
                             :class="paymentMethod === 'mpesa' ? 'bg-red-600 text-white shadow' : 'bg-gray-100 text-gray-700'"
-                            class="py-2 rounded text-xs font-bold border transition">M-Pesa</button>
+                            class="py-2 rounded text-[11px] font-bold border transition">M-Pesa</button>
+                    <button type="button" @click="paymentMethod = 'emola'; amountPaid = totalAmount"
+                            :class="paymentMethod === 'emola' ? 'bg-amber-600 text-white shadow' : 'bg-gray-100 text-gray-700'"
+                            class="py-2 rounded text-[11px] font-bold border transition">e-Mola</button>
                     <button type="button" @click="paymentMethod = 'card'; amountPaid = totalAmount"
                             :class="paymentMethod === 'card' ? 'bg-blue-600 text-white shadow' : 'bg-gray-100 text-gray-700'"
-                            class="py-2 rounded text-xs font-bold border transition">Cartão</button>
+                            class="py-2 rounded text-[11px] font-bold border transition">Cartão</button>
                     <button type="button" @click="paymentMethod = 'credit'; amountPaid = 0"
-                            :class="paymentMethod === 'credit' ? 'bg-amber-600 text-white shadow' : 'bg-gray-100 text-gray-700'"
-                            class="py-2 rounded text-xs font-bold border transition">Fiado (Dívida)</button>
+                            :class="paymentMethod === 'credit' ? 'bg-amber-800 text-white shadow' : 'bg-gray-100 text-gray-700'"
+                            class="py-2 rounded text-[11px] font-bold border transition">Fiado</button>
                 </div>
             </div>
 

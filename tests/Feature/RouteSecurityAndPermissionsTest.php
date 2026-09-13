@@ -171,4 +171,17 @@ class RouteSecurityAndPermissionsTest extends TestCase
         $freshTenant = Tenant::find($this->tenant->id);
         $this->assertEquals(['view_dashboard', 'create_sales', 'view_reports'], $freshTenant->settings['role_permissions']['cashier']);
     }
+
+    public function test_cashier_stock_movements_scoped_to_own_records(): void
+    {
+        $response = $this->actingAs($this->cashierUser)
+            ->withSession([
+                'tenant_id' => $this->tenant->id,
+                'branch_id' => $this->branch->id,
+            ])
+            ->get(route('stock-movements.index'));
+
+        $response->assertStatus(200);
+        $response->assertDontSee('Novo Ajuste / Entrada');
+    }
 }

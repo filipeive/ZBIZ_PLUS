@@ -250,7 +250,7 @@
                         <i class="fa-solid fa-money-bill-wave text-emerald-400"></i> Pagamento & Liquidação
                     </h3>
 
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         <button type="button" @click="paymentMethod = 'cash'"
                                 :class="paymentMethod === 'cash' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 font-bold' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'"
                                 class="p-3 rounded-xl border text-xs text-left transition flex items-center gap-2">
@@ -261,6 +261,11 @@
                                 class="p-3 rounded-xl border text-xs text-left transition flex items-center gap-2">
                             <i class="fa-solid fa-mobile-screen"></i> M-Pesa
                         </button>
+                        <button type="button" @click="paymentMethod = 'emola'"
+                                :class="paymentMethod === 'emola' ? 'bg-amber-500/20 border-amber-500 text-amber-400 font-bold' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'"
+                                class="p-3 rounded-xl border text-xs text-left transition flex items-center gap-2">
+                            <i class="fa-solid fa-mobile-screen-button"></i> e-Mola
+                        </button>
                         <button type="button" @click="paymentMethod = 'card'"
                                 :class="paymentMethod === 'card' ? 'bg-blue-500/20 border-blue-500 text-blue-400 font-bold' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'"
                                 class="p-3 rounded-xl border text-xs text-left transition flex items-center gap-2">
@@ -268,7 +273,7 @@
                         </button>
                         <button type="button" @click="paymentMethod = 'credit'"
                                 :class="paymentMethod === 'credit' ? 'bg-amber-500/20 border-amber-500 text-amber-400 font-bold' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'"
-                                class="p-3 rounded-xl border text-xs text-left transition flex items-center gap-2">
+                                class="p-3 rounded-xl border text-xs text-left transition flex items-center gap-2 sm:col-span-2">
                             <i class="fa-solid fa-hand-holding-dollar"></i> Fiado (Dívida)
                         </button>
                     </div>
