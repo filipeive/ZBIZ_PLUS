@@ -17,7 +17,7 @@ class Product extends Model
 
     protected $fillable = [
         'tenant_id',
-        'category_id', 'linked_product_id', 'barcode', 'sku', 'name', 'description', 'type', 
+        'category_id', 'supplier_id', 'linked_product_id', 'barcode', 'sku', 'name', 'description', 'type', 
         'purchase_price', 'selling_price', 'promotional_price', 'is_on_promotion', 'promotion_discount_percent', 'promotion_ends_at',
         'stock_quantity', 'min_stock_level', 'unit', 'is_active',
         'is_tax_exempt', 'tax_rate',
@@ -117,6 +117,11 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Supplier::class);
     }
 
     public function linkedProduct(): BelongsTo

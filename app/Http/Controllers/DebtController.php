@@ -1010,4 +1010,19 @@ class DebtController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Imprimir Talão Térmico de Recibo de Pagamento (80mm)
+     */
+    public function printPaymentReceipt(DebtPayment $payment)
+    {
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+        $debt = $payment->debt;
+        abort_unless($debt && $debt->tenant_id === $tenantId, 403);
+
+        $payment->load(['user']);
+        $debt->load(['customer', 'branch', 'tenant']);
+
+        return view('debts.payment-receipt', compact('payment', 'debt'));
+    }
 }

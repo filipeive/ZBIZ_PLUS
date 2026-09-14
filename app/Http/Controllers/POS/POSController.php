@@ -279,10 +279,19 @@ class POSController extends Controller
             $invoiceType = ($validated['payment_method'] === 'credit') ? 'invoice' : 'cash_invoice';
             $invoiceNumber = Sale::generateNextInvoiceNumber($tenantId, $invoiceType);
 
+            // Verificar turno de caixa aberto do operador
+            $activeShift = CashShift::where('tenant_id', $tenantId)
+                ->where('branch_id', $branchId)
+                ->where('user_id', $userId)
+                ->where('status', 'open')
+                ->latest('opened_at')
+                ->first();
+
             // 3. Criar Venda
             $sale = Sale::create([
                 'tenant_id'            => $tenantId,
                 'branch_id'            => $branchId,
+                'cash_shift_id'        => $activeShift?->id,
                 'user_id'              => $userId,
                 'customer_id'          => $customer?->id,
                 'customer_name'        => $customerName,

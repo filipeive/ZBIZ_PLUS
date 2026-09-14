@@ -15,6 +15,9 @@ use App\Models\StockMovement;
 use App\Services\FinancialService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Branch;
+use App\Models\Tenant;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
 class ReportController extends Controller
@@ -1599,5 +1602,156 @@ class ReportController extends Controller
         $intercept = ($sumY - $slope * $sumX) / $n;
         
         return ['slope' => $slope, 'intercept' => $intercept];
+    }
+
+    /**
+     * Mapa Fiscal de Apuramento de IVA (Autoridade Tributária de Moçambique - CIVA / Modelo A)
+     */
+    public function taxIvaReport(Request $request)
+    {
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+        $branchId = $request->input('branch_id', $this->getBranchIdFilter());
+
+        $month = (int) $request->input('month', now()->month);
+        $year = (int) $request->input('year', now()->year);
+
+        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
+
+        if ($request->filled('date_from') && $request->filled('date_to')) {
+            $startDate = Carbon::parse($request->input('date_from'))->startOfDay();
+            $endDate = Carbon::parse($request->input('date_to'))->endOfDay();
+        }
+
+        $data = $this->calculateTaxIvaData($tenantId, $branchId, $startDate, $endDate);
+
+        return view('reports.tax-iva', array_merge($data, [
+            'month'     => $month,
+            'year'      => $year,
+            'startDate' => $startDate,
+            'endDate'   => $endDate,
+            'branchId'  => $branchId,
+        ]));
+    }
+
+    /**
+     * Download em PDF da Declaração de Apuramento Periódico de IVA (Modelo A)
+     */
+    public function downloadTaxIvaPdf(Request $request)
+    {
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+        $branchId = $request->input('branch_id', $this->getBranchIdFilter());
+
+        $month = (int) $request->input('month', now()->month);
+        $year = (int) $request->input('year', now()->year);
+
+        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
+
+        if ($request->filled('date_from') && $request->filled('date_to')) {
+            $startDate = Carbon::parse($request->input('date_from'))->startOfDay();
+            $endDate = Carbon::parse($request->input('date_to'))->endOfDay();
+        }
+
+        $data = $this->calculateTaxIvaData($tenantId, $branchId, $startDate, $endDate);
+        $tenant = auth()->user()?->tenant ?? Tenant::find($tenantId);
+
+        $pdf = Pdf::loadView('reports.tax-iva-pdf', array_merge($data, [
+            'tenant'    => $tenant,
+            'month'     => $month,
+            'year'      => $year,
+            'startDate' => $startDate,
+            'endDate'   => $endDate,
+        ]))->setPaper('a4', 'portrait');
+
+        $filename = 'Apuramento_IVA_' . $tenant->nuit . '_' . $startDate->format('Y_m') . '.pdf';
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Motor de cálculo fiscal para apuramento do IVA
+     */
+    private function calculateTaxIvaData($tenantId, $branchId, Carbon $startDate, Carbon $endDate): array
+    {
+        // 1. Vendas no período (exclui canceladas)
+        $sales = Sale::with(['customer', 'branch', 'user'])
+            ->where('tenant_id', $tenantId)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+            ->latest()
+            ->get();
+
+        $totalSalesCount = $sales->count();
+        $totalGrossRevenue = (float)$sales->sum('total_amount');
+
+        // Operações Isentas (Art. 9º CIVA - ex: medicamentos essenciais, produtos da cesta básica)
+        $exemptSales = $sales->filter(function ($s) {
+            return ($s->tax_regime === 'exempt' || (float)$s->tax_rate == 0 || (float)$s->tax_amount == 0);
+        });
+        $exemptSalesTotal = (float)$exemptSales->sum('total_amount');
+
+        // Operações Sujeitas e Tributadas à Taxa Geral (16%)
+        $taxableSales = $sales->filter(function ($s) {
+            return ($s->tax_regime === 'normal' && (float)$s->tax_rate > 0 && (float)$s->tax_amount > 0);
+        });
+
+        $taxableBase = 0;
+        $ivaLiquidado = 0;
+
+        foreach ($taxableSales as $sale) {
+            $tax = (float)$sale->tax_amount;
+            $ivaLiquidado += $tax;
+            if ($sale->prices_include_tax) {
+                $base = max(0, (float)$sale->total_amount - $tax);
+            } else {
+                $base = max(0, ((float)$sale->subtotal - (float)$sale->discount_amount));
+            }
+            $taxableBase += $base;
+        }
+
+        // 2. Despesas / Compras no período
+        $expenses = Expense::with(['category', 'financialAccount'])
+            ->where('tenant_id', $tenantId)
+            ->whereBetween('expense_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+            ->latest()
+            ->get();
+
+        $totalExpenses = (float)$expenses->sum('amount');
+
+        // Despesas elegíveis para dedução de IVA (com recibo / fatura-recibo documentada)
+        $deductibleExpenses = $expenses->filter(function ($e) {
+            return !empty($e->receipt_number) || !empty($e->receipt_file_path);
+        });
+        $deductibleExpenseTotal = (float)$deductibleExpenses->sum('amount');
+        // IVA dedutível a 16% sobre despesas documentadas: Base = total / 1.16, IVA = total - Base
+        $ivaDedutivel = round($deductibleExpenseTotal - ($deductibleExpenseTotal / 1.16), 2);
+
+        // 3. Saldo Líquido do Imposto
+        $saldoIva = round($ivaLiquidado - $ivaDedutivel, 2);
+        $impostoAPagar = max(0, $saldoIva);
+        $creditoAReportar = $saldoIva < 0 ? abs($saldoIva) : 0;
+
+        // Filiais para filtro
+        $branches = Branch::where('tenant_id', $tenantId)->get();
+
+        return [
+            'sales'                  => $sales,
+            'expenses'               => $expenses,
+            'totalSalesCount'        => $totalSalesCount,
+            'totalGrossRevenue'      => $totalGrossRevenue,
+            'exemptSalesTotal'       => $exemptSalesTotal,
+            'exemptSalesCount'       => $exemptSales->count(),
+            'taxableBase'            => round($taxableBase, 2),
+            'taxableSalesCount'      => $taxableSales->count(),
+            'ivaLiquidado'           => round($ivaLiquidado, 2),
+            'totalExpenses'          => $totalExpenses,
+            'deductibleExpenseTotal' => $deductibleExpenseTotal,
+            'ivaDedutivel'           => $ivaDedutivel,
+            'saldoIva'               => $saldoIva,
+            'impostoAPagar'          => $impostoAPagar,
+            'creditoAReportar'       => $creditoAReportar,
+            'branches'               => $branches,
+        ];
     }
 }

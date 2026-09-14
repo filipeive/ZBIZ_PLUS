@@ -920,7 +920,7 @@
                             <a href="{{ route('debts.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('debts.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-hand-holding-dollar w-4 text-center {{ request()->routeIs('debts.*') ? $theme['text_accent'] : '' }}"></i>
-                                <span>Fiados & Dívidas</span>
+                                <span>Contas a Receber</span>
                             </a>
                             @endif
 
@@ -928,6 +928,12 @@
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('orders.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-clipboard-list w-4 text-center {{ request()->routeIs('orders.*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Pedidos & Encomendas</span>
+                            </a>
+
+                            <a href="{{ route('customers.index') }}"
+                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('customers.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
+                                <i class="fa-solid fa-users w-4 text-center {{ request()->routeIs('customers.*') ? $theme['text_accent'] : '' }}"></i>
+                                <span>Clientes</span>
                             </a>
                         </div>
                     </div>
@@ -968,6 +974,12 @@
                                 <i class="fa-solid fa-boxes-stacked w-4 text-center {{ request()->routeIs('stock-movements.*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Movimentos de Stock</span>
                             </a>
+
+                            <a href="{{ route('suppliers.index') }}"
+                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('suppliers.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
+                                <i class="fa-solid fa-truck w-4 text-center {{ request()->routeIs('suppliers.*') ? $theme['text_accent'] : '' }}"></i>
+                                <span>Fornecedores</span>
+                            </a>
                             @endif
                         </div>
                     </div>
@@ -991,6 +1003,18 @@
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('expenses.*') || request()->routeIs('expense-categories.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-money-bill-transfer w-4 text-center {{ request()->routeIs('expenses.*') || request()->routeIs('expense-categories.*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Despesas & Gastos</span>
+                            </a>
+
+                            <a href="{{ route('cash-shifts.index') }}"
+                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('cash-shifts.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
+                                <i class="fa-solid fa-cash-register w-4 text-center {{ request()->routeIs('cash-shifts.*') ? $theme['text_accent'] : '' }}"></i>
+                                <span>Turnos de Caixa (Fecho Z)</span>
+                            </a>
+
+                            <a href="{{ route('reports.tax-iva') }}"
+                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('reports.tax-iva*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
+                                <i class="fa-solid fa-file-invoice-dollar w-4 text-center {{ request()->routeIs('reports.tax-iva*') ? $theme['text_accent'] : '' }}"></i>
+                                <span>Apuramento de IVA (AT)</span>
                             </a>
                             @endif
 

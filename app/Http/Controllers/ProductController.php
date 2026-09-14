@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Supplier;
 use App\Models\StockMovement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -84,7 +85,8 @@ class ProductController extends Controller
         $categories = Category::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('is_active', true)->orderBy('name')->get();
         // Produtos físicos que podem ser vinculados a serviços (ex: Papel A4)
         $physicalProducts = Product::withoutGlobalScopes()->where('tenant_id', $tenantId)->whereIn('type', ['product', 'physical'])->where('is_active', true)->orderBy('name')->get();
-        return view('products.create', compact('categories', 'physicalProducts'));
+        $suppliers = Supplier::where('tenant_id', $tenantId)->where('is_active', true)->orderBy('name')->get();
+        return view('products.create', compact('categories', 'physicalProducts', 'suppliers'));
     }
 
     /**
@@ -98,6 +100,7 @@ class ProductController extends Controller
             $validationRules = [
                 'name' => 'required|string|max:150',
                 'category_id' => 'required|exists:categories,id',
+                'supplier_id' => 'nullable|exists:suppliers,id',
                 'linked_product_id' => 'nullable|exists:products,id',
                 'type' => 'required|in:product,physical,service',
                 'selling_price' => 'required|numeric|min:0',
@@ -127,7 +130,7 @@ class ProductController extends Controller
             DB::beginTransaction();
 
             $data = collect($validated)->only([
-                'name', 'category_id', 'linked_product_id', 'type', 'selling_price',
+                'name', 'category_id', 'supplier_id', 'linked_product_id', 'type', 'selling_price',
                 'purchase_price', 'promotional_price', 'promotion_discount_percent',
                 'promotion_ends_at', 'barcode', 'sku', 'unit', 'description'
             ])->toArray();
@@ -220,8 +223,9 @@ class ProductController extends Controller
                                    ->orderBy('name')
                                    ->get();
         $latestBatch = $product->batches()->latest()->first();
+        $suppliers = Supplier::where('tenant_id', $tenantId)->where('is_active', true)->orderBy('name')->get();
 
-        return view('products.edit', compact('product', 'categories', 'physicalProducts', 'latestBatch'));
+        return view('products.edit', compact('product', 'categories', 'physicalProducts', 'latestBatch', 'suppliers'));
     }
 
     /**
@@ -244,6 +248,7 @@ class ProductController extends Controller
             $validationRules = [
                 'name' => 'required|string|max:150',
                 'category_id' => 'required|exists:categories,id',
+                'supplier_id' => 'nullable|exists:suppliers,id',
                 'linked_product_id' => 'nullable|exists:products,id',
                 'type' => 'required|in:product,physical,service',
                 'selling_price' => 'required|numeric|min:0',
@@ -269,7 +274,7 @@ class ProductController extends Controller
             $validated = $request->validate($validationRules);
 
             $data = collect($validated)->only([
-                'name', 'category_id', 'linked_product_id', 'type', 'selling_price',
+                'name', 'category_id', 'supplier_id', 'linked_product_id', 'type', 'selling_price',
                 'purchase_price', 'promotional_price', 'promotion_discount_percent',
                 'promotion_ends_at', 'barcode', 'sku', 'unit', 'description'
             ])->toArray();

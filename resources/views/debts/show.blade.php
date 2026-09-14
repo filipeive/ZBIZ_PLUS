@@ -68,6 +68,7 @@
                             <th class="p-3">Método</th>
                             <th class="p-3">Operador</th>
                             <th class="p-3 text-right">Valor Pago</th>
+                            <th class="p-3 text-right">Recibo</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-800/60 bg-slate-900/60">
@@ -77,10 +78,15 @@
                                 <td class="p-3 uppercase text-slate-300">{{ $payment->payment_method ?? 'Dinheiro' }}</td>
                                 <td class="p-3 text-slate-400">{{ $payment->user?->name ?? 'Caixa' }}</td>
                                 <td class="p-3 text-right font-black text-emerald-400 font-mono">{{ number_format($payment->amount, 2, ',', '.') }} MT</td>
+                                <td class="p-3 text-right">
+                                    <a href="{{ route('debts.payments.receipt', $payment->id) }}" target="_blank" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-400 text-xs font-bold inline-flex items-center gap-1 transition" title="Imprimir Recibo Térmico">
+                                        <i class="fa-solid fa-print"></i> Recibo
+                                    </a>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="p-6 text-center text-slate-500">Nenhum pagamento registado ainda.</td>
+                                <td colspan="5" class="p-6 text-center text-slate-500">Nenhum pagamento registado ainda.</td>
                             </tr>
                         @endforelse
                     </tbody>

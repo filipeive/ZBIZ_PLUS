@@ -54,6 +54,16 @@
                 </div>
 
                 <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Fornecedor / Fabricante (Opcional)</label>
+                    <select name="supplier_id" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
+                        <option value="">-- Selecionar Fornecedor (Opcional) --</option>
+                        @foreach($suppliers ?? [] as $sup)
+                            <option value="{{ $sup->id }}" {{ old('supplier_id') == $sup->id ? 'selected' : '' }}>{{ $sup->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="sm:col-span-2">
                     <label class="block text-xs font-bold text-slate-300 mb-1">
                         <span x-show="itemType === 'service'">Nome do Serviço Prestado *</span>
                         <span x-show="itemType !== 'service'">{{ $isPharmacy ? 'Nome Comercial & Dosagem do Medicamento *' : 'Nome do Artigo / Produto *' }}</span>

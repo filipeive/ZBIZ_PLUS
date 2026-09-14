@@ -42,6 +42,24 @@
             <span class="bg-slate-800 text-xs px-2 py-1 rounded border border-slate-700 text-slate-300">
                 <i class="fa-solid fa-user mr-1 text-sky-400"></i>{{ auth()->user()?->name ?? 'Operador' }}
             </span>
+
+            <!-- Turno de Caixa Badge & Ações -->
+            <template x-if="shift">
+                <div class="flex items-center space-x-2">
+                    <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs px-2.5 py-1 rounded font-bold flex items-center gap-1.5 shadow-sm">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        Turno #<span x-text="shift.id"></span> (<span x-text="shift.opened_at"></span>)
+                    </span>
+                    <button @click="openCloseShiftModal()" type="button" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold px-2.5 py-1 rounded transition flex items-center gap-1 shadow">
+                        <i class="fa-solid fa-lock"></i> Fechar Caixa
+                    </button>
+                </div>
+            </template>
+            <template x-if="!shift">
+                <button @click="showOpenShiftModal = true" type="button" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded transition flex items-center gap-1.5 shadow">
+                    <i class="fa-solid fa-door-open"></i> Abrir Caixa
+                </button>
+            </template>
         </div>
 
         <!-- Connection Status & Shortcuts -->
@@ -472,25 +490,231 @@
         </div>
     </div>
 
-    <!-- Customer Modal -->
+    <!-- Customer Modal (com Cadastro Rápido) -->
     <div x-cloak x-show="showCustomerModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4" @click.outside="showCustomerModal = false">
-            <div class="flex items-center justify-between border-b pb-2">
-                <h3 class="text-sm font-black text-slate-900">Selecionar Cliente</h3>
-                <button @click="showCustomerModal = false" class="text-gray-400"><i class="fa-solid fa-xmark"></i></button>
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4" @click.outside="showCustomerModal = false">
+            <div class="flex items-center justify-between border-b pb-3">
+                <div>
+                    <h3 class="text-sm font-black text-slate-900" x-text="showNewCustomerForm ? 'Cadastrar Novo Cliente' : 'Selecionar Cliente'"></h3>
+                    <p class="text-[11px] text-gray-500" x-text="showNewCustomerForm ? 'Registe os dados do cliente para associar à venda' : 'Pesquise ou registe um novo cliente'"></p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" @click="showNewCustomerForm = !showNewCustomerForm" class="text-xs font-bold px-2.5 py-1 rounded-lg transition"
+                            :class="showNewCustomerForm ? 'bg-gray-100 text-gray-700' : 'bg-emerald-600 text-white hover:bg-emerald-700'">
+                        <span x-text="showNewCustomerForm ? 'Voltar à Lista' : '+ Novo Cliente'"></span>
+                    </button>
+                    <button @click="showCustomerModal = false; showNewCustomerForm = false" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+                </div>
             </div>
-            <div class="space-y-2 max-h-60 overflow-y-auto">
-                <button @click="customer = null; showCustomerModal = false" class="w-full text-left p-2 rounded hover:bg-gray-100 text-xs font-bold border">
-                    Cliente Avulso (Padrão)
-                </button>
-                @foreach($customers as $c)
-                <button @click="customer = { id: {{ $c->id }}, name: '{{ $c->name }}', nuit: '{{ $c->nuit }}' }; showCustomerModal = false"
-                        class="w-full text-left p-2 rounded hover:bg-gray-100 text-xs border flex justify-between">
-                    <span class="font-bold">{{ $c->name }}</span>
-                    <span class="text-gray-400">NUIT: {{ $c->nuit ?? 'N/D' }}</span>
-                </button>
-                @endforeach
+
+            <!-- Formulário Novo Cliente Rápido -->
+            <div x-show="showNewCustomerForm">
+                <form @submit.prevent="saveQuickCustomer()" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Nome Completo / Razão Social *</label>
+                        <input type="text" x-model="newCustomer.name" required placeholder="Ex: Farmácia Popular ou João Machel"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Telefone (M-Pesa)</label>
+                            <input type="text" x-model="newCustomer.phone" placeholder="+258 84 123 4567"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">NUIT</label>
+                            <input type="text" x-model="newCustomer.nuit" placeholder="400123456" maxlength="15"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Limite de Crédito (MT)</label>
+                        <input type="number" step="0.01" min="0" x-model="newCustomer.credit_limit" placeholder="0.00"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
+                    </div>
+                    <div class="pt-2 flex justify-end gap-2 border-t">
+                        <button type="button" @click="showNewCustomerForm = false" class="px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
+                        <button type="submit" :disabled="isSavingCustomer" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg flex items-center gap-1 shadow">
+                            <i class="fa-solid fa-spinner animate-spin" x-show="isSavingCustomer"></i>
+                            <span x-text="isSavingCustomer ? 'A guardar...' : 'Cadastrar e Selecionar'"></span>
+                        </button>
+                    </div>
+                </form>
             </div>
+
+            <!-- Lista de Seleção de Clientes -->
+            <div x-show="!showNewCustomerForm" class="space-y-2">
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 text-xs">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" x-model="customerFilterQuery" placeholder="Filtrar por nome, telefone ou NUIT..."
+                           class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div class="space-y-1.5 max-h-60 overflow-y-auto">
+                    <button @click="customer = null; showCustomerModal = false" class="w-full text-left p-2.5 rounded-lg hover:bg-gray-100 text-xs font-bold border border-dashed border-gray-300 flex items-center justify-between">
+                        <span><i class="fa-solid fa-user-xmark mr-1.5 text-gray-500"></i> Cliente Avulso (Consumidor Final)</span>
+                        <span class="text-[10px] bg-gray-200 px-1.5 py-0.5 rounded text-gray-700 font-bold">Padrão</span>
+                    </button>
+                    <template x-for="c in filteredCustomers" :key="c.id">
+                        <button @click="customer = c; showCustomerModal = false"
+                                class="w-full text-left p-2.5 rounded-lg hover:bg-emerald-50 border border-gray-200 text-xs flex items-center justify-between transition"
+                                :class="customer && customer.id === c.id ? 'border-emerald-500 bg-emerald-50/50 font-bold' : ''">
+                            <div>
+                                <div class="font-bold text-gray-900" x-text="c.name"></div>
+                                <div class="text-[10px] text-gray-500 flex items-center gap-2 mt-0.5">
+                                    <span x-show="c.phone"><i class="fa-solid fa-phone mr-1"></i><span x-text="c.phone"></span></span>
+                                    <span x-show="c.nuit">NUIT: <span x-text="c.nuit" class="font-mono"></span></span>
+                                </div>
+                            </div>
+                            <span class="text-emerald-600 font-bold text-xs"><i class="fa-solid fa-check" x-show="customer && customer.id === c.id"></i></span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Abertura de Caixa -->
+    <div x-cloak x-show="showOpenShiftModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4" @click.outside="showOpenShiftModal = false">
+            <div class="flex items-center justify-between border-b pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-door-open"></i>
+                    </span>
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900">Abertura de Turno de Caixa</h3>
+                        <p class="text-[11px] text-gray-500">Inicie o turno registando o fundo de maneio inicial</p>
+                    </div>
+                </div>
+                <button @click="showOpenShiftModal = false" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form @submit.prevent="submitOpenShift()" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                        Fundo de Maneio Inicial (Troco) *
+                    </label>
+                    <div class="relative">
+                        <input type="number" step="0.01" min="0" x-model="openShiftForm.opening_balance" required
+                               class="w-full pl-4 pr-12 py-2.5 border border-gray-300 rounded-xl text-lg font-black font-mono outline-none focus:ring-2 focus:ring-emerald-500">
+                        <span class="absolute inset-y-0 right-0 pr-4 flex items-center text-xs font-bold text-gray-400">MT</span>
+                    </div>
+                    <!-- Botões rápidos de troco -->
+                    <div class="grid grid-cols-4 gap-1.5 mt-2">
+                        <button type="button" @click="openShiftForm.opening_balance = 0" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg border">0 MT</button>
+                        <button type="button" @click="openShiftForm.opening_balance = 500" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg border">500 MT</button>
+                        <button type="button" @click="openShiftForm.opening_balance = 1000" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg border">1.000 MT</button>
+                        <button type="button" @click="openShiftForm.opening_balance = 2000" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg border">2.000 MT</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Notas / Observações de Abertura</label>
+                    <input type="text" x-model="openShiftForm.notes" placeholder="Ex: Caixa aberto com troco padrão"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div class="pt-3 border-t flex justify-end gap-2">
+                    <button type="button" @click="showOpenShiftModal = false" class="px-4 py-2 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-xl">Cancelar</button>
+                    <button type="submit" :disabled="isSubmittingShift" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg flex items-center gap-1.5">
+                        <i class="fa-solid fa-spinner animate-spin" x-show="isSubmittingShift"></i>
+                        <span x-text="isSubmittingShift ? 'A abrir...' : 'Abrir Caixa Agora'"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Fecho Cego de Caixa (Blind Closing) -->
+    <div x-cloak x-show="showCloseShiftModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto" @click.outside="showCloseShiftModal = false">
+            <div class="flex items-center justify-between border-b pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-lock"></i>
+                    </span>
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900">Fecho de Caixa (Fecho Cego Z)</h3>
+                        <p class="text-[11px] text-gray-500">Turno #<span x-text="shift?.id"></span> • Contagem física do numerário</p>
+                    </div>
+                </div>
+                <button @click="showCloseShiftModal = false" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Banner Explicativo de Conformidade de Auditoria -->
+            <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start gap-2">
+                <i class="fa-solid fa-shield-halved text-amber-600 mt-0.5"></i>
+                <div class="text-[11px] leading-relaxed">
+                    <strong>Procedimento de Fecho Cego:</strong> Insira o total de numerário (dinheiro físico) presente na gaveta sem consulta prévia do saldo do sistema. O sistema comparará automaticamente a contagem com as vendas registadas para apurar quebras ou sobras.
+                </div>
+            </div>
+
+            <form @submit.prevent="submitCloseShift()" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                        Total de Dinheiro Físico na Gaveta (MT) *
+                    </label>
+                    <div class="relative">
+                        <input type="number" step="0.01" min="0" x-model="closeShiftForm.closing_balance_actual" required placeholder="0.00"
+                               class="w-full pl-4 pr-12 py-3 border-2 border-emerald-500 rounded-xl text-xl font-black font-mono outline-none focus:ring-2 focus:ring-emerald-500">
+                        <span class="absolute inset-y-0 right-0 pr-4 flex items-center text-xs font-bold text-gray-400">MT</span>
+                    </div>
+                </div>
+
+                <!-- Calculadora Rápida de Notas (Opcional para facilitar a contagem de Meticais) -->
+                <div class="border border-gray-200 rounded-xl p-3 bg-gray-50/70" x-data="{ showCalculator: false }">
+                    <button type="button" @click="showCalculator = !showCalculator" class="w-full flex items-center justify-between text-xs font-bold text-gray-700">
+                        <span><i class="fa-solid fa-calculator mr-1.5 text-emerald-600"></i> Calculadora Rápida de Notas (Meticais)</span>
+                        <i class="fa-solid" :class="showCalculator ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                    </button>
+                    <div x-show="showCalculator" class="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs pt-2 border-t border-gray-200">
+                        <div>
+                            <span class="text-[10px] font-bold text-gray-500">1.000 MT (x qtd)</span>
+                            <input type="number" min="0" x-model.number="cashNotes.n1000" @input="calcNotesTotal()" class="w-full px-2 py-1 border rounded text-xs font-mono">
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold text-gray-500">500 MT (x qtd)</span>
+                            <input type="number" min="0" x-model.number="cashNotes.n500" @input="calcNotesTotal()" class="w-full px-2 py-1 border rounded text-xs font-mono">
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold text-gray-500">200 MT (x qtd)</span>
+                            <input type="number" min="0" x-model.number="cashNotes.n200" @input="calcNotesTotal()" class="w-full px-2 py-1 border rounded text-xs font-mono">
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold text-gray-500">100 MT (x qtd)</span>
+                            <input type="number" min="0" x-model.number="cashNotes.n100" @input="calcNotesTotal()" class="w-full px-2 py-1 border rounded text-xs font-mono">
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold text-gray-500">50 MT (x qtd)</span>
+                            <input type="number" min="0" x-model.number="cashNotes.n50" @input="calcNotesTotal()" class="w-full px-2 py-1 border rounded text-xs font-mono">
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold text-gray-500">20 MT (x qtd)</span>
+                            <input type="number" min="0" x-model.number="cashNotes.n20" @input="calcNotesTotal()" class="w-full px-2 py-1 border rounded text-xs font-mono">
+                        </div>
+                        <div class="sm:col-span-3">
+                            <span class="text-[10px] font-bold text-gray-500">Total em Moedas (MT)</span>
+                            <input type="number" step="0.5" min="0" x-model.number="cashNotes.coins" @input="calcNotesTotal()" class="w-full px-2 py-1 border rounded text-xs font-mono">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Observações / Justificação de Fecho</label>
+                    <textarea x-model="closeShiftForm.notes" rows="2" placeholder="Ex: Caixa balanceado ou justificativa de quebra/sobra..."
+                              class="w-full px-3 py-2 border border-gray-300 rounded-xl text-xs outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+                </div>
+
+                <div class="pt-3 border-t flex justify-end gap-2">
+                    <button type="button" @click="showCloseShiftModal = false" class="px-4 py-2 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-xl">Cancelar</button>
+                    <button type="submit" :disabled="isSubmittingShift" class="px-5 py-2.5 bg-slate-900 hover:bg-black text-white font-bold text-xs rounded-xl shadow-lg flex items-center gap-1.5">
+                        <i class="fa-solid fa-spinner animate-spin" x-show="isSubmittingShift"></i>
+                        <span x-text="isSubmittingShift ? 'A fechar turno...' : 'Concluir Fecho & Emitir Talão Z'"></span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -519,6 +743,32 @@
                 isSubmitting: false,
                 isLoading: false,
                 offlineQueue: [],
+
+                // Turno de Caixa
+                shift: @json($activeShift ? ['id' => $activeShift->id, 'opened_at' => $activeShift->opened_at->format('H:i'), 'opening_balance' => (float)$activeShift->opening_balance] : null),
+                showOpenShiftModal: false,
+                showCloseShiftModal: false,
+                isSubmittingShift: false,
+                openShiftForm: { opening_balance: 0, notes: '' },
+                closeShiftForm: { closing_balance_actual: '', notes: '' },
+                cashNotes: { n1000: 0, n500: 0, n200: 0, n100: 0, n50: 0, n20: 0, coins: 0 },
+
+                // Clientes
+                customersList: @json($customers ?? []),
+                customerFilterQuery: '',
+                showNewCustomerForm: false,
+                isSavingCustomer: false,
+                newCustomer: { name: '', phone: '', nuit: '', credit_limit: 0 },
+
+                get filteredCustomers() {
+                    if (!this.customerFilterQuery) return this.customersList;
+                    const q = this.customerFilterQuery.toLowerCase();
+                    return this.customersList.filter(c => 
+                        (c.name && c.name.toLowerCase().includes(q)) ||
+                        (c.phone && c.phone.includes(q)) ||
+                        (c.nuit && c.nuit.includes(q))
+                    );
+                },
 
                 init() {
                     const previousScope = sessionStorage.getItem('zbiz_pos_scope');
@@ -815,6 +1065,157 @@
                         this.showCheckoutModal = false;
                     } finally {
                         this.isSubmitting = false;
+                    }
+                },
+
+                async saveQuickCustomer() {
+                    if (!this.newCustomer.name) return;
+                    this.isSavingCustomer = true;
+                    try {
+                        const res = await fetch('/customers/quick-store', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(this.newCustomer)
+                        });
+                        const data = await res.json();
+                        if (data.success && data.customer) {
+                            this.customersList.unshift(data.customer);
+                            this.customer = data.customer;
+                            this.showCustomerModal = false;
+                            this.showNewCustomerForm = false;
+                            this.newCustomer = { name: '', phone: '', nuit: '', credit_limit: 0 };
+                            this.notifySuccess('Cliente Registado', `Cliente "${data.customer.name}" adicionado e selecionado.`);
+                        } else {
+                            this.notifyError('Erro ao registar', data.message || 'Não foi possível registar o cliente.');
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        this.notifyError('Erro de Rede', 'Falha ao comunicar com o servidor.');
+                    } finally {
+                        this.isSavingCustomer = false;
+                    }
+                },
+
+                calcNotesTotal() {
+                    const total = (Number(this.cashNotes.n1000 || 0) * 1000) +
+                                  (Number(this.cashNotes.n500 || 0) * 500) +
+                                  (Number(this.cashNotes.n200 || 0) * 200) +
+                                  (Number(this.cashNotes.n100 || 0) * 100) +
+                                  (Number(this.cashNotes.n50 || 0) * 50) +
+                                  (Number(this.cashNotes.n20 || 0) * 20) +
+                                  Number(this.cashNotes.coins || 0);
+                    this.closeShiftForm.closing_balance_actual = Math.round(total * 100) / 100;
+                },
+
+                openCloseShiftModal() {
+                    this.closeShiftForm = { closing_balance_actual: '', notes: '' };
+                    this.cashNotes = { n1000: 0, n500: 0, n200: 0, n100: 0, n50: 0, n20: 0, coins: 0 };
+                    this.showCloseShiftModal = true;
+                },
+
+                async submitOpenShift() {
+                    this.isSubmittingShift = true;
+                    try {
+                        const res = await fetch('/cash-shifts/open', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(this.openShiftForm)
+                        });
+                        const data = await res.json();
+                        if (data.success && data.shift) {
+                            const openedDate = new Date(data.shift.opened_at);
+                            const hours = String(openedDate.getHours()).padStart(2, '0');
+                            const minutes = String(openedDate.getMinutes()).padStart(2, '0');
+                            this.shift = {
+                                id: data.shift.id,
+                                opened_at: `${hours}:${minutes}`,
+                                opening_balance: Number(data.shift.opening_balance)
+                            };
+                            this.showOpenShiftModal = false;
+                            this.openShiftForm = { opening_balance: 0, notes: '' };
+                            this.notifySuccess('Caixa Aberto!', 'Turno de caixa aberto com sucesso. Boas vendas!');
+                        } else {
+                            this.notifyError('Erro ao abrir caixa', data.message || 'Não foi possível abrir o turno.');
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        this.notifyError('Erro de Rede', 'Falha ao comunicar com o servidor.');
+                    } finally {
+                        this.isSubmittingShift = false;
+                    }
+                },
+
+                async submitCloseShift() {
+                    if (!this.shift) return;
+                    if (this.closeShiftForm.closing_balance_actual === '' || this.closeShiftForm.closing_balance_actual === null) {
+                        this.notifyWarning('Valor Obrigatório', 'Por favor insira o montante físico apurado na gaveta.');
+                        return;
+                    }
+                    this.isSubmittingShift = true;
+                    try {
+                        const res = await fetch(`/cash-shifts/${this.shift.id}/close`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(this.closeShiftForm)
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            this.showCloseShiftModal = false;
+                            const diff = Number(data.difference || 0);
+                            let diffMessage = 'Caixa balanceado perfeitamente (Diferença: 0.00 MT)';
+                            let icon = 'success';
+                            if (diff > 0) {
+                                diffMessage = `Apurada SOBRA em caixa de +${this.formatCurrency(diff)}.`;
+                                icon = 'info';
+                            } else if (diff < 0) {
+                                diffMessage = `Apurada QUEBRA em caixa de ${this.formatCurrency(diff)}.`;
+                                icon = 'warning';
+                            }
+
+                            Swal.fire({
+                                icon: icon,
+                                title: 'Caixa Fechado com Sucesso!',
+                                html: `
+                                    <div class="text-left text-xs space-y-1.5 p-3 bg-gray-100 rounded-lg">
+                                        <div class="flex justify-between"><span>Esperado pelo Sistema:</span> <strong>${this.formatCurrency(data.expected_cash)}</strong></div>
+                                        <div class="flex justify-between"><span>Contagem Física:</span> <strong>${this.formatCurrency(data.actual_cash)}</strong></div>
+                                        <div class="flex justify-between border-t pt-1 font-bold ${diff < 0 ? 'text-red-600' : (diff > 0 ? 'text-emerald-600' : 'text-gray-800')}">
+                                            <span>Diferença:</span> <span>${diff > 0 ? '+' : ''}${this.formatCurrency(diff)}</span>
+                                        </div>
+                                    </div>
+                                    <p class="mt-3 text-xs text-gray-600">${diffMessage}</p>
+                                `,
+                                confirmButtonColor: '#0f172a',
+                                confirmButtonText: '<i class="fa-solid fa-print mr-1"></i> Imprimir Talão de Fecho Z',
+                                showCancelButton: true,
+                                cancelButtonText: 'Fechar'
+                            }).then((result) => {
+                                if (result.isConfirmed && data.receipt_url) {
+                                    window.open(data.receipt_url + '?autoprint=1', '_blank', 'width=400,height=600');
+                                }
+                            });
+
+                            this.shift = null;
+                        } else {
+                            this.notifyError('Erro ao fechar caixa', data.message || 'Ocorreu um erro ao encerrar o turno.');
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        this.notifyError('Erro de Rede', 'Falha ao comunicar com o servidor.');
+                    } finally {
+                        this.isSubmittingShift = false;
                     }
                 },
 

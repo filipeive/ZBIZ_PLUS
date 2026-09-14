@@ -13,7 +13,7 @@ class Sale extends Model
     use BelongsToTenant;
     protected $fillable = [
         'customer_id',
-        'tenant_id', 'branch_id',
+        'tenant_id', 'branch_id', 'cash_shift_id',
         'user_id', 'customer_name', 'customer_phone', 'customer_nuit', 'customer_address',
         'subtotal', 'discount_amount', 'discount_percentage', 
         'discount_type', 'discount_reason', 'total_amount', 
@@ -48,6 +48,11 @@ class Sale extends Model
     public function branch(): BelongsTo
     {
         return $this->belongsTo(Branch::class);
+    }
+
+    public function cashShift(): BelongsTo
+    {
+        return $this->belongsTo(CashShift::class);
     }
 
     public function quotation(): BelongsTo

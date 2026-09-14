@@ -20,6 +20,8 @@
 /storage/*.key
 /storage/pail
 /vendor
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
 Homestead.json
 Homestead.yaml
 Thumbs.db
@@ -30,3 +32,6 @@ Thumbs.db
 .codex
 scratch/
 storage/app/public/salary-receipts/*
+# ignore deployment files
+/deploy.php
+./deploy.sh

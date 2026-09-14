@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Fiados & Dívidas')
-@section('page-title', 'Gestão de Fiados & Contas a Receber')
+@section('title', 'Dívidas')
+@section('page-title', 'Gestão Contas a Receber')
 
 @php
     $theme = tenant_theme();
@@ -142,7 +142,7 @@
                         </a>
                         @if($debt->remaining_amount > 0)
                             <a href="{{ route('debts.payment', $debt->id) }}" class="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs font-bold transition flex items-center gap-1">
-                                <i class="fa-solid fa-hand-holding-dollar"></i> Pagar
+                                <i class="fa-solid fa-hand-holding-dollar"></i> Registrar Pagamento
                             </a>
                         @endif
                     </div>
@@ -151,7 +151,7 @@
         @empty
             <div class="col-span-full py-16 text-center text-slate-500 bg-slate-900/50 border border-dashed border-slate-800 rounded-3xl">
                 <i class="fa-solid fa-hand-holding-dollar text-4xl mb-3 text-slate-600"></i>
-                <p class="text-sm">Nenhum fiado pendente.</p>
+                <p class="text-sm">Nenhuma conta a receber pendente.</p>
             </div>
         @endforelse
     </div>
@@ -207,7 +207,7 @@
                                     </a>
                                     @if($debt->remaining_amount > 0)
                                     <a href="{{ route('debts.payment', $debt->id) }}" class="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg text-xs font-bold transition flex items-center gap-1">
-                                        <i class="fa-solid fa-hand-holding-dollar"></i> Pagar
+                                        <i class="fa-solid fa-hand-holding-dollar"></i> Registrar Pagamento
                                     </a>
                                     @endif
                                 </div>
@@ -217,7 +217,7 @@
                         <tr>
                             <td colspan="8" class="py-12 text-center text-slate-500">
                                 <i class="fa-solid fa-hand-holding-dollar text-3xl mb-2 text-slate-600"></i>
-                                <p>Nenhum fiado pendente.</p>
+                                <p>Nenhuma conta a receber pendente.</p>
                             </td>
                         </tr>
                     @endforelse

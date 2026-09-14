@@ -349,6 +349,7 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
             Route::get('/{debt}/payment', [DebtController::class, 'payment'])->name('payment');
             Route::post('/{debt}/add-payment', [DebtController::class, 'addPayment'])->name('add-payment');
             Route::patch('/{debt}/mark-as-paid', [DebtController::class, 'markAsPaid'])->name('mark-as-paid');
+            Route::get('/payments/{payment}/receipt', [DebtController::class, 'printPaymentReceipt'])->name('payments.receipt');
         });
 
         // Editar dívidas - edit_debts permission
@@ -373,6 +374,24 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         Route::get('/search/employees', [DebtController::class, 'searchEmployees'])->name('search-employees');
         Route::get('/search/customers', [DebtController::class, 'searchCustomers'])->name('search-customers');
         Route::post('/update-overdue-status', [DebtController::class, 'updateOverdueStatus'])->name('update-overdue-status');
+    });
+
+    // ===== GESTÃO DE CLIENTES =====
+    Route::post('/customers/quick-store', [\App\Http\Controllers\CustomerController::class, 'quickStore'])->name('customers.quick-store');
+    Route::resource('customers', \App\Http\Controllers\CustomerController::class);
+
+    // ===== GESTÃO DE FORNECEDORES =====
+    Route::post('/suppliers/quick-store', [\App\Http\Controllers\SupplierController::class, 'quickStore'])->name('suppliers.quick-store');
+    Route::patch('/suppliers/{supplier}/toggle-status', [\App\Http\Controllers\SupplierController::class, 'toggleStatus'])->name('suppliers.toggle-status');
+    Route::resource('suppliers', \App\Http\Controllers\SupplierController::class);
+
+    // ===== TURNOS E FECHO DE CAIXA (FECHO Z) =====
+    Route::prefix('cash-shifts')->name('cash-shifts.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\CashShiftController::class, 'index'])->name('index');
+        Route::post('/open', [\App\Http\Controllers\CashShiftController::class, 'open'])->name('open');
+        Route::post('/{shift}/close', [\App\Http\Controllers\CashShiftController::class, 'close'])->name('close');
+        Route::get('/{shift}/receipt', [\App\Http\Controllers\CashShiftController::class, 'printReceipt'])->name('receipt');
+        Route::get('/api/status', [\App\Http\Controllers\CashShiftController::class, 'currentStatus'])->name('status');
     });
 
     // ===== FINANÇAS =====
@@ -494,6 +513,10 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
             Route::get('/sales-specialized', [ReportController::class, 'salesReport'])->name('sales-specialized')->middleware('feature:reports_advanced');
             Route::get('/expenses-specialized', [ReportController::class, 'expensesReport'])->name('expenses-specialized')->middleware('feature:reports_advanced');
             Route::get('/comparison-specialized', [ReportController::class, 'comparisonReport'])->name('comparison-specialized')->middleware('feature:reports_advanced');
+
+            // ===== MAPA FISCAL DE APURAMENTO DE IVA (AT MODELO A) =====
+            Route::get('/tax-iva', [ReportController::class, 'taxIvaReport'])->name('tax-iva');
+            Route::get('/tax-iva/pdf', [ReportController::class, 'downloadTaxIvaPdf'])->name('tax-iva.pdf');
 
             // ===== EXPORTAÇÕES =====
             Route::get('/export', [ReportController::class, 'export'])->name('export');

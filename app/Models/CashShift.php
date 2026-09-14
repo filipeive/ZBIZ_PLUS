@@ -49,14 +49,58 @@ class CashShift extends Model
         return $this->belongsTo(FinancialAccount::class, 'financial_account_id');
     }
 
+    public function sales(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Sale::class);
+    }
+
     public function isOpen(): bool
     {
         return $this->status === 'open';
     }
 
+    public function getCashSalesTotalAttribute(): float
+    {
+        return (float)$this->sales()->where('payment_method', 'cash')->sum('total_amount');
+    }
+
+    public function getMpesaSalesTotalAttribute(): float
+    {
+        return (float)$this->sales()->where('payment_method', 'mpesa')->sum('total_amount');
+    }
+
+    public function getEmolaSalesTotalAttribute(): float
+    {
+        return (float)$this->sales()->where('payment_method', 'emola')->sum('total_amount');
+    }
+
+    public function getCardSalesTotalAttribute(): float
+    {
+        return (float)$this->sales()->where('payment_method', 'card')->sum('total_amount');
+    }
+
+    public function getCreditSalesTotalAttribute(): float
+    {
+        return (float)$this->sales()->where('payment_method', 'credit')->sum('total_amount');
+    }
+
+    public function getTotalSalesAmountAttribute(): float
+    {
+        return (float)$this->sales()->sum('total_amount');
+    }
+
+    public function getExpectedCashAttribute(): float
+    {
+        return (float)$this->opening_balance + $this->cash_sales_total;
+    }
+
     public function closeShift(float $actualCash, ?string $notes = null): void
     {
-        $systemBalance = (float)($this->account?->current_balance ?? 0);
+        $systemBalance = $this->expected_cash;
+        if ($this->account && $this->account->current_balance > 0) {
+            $systemBalance = (float)$this->account->current_balance;
+        }
+
         $diff = $actualCash - $systemBalance;
 
         $this->update([

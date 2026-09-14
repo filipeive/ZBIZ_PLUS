@@ -142,7 +142,7 @@
 
     <div class="text-center" style="font-size: 10px;">
         <p>Obrigado pela preferência!</p>
-        <p>Software processado por <strong>ZBIZ+</strong></p>
+        <p>Documento processado por <strong>ZBIZ+</strong></p>
     </div>
 
     <script>
