@@ -50,6 +50,11 @@
 
     <!-- Cabeçalho -->
     <div class="text-center">
+        @if(!empty($debt->tenant?->logo_url))
+            <div style="margin-bottom: 6px;">
+                <img src="{{ $debt->tenant->logo_url }}" alt="Logo" style="max-height: 48px; max-width: 150px; object-fit: contain;">
+            </div>
+        @endif
         <h2 style="margin: 0; font-size: 15px; font-weight: bold;">{{ $debt->tenant?->name ?? config('app.name', 'ZBIZ+') }}</h2>
         <div style="font-size: 11px;">{{ $debt->branch?->name ?? 'Balcão de Atendimento' }}</div>
         @if($debt->tenant?->nuit)
@@ -151,3 +156,4 @@
     </script>
 </body>
 </html>
+

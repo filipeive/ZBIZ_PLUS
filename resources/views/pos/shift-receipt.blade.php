@@ -58,6 +58,11 @@
 
     <!-- Cabeçalho da Empresa -->
     <div class="text-center">
+        @if(!empty($shift->tenant?->logo_url))
+            <div style="margin-bottom: 6px;">
+                <img src="{{ $shift->tenant->logo_url }}" alt="Logo" style="max-height: 48px; max-width: 150px; object-fit: contain;">
+            </div>
+        @endif
         <h2 style="margin: 0; font-size: 15px; font-weight: bold;">{{ $shift->tenant?->name ?? config('app.name', 'ZBIZ+') }}</h2>
         <div style="font-size: 11px;">{{ $shift->branch?->name ?? 'Balcão de Atendimento' }}</div>
         @if($shift->tenant?->nuit)
@@ -199,3 +204,4 @@
     </script>
 </body>
 </html>
+

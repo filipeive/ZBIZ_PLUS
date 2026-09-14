@@ -13,6 +13,7 @@ class Sale extends Model
     use BelongsToTenant;
     protected $fillable = [
         'customer_id',
+        'tenant_id', 'branch_id',
         'tenant_id', 'branch_id', 'cash_shift_id',
         'user_id', 'customer_name', 'customer_phone', 'customer_nuit', 'customer_address',
         'subtotal', 'discount_amount', 'discount_percentage', 

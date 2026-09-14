@@ -85,6 +85,7 @@ class ProductController extends Controller
         $categories = Category::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('is_active', true)->orderBy('name')->get();
         // Produtos físicos que podem ser vinculados a serviços (ex: Papel A4)
         $physicalProducts = Product::withoutGlobalScopes()->where('tenant_id', $tenantId)->whereIn('type', ['product', 'physical'])->where('is_active', true)->orderBy('name')->get();
+        return view('products.create', compact('categories', 'physicalProducts'));
         $suppliers = Supplier::where('tenant_id', $tenantId)->where('is_active', true)->orderBy('name')->get();
         return view('products.create', compact('categories', 'physicalProducts', 'suppliers'));
     }
@@ -130,6 +131,7 @@ class ProductController extends Controller
             DB::beginTransaction();
 
             $data = collect($validated)->only([
+                'name', 'category_id', 'linked_product_id', 'type', 'selling_price',
                 'name', 'category_id', 'supplier_id', 'linked_product_id', 'type', 'selling_price',
                 'purchase_price', 'promotional_price', 'promotion_discount_percent',
                 'promotion_ends_at', 'barcode', 'sku', 'unit', 'description'
@@ -225,6 +227,7 @@ class ProductController extends Controller
         $latestBatch = $product->batches()->latest()->first();
         $suppliers = Supplier::where('tenant_id', $tenantId)->where('is_active', true)->orderBy('name')->get();
 
+        return view('products.edit', compact('product', 'categories', 'physicalProducts', 'latestBatch'));
         return view('products.edit', compact('product', 'categories', 'physicalProducts', 'latestBatch', 'suppliers'));
     }
 
@@ -274,6 +277,7 @@ class ProductController extends Controller
             $validated = $request->validate($validationRules);
 
             $data = collect($validated)->only([
+                'name', 'category_id', 'linked_product_id', 'type', 'selling_price',
                 'name', 'category_id', 'supplier_id', 'linked_product_id', 'type', 'selling_price',
                 'purchase_price', 'promotional_price', 'promotion_discount_percent',
                 'promotion_ends_at', 'barcode', 'sku', 'unit', 'description'

@@ -201,3 +201,4 @@ class CustomerController extends Controller
             ->with('success', "Cliente '{$customer->name}' removido com sucesso.");
     }
 }
+

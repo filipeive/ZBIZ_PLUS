@@ -46,6 +46,11 @@
     </div>
 
     <div class="text-center">
+        @if(!empty($sale->tenant?->logo_url))
+            <div style="margin-bottom: 6px;">
+                <img src="{{ $sale->tenant->logo_url }}" alt="Logo" style="max-height: 48px; max-width: 150px; object-fit: contain;">
+            </div>
+        @endif
         <h2 style="margin: 0; font-size: 16px;">{{ $sale->tenant?->name ?? config('app.name', 'ZBIZ+') }}</h2>
         <div>{{ $sale->branch?->name ?? 'Loja Principal' }}</div>
         @if($sale->tenant?->nuit)

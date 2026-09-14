@@ -230,3 +230,4 @@ class CashShiftController extends Controller
         return view('pos.shift-receipt', compact('shift'));
     }
 }
+

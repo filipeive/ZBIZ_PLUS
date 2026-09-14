@@ -1,10 +1,10 @@
 # ZBIZ+ — Plataforma Empresarial Modular e SaaS Multissetorial
 
-> **ZBIZ+**: A Solução ERP & POS Inteligente concebida para o mercado de **Moçambique**, com suporte nativo a Farmácias (ANARME), Restauração com KDS/Mesas, Retalho Geral e Prestação de Serviços.
+> **ZBIZ+**: A Solução ERP & POS Inteligente concebida para o mercado de **Moçambique**, com suporte nativo a Farmácias (ANARME & CIVA Art. 9º), Restauração com KDS/Mesas, Retalho Geral, Prestação de Serviços, Fecho Cego de Caixa e Gestão Fiscal Modelo A.
 
 ![ZBIZ+ Banner](public/favicon.png)
 
-[![Versão](https://img.shields.io/badge/versão-v1.0.19-emerald.svg)](./docs/20_CHANGELOG.md)
+[![Versão](https://img.shields.io/badge/versão-v1.0.20-emerald.svg)](./docs/20_CHANGELOG.md)
 [![PHP](https://img.shields.io/badge/PHP-8.3-blue.svg)](https://www.php.net)
 [![Laravel](https://img.shields.io/badge/Laravel-12.x-red.svg)](https://laravel.com)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](docker-compose.yml)
@@ -14,13 +14,18 @@
 
 ## 🌟 Visão Geral
 
-O **ZBIZ+** é uma evolução de nível empresarial do ReproSys, arquitetado como um Monólito Modular Multi-Tenant com isolamento estrito de dados por empresa e filial. Desenvolvido para resolver os desafios reais do comércio e serviços em Moçambique: conectividade instável, necessidade de conformidade regulatória (ANARME), gestão de múltiplos balcões/filiais e reconciliação financeira (M-Pesa e e-Mola).
+O **ZBIZ+** é uma evolução de nível empresarial do ReproSys, arquitetado como um Monólito Modular Multi-Tenant com isolamento estrito de dados por empresa e filial. Desenvolvido para resolver os desafios reais do comércio e serviços em Moçambique: conectividade instável, necessidade de conformidade regulatória (ANARME / AT Moçambique), gestão de múltiplos balcões/filiais e reconciliação financeira (M-Pesa e e-Mola).
 
-### 🧩 Módulos Verticais Especializados:
-* **💊 ZBIZ Farmácia:** Rastreabilidade estrita de Lotes, Validades (alertas dinâmicos de 30/60/90 dias), algoritmo FEFO (*First Expire, First Out*), dosagem, substância ativa e relatórios de psicotrópicos em conformidade com as diretrizes da **ANARME**.
-* **🍽️ ZBIZ Restauração:** Gestão de mesas em tempo real, visualização de ocupação, comanda eletrónica e painel de cozinha (KDS - Kitchen Display System).
-* **🛒 ZBIZ Retalho & Supermercado:** Frente de Caixa (POS 2.0) de alta velocidade, suporte a leitores de código de barras, atalhos de teclado, inventário por filial e transferências entre lojas.
+### 🧩 Módulos e Recursos Principais:
+* **💊 ZBIZ Farmácia & Saúde:** Rastreabilidade estrita de Lotes, Validades (alertas dinâmicos de 30/60/90 dias), algoritmo FEFO (*First Expire, First Out*), enquadramento de isenção de IVA (Art. 9º CIVA), dosagem, substância ativa e relatórios de psicotrópicos em conformidade com a **ANARME**.
+* **🛒 ZBIZ Retalho & Supermercado:** Frente de Caixa (POS 2.0) de alta velocidade, suporte a leitores de código de barras, atalhos de teclado, cadastro rápido de clientes no balcão, inventário por filial e transferências entre lojas.
+* **🍽️ ZBIZ Restauração & Bar:** Gestão de mesas em tempo real, visualização gráfica de ocupação, comanda eletrónica e painel de cozinha (KDS - Kitchen Display System).
 * **🖨️ ZBIZ Serviços & Reprografia:** Gestão de ordens de serviço, insumos de produção vinculados, adiantamentos/sinal e faturação modular.
+* **👥 Clientes & Fornecedores:** Gestão cadastral completa, limite de crédito, contas correntes, controle de distribuidores ativos/inativos e vínculo direto fornecedor-produto.
+* **🔒 Fecho Cego de Caixa (Anti-Fraude):** Abertura de turnos com fundo de maneio, fecho cego sem revelar valor esperado ao operador, calculadora embutida de notas/moedas de Meticais (MZN), apuramento imediato de quebra/sobra e emissão de Fecho Z térmico.
+* **🇲🇿 Fiscalidade & IVA Moçambique (Modelo A):** Apuramento automático de vendas isentas (Art. 9º CIVA) e tributáveis (16%), base tributável, IVA liquidado e exportação oficial do Mapa Modelo A da Autoridade Tributária em PDF timbrado.
+* **🧾 Comprovativos Térmicos com Logótipo Dinâmico:** Padronização visual em 80mm/58mm com o logótipo oficial do tenant, talões de venda, comprovativo térmico de amortização de dívidas e fecho de turno.
+* **💾 Backups & Segurança de Dados:** Criação sob demanda de dumps completos da base de dados (.sql) diretamente pela interface das Definições, com download e exclusão segura.
 * **💳 Pagamentos Nacionais:** Suporte a pagamentos em Dinheiro, M-Pesa (C2B STK Push), e-Mola, Cartão POS (POS físico) e Vendas a Crédito com gestão de amortizações.
 * **🏢 SaaS & Centro de Controlo do Proprietário:** Emissão de chaves de licença seriais offline (certificados PDF oficiais), upgrade instantâneo de planos e modo suporte (*impersonate*) com 1 clique.
 
@@ -173,11 +178,13 @@ O `deploy.sh` realiza no servidor:
 
 A documentação detalhada de governança e regras de negócio está na pasta [`docs/`](./docs):
 
+* [`MANUAL_DO_USUARIO.md`](./MANUAL_DO_USUARIO.md) — Manual Oficial do Usuário e Operador de Caixa (v1.0.20)
 * [`00_SYSTEM_STATUS_AND_ARCHITECTURE_2026.md`](./docs/00_SYSTEM_STATUS_AND_ARCHITECTURE_2026.md) — Relatório de Estado do Sistema e Arquitetura Completa
-* [`03_ROADMAP.md`](./docs/03_ROADMAP.md) — Cronograma de Desenvolvimento (Fases 1 a 10 Concluídas)
-* [`06_DATABASE_SCHEMA.md`](./docs/06_DATABASE_SCHEMA.md) — Dicionário Oficial de Base de Dados (30+ Tabelas e Relacionamentos)
+* [`03_ROADMAP.md`](./docs/03_ROADMAP.md) — Cronograma de Desenvolvimento
+* [`06_DATABASE_SCHEMA.md`](./docs/06_DATABASE_SCHEMA.md) — Dicionário Oficial de Base de Dados (35+ Tabelas e Relacionamentos)
 * [`07_VERTICAL_MODULES.md`](./docs/07_VERTICAL_MODULES.md) — Especificação dos Módulos Farmácia, Restauração, Retalho e Serviços
 * [`09_PHARMACY_REGULATORY_GUIDE.md`](./docs/09_PHARMACY_REGULATORY_GUIDE.md) — Diretrizes ANARME, Lotes, FEFO e Psicotrópicos
+* [`10_BILLING_TAX_MOZAMBIQUE.md`](./docs/10_BILLING_TAX_MOZAMBIQUE.md) — Regime Fiscal de Moçambique, CIVA e Apuramento de IVA Modelo A
 * [`13_OWNER_CONTROL_CENTER_AND_OFFLINE_LICENSES.md`](./docs/13_OWNER_CONTROL_CENTER_AND_OFFLINE_LICENSES.md) — Centro de Licenças e Suporte Impersonate
 * [`APRESENTACAO_CLIENTE_FARMACIA.md`](./docs/APRESENTACAO_CLIENTE_FARMACIA.md) — Apresentação Comercial para Proprietários de Farmácias
 * [`20_CHANGELOG.md`](./docs/20_CHANGELOG.md) — Registo Histórico de Versões
@@ -195,4 +202,4 @@ O **ZBIZ+** é desenvolvido e mantido com rigor de engenharia por:
 
 ---
 
-*ZBIZ+ · Enterprise Cloud & POS Suite v1.0.19 · Desenvolvido por Fdsmultiservices*
+*ZBIZ+ · Enterprise Cloud & POS Suite v1.0.20 · Desenvolvido por Fdsmultiservices*

@@ -803,7 +803,7 @@
                 <div class="p-5 border-b border-slate-800/60 flex items-center justify-between">
                     <a href="{{ $isOwnerConsole ? route('owner.tenants.index') : route('dashboard.index') }}" class="flex items-center space-x-3 group min-w-0">
                         <!-- Brand logo/avatar -->
-                        <div class="w-9 h-9 rounded-xl bg-emerald-600 flex-shrink-0 flex items-center justify-center shadow-md group-hover:scale-105 transition overflow-hidden border border-emerald-500/30">
+                        <div class="w-9 h-9 rounded-xl bg-transparent flex-shrink-0 flex items-center justify-center shadow-md group-hover:scale-105 transition overflow-hidden border border-slate-800/60">
                             @if(!empty($theme['logo_url']))
                                 <img src="{{ $theme['logo_url'] }}" alt="Logo" class="w-full h-full object-contain p-0.5">
                             @else

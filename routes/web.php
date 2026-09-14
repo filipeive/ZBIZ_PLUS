@@ -567,6 +567,9 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         Route::post('/settings', [AdminController::class, 'updateSettings'])->name('admin.settings.update');
         Route::get('/api/admin/settings', [AdminController::class, 'getSettings'])->name('admin.settings.get');
         Route::post('/admin/settings', [AdminController::class, 'saveSettings'])->name('admin.settings.save');
+        Route::post('/settings/backups/create', [AdminController::class, 'createBackup'])->name('admin.backup.create');
+        Route::get('/settings/backups/{filename}/download', [AdminController::class, 'downloadBackup'])->name('admin.backup.download');
+        Route::delete('/settings/backups/{filename}', [AdminController::class, 'deleteBackup'])->name('admin.backup.delete');
         Route::prefix('documents/templates')->name('documents.templates.')->group(function () {
             Route::get('/', [DocumentTemplateController::class, 'index'])->name('index');
             Route::post('/settings', [DocumentTemplateController::class, 'updateSettings'])->name('settings.update');

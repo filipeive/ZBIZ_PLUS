@@ -19,7 +19,27 @@ class AdminController extends Controller
         $allPermissions = config('auth_permissions.all_permissions', []);
         $rolePermissions = \App\Services\PermissionService::getRolePermissionsMap($tenant);
         
-        return view('settings.index', compact('tenant', 'settings', 'allPermissions', 'rolePermissions'));
+        $backupPath = storage_path('app/backups');
+        $backups = [];
+        if (\Illuminate\Support\Facades\File::exists($backupPath)) {
+            $files = \Illuminate\Support\Facades\File::files($backupPath);
+            $tenantPrefix = 'backup_t' . ($tenant?->id ?? 0) . '_';
+            foreach ($files as $file) {
+                $filename = $file->getFilename();
+                if (str_starts_with($filename, $tenantPrefix) || str_starts_with($filename, 'backup_')) {
+                    $backups[] = [
+                        'filename'  => $filename,
+                        'size'      => $this->formatBytes($file->getSize()),
+                        'size_raw'  => $file->getSize(),
+                        'date'      => date('d/m/Y H:i', $file->getMTime()),
+                        'timestamp' => $file->getMTime(),
+                    ];
+                }
+            }
+            usort($backups, fn($a, $b) => $b['timestamp'] <=> $a['timestamp']);
+        }
+
+        return view('settings.index', compact('tenant', 'settings', 'allPermissions', 'rolePermissions', 'backups'));
     }
 
     /**
@@ -183,50 +203,6 @@ class AdminController extends Controller
         }
     }
 
-    public function createBackup()
-    {
-        try {
-            $dbName = env('DB_DATABASE');
-            $dbUser = env('DB_USERNAME');
-            $dbPass = env('DB_PASSWORD');
-            $dbHost = env('DB_HOST', '127.0.0.1');
-            
-            $fileName = "backup_" . date('Y-m-d_H-i-s') . ".sql";
-            $storagePath = storage_path("app/backups");
-            
-            if (!file_exists($storagePath)) {
-                mkdir($storagePath, 0755, true);
-            }
-            
-            $filePath = $storagePath . "/" . $fileName;
-            
-            // Comando mysqldump
-            $command = "mysqldump --user={$dbUser} --password='{$dbPass}' --host={$dbHost} {$dbName} > {$filePath}";
-            
-            $result = null;
-            $output = [];
-            exec($command, $output, $result);
-            
-            if ($result === 0) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Backup criado com sucesso!',
-                    'file' => $fileName,
-                    'path' => $filePath
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Erro ao executar mysqldump. Verifique as permissões.',
-                    'error_code' => $result
-                ], 500);
-            }
-        } catch (\Exception $e) {
-            Log::error('Erro no Backup: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Erro ao processar backup', 'error' => $e->getMessage()], 500);
-        }
-    }
-
     public function getLogs()
     {
         try {
@@ -285,5 +261,147 @@ class AdminController extends Controller
         $tenantSettings = collect($tenant?->settings ?? []);
 
         return $defaults->merge($tenantSettings);
+    }
+
+    /**
+     * Criar novo backup do sistema (base de dados).
+     */
+    public function createBackup(Request $request)
+    {
+        try {
+            $tenant = current_tenant();
+            $backupPath = storage_path('app/backups');
+            if (!\Illuminate\Support\Facades\File::exists($backupPath)) {
+                \Illuminate\Support\Facades\File::makeDirectory($backupPath, 0755, true);
+            }
+
+            $prefix = 'backup_t' . ($tenant?->id ?? '0') . '_';
+            $filename = $prefix . date('Y-m-d_H-i-s') . '.sql';
+            $filePath = $backupPath . '/' . $filename;
+
+            $dbName = config('database.connections.mysql.database', env('DB_DATABASE', 'zbizplus_db'));
+            $dbUser = config('database.connections.mysql.username', env('DB_USERNAME', 'root'));
+            $dbPass = config('database.connections.mysql.password', env('DB_PASSWORD', ''));
+            $dbHost = config('database.connections.mysql.host', env('DB_HOST', '127.0.0.1'));
+            $dbPort = config('database.connections.mysql.port', env('DB_PORT', '3306'));
+
+            $connection = config('database.default');
+            if ($connection === 'sqlite') {
+                $sqliteDb = config('database.connections.sqlite.database');
+                if (\Illuminate\Support\Facades\File::exists($sqliteDb)) {
+                    \Illuminate\Support\Facades\File::copy($sqliteDb, $backupPath . '/' . $prefix . date('Y-m-d_H-i-s') . '.sqlite');
+                }
+            } else {
+                // Tentativa via mysqldump
+                $passArg = $dbPass ? "--password=\"" . addcslashes($dbPass, '"') . "\"" : "";
+                $portArg = $dbPort ? "--port={$dbPort}" : "";
+                $command = "mysqldump --user=\"{$dbUser}\" {$passArg} --host=\"{$dbHost}\" {$portArg} \"{$dbName}\" > \"{$filePath}\" 2>/dev/null";
+                @exec($command);
+
+                // Fallback inteligente caso mysqldump gere ficheiro vazio ou não esteja disponível:
+                if (!\Illuminate\Support\Facades\File::exists($filePath) || \Illuminate\Support\Facades\File::size($filePath) === 0) {
+                    $sql = "-- ========================================================\n";
+                    $sql .= "-- ZBIZ+ ERP BACKUP - " . date('Y-m-d H:i:s') . "\n";
+                    $sql .= "-- Empresa: " . ($tenant?->name ?? 'ZBIZ+') . " (NUIT: " . ($tenant?->nuit ?? 'N/D') . ")\n";
+                    $sql .= "-- ========================================================\n\n";
+                    $sql .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
+
+                    $tables = \Illuminate\Support\Facades\DB::select('SHOW TABLES');
+                    $dbKey = "Tables_in_" . $dbName;
+
+                    foreach ($tables as $tableObj) {
+                        $table = $tableObj->$dbKey ?? reset($tableObj);
+                        if (!$table) continue;
+
+                        $createTableRes = \Illuminate\Support\Facades\DB::select("SHOW CREATE TABLE `{$table}`");
+                        if (!empty($createTableRes)) {
+                            $createSql = $createTableRes[0]->{'Create Table'} ?? '';
+                            $sql .= "DROP TABLE IF EXISTS `{$table}`;\n";
+                            $sql .= $createSql . ";\n\n";
+
+                            $rows = \Illuminate\Support\Facades\DB::table($table)->get();
+                            if ($rows->count() > 0) {
+                                foreach ($rows as $row) {
+                                    $rowArr = (array)$row;
+                                    $escapedValues = array_map(function ($val) {
+                                        if (is_null($val)) return 'NULL';
+                                        return "'" . addslashes((string)$val) . "'";
+                                    }, array_values($rowArr));
+                                    $fields = '`' . implode('`, `', array_keys($rowArr)) . '`';
+                                    $values = implode(', ', $escapedValues);
+                                    $sql .= "INSERT INTO `{$table}` ({$fields}) VALUES ({$values});\n";
+                                }
+                                $sql .= "\n";
+                            }
+                        }
+                    }
+                    $sql .= "SET FOREIGN_KEY_CHECKS=1;\n";
+                    \Illuminate\Support\Facades\File::put($filePath, $sql);
+                }
+            }
+
+            return redirect()->route('admin.settings', ['tab' => 'backups'])
+                ->with('success', 'Backup do sistema criado com sucesso! Ficheiro: ' . $filename);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Erro ao gerar backup:', ['error' => $e->getMessage()]);
+            return redirect()->route('admin.settings', ['tab' => 'backups'])
+                ->with('error', 'Erro ao gerar backup: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download de cópia de segurança.
+     */
+    public function downloadBackup($filename)
+    {
+        try {
+            $filename = basename($filename);
+            $backupPath = storage_path('app/backups');
+            $filePath = $backupPath . '/' . $filename;
+
+            if (!\Illuminate\Support\Facades\File::exists($filePath)) {
+                return redirect()->route('admin.settings', ['tab' => 'backups'])
+                    ->with('error', 'Ficheiro de backup não encontrado!');
+            }
+
+            return response()->download($filePath);
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.settings', ['tab' => 'backups'])
+                ->with('error', 'Erro ao descarregar backup: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Eliminar cópia de segurança.
+     */
+    public function deleteBackup($filename)
+    {
+        try {
+            $filename = basename($filename);
+            $backupPath = storage_path('app/backups');
+            $filePath = $backupPath . '/' . $filename;
+
+            if (\Illuminate\Support\Facades\File::exists($filePath)) {
+                \Illuminate\Support\Facades\File::delete($filePath);
+                return redirect()->route('admin.settings', ['tab' => 'backups'])
+                    ->with('success', 'Ficheiro de backup eliminado com sucesso!');
+            }
+
+            return redirect()->route('admin.settings', ['tab' => 'backups'])
+                ->with('error', 'Ficheiro de backup não encontrado!');
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.settings', ['tab' => 'backups'])
+                ->with('error', 'Erro ao eliminar backup: ' . $e->getMessage());
+        }
+    }
+
+    private function formatBytes($bytes, $precision = 2): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+        $bytes /= pow(1024, $pow);
+        return round($bytes, $precision) . ' ' . $units[$pow];
     }
 }

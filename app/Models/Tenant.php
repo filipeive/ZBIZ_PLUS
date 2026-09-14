@@ -96,6 +96,25 @@ class Tenant extends Model
         return $this->hasMany(FinancialAccount::class);
     }
 
+    public function getLogoUrlAttribute(): ?string
+    {
+        $logoPath = $this->settings['logo_path'] ?? null;
+        if (!$logoPath) {
+            return null;
+        }
+        return asset('storage/' . $logoPath);
+    }
+
+    public function getLogoPathAttribute(): ?string
+    {
+        $logoPath = $this->settings['logo_path'] ?? null;
+        if (!$logoPath) {
+            return null;
+        }
+        $fullPath = storage_path('app/public/' . $logoPath);
+        return file_exists($fullPath) ? $fullPath : null;
+    }
+
     // Business type helpers
     public function isPharmacy(): bool
     {

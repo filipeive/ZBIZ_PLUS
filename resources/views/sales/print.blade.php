@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $sale->official_invoice_title }} #{{ $sale->id }}</title>
+    <title>{{ $sale->official_invoice_title }} - {{ $sale->invoice_number ?? ('#' . $sale->id) }}</title>
     <style>
         @page {
             margin: 0;
@@ -22,7 +22,6 @@
         .text-right { text-align: right; }
         .text-bold { font-weight: bold; }
         .divider { border-top: 1px dashed #000; margin: 6px 0; }
-        .divider-double { border-top: 2px solid #000; margin: 6px 0; }
         .table { width: 100%; border-collapse: collapse; }
         .table th, .table td { padding: 2px 0; }
         @media print {
@@ -30,12 +29,24 @@
         }
         .btn-print {
             padding: 8px 16px;
-            background: #0f172a;
+            background: #2563eb;
             color: white;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
+            width: 100%;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        .btn-close {
+            padding: 6px 16px;
+            background: #475569;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 10px;
             width: 100%;
             font-weight: bold;
             font-size: 12px;
@@ -45,11 +56,16 @@
 <body>
     <div class="no-print">
         <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR COMPROVANTE (80mm)</button>
-        <button class="btn-print" style="background: #475569;" onclick="window.close()">✖ FECHAR JANELA</button>
+        <button class="btn-close" onclick="window.close()">✖ FECHAR JANELA</button>
     </div>
 
-    <!-- Cabeçalho -->
+    <!-- Cabeçalho Oficial do Tenant -->
     <div class="text-center">
+        @if(!empty($sale->tenant?->logo_url))
+            <div style="margin-bottom: 6px;">
+                <img src="{{ $sale->tenant->logo_url }}" alt="Logo" style="max-height: 48px; max-width: 150px; object-fit: contain;">
+            </div>
+        @endif
         <h2 style="margin: 0; font-size: 15px; font-weight: bold;">{{ $sale->tenant?->name ?? config('app.name', 'ZBIZ+') }}</h2>
         <div style="font-size: 11px;">{{ $sale->branch?->name ?? 'Loja Principal' }}</div>
         @if($sale->tenant?->nuit)
@@ -57,6 +73,9 @@
         @endif
         @if($sale->branch?->phone)
             <div style="font-size: 11px;">Tel: {{ $sale->branch->phone }}</div>
+        @endif
+        @if($sale->branch?->address)
+            <div style="font-size: 10px; color: #333;">{{ $sale->branch->address }}</div>
         @endif
     </div>
 
@@ -117,7 +136,7 @@
         </tr>
         @if($sale->discount_amount > 0)
         <tr>
-            <td>Desconto Global:</td>
+            <td>Desconto:</td>
             <td class="text-right">-{{ number_format($sale->discount_amount, 2, ',', '.') }} MT</td>
         </tr>
         @endif
@@ -145,10 +164,17 @@
         </tr>
 
         @if($sale->payment_method === 'credit')
-            @if($sale->debt && $sale->debt->remaining_amount > 0)
-            <tr style="font-weight: bold;">
+            @php
+                $debtBalance = max(0, $sale->total_amount - $sale->display_amount_paid);
+            @endphp
+            <tr style="font-weight: bold; color: #b91c1c;">
                 <td>Saldo Devedor:</td>
-                <td class="text-right">{{ number_format($sale->debt->remaining_amount, 2, ',', '.') }} MT</td>
+                <td class="text-right">{{ number_format($debtBalance, 2, ',', '.') }} MT</td>
+            </tr>
+            @if($sale->due_date)
+            <tr>
+                <td style="font-size: 10px;">Data Vencimento:</td>
+                <td class="text-right" style="font-size: 10px;">{{ $sale->due_date->format('d/m/Y') }}</td>
             </tr>
             @endif
         @else
@@ -159,27 +185,25 @@
         @endif
     </table>
 
-    @if($sale->notes)
-        <div class="divider"></div>
-        <div style="font-size: 10px;">
-            <strong>Observações:</strong> {{ $sale->notes }}
-        </div>
-    @endif
-
     <div class="divider"></div>
 
-    <div class="text-center" style="font-size: 10px;">
-        <p>Obrigado pela sua preferência!</p>
-        <p>Processado por programa certificado ZBIZ+ • {{ now()->format('d/m/Y H:i') }}</p>
+    <div class="text-center" style="font-size: 10px; margin-top: 5px;">
+        <div>{{ $sale->tenant?->settings['receipt_footer'] ?? 'Obrigado pela preferência!' }}</div>
+        <div style="font-size: 9px; color: #555; margin-top: 4px;">
+            Software certificado ZBIZ+ • Fdsmultiservices
+        </div>
+        <div style="font-size: 8px; color: #777; margin-top: 2px;">
+            Original para o Cliente • {{ now()->format('d/m/Y H:i:s') }}
+        </div>
     </div>
 
     <script>
-        // Auto-print imediato
-        window.onload = function() {
-            setTimeout(function() {
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('autoprint')) {
                 window.print();
-            }, 400);
-        }
+            }
+        });
     </script>
 </body>
 </html>

@@ -17,6 +17,38 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - Adicionado vínculo opcional entre encomendas e mesas; a mesa é marcada como ocupada ao abrir uma comanda.
 - Documentada a operação restaurante em `docs/07_VERTICAL_MODULES.md`.
 
+## [1.0.20] - 2026-09-14 - Clientes, Fornecedores, Fecho Cego de Caixa, IVA Modelo A, Backups e Identidade Visual Dinâmica
+### Added & Improved
+- **Gestão Integral de Clientes & Vínculo no POS (`CustomerController`, `/customers`, `pos/index.blade.php`):**
+  - Módulo completo de clientes: cadastro de razão social, nome comercial, NUIT, telefone, email, endereço e limites de crédito.
+  - Extrato detalhado de histórico de compras e saldo devedor em aberto.
+  - Seleção e cadastro rápido de clientes diretamente no balcão de vendas do POS sem interromper o atendimento.
+- **Gestão de Fornecedores & Vínculo nos Produtos (`SupplierController`, `/suppliers`, `products/`):**
+  - Cadastro de fornecedores e distribuidores farmacêuticos com prazos de pagamento acordados e controle de ativação/desativação.
+  - Vínculo direto de fornecedor em cada produto (`products.supplier_id`) nos formulários de criação, edição e monitorização de reposição de estoque.
+- **Fecho Cego de Caixa Anti-Fraude com Calculadora de Meticais (`CashShiftController`, `/cash-shifts`, `/pos`):**
+  - Implementação do conceito contábil de Fecho Cego: o operador de caixa encerra o turno declarando o valor físico em mãos sem que o sistema informe o saldo esperado previamente.
+  - Calculadora rápida embutida para contagem de todas as cédulas e moedas de Meticais (MZN 1000, 500, 200, 100, 50, 20 e moedas).
+  - Vínculo das vendas ao turno ativo (`sales.cash_shift_id`).
+  - Apuramento instantâneo de quebra/sobra de caixa para auditoria gerencial e emissão de comprovativo térmico Fecho Z (80mm/58mm).
+- **Fiscalidade Moçambicana: Mapa de IVA Modelo A e Alternância no POS (`TaxReportController`, `/reports/tax-iva`):**
+  - Suporte à legislação moçambicana do Código do IVA (CIVA): taxa normal de 16% vs isenção nos termos do Artigo 9º do CIVA (produtos farmacêuticos e saúde).
+  - Botão de alternância fiscal no Terminal POS (IVA Incluso, +16% ou Isento Art. 9º).
+  - Mapa oficial de Apuramento de IVA no padrão do Modelo A da Autoridade Tributária com exportação em PDF timbrado de alta resolução.
+- **Módulo de Backups & Segurança de Dados (`AdminController`, `/settings`):**
+  - Criação sob demanda de dumps completos da base de dados (.sql) diretamente pela interface das Definições (`6. Backups & Base de Dados`).
+  - Fallback automático e inteligente para geração segura de SQL caso utilitários de linha de comando não estejam acessíveis.
+  - Gestão do histórico de backups com tamanho do arquivo, data/hora e opções de descarregar e eliminar com segurança.
+- **Branding Dinâmico & Logótipo nos Recibos e Documentos (`Tenant.php`, `settings/index.blade.php`):**
+  - Visualização de pré-visualização de logotipo com fundo neutro/branco limpo (`bg-white border-2 border-slate-200 shadow-sm`), eliminando o fundo verde incorreto.
+  - Propagação dinâmica do logótipo em recibos térmicos de venda (80mm/58mm), talões de fecho de turno, cotações em PDF, faturas A4 e relatórios fiscais de IVA.
+  - Emissão de talão térmico para amortizações de dívida (`debts/payment-receipt.blade.php`).
+- **Harmonização Visual da Landing Page (`resources/views/welcome.blade.php`):**
+  - Correção de duplicações estruturais e aninhamentos de tags.
+  - Atualização dos planos comerciais em Meticais (MT), links de pré-registo e credenciais padrão de demonstração.
+
+---
+
 ## [1.0.19] - 2026-09-13 - Apresentação Executiva ZBIZ+ Pharmacy, Atualização da Arquitetura e Marca d'Água do Desenvolvedor
 ### Added & Improved
 - **Apresentação Comercial & Operacional para Farmácias (`docs/APRESENTACAO_CLIENTE_FARMACIA.md`):**

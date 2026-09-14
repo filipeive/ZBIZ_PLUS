@@ -184,8 +184,18 @@
     <table class="header-table">
         <tr>
             <td style="width: 55%;">
-                @if(!empty($docSettings['logo_url']) && file_exists(public_path($docSettings['logo_url'])))
-                    <img src="{{ public_path($docSettings['logo_url']) }}" alt="Logo" class="logo"><br>
+                @php
+                    $quotationLogoPath = null;
+                    if (!empty($docSettings['logo_url']) && file_exists(public_path($docSettings['logo_url']))) {
+                        $quotationLogoPath = public_path($docSettings['logo_url']);
+                    } elseif ($tenant?->logo_path && file_exists($tenant->logo_path)) {
+                        $quotationLogoPath = $tenant->logo_path;
+                    } elseif (!empty($tenant?->settings['logo_path']) && file_exists(public_path('storage/' . $tenant->settings['logo_path']))) {
+                        $quotationLogoPath = public_path('storage/' . $tenant->settings['logo_path']);
+                    }
+                @endphp
+                @if($quotationLogoPath)
+                    <img src="{{ $quotationLogoPath }}" alt="Logo" class="logo"><br>
                 @endif
                 <div class="company-title">{{ $docSettings['company_name'] }}</div>
                 <div class="company-details">

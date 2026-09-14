@@ -121,6 +121,12 @@
                     class="px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition cursor-pointer select-none">
                 <i class="fa-solid fa-shield-halved"></i> 5. Segurança & Documentos
             </button>
+
+            <button type="button" @click="currentTab = 'backups'" 
+                    :class="currentTab === 'backups' ? 'bg-purple-600 text-white shadow-lg' : 'bg-transparent text-slate-400 hover:text-white hover:bg-slate-800'"
+                    class="px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition cursor-pointer select-none">
+                <i class="fa-solid fa-database"></i> 6. Backups & Base de Dados
+            </button>
         </div>
     </div>
 
@@ -139,17 +145,20 @@
                     <!-- Logo Upload Section -->
                     <div class="space-y-4 bg-slate-950/60 p-5 rounded-2xl border border-slate-800/80">
                         <div class="flex items-center space-x-4">
-                            <div class="w-16 h-16 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg border border-emerald-500/30 overflow-hidden relative group">
+                            <div class="w-20 h-20 rounded-2xl {{ !empty($theme['logo_url']) ? 'bg-white border-2 border-slate-200 shadow-sm' : 'bg-slate-800 border border-slate-700' }} flex items-center justify-center overflow-hidden relative p-1.5 transition">
                                 @if(!empty($theme['logo_url']))
-                                    <img src="{{ $theme['logo_url'] }}" alt="Logo" class="w-full h-full object-contain p-1.5 bg-white/10">
+                                    <img src="{{ $theme['logo_url'] }}" alt="Logo" class="w-full h-full object-contain">
                                 @else
-                                    <i class="fa-solid {{ $theme['icon'] }} text-white text-2xl font-black"></i>
+                                    <i class="fa-solid {{ $theme['icon'] }} text-emerald-400 text-2xl font-black"></i>
                                 @endif
                             </div>
                             <div>
                                 <h3 class="text-sm font-black text-white font-heading">{{ $tenant?->name ?? 'Minha Empresa' }}</h3>
                                 <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase {{ $theme['badge'] }}">
                                     {{ $theme['sector_name'] }}
+                                </span>
+                                <span class="block text-[10px] text-slate-400 mt-1">
+                                    {{ !empty($theme['logo_url']) ? 'Logótipo Empresarial Ativo' : 'Logótipo Padrão do Sistema' }}
                                 </span>
                             </div>
                         </div>
@@ -462,6 +471,89 @@
         </div>
 
     </form>
+
+    <!-- TAB 6: BACKUPS & CÓPIA DE SEGURANÇA -->
+    <div x-show="currentTab === 'backups'" class="space-y-6">
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-xl space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <div>
+                    <h3 class="text-sm font-black text-white font-heading flex items-center gap-2">
+                        <i class="fa-solid fa-database text-purple-400"></i> Gestão de Backups & Cópias de Segurança
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">
+                        Crie cópias de segurança completas do banco de dados (SQL) sob demanda e descarregue para seu computador com segurança.
+                    </p>
+                </div>
+                <form action="{{ route('admin.backup.create') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-purple-600/25 transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-download"></i> Criar Backup Agora (SQL)
+                    </button>
+                </form>
+            </div>
+
+            <!-- Tabela de Backups Existentes -->
+            <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl overflow-hidden">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-900 text-slate-400 font-bold uppercase tracking-wider text-[10px] border-b border-slate-800">
+                        <tr>
+                            <th class="py-3 px-4">Ficheiro de Backup</th>
+                            <th class="py-3 px-3">Tamanho</th>
+                            <th class="py-3 px-3">Data de Criação</th>
+                            <th class="py-3 px-4 text-right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-sans">
+                        @forelse($backups ?? [] as $b)
+                            <tr class="hover:bg-slate-800/30 transition">
+                                <td class="py-3 px-4 font-mono font-bold text-slate-200 flex items-center gap-2">
+                                    <i class="fa-solid fa-file-code text-purple-400"></i>
+                                    {{ $b['filename'] }}
+                                </td>
+                                <td class="py-3 px-3 font-mono text-slate-400">{{ $b['size'] }}</td>
+                                <td class="py-3 px-3 text-slate-400">{{ $b['date'] }}</td>
+                                <td class="py-3 px-4 text-right whitespace-nowrap">
+                                    <a href="{{ route('admin.backup.download', $b['filename']) }}" 
+                                       class="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 mr-2"
+                                       title="Descarregar cópia">
+                                        <i class="fa-solid fa-download"></i> Descarregar
+                                    </a>
+                                    <form action="{{ route('admin.backup.delete', $b['filename']) }}" method="POST" class="inline" onsubmit="return confirm('Tem a certeza que deseja eliminar permanentemente este ficheiro de backup?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" 
+                                                class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 cursor-pointer"
+                                                title="Eliminar">
+                                            <i class="fa-solid fa-trash"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="py-10 text-center text-slate-500">
+                                    <i class="fa-solid fa-server text-3xl text-slate-600 mb-2"></i>
+                                    <p class="text-xs">Nenhum backup encontrado na pasta do sistema.</p>
+                                    <p class="text-[11px] text-slate-600 mt-1">Clique em "Criar Backup Agora" para gerar a primeira cópia de segurança.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Dicas de Segurança e Boas Práticas -->
+            <div class="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/80 text-xs text-slate-400 space-y-1.5">
+                <strong class="text-slate-200 flex items-center gap-1.5">
+                    <i class="fa-solid fa-shield-halved text-emerald-400"></i> Boas Práticas de Salvaguarda de Dados:
+                </strong>
+                <p>
+                    Recomenda-se descarregar periodicamente o ficheiro SQL de backup para uma unidade externa (disco rígido, pendrive) ou serviço de armazenamento em nuvem pessoal.
+                    Em caso de avaria ou troca de computador, a base de dados pode ser restaurada na íntegra sem perda de faturas ou stock.
+                </p>
+            </div>
+        </div>
+    </div>
 
 </div>
 @endsection

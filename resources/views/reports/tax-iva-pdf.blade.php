@@ -147,6 +147,14 @@
         <table class="header-table">
             <tr>
                 <td style="width: 58%;">
+                    @php
+                        $logoFile = $tenant?->logo_path;
+                    @endphp
+                    @if($logoFile && file_exists($logoFile))
+                        <div style="margin-bottom: 6px;">
+                            <img src="{{ $logoFile }}" alt="Logo" style="max-height: 45px; max-width: 160px; object-fit: contain;">
+                        </div>
+                    @endif
                     <div class="company-name">{{ $tenant?->name ?? 'ZBIZ PLUS EMPRESA' }}</div>
                     <div class="company-info">
                         <strong>NUIT:</strong> <span class="font-mono">{{ $tenant?->nuit ?? '999999999' }}</span><br>
@@ -333,3 +341,4 @@
 
 </body>
 </html>
+

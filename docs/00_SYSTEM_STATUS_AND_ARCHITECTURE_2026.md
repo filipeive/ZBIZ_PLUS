@@ -1,4 +1,4 @@
-# RELATÓRIO DO ESTADO ATUAL DO SISTEMA: ZBIZ+ (v1.0.18)
+# RELATÓRIO DO ESTADO ATUAL DO SISTEMA: ZBIZ+ (v1.0.20)
 ## `docs/00_SYSTEM_STATUS_AND_ARCHITECTURE_2026.md`
 
 ---
@@ -7,7 +7,7 @@
 
 O **ZBIZ+** é uma plataforma empresarial completa de **Gestão Comercial (ERP), Ponto de Venda (POS) e Controlo Financeiro Multi-Tenant**, arquitetada e desenvolvida especificamente para resolver os desafios do comércio, saúde e serviços em **Moçambique**.
 
-* **Versão de Produção Atual:** `1.0.18`
+* **Versão de Produção Atual:** `1.0.20`
 * **Arquitetura:** Monólito Modular de Alta Coesão (Modular Monolith) com isolamento rigoroso por Tenant e Branch.
 * **Stack Tecnológico:**
   * **Backend:** PHP 8.3+, Laravel 12.20.0
@@ -61,6 +61,25 @@ O **ZBIZ+** é uma plataforma empresarial completa de **Gestão Comercial (ERP),
 * **Onboarding Rápido:** Modal interativo de criação de tenant, filial matriz, administrador e emissão automática de licença num único clique.
 * **Modo Suporte Técnico (Impersonate):** Acesso imediato ao ambiente do cliente com barra de status superior âmbar e botão de retorno seguro.
 
+### 2.6. Auditoria de Caixa e Turnos (Fecho Cego Anti-Fraude)
+* **Conceito Fecho Cego:** O operador encerra o turno sem conhecer o saldo esperado pelo sistema, eliminando desvios e sobras artificiais.
+* **Calculadora MZN de Cédulas e Moedas:** Contagem física guiada das notas e moedas de Meticais moçambicanos.
+* **Apuramento Automático:** Cálculo imediato de faltas (quebras) e excessos (sobras) de caixa para auditoria gerencial.
+* **Comprovativo Fecho Z:** Impressão térmica com resumo financeiro por meio de pagamento e assinaturas.
+
+### 2.7. Fiscalidade Moçambique (CIVA) e Modelo A da AT
+* **Suporte à Lei do IVA:** Taxa normal de 16% e regime de isenção nos termos do Artigo 9º do CIVA (farmácias/medicamentos e bens de saúde).
+* **Alternância Rápida no POS:** Modo IVA Incluso, Adicionar IVA (+16%) ou Isento de IVA (Art. 9º).
+* **Mapa Fiscal Modelo A:** Demonstrativo oficial em conformidade com a Autoridade Tributária com exportação em PDF de alta qualidade.
+
+### 2.8. Gestão de Clientes, Fornecedores e Contas Correntes
+* **Clientes:** Cadastro rápido no balcão do POS, limite de crédito e extrato de dívidas.
+* **Fornecedores:** Vínculo direto de distribuidores farmacêuticos nos produtos e controle de status ativo/inativo.
+
+### 2.9. Backups & Segurança sob Demanda
+* **Dump SQL Seguro:** Geração direta de cópias de segurança da base de dados pelas Definições do Sistema, com download e rotação de arquivos.
+* **Branding Dinâmico:** Gestão de logotipo com fundo limpo neutro e aplicação automática em recibos térmicos (80mm/58mm) e relatórios oficiais.
+
 ---
 
 ## 3. INVENTÁRIO DAS ROTAS E MÓDULOS PRINCIPAIS
@@ -69,15 +88,20 @@ O **ZBIZ+** é uma plataforma empresarial completa de **Gestão Comercial (ERP),
 | :--- | :--- | :--- |
 | **Owner Console** | `/owner/tenants` | KPIs MRR/ARR, Gestão de Clientes, Chaves Seriais, Certificados, Impersonate |
 | **Dashboard** | `/dashboard` | Resumo de vendas diárias, faturamento mensal, comparativos, gráficos de tendência |
-| **POS 2.0** | `/pos` | Frente de caixa rápida, suporte a código de barras, atalhos, descontos |
+| **POS 2.0** | `/pos` | Frente de caixa rápida, suporte a código de barras, atalhos, descontos, clientes e IVA |
+| **Caixas & Turnos** | `/cash-shifts` | Abertura com fundo de maneio, fecho cego com calculadora de MZN, comprovativo Fecho Z |
+| **Clientes** | `/customers` | Fichas de clientes, histórico de compras, limite de crédito e saldos devedores |
+| **Fornecedores** | `/suppliers` | Distribuidores, laboratórios, prazos comerciais e vínculo a produtos |
+| **Mapa de IVA** | `/reports/tax-iva` | Apuramento Modelo A (AT Moçambique), isenção Art. 9º CIVA, exportação PDF oficial |
 | **Vendas & Manual** | `/sales`, `/sales/manual-create` | Histórico de transações, faturação manual detalhada, reimpressão |
-| **Artigos & Serviços** | `/products` | Gestão de produtos físicos, catálogo de serviços universais, lotes e validades |
+| **Artigos & Serviços** | `/products` | Gestão de produtos físicos, fornecedores vinculados, catálogo de serviços, lotes |
 | **Stock & Armazém** | `/stock-movements` | Entradas de fornecedor, transferências entre lojas, quebras e acertos |
-| **Fiados & Créditos** | `/debts` | Gestão de dívidas, extrato por cliente, liquidação de amortizações |
+| **Fiados & Créditos** | `/debts` | Gestão de dívidas, extrato por cliente, liquidação e talão térmico de amortização |
 | **Livro-Razão & Caixa** | `/finances` | Saldo em caixa, entradas/saídas por conta (Numerário, M-Pesa, Banco) |
 | **Despesas** | `/expenses` | Gastos operacionais, categorias de despesas, recibos de renda |
 | **Mesas de Restaurante** | `/restaurant/tables` | Mapa de mesas, estados de ocupação por filial (Vertical Restaurante) |
-| **Relatórios Executivos** | `/reports` | DRE, vendas por produto, vendas especializadas, curva ABC, validade |
+| **Relatórios Executivos** | `/reports` | DRE, vendas por produto, mapa de IVA, curva ABC, validade |
+| **Backups & BD** | `/settings` (Aba 6) | Geração de dump SQL, download de cópias de segurança e exclusão |
 | **Ativação Offline** | `/license/activate` | Desbloqueio e validação de chaves seriais em ambientes sem internet |
 
 ---
@@ -86,6 +110,6 @@ O **ZBIZ+** é uma plataforma empresarial completa de **Gestão Comercial (ERP),
 **Desenvolvido por: Fdsmultiservices**  
 *WhatsApp & Suporte Técnico:* (+258) 86 213 4230 · Quelimane / Moçambique  
 *Email:* `fdsmultiservices@gmail.com`  
-*Plataforma ZBIZ+ Enterprise Cloud & POS Suite — Versão 1.0.18*  
+*Plataforma ZBIZ+ Enterprise Cloud & POS Suite — Versão 1.0.20*  
 ────────────────────────────────────────────────────────────────────────────  
 

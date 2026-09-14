@@ -86,6 +86,7 @@
                             </tr>
                         @empty
                             <tr>
+                                <td colspan="4" class="p-6 text-center text-slate-500">Nenhum pagamento registado ainda.</td>
                                 <td colspan="5" class="p-6 text-center text-slate-500">Nenhum pagamento registado ainda.</td>
                             </tr>
                         @endforelse

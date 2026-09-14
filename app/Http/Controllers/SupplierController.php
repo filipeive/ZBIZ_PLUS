@@ -167,3 +167,4 @@ class SupplierController extends Controller
             ->with('success', "Fornecedor '{$supplier->name}' removido com sucesso.");
     }
 }
+
