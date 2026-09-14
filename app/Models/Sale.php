@@ -17,6 +17,7 @@ class Sale extends Model
         'user_id', 'customer_name', 'customer_phone', 'customer_nuit', 'customer_address',
         'subtotal', 'discount_amount', 'discount_percentage', 
         'discount_type', 'discount_reason', 'total_amount', 
+        'amount_paid', 'change_amount',
         'tax_regime', 'tax_rate', 'tax_amount', 'tax_exemption_reason', 'prices_include_tax',
         'invoice_type', 'invoice_number', 'due_date', 'quotation_id',
         'payment_method', 'notes', 'sale_date'
@@ -27,6 +28,8 @@ class Sale extends Model
         'discount_amount'     => 'decimal:2',
         'discount_percentage' => 'decimal:2',
         'total_amount'        => 'decimal:2',
+        'amount_paid'         => 'decimal:2',
+        'change_amount'       => 'decimal:2',
         'tax_rate'            => 'decimal:2',
         'tax_amount'          => 'decimal:2',
         'prices_include_tax'  => 'boolean',
@@ -60,6 +63,53 @@ class Sale extends Model
     public function getCustomerDisplayNameAttribute(): string
     {
         return $this->customer?->name ?? $this->customer_name ?? 'Cliente Avulso';
+    }
+
+    /**
+     * Obter nome amigável e oficial da forma de pagamento
+     */
+    public function getFormattedPaymentMethodAttribute(): string
+    {
+        return match ($this->payment_method) {
+            'cash'     => 'Dinheiro',
+            'mpesa'    => 'M-Pesa',
+            'emola'    => 'e-Mola',
+            'card'     => 'Cartão / POS',
+            'credit'   => 'Crédito (Fiado)',
+            'transfer' => 'Transferência Bancária',
+            'split'    => 'Pagamento Misto',
+            default    => ucfirst($this->payment_method ?? 'Dinheiro'),
+        };
+    }
+
+    /**
+     * Obter valor pago pelo cliente (com fallback inteligente se não gravado)
+     */
+    public function getDisplayAmountPaidAttribute(): float
+    {
+        if ($this->amount_paid !== null && (float) $this->amount_paid > 0) {
+            return (float) $this->amount_paid;
+        }
+
+        // Se for crédito (fiado), retorna entrada inicial se houver
+        if ($this->payment_method === 'credit') {
+            return (float) ($this->debt?->paid_amount ?? ($this->amount_paid ?? 0.00));
+        }
+
+        // Se for venda liquidada (Dinheiro, M-Pesa, etc.), o valor pago foi o total da venda
+        return (float) $this->total_amount;
+    }
+
+    /**
+     * Obter troco devolvido ao cliente
+     */
+    public function getDisplayChangeAmountAttribute(): float
+    {
+        if ($this->change_amount !== null) {
+            return (float) $this->change_amount;
+        }
+
+        return 0.00;
     }
     public function user(): BelongsTo
     {

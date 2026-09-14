@@ -293,11 +293,21 @@ class SaleController extends Controller
                 
                 // --- ETAPA 4: ATUALIZAR A VENDA PRINCIPAL COM OS TOTAIS FINAIS ---
                 $finalTotal = $subtotal - $totalDiscountAmount;
+                $amountPaid = isset($validated['amount_paid']) ? (float)$validated['amount_paid'] : ($validated['payment_method'] === 'credit' ? 0.00 : $finalTotal);
+                if ($validated['payment_method'] !== 'credit' && $amountPaid < $finalTotal) {
+                    $amountPaid = $finalTotal;
+                }
+                $changeAmount = ($validated['payment_method'] === 'credit') ? 0.00 : max(0, $amountPaid - $finalTotal);
+                $invType = ($validated['payment_method'] === 'credit') ? 'invoice' : 'cash_invoice';
 
                 $sale->update([
                     'subtotal' => $subtotal,
-                    'discount_amount' => $totalDiscountAmount, // Agora bate certo com a soma dos itens
+                    'discount_amount' => $totalDiscountAmount,
                     'total_amount' => $finalTotal,
+                    'amount_paid' => $amountPaid,
+                    'change_amount' => $changeAmount,
+                    'invoice_type' => $sale->invoice_type ?? $invType,
+                    'invoice_number' => $sale->invoice_number ?? Sale::generateNextInvoiceNumber($tenantId, $invType),
                     'discount_percentage' => $subtotal > 0 ? ($totalDiscountAmount / $subtotal) * 100 : null,
                 ]);
 

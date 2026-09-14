@@ -287,6 +287,34 @@
                     </div>
                 </div>
 
+                <!-- Botão de Incluir IVA (16% Moçambique / Isenção Art. 9º) -->
+                <div class="p-2 bg-slate-50 border border-slate-200 rounded-lg space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <button type="button" 
+                                @click="toggleTax()" 
+                                :class="applyTax ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'"
+                                class="px-2.5 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5">
+                            <i class="fa-solid" :class="applyTax ? 'fa-square-check' : 'fa-square'"></i>
+                            <span>Incluir IVA (16%)</span>
+                        </button>
+                        <div class="flex items-center gap-1" x-show="applyTax">
+                            <button type="button" 
+                                    @click="setPricesIncludeTax(true)"
+                                    :class="pricesIncludeTax ? 'bg-emerald-100 text-emerald-800 border-emerald-300 font-bold' : 'bg-white text-slate-500 border-slate-200'"
+                                    class="px-2 py-0.5 rounded text-[10px] border transition" title="Preços de venda já incluem os 16% de IVA">
+                                Incluso
+                            </button>
+                            <button type="button" 
+                                    @click="setPricesIncludeTax(false)"
+                                    :class="!pricesIncludeTax ? 'bg-emerald-100 text-emerald-800 border-emerald-300 font-bold' : 'bg-white text-slate-500 border-slate-200'"
+                                    class="px-2 py-0.5 rounded text-[10px] border transition" title="Adicionar 16% de IVA sobre o valor dos produtos">
+                                +16%
+                            </button>
+                        </div>
+                        <span x-show="!applyTax" class="text-[10px] font-semibold text-slate-400">Isento (Art. 9º)</span>
+                    </div>
+                </div>
+
                 <div class="space-y-1 text-xs pt-1 border-t border-gray-100">
                     <div class="flex justify-between text-gray-500">
                         <span>Subtotal:</span>
@@ -295,6 +323,14 @@
                     <div class="flex justify-between text-gray-500" x-show="discountAmount > 0">
                         <span>Desconto Aplicado:</span>
                         <span class="font-bold text-rose-600" x-text="'- ' + formatCurrency(discountAmount)"></span>
+                    </div>
+                    <div class="flex justify-between text-gray-500" x-show="applyTax">
+                        <span x-text="pricesIncludeTax ? 'IVA 16% (Incluso):' : 'IVA 16% (+Adicional):'"></span>
+                        <span class="font-bold text-slate-700" x-text="formatCurrency(taxAmount)"></span>
+                    </div>
+                    <div class="flex justify-between text-gray-400 text-[11px]" x-show="!applyTax">
+                        <span>Regime IVA:</span>
+                        <span>Isento (Art. 9º CIVA)</span>
                     </div>
                     <div class="flex justify-between text-base font-black text-slate-900 pt-1 border-t border-gray-200">
                         <span>TOTAL:</span>
@@ -327,31 +363,50 @@
                 <button @click="showCheckoutModal = false" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <div class="text-center py-2 bg-emerald-50 rounded-lg border border-emerald-200">
-                <div class="text-xs text-emerald-800 font-semibold">Valor Total Líquido</div>
-                <div class="text-2xl font-black text-emerald-600" x-text="formatCurrency(totalAmount)"></div>
+            <div class="text-center py-2.5 bg-emerald-50 rounded-xl border border-emerald-200">
+                <div class="text-xs text-emerald-800 font-bold uppercase tracking-wider">Total a Pagar</div>
+                <div class="text-3xl font-black text-emerald-600 tracking-tight" x-text="formatCurrency(totalAmount)"></div>
+                <div class="text-[11px] font-semibold text-emerald-700 mt-0.5" x-show="applyTax">
+                    <span x-text="pricesIncludeTax ? 'Com IVA 16% incluso (' + formatCurrency(taxAmount) + ')' : 'Com IVA 16% adicionado (' + formatCurrency(taxAmount) + ')'"></span>
+                </div>
+                <div class="text-[11px] font-semibold text-slate-500 mt-0.5" x-show="!applyTax">
+                    <span>Regime de Isenção (Artigo 9º do CIVA)</span>
+                </div>
             </div>
 
             <!-- Payment Methods -->
             <div class="space-y-2">
                 <label class="text-xs font-bold text-gray-700">Forma de Pagamento:</label>
                 <div class="grid grid-cols-5 gap-1.5">
-                    <button type="button" @click="paymentMethod = 'cash'; amountPaid = totalAmount"
-                            :class="paymentMethod === 'cash' ? 'bg-slate-900 text-white shadow' : 'bg-gray-100 text-gray-700'"
-                            class="py-2 rounded text-[11px] font-bold border transition">Dinheiro</button>
-                    <button type="button" @click="paymentMethod = 'mpesa'; amountPaid = totalAmount"
-                            :class="paymentMethod === 'mpesa' ? 'bg-red-600 text-white shadow' : 'bg-gray-100 text-gray-700'"
-                            class="py-2 rounded text-[11px] font-bold border transition">M-Pesa</button>
-                    <button type="button" @click="paymentMethod = 'emola'; amountPaid = totalAmount"
-                            :class="paymentMethod === 'emola' ? 'bg-amber-600 text-white shadow' : 'bg-gray-100 text-gray-700'"
-                            class="py-2 rounded text-[11px] font-bold border transition">e-Mola</button>
-                    <button type="button" @click="paymentMethod = 'card'; amountPaid = totalAmount"
-                            :class="paymentMethod === 'card' ? 'bg-blue-600 text-white shadow' : 'bg-gray-100 text-gray-700'"
-                            class="py-2 rounded text-[11px] font-bold border transition">Cartão</button>
-                    <button type="button" @click="paymentMethod = 'credit'; amountPaid = 0"
-                            :class="paymentMethod === 'credit' ? 'bg-amber-800 text-white shadow' : 'bg-gray-100 text-gray-700'"
-                            class="py-2 rounded text-[11px] font-bold border transition">Fiado</button>
+                    <button type="button" @click="selectPaymentMethod('cash')"
+                            :class="paymentMethod === 'cash' ? 'bg-slate-900 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                            class="py-2 rounded-lg text-[11px] font-bold border transition">Dinheiro</button>
+                    <button type="button" @click="selectPaymentMethod('mpesa')"
+                            :class="paymentMethod === 'mpesa' ? 'bg-red-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                            class="py-2 rounded-lg text-[11px] font-bold border transition">M-Pesa</button>
+                    <button type="button" @click="selectPaymentMethod('emola')"
+                            :class="paymentMethod === 'emola' ? 'bg-amber-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                            class="py-2 rounded-lg text-[11px] font-bold border transition">e-Mola</button>
+                    <button type="button" @click="selectPaymentMethod('card')"
+                            :class="paymentMethod === 'card' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                            class="py-2 rounded-lg text-[11px] font-bold border transition">Cartão</button>
+                    <button type="button" @click="selectPaymentMethod('credit')"
+                            :class="paymentMethod === 'credit' ? 'bg-amber-800 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                            class="py-2 rounded-lg text-[11px] font-bold border transition">Fiado</button>
                 </div>
+            </div>
+
+            <!-- Detalhe Pagamento Eletrónico -->
+            <div x-show="['mpesa', 'emola', 'card'].includes(paymentMethod)" class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-1">
+                <div class="flex justify-between font-bold text-slate-800">
+                    <span>Valor a Receber:</span>
+                    <span class="text-emerald-600 font-black text-sm" x-text="formatCurrency(totalAmount)"></span>
+                </div>
+                <p class="text-[11px] text-slate-500">
+                    <span x-show="paymentMethod === 'mpesa'">Confirme a receção da notificação M-Pesa no telefone do estabelecimento.</span>
+                    <span x-show="paymentMethod === 'emola'">Confirme a mensagem de confirmação da carteira e-Mola.</span>
+                    <span x-show="paymentMethod === 'card'">Passe o cartão no terminal POS do banco e confirme a autorização.</span>
+                </p>
             </div>
 
             <!-- Credit / Fiado Validation & Downpayment -->
@@ -392,11 +447,19 @@
             <!-- Amount Paid / Change (Cash) -->
             <div class="space-y-2" x-show="paymentMethod === 'cash'">
                 <label class="text-xs font-bold text-gray-700">Valor Entregue pelo Cliente (MT):</label>
-                <input type="number" step="10" x-model.number="amountPaid"
-                       class="w-full px-3 py-2 border rounded-lg text-lg font-bold text-right outline-none focus:ring-2 focus:ring-emerald-500">
-                <div class="flex justify-between text-sm font-bold pt-1">
-                    <span class="text-gray-500">Troco:</span>
-                    <span class="text-emerald-600" x-text="formatCurrency(Math.max(0, amountPaid - totalAmount))"></span>
+                <input type="number" step="1" x-model.number="amountPaid"
+                       class="w-full px-3 py-2 border rounded-lg text-xl font-black text-right outline-none focus:ring-2 focus:ring-emerald-500">
+                
+                <div class="flex items-center gap-1.5 pt-0.5">
+                    <button type="button" @click="amountPaid = totalAmount" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded text-[11px] font-bold text-slate-700">Valor Exacto</button>
+                    <button type="button" @click="amountPaid = Math.ceil(totalAmount / 50) * 50 || 50" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded text-[11px] font-bold text-slate-700" x-text="formatCurrency(Math.ceil(totalAmount / 50) * 50 || 50)"></button>
+                    <button type="button" @click="amountPaid = Math.ceil(totalAmount / 100) * 100 || 100" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded text-[11px] font-bold text-slate-700" x-text="formatCurrency(Math.ceil(totalAmount / 100) * 100 || 100)"></button>
+                    <button type="button" @click="amountPaid = Math.ceil(totalAmount / 500) * 500 || 500" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded text-[11px] font-bold text-slate-700" x-text="formatCurrency(Math.ceil(totalAmount / 500) * 500 || 500)"></button>
+                </div>
+
+                <div class="flex justify-between text-sm font-bold pt-1.5 border-t border-slate-200">
+                    <span class="text-gray-600">Troco a Devolver:</span>
+                    <span class="text-emerald-600 text-lg font-black" x-text="formatCurrency(Math.max(0, amountPaid - totalAmount))"></span>
                 </div>
             </div>
 
@@ -446,6 +509,9 @@
                 cart: [],
                 customer: null,
                 discountAmount: 0,
+                applyTax: false,
+                taxRate: 16,
+                pricesIncludeTax: true,
                 paymentMethod: 'cash',
                 amountPaid: 0,
                 showCheckoutModal: false,
@@ -486,8 +552,48 @@
                     return this.cart.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
                 },
 
-                get totalAmount() {
+                get baseAmount() {
                     return Math.max(0, this.subtotal - this.discountAmount);
+                },
+
+                get taxAmount() {
+                    if (!this.applyTax || this.taxRate <= 0) return 0;
+                    if (this.pricesIncludeTax) {
+                        const base = this.baseAmount / (1 + (this.taxRate / 100));
+                        return Math.round((this.baseAmount - base) * 100) / 100;
+                    } else {
+                        return Math.round((this.baseAmount * (this.taxRate / 100)) * 100) / 100;
+                    }
+                },
+
+                get totalAmount() {
+                    if (this.applyTax && !this.pricesIncludeTax) {
+                        return Math.round((this.baseAmount + this.taxAmount) * 100) / 100;
+                    }
+                    return this.baseAmount;
+                },
+
+                toggleTax() {
+                    this.applyTax = !this.applyTax;
+                    if (this.paymentMethod !== 'credit') {
+                        this.amountPaid = this.totalAmount;
+                    }
+                },
+
+                setPricesIncludeTax(val) {
+                    this.pricesIncludeTax = val;
+                    if (this.paymentMethod !== 'credit') {
+                        this.amountPaid = this.totalAmount;
+                    }
+                },
+
+                selectPaymentMethod(method) {
+                    this.paymentMethod = method;
+                    if (method === 'credit') {
+                        this.amountPaid = 0;
+                    } else {
+                        this.amountPaid = this.totalAmount;
+                    }
                 },
 
                 formatCurrency(val) {
@@ -627,10 +733,15 @@
                     this.cart = [];
                     this.discountAmount = 0;
                     this.customer = null;
+                    this.amountPaid = 0;
                 },
 
                 openCheckoutModal() {
-                    this.amountPaid = this.totalAmount;
+                    if (this.paymentMethod === 'credit') {
+                        this.amountPaid = 0;
+                    } else {
+                        this.amountPaid = this.totalAmount;
+                    }
                     this.showCheckoutModal = true;
                 },
 
@@ -659,6 +770,9 @@
                         customer_nuit: this.customer?.nuit || null,
                         items: this.cart,
                         discount_amount: this.discountAmount,
+                        tax_regime: this.applyTax ? 'normal' : 'exempt',
+                        tax_rate: this.applyTax ? this.taxRate : 0,
+                        prices_include_tax: this.pricesIncludeTax,
                         payment_method: this.paymentMethod,
                         amount_paid: this.amountPaid,
                         offline_id: 'OFF-' + Date.now(),

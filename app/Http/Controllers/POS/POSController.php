@@ -191,13 +191,16 @@ class POSController extends Controller
             'items.*.unit_price'=> 'required|numeric|min:0',
             'items.*.discount'  => 'nullable|numeric|min:0',
             'discount_amount'   => 'nullable|numeric|min:0',
+            'tax_regime'        => 'nullable|string|in:normal,exempt',
+            'tax_rate'          => 'nullable|numeric|min:0|max:100',
+            'prices_include_tax'=> 'nullable|boolean',
             'payment_method'    => 'required|string|in:cash,mpesa,emola,card,credit,split',
             'amount_paid'       => 'required|numeric|min:0',
             'notes'             => 'nullable|string|max:500',
             'offline_id'        => 'nullable|string',
         ]);
 
-        return DB::transaction(function () use ($validated, $tenantId, $branchId) {
+        return DB::transaction(function () use ($request, $validated, $tenantId, $branchId) {
             $userId = auth()->id();
 
             // 1. Calcular Totais
@@ -226,9 +229,40 @@ class POSController extends Controller
             }
 
             $discountAmount = (float)($validated['discount_amount'] ?? 0);
-            $totalAmount = max(0, $subtotal - $discountAmount);
+            $baseTotal = max(0, $subtotal - $discountAmount);
+
+            // Gestão de IVA Moçambique
+            $taxRegime = $validated['tax_regime'] ?? 'normal';
+            $taxRate = isset($validated['tax_rate']) ? (float)$validated['tax_rate'] : ($taxRegime === 'normal' ? 16.00 : 0.00);
+            $pricesIncludeTax = filter_var($request->input('prices_include_tax', true), FILTER_VALIDATE_BOOLEAN);
+            $taxExemptionReason = null;
+            $taxAmount = 0.00;
+            $totalAmount = $baseTotal;
+
+            if ($taxRegime === 'normal' && $taxRate > 0) {
+                if ($pricesIncludeTax) {
+                    $taxableBase = $baseTotal / (1 + ($taxRate / 100));
+                    $taxAmount = round($baseTotal - $taxableBase, 2);
+                    $totalAmount = $baseTotal;
+                } else {
+                    $taxAmount = round($baseTotal * ($taxRate / 100), 2);
+                    $totalAmount = round($baseTotal + $taxAmount, 2);
+                }
+            } else {
+                $taxRegime = 'exempt';
+                $taxRate = 0.00;
+                $taxAmount = 0.00;
+                $taxExemptionReason = 'Isento nos termos do artigo 9 do CIVA';
+            }
+
             $amountPaid = (float)$validated['amount_paid'];
-            $changeAmount = max(0, $amountPaid - $totalAmount);
+            if ($validated['payment_method'] !== 'credit' && $amountPaid < $totalAmount) {
+                if (in_array($validated['payment_method'], ['card', 'mpesa', 'emola', 'cash'])) {
+                    $amountPaid = max($amountPaid, $totalAmount);
+                }
+            }
+
+            $changeAmount = ($validated['payment_method'] === 'credit') ? 0.00 : max(0, $amountPaid - $totalAmount);
 
             // 2. Resolver Cliente
             $customer = null;
@@ -239,26 +273,52 @@ class POSController extends Controller
             }
 
             $customerName = $customer ? $customer->name : ($validated['customer_name'] ?? 'Cliente Avulso');
+            $customerNuit = $validated['customer_nuit'] ?? $customer?->nuit;
+
+            // Determinar tipo e número de fatura oficial
+            $invoiceType = ($validated['payment_method'] === 'credit') ? 'invoice' : 'cash_invoice';
+            $invoiceNumber = Sale::generateNextInvoiceNumber($tenantId, $invoiceType);
 
             // 3. Criar Venda
             $sale = Sale::create([
-                'tenant_id'       => $tenantId,
-                'branch_id'       => $branchId,
-                'user_id'         => $userId,
-                'customer_id'     => $customer?->id,
-                'customer_name'   => $customerName,
-                'subtotal'        => $subtotal,
-                'discount_amount' => $discountAmount,
-                'total_amount'    => $totalAmount,
-                'amount_paid'     => $amountPaid,
-                'change_amount'   => $changeAmount,
-                'payment_method'  => $validated['payment_method'],
-                'sale_date'       => now(),
-                'notes'           => $validated['notes'] ?? null,
+                'tenant_id'            => $tenantId,
+                'branch_id'            => $branchId,
+                'user_id'              => $userId,
+                'customer_id'          => $customer?->id,
+                'customer_name'        => $customerName,
+                'customer_nuit'        => $customerNuit,
+                'customer_address'     => $customer?->address,
+                'subtotal'             => $subtotal,
+                'discount_amount'      => $discountAmount,
+                'total_amount'         => $totalAmount,
+                'amount_paid'          => $amountPaid,
+                'change_amount'        => $changeAmount,
+                'tax_regime'           => $taxRegime,
+                'tax_rate'             => $taxRate,
+                'tax_amount'           => $taxAmount,
+                'tax_exemption_reason' => $taxExemptionReason,
+                'prices_include_tax'   => $pricesIncludeTax,
+                'invoice_type'         => $invoiceType,
+                'invoice_number'       => $invoiceNumber,
+                'payment_method'       => $validated['payment_method'],
+                'sale_date'            => now(),
+                'due_date'             => ($invoiceType === 'invoice') ? now()->addDays(30) : null,
+                'notes'                => $validated['notes'] ?? null,
             ]);
 
             // 4. Criar Itens e Deduzir Stock
             foreach ($itemsData as $item) {
+                $itemTaxRate = ($taxRegime === 'normal') ? $taxRate : 0.00;
+                $itemTaxAmount = 0.00;
+                if ($itemTaxRate > 0) {
+                    if ($pricesIncludeTax) {
+                        $itemBase = $item['total_price'] / (1 + ($itemTaxRate / 100));
+                        $itemTaxAmount = round($item['total_price'] - $itemBase, 2);
+                    } else {
+                        $itemTaxAmount = round($item['total_price'] * ($itemTaxRate / 100), 2);
+                    }
+                }
+
                 SaleItem::create([
                     'tenant_id'      => $tenantId,
                     'branch_id'      => $branchId,
@@ -270,6 +330,9 @@ class POSController extends Controller
                     'purchase_price' => $item['purchase_price'],
                     'discount_amount'=> $item['discount'],
                     'total_price'    => $item['total_price'],
+                    'tax_rate'       => $itemTaxRate,
+                    'tax_amount'     => $itemTaxAmount,
+                    'is_tax_exempt'  => ($taxRegime === 'exempt'),
                 ]);
 
                 // Deduzir stock se for produto físico

@@ -58,13 +58,13 @@
 
     <div class="divider"></div>
 
-    <div><strong>Doc:</strong> Venda a Dinheiro / Recibo</div>
-    <div><strong>Venda Nº:</strong> #{{ str_pad($sale->id, 6, '0', STR_PAD_LEFT) }}</div>
+    <div><strong>Doc:</strong> {{ $sale->official_invoice_title }}</div>
+    <div><strong>Nº:</strong> {{ $sale->invoice_number ?? ('#' . str_pad($sale->id, 6, '0', STR_PAD_LEFT)) }}</div>
     <div><strong>Data:</strong> {{ $sale->created_at->format('d/m/Y H:i') }}</div>
     <div><strong>Operador:</strong> {{ $sale->user?->name ?? 'Caixa' }}</div>
     <div><strong>Cliente:</strong> {{ $sale->customer_display_name }}</div>
-    @if($sale->customer?->nuit)
-        <div><strong>NUIT Cliente:</strong> {{ $sale->customer->nuit }}</div>
+    @if($sale->customer?->nuit || $sale->customer_nuit)
+        <div><strong>NUIT Cliente:</strong> {{ $sale->customer?->nuit ?? $sale->customer_nuit }}</div>
     @endif
 
     <div class="divider"></div>
@@ -104,18 +104,38 @@
             <td class="text-right">-{{ number_format($sale->discount_amount, 2, ',', '.') }} MT</td>
         </tr>
         @endif
+        @if($sale->tax_amount > 0)
+        <tr>
+            <td>IVA ({{ number_format($sale->tax_rate, 0) }}%):</td>
+            <td class="text-right">{{ number_format($sale->tax_amount, 2, ',', '.') }} MT</td>
+        </tr>
+        @elseif($sale->tax_regime === 'exempt')
+        <tr>
+            <td style="font-size: 10px;">Regime IVA:</td>
+            <td class="text-right" style="font-size: 10px;">Isento (Art. 9º CIVA)</td>
+        </tr>
+        @endif
         <tr style="font-size: 14px; font-weight: bold;">
             <td>TOTAL:</td>
             <td class="text-right">{{ number_format($sale->total_amount, 2, ',', '.') }} MT</td>
         </tr>
         <tr>
-            <td>Pagamento ({{ ucfirst($sale->payment_method) }}):</td>
-            <td class="text-right">{{ number_format($sale->amount_paid, 2, ',', '.') }} MT</td>
+            <td>Pagamento ({{ $sale->formatted_payment_method }}):</td>
+            <td class="text-right">{{ number_format($sale->display_amount_paid, 2, ',', '.') }} MT</td>
         </tr>
-        <tr>
-            <td>Troco:</td>
-            <td class="text-right">{{ number_format($sale->change_amount, 2, ',', '.') }} MT</td>
-        </tr>
+        @if($sale->payment_method === 'credit')
+            @if($sale->debt && $sale->debt->remaining_amount > 0)
+            <tr style="font-weight: bold;">
+                <td>Saldo Devedor:</td>
+                <td class="text-right">{{ number_format($sale->debt->remaining_amount, 2, ',', '.') }} MT</td>
+            </tr>
+            @endif
+        @else
+            <tr>
+                <td>Troco:</td>
+                <td class="text-right">{{ number_format($sale->display_change_amount, 2, ',', '.') }} MT</td>
+            </tr>
+        @endif
     </table>
 
     <div class="divider"></div>
