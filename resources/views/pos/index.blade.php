@@ -7,6 +7,7 @@
     <title>ZBIZ+ POS 2.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         [x-cloak] { display: none !important; }
@@ -50,13 +51,13 @@
                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                         Turno #<span x-text="shift.id"></span> (<span x-text="shift.opened_at"></span>)
                     </span>
-                    <button @click="openCloseShiftModal()" type="button" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold px-2.5 py-1 rounded transition flex items-center gap-1 shadow">
+                    <button @click.stop="openCloseShiftModal()" type="button" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold px-2.5 py-1 rounded transition flex items-center gap-1 shadow active:scale-95 cursor-pointer">
                         <i class="fa-solid fa-lock"></i> Fechar Caixa
                     </button>
                 </div>
             </template>
             <template x-if="!shift">
-                <button @click="showOpenShiftModal = true" type="button" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded transition flex items-center gap-1.5 shadow">
+                <button @click.stop="openOpenShiftModal()" type="button" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded transition flex items-center gap-1.5 shadow-md active:scale-95 cursor-pointer">
                     <i class="fa-solid fa-door-open"></i> Abrir Caixa
                 </button>
             </template>
@@ -592,8 +593,8 @@
     </div>
 
     <!-- Modal Abertura de Caixa -->
-    <div x-cloak x-show="showOpenShiftModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4" @click.outside="showOpenShiftModal = false">
+    <div x-cloak x-show="showOpenShiftModal" class="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" @click.self="showOpenShiftModal = false">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
             <div class="flex items-center justify-between border-b pb-3">
                 <div class="flex items-center gap-2">
                     <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
@@ -644,8 +645,8 @@
     </div>
 
     <!-- Modal Fecho Cego de Caixa (Blind Closing) -->
-    <div x-cloak x-show="showCloseShiftModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto" @click.outside="showCloseShiftModal = false">
+    <div x-cloak x-show="showCloseShiftModal" class="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" @click.self="showCloseShiftModal = false">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b pb-3">
                 <div class="flex items-center gap-2">
                     <span class="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold">
@@ -761,7 +762,7 @@
                 offlineQueue: [],
 
                 // Turno de Caixa
-                shift: @json($activeShift ? ['id' => $activeShift->id, 'opened_at' => $activeShift->opened_at->format('H:i'), 'opening_balance' => (float)$activeShift->opening_balance] : null),
+                shift: @json($activeShift ? ['id' => $activeShift->id, 'opened_at' => ($activeShift->opened_at ? \Carbon\Carbon::parse($activeShift->opened_at)->format('H:i') : now()->format('H:i')), 'opening_balance' => (float)$activeShift->opening_balance] : null),
                 showOpenShiftModal: false,
                 showCloseShiftModal: false,
                 isSubmittingShift: false,
@@ -1127,6 +1128,11 @@
                     this.closeShiftForm.closing_balance_actual = Math.round(total * 100) / 100;
                 },
 
+                openOpenShiftModal() {
+                    this.openShiftForm = { opening_balance: 0, notes: '' };
+                    this.showOpenShiftModal = true;
+                },
+
                 openCloseShiftModal() {
                     this.closeShiftForm = { closing_balance_actual: '', notes: '' };
                     this.cashNotes = { n1000: 0, n500: 0, n200: 0, n100: 0, n50: 0, n20: 0, coins: 0 };
@@ -1136,7 +1142,7 @@
                 async submitOpenShift() {
                     this.isSubmittingShift = true;
                     try {
-                        const res = await fetch('/cash-shifts/open', {
+                        const res = await fetch('{{ url("cash-shifts/open") }}', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1177,7 +1183,7 @@
                     }
                     this.isSubmittingShift = true;
                     try {
-                        const res = await fetch(`/cash-shifts/${this.shift.id}/close`, {
+                        const res = await fetch(`{{ url("cash-shifts") }}/${this.shift.id}/close`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1260,6 +1266,5 @@
             }));
         });
     </script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
 </body>
 </html>
