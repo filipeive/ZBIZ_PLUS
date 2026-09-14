@@ -491,14 +491,9 @@
         </div>
     </div>
 
-    <!-- Customer Modal -->
     <!-- Customer Modal (com Cadastro Rápido) -->
-    <div x-cloak x-show="showCustomerModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4" @click.outside="showCustomerModal = false">
-            <div class="flex items-center justify-between border-b pb-2">
-                <h3 class="text-sm font-black text-slate-900">Selecionar Cliente</h3>
-                <button @click="showCustomerModal = false" class="text-gray-400"><i class="fa-solid fa-xmark"></i></button>
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4" @click.outside="showCustomerModal = false">
+    <div x-cloak x-show="showCustomerModal" class="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" @click.self="showCustomerModal = false">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
             <div class="flex items-center justify-between border-b pb-3">
                 <div>
                     <h3 class="text-sm font-black text-slate-900" x-text="showNewCustomerForm ? 'Cadastrar Novo Cliente' : 'Selecionar Cliente'"></h3>
@@ -512,17 +507,6 @@
                     <button @click="showCustomerModal = false; showNewCustomerForm = false" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             </div>
-            <div class="space-y-2 max-h-60 overflow-y-auto">
-                <button @click="customer = null; showCustomerModal = false" class="w-full text-left p-2 rounded hover:bg-gray-100 text-xs font-bold border">
-                    Cliente Avulso (Padrão)
-                </button>
-                @foreach($customers as $c)
-                <button @click="customer = { id: {{ $c->id }}, name: '{{ $c->name }}', nuit: '{{ $c->nuit }}' }; showCustomerModal = false"
-                        class="w-full text-left p-2 rounded hover:bg-gray-100 text-xs border flex justify-between">
-                    <span class="font-bold">{{ $c->name }}</span>
-                    <span class="text-gray-400">NUIT: {{ $c->nuit ?? 'N/D' }}</span>
-                </button>
-                @endforeach
 
             <!-- Formulário Novo Cliente Rápido -->
             <div x-show="showNewCustomerForm">
