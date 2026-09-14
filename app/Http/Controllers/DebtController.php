@@ -11,6 +11,7 @@ use App\Models\SaleItem;
 use App\Models\StockMovement;
 use App\Models\User;
 use App\Services\FinancialService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -1012,9 +1013,9 @@ class DebtController extends Controller
     }
 
     /**
-     * Imprimir Talão Térmico de Recibo de Pagamento (80mm)
+     * Imprimir Recibo de Pagamento de Dívida (A4 por padrão ou Térmico 80mm)
      */
-    public function printPaymentReceipt(DebtPayment $payment)
+    public function printPaymentReceipt(Request $request, DebtPayment $payment)
     {
         $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
         $debt = $payment->debt;
@@ -1023,6 +1024,50 @@ class DebtController extends Controller
         $payment->load(['user']);
         $debt->load(['customer', 'branch', 'tenant']);
 
-        return view('debts.payment-receipt', compact('payment', 'debt'));
+        // Download em PDF sob demanda
+        if ($request->input('download') === 'pdf') {
+            $pdf = Pdf::loadView('debts.payment-receipt-a4', compact('payment', 'debt'))
+                ->setPaper('a4', 'portrait');
+            return $pdf->download("Recibo_Pagamento_RC-" . str_pad($payment->id, 6, '0', STR_PAD_LEFT) . ".pdf");
+        }
+
+        // Se requisitado formato térmico explícito
+        if ($request->input('format') === 'thermal') {
+            return view('debts.payment-receipt-thermal', compact('payment', 'debt'));
+        }
+
+        // Padrão: Modelo Oficial A4
+        return view('debts.payment-receipt-a4', compact('payment', 'debt'));
+    }
+
+    /**
+     * Descarregar Recibo de Pagamento de Dívida em PDF (A4)
+     */
+    public function downloadPaymentReceiptPdf(DebtPayment $payment)
+    {
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+        $debt = $payment->debt;
+        abort_unless($debt && $debt->tenant_id === $tenantId, 403);
+
+        $payment->load(['user']);
+        $debt->load(['customer', 'branch', 'tenant']);
+
+        $pdf = Pdf::loadView('debts.payment-receipt-a4', compact('payment', 'debt'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->download("Recibo_Pagamento_RC-" . str_pad($payment->id, 6, '0', STR_PAD_LEFT) . ".pdf");
+    }
+
+    /**
+     * Imprimir Extrato Geral da Dívida em A4 com Histórico de Amortizações
+     */
+    public function printStatement(Debt $debt)
+    {
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+        abort_unless($debt && $debt->tenant_id === $tenantId, 403);
+
+        $debt->load(['customer', 'branch', 'tenant', 'payments.user']);
+
+        return view('debts.statement-a4', compact('debt'));
     }
 }

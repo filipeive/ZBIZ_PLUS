@@ -42,7 +42,8 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - **Branding Dinâmico & Logótipo nos Recibos e Documentos (`Tenant.php`, `settings/index.blade.php`):**
   - Visualização de pré-visualização de logotipo com fundo neutro/branco limpo (`bg-white border-2 border-slate-200 shadow-sm`), eliminando o fundo verde incorreto.
   - Propagação dinâmica do logótipo em recibos térmicos de venda (80mm/58mm), talões de fecho de turno, cotações em PDF, faturas A4 e relatórios fiscais de IVA.
-  - Emissão de talão térmico para amortizações de dívida (`debts/payment-receipt.blade.php`).
+  - Emissão de recibo de amortização de dívida nos modelos A4 Oficial (`debts/payment-receipt-a4.blade.php`), download direto em PDF timbrado (`debts.payments.receipt.pdf`) e talão térmico 80mm (`debts/payment-receipt-thermal.blade.php`).
+  - Emissão de Extrato Geral da Dívida em Modelo A4 (`debts/statement-a4.blade.php`) com histórico cronológico de amortizações e saldo remanescente.
 - **Harmonização Visual da Landing Page (`resources/views/welcome.blade.php`):**
   - Correção de duplicações estruturais e aninhamentos de tags.
   - Atualização dos planos comerciais em Meticais (MT), links de pré-registo e credenciais padrão de demonstração.

@@ -348,8 +348,9 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         Route::middleware('permissions:manage_payments')->group(function () {
             Route::get('/{debt}/payment', [DebtController::class, 'payment'])->name('payment');
             Route::post('/{debt}/add-payment', [DebtController::class, 'addPayment'])->name('add-payment');
-            Route::patch('/{debt}/mark-as-paid', [DebtController::class, 'markAsPaid'])->name('mark-as-paid');
             Route::get('/payments/{payment}/receipt', [DebtController::class, 'printPaymentReceipt'])->name('payments.receipt');
+            Route::get('/payments/{payment}/receipt/pdf', [DebtController::class, 'downloadPaymentReceiptPdf'])->name('payments.receipt.pdf');
+            Route::get('/{debt}/statement', [DebtController::class, 'printStatement'])->name('statement');
         });
 
         // Editar dívidas - edit_debts permission

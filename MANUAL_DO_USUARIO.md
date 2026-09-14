@@ -262,16 +262,16 @@ No encerramento do expediente:
 * Visualize todas as vendas em aberto organizadas por cliente.
 * Acompanhe os prazos de vencimento e valores acumulados.
 
-### 12.2 Amortização de Dívidas & Comprovativo Térmico
-1. Aceda a **Gestão de Dívidas** (`/debts`) e selecione a fatura do cliente.
+### 12.2 Amortização de Dívidas, Recibo Oficial em Modelo A4 e Extrato Geral
+1. Aceda a **Gestão de Dívidas** (`/debts`) e selecione a conta do cliente.
 2. Clique em **"Registar Pagamento / Amortização"**.
-3. Informe o valor amortizado e a forma de pagamento (Dinheiro, M-Pesa, etc.).
-4. O saldo devedor é abatido imediatamente.
-5. **Comprovativo Térmico Oficial**: Clique no botão **"Imprimir Recibo Térmico"** para emitir na impressora de 80mm um talão timbrado com o logótipo da empresa, discriminando:
-   - Valor Total da Dívida Original.
-   - Valor Desta Amortização.
-   - Saldo Remanescente Atualizado.
-   - Data, Hora e Assinatura do Caixa.
+3. Informe o valor amortizado e a forma de pagamento (Dinheiro, M-Pesa, E-Mola, Cartão POS, Transferência Bancária).
+4. O saldo devedor é abatido imediatamente em tempo real.
+5. **Emissão de Comprovativos (Modelo A4 Oficial & Térmico)**:
+   - 📄 **Recibo Oficial em Modelo A4**: Documento formal timbrado com o logótipo da empresa, NUIT, dados completos do devedor, demonstrativo financeiro detalhado (valor original, prestações anteriores, valor pago, saldo devedor restante), termos legais de quitação ou amortização parcial e assinaturas com carimbo.
+   - ⬇️ **Descarregar em PDF (A4)**: Exportação com 1 clique de arquivo PDF timbrado de alta resolução gerado pelo motor DomPDF.
+   - 🧾 **Talão Térmico (80mm / 58mm)**: Opção rápida para impressão direta em impressoras térmicas de balcão ESC/POS.
+   - 📋 **Extrato Geral da Dívida em A4**: Na barra superior da dívida, clique em **"Extrato A4"** para emitir uma certidão completa com o histórico cronológico de todas as parcelas amortizadas e o saldo consolidado atual.
 
 ### 12.3 Controlo de Despesas Operacionais
 Lance despesas do dia-a-dia (energia, água, internet, salários, materiais) devidamente categorizadas para apuração precisa do Lucro Líquido Real no final do mês.
@@ -308,9 +308,10 @@ Aceda a **Definições do Sistema** (`/settings`):
 * O logótipo é propagado instantaneamente para:
   - Faturas Oficiais A4 em PDF (`/documents/templates/invoice_pdf`).
   - Cotações Comerciais em PDF (`/documents/templates/quotation_pdf`).
+  - Recibos e Extratos Oficiais de Dívida em Modelo A4 (`/debts/payments/{id}/receipt`).
   - Recibos Térmicos de Venda do POS (80mm e 58mm).
   - Recibos Térmicos de Amortização de Dívidas.
-  - Relatórios Oficiais de Apuramento de IVA.
+  - Relatórios Oficiais de Apuramento de IVA Modelo A.
 
 ### 14.2 Gestão de Backups & Cópias de Segurança
 Na aba **"6. Backups & Base de Dados"**:

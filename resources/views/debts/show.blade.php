@@ -16,11 +16,17 @@
             <i class="fa-solid fa-arrow-left"></i> Voltar aos Fiados
         </a>
 
-        @if($debt->remaining_amount > 0)
-            <button @click="showPayModal = true" class="px-5 py-2 rounded-xl {{ $theme['btn'] }} text-xs transition flex items-center gap-2">
-                <i class="fa-solid fa-hand-holding-dollar"></i> Registar Pagamento
-            </button>
-        @endif
+        <div class="flex items-center gap-3">
+            <a href="{{ route('debts.statement', $debt->id) }}" target="_blank" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold text-xs rounded-xl flex items-center gap-2 border border-slate-700 transition" title="Imprimir Extrato Geral da Dívida em A4">
+                <i class="fa-solid fa-file-invoice"></i> Extrato A4
+            </a>
+
+            @if($debt->remaining_amount > 0)
+                <button @click="showPayModal = true" class="px-5 py-2 rounded-xl {{ $theme['btn'] }} text-xs transition flex items-center gap-2">
+                    <i class="fa-solid fa-hand-holding-dollar"></i> Registar Pagamento
+                </button>
+            @endif
+        </div>
     </div>
 
     <!-- Debt Summary Card -->
@@ -79,14 +85,21 @@
                                 <td class="p-3 text-slate-400">{{ $payment->user?->name ?? 'Caixa' }}</td>
                                 <td class="p-3 text-right font-black text-emerald-400 font-mono">{{ number_format($payment->amount, 2, ',', '.') }} MT</td>
                                 <td class="p-3 text-right">
-                                    <a href="{{ route('debts.payments.receipt', $payment->id) }}" target="_blank" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-400 text-xs font-bold inline-flex items-center gap-1 transition" title="Imprimir Recibo Térmico">
-                                        <i class="fa-solid fa-print"></i> Recibo
-                                    </a>
+                                    <div class="inline-flex items-center gap-1.5 justify-end">
+                                        <a href="{{ route('debts.payments.receipt', ['payment' => $payment->id, 'format' => 'a4']) }}" target="_blank" class="px-2.5 py-1 rounded-lg bg-sky-950/80 hover:bg-sky-900 text-sky-400 border border-sky-800/60 text-xs font-bold inline-flex items-center gap-1 transition" title="Recibo Oficial A4">
+                                            <i class="fa-solid fa-file-invoice"></i> Recibo A4
+                                        </a>
+                                        <a href="{{ route('debts.payments.receipt', ['payment' => $payment->id, 'format' => 'thermal']) }}" target="_blank" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60 text-xs font-bold inline-flex items-center gap-1 transition" title="Talão Térmico (80mm)">
+                                            <i class="fa-solid fa-receipt"></i> Térmico
+                                        </a>
+                                        <a href="{{ route('debts.payments.receipt.pdf', $payment->id) }}" class="p-1 px-2 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 text-emerald-400 border border-emerald-800/60 text-xs font-bold inline-flex items-center gap-1 transition" title="Descarregar PDF">
+                                            <i class="fa-solid fa-download"></i>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="p-6 text-center text-slate-500">Nenhum pagamento registado ainda.</td>
                                 <td colspan="5" class="p-6 text-center text-slate-500">Nenhum pagamento registado ainda.</td>
                             </tr>
                         @endforelse
