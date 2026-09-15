@@ -1,6 +1,6 @@
 # 📘 Instruções de Instalação e Configuração — ZBIZ+ Enterprise Suite
 
-**Guia Oficial de Instalação, Onboarding Limpo, Conexão e Operação (Windows, Linux e Nuvem)**  
+**Guia Oficial de Instalação, Onboarding Limpo, Operação e Desinstalação (Windows, Linux e Nuvem)**  
 **Desenvolvido por:** Fdsmultiservices  
 **Suporte Técnico:** (+258) 86 213 4230 | (+258) 84 724 0296 | fdsmultiservices@gmail.com  
 **Servidor em Nuvem:** [http://146.235.224.99/zbiz_plus](http://146.235.224.99/zbiz_plus)  
@@ -14,11 +14,12 @@
 3. [Instalação em Computador Windows (Terminal de Balcão / Caixa)](#3-instalação-em-computador-windows-terminal-de-balcão--caixa)
 4. [Instalação em Computador Windows como Servidor Local (Offline)](#4-instalação-em-computador-windows-como-servidor-local-offline)
 5. [Instalação em Computadores Linux (Ubuntu/Debian/Mint)](#5-instalação-em-computadores-linux-ubuntudebianmint)
-6. [Primeiro Acesso: Pré-Registo e Ativação Instantânea](#6-primeiro-acesso-pré-registo-e-ativação-instantânea)
-7. [Ativação da Licença Oficial (`ZBIZ-XXXX-XXXX-XXXX-XXXX`)](#7-ativação-da-licença-oficial-zbiz-xxxx-xxxx-xxxx-xxxx)
-8. [Ciclo de Expiração, Modo Somente-Leitura e Reativação](#8-ciclo-de-expiração-modo-somente-leitura-e-reativação)
-9. [Configuração de Impressoras Térmicas de Recibos (ESC/POS)](#9-configuração-de-impressoras-térmicas-de-recibos-escpos)
-10. [Contactos de Assistência e Suporte](#10-contactos-de-assistência-e-suporte)
+6. [Como Desinstalar o ZBIZ+ (Linux e Windows)](#6-como-desinstalar-o-zbiz-linux-e-windows)
+7. [Primeiro Acesso: Pré-Registo e Ativação Instantânea](#7-primeiro-acesso-pré-registo-e-ativação-instantânea)
+8. [Ativação da Licença Oficial (`ZBIZ-XXXX-XXXX-XXXX-XXXX`)](#8-ativação-da-licença-oficial-zbiz-xxxx-xxxx-xxxx-xxxx)
+9. [Ciclo de Expiração, Modo Somente-Leitura e Reativação](#9-ciclo-de-expiração-modo-somente-leitura-e-reativação)
+10. [Configuração de Impressoras Térmicas de Recibos (ESC/POS)](#10-configuração-de-impressoras-térmicas-de-recibos-escpos)
+11. [Contactos de Assistência e Suporte](#11-contactos-de-assistência-e-suporte)
 
 ---
 
@@ -65,7 +66,7 @@ O ZBIZ+ possui isolamento completo por `tenant_id`. **Não precisa apagar o banc
      - *Material Hospitalar & Socorros*
      - *Psicotrópicos & Controlados (Registo ANARME)*
 3. **No computador do Caixa / Balcão da Farmácia**:
-   - Basta rodar o `install-windows.bat` (Opção 1) apontando para a Nuvem (ver Capítulo 3).
+   - Basta rodar o `install-windows.bat` (Opção 1) ou `install-linux.sh` (Opção 1) apontando para a Nuvem.
 
 ---
 
@@ -148,9 +149,10 @@ Escolha o modo de instalação desejado:
 [1] Configurar Terminal POS Kiosk (Modo App Nativo para Balcão/Caixa)
 [2] Instalar Servidor Local Completo (Modo Offline / On-Premise)
 [3] Abrir ZBIZ+ Cloud imediatamente no modo App
+[4] Desinstalar Terminal e Serviços do ZBIZ+
 [0] Sair
 
-Digite a opção desejada [1, 2, 3 ou 0]: 1
+Digite a opção desejada [1, 2, 3, 4 ou 0]: 1
 ```
 
 ### Passo 3: Escolher as Preferências do Terminal
@@ -192,19 +194,65 @@ Escolha a **Opção [2]**.
 
 ## 5. Instalação em Computadores Linux (Ubuntu/Debian/Mint)
 
-Para computadores operando com Linux no balcão:
+Para postos de venda operando com Linux no balcão:
 
-1. Abra o terminal na pasta do projeto e torne o script executável:
+1. Abra o terminal na pasta do projeto e torne os scripts executáveis:
    ```bash
-   chmod +x install-linux.sh
+   chmod +x install-linux.sh uninstall-linux.sh
    ./install-linux.sh
    ```
-2. O assistente interativo criará o lançador `.desktop` no menu de aplicativos e na Área de Trabalho com ícone e atalho `zbiz-pos`.
-3. Pode também iniciar como serviço de fundo automático via `systemctl --user enable zbizplus.service`.
+2. Escolha a **Opção [1]** para configurar o Terminal POS Kiosk.
+3. O assistente criará automaticamente o atalho na Área de Trabalho (`ZBIZ+ Terminal POS`) e no menu de aplicativos (`zbiz-plus.desktop`), com permissões confiadas.
+4. Para servidor local completo em Linux, escolha a **Opção [2]** (Docker ou serviço background via systemd).
 
 ---
 
-## 6. Primeiro Acesso: Pré-Registo e Ativação Instantânea
+## 6. Como Desinstalar o ZBIZ+ (Linux e Windows)
+
+Se você realizou testes num computador Linux ou Windows e precisa remover o terminal, os atalhos e os serviços de segundo plano:
+
+### No Linux:
+
+#### Método Automático 1 (Recomendado):
+Execute o script dedicado de desinstalação:
+```bash
+./uninstall-linux.sh
+```
+Ou execute `./install-linux.sh` e escolha a **Opção [4]** (*Desinstalar Terminal e Serviços do ZBIZ+ deste computador*).
+
+#### Método Manual via Linha de Comando:
+Basta rodar no seu terminal os seguintes comandos:
+```bash
+# 1. Remover atalhos da Área de Trabalho e do Menu de Aplicações
+rm -f "$HOME/Desktop/ZBIZ+ Terminal POS.desktop"
+rm -f "$HOME/Área de Trabalho/ZBIZ+ Terminal POS.desktop"
+rm -f "$HOME/.local/share/applications/zbiz-plus.desktop"
+
+# 2. Remover inicialização automática ao ligar o PC
+rm -f "$HOME/.config/autostart/zbiz-plus.desktop"
+
+# 3. Encerrar e remover serviço de servidor local (se tiver usado a Opção 2)
+systemctl --user stop zbizplus.service 2>/dev/null || true
+systemctl --user disable zbizplus.service 2>/dev/null || true
+rm -f "$HOME/.config/systemd/user/zbizplus.service"
+systemctl --user daemon-reload 2>/dev/null || true
+```
+
+---
+
+### No Windows:
+
+1. **Remover o Atalho**:
+   - Vá à sua **Área de Trabalho** e elimine o ficheiro `ZBIZ+ Terminal POS.lnk` (Shift + Delete).
+2. **Remover a Inicialização Automática (se ativada)**:
+   - Pressione as teclas `Win + R`, digite `shell:startup` e pressione **ENTER**.
+   - Se existir o atalho `ZBIZ+ Terminal POS`, elimine-o.
+3. **Remover o Script Auxiliar**:
+   - Elimine o arquivo `C:\Users\SEU_USUARIO\ZBIZ_Launcher.bat`.
+
+---
+
+## 7. Primeiro Acesso: Pré-Registo e Ativação Instantânea
 
 Para cadastrar uma nova empresa ou filial pela interface web:
 
@@ -220,7 +268,7 @@ Para cadastrar uma nova empresa ou filial pela interface web:
 
 ---
 
-## 7. Ativação da Licença Oficial (`ZBIZ-XXXX-XXXX-XXXX-XXXX`)
+## 8. Ativação da Licença Oficial (`ZBIZ-XXXX-XXXX-XXXX-XXXX`)
 
 Após o período de teste ou mediante contratação anual/mensal:
 
@@ -238,7 +286,7 @@ Após o período de teste ou mediante contratação anual/mensal:
 
 ---
 
-## 8. Ciclo de Expiração, Modo Somente-Leitura e Reativação
+## 9. Ciclo de Expiração, Modo Somente-Leitura e Reativação
 
 Quando uma licença atinge a data limite sem renovação:
 
@@ -253,7 +301,7 @@ Quando uma licença atinge a data limite sem renovação:
 
 ---
 
-## 9. Configuração de Impressoras Térmicas de Recibos (ESC/POS)
+## 10. Configuração de Impressoras Térmicas de Recibos (ESC/POS)
 
 Para imprimir faturas em rolo de 80mm ou 58mm sem abrir janelas de confirmação do Windows:
 
@@ -265,7 +313,7 @@ Para imprimir faturas em rolo de 80mm ou 58mm sem abrir janelas de confirmação
 
 ---
 
-## 10. Contactos de Assistência e Suporte
+## 11. Contactos de Assistência e Suporte
 
 A equipa técnica da **Fdsmultiservices** está disponível para apoio presencial e remoto:
 

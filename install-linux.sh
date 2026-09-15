@@ -36,8 +36,10 @@ echo ""
 echo "  [2] Instalar Servidor Local Completo (Modo Offline / On-Premise)"
 echo "      - Instala dependências PHP 8.3, banco de dados e serviço contínuo de segundo plano."
 echo ""
-echo "  [3] Abrir ZBIZ+ Nuvem imediatamente no navegador"
-echo "  [0] Sair"
+echo "  [3] Abrir ZBIZ+ Nuvem imediatamente no navegador
+  [4] Desinstalar Terminal e Serviços do ZBIZ+ deste computador
+  [0] Sair
+"
 echo ""
 read -rp "Digite a opção desejada [1, 2, 3 ou 0]: " OPTION
 
@@ -193,6 +195,10 @@ EOF
 
     3)
         xdg-open "http://146.235.224.99/zbiz_plus" 2>/dev/null || echo "Abra no navegador: http://146.235.224.99/zbiz_plus"
+        ;;
+
+    4)
+        "${SCRIPT_DIR}/uninstall-linux.sh"
         ;;
 
     *)
