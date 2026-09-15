@@ -44,6 +44,9 @@ class LicenseKey extends Model
             if (empty($license->key_code)) {
                 $license->key_code = static::generateUniqueKeyCode();
             }
+            if (empty($license->key_hash)) {
+                $license->key_hash = hash('sha256', $license->key_code);
+            }
         });
     }
 
