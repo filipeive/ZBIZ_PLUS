@@ -24,17 +24,30 @@ class SyncIngestController extends Controller
      */
     public function ingest(Request $request): JsonResponse
     {
-        // 1. Autenticação por Token de Sincronização
+        // 1. Autenticação por Token de Sincronização (Master Token ou Chave de Licença do Tenant)
         $providedToken = $request->header('X-Sync-Token')
             ?? $request->bearerToken()
             ?? $request->input('sync_token');
 
         $expectedToken = config('services.sync.token', env('SYNC_TOKEN', 'zbiz_sync_default_token'));
 
-        if (!$providedToken || !hash_equals((string)$expectedToken, (string)$providedToken)) {
+        $isMasterToken = $providedToken && hash_equals((string)$expectedToken, (string)$providedToken);
+        $licenseTenantId = null;
+
+        if (!$isMasterToken && $providedToken) {
+            $license = \App\Models\LicenseKey::withoutGlobalScopes()
+                ->where('key_code', trim($providedToken))
+                ->whereIn('status', ['active', 'issued'])
+                ->first();
+            if ($license) {
+                $licenseTenantId = $license->tenant_id;
+            }
+        }
+
+        if (!$isMasterToken && !$licenseTenantId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Token de sincronização inválido ou ausente.',
+                'message' => 'Token de sincronização inválido ou ausente. Forneça o Sync Token da infraestrutura ou a Chave de Licença ZBIZ+.',
             ], 401);
         }
 
@@ -47,12 +60,15 @@ class SyncIngestController extends Controller
             'stock_movements' => 'nullable|array',
         ]);
 
-        // Resolução inteligente de Tenant por Slug primeiro (garante que bancos com IDs distintos apontem para a mesma empresa)
+        // Resolução inteligente de Tenant por Licença, Slug ou ID
         $tenantSlug = $request->input('tenant_slug');
         $tenantId = (int)$request->input('tenant_id');
 
         $tenant = null;
-        if ($tenantSlug) {
+        if ($licenseTenantId) {
+            $tenant = Tenant::withoutGlobalScopes()->find($licenseTenantId);
+        }
+        if (!$tenant && $tenantSlug) {
             $tenant = Tenant::withoutGlobalScopes()->where('slug', $tenantSlug)->first();
         }
         if (!$tenant && $tenantId) {

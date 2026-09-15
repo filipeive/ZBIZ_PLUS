@@ -168,6 +168,7 @@ class SyncPushCommand extends Command
             $effectiveSyncToken = !empty($tenantSyncToken) ? $tenantSyncToken : $syncToken;
 
             if ($dryRun) {
+                $this->warn("   [SIMULAÇÃO / DRY-RUN] Lote preparado com sucesso. Nada foi enviado.");
                 $this->warn("   [SIMULAÇÃO / DRY-RUN] Lote preparado com sucesso para {$effectiveCloudUrl}. Nada foi enviado.");
                 continue;
             }
