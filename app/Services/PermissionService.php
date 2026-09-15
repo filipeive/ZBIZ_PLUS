@@ -30,6 +30,9 @@ class PermissionService
     {
         $defaultPermissions = config('auth_permissions.role_permissions', []);
         $tenantObj = $tenant ?? current_tenant();
+        if ($tenantObj instanceof \Illuminate\Database\Eloquent\Model && $tenantObj->exists) {
+            $tenantObj = $tenantObj->fresh() ?? $tenantObj;
+        }
         $custom = $tenantObj?->settings['role_permissions'] ?? null;
 
         if (is_array($custom) && !empty($custom)) {
@@ -49,7 +52,7 @@ class PermissionService
      */
     public function getUserPermissions(): array
     {
-        if (!$this->user || !$this->user->is_active) {
+        if (!$this->user || (isset($this->user->is_active) && !$this->user->is_active)) {
             return [];
         }
 
@@ -72,7 +75,7 @@ class PermissionService
      */
     public function hasPermission(string $permission): bool
     {
-        if (!$this->user || !$this->user->is_active) {
+        if (!$this->user || (isset($this->user->is_active) && !$this->user->is_active)) {
             return false;
         }
 

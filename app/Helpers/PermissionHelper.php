@@ -62,16 +62,9 @@ class PermissionHelper
 
     public static function checkPermissionFallback($role, string $permission): bool
     {
-        $permissions = [
-            'admin'         => ['manage_users', 'manage_products', 'manage_categories', 'view_reports'],
-            'manager'       => ['manage_products', 'manage_categories', 'view_categories', 'view_reports'],
-            'stock_manager' => ['manage_products', 'manage_categories', 'view_categories', 'create_categories', 'edit_categories'],
-            'cashier'       => ['view_products', 'view_sales', 'create_sales'],
-            'staff'         => ['view_products', 'view_sales', 'create_sales'],
-        ];
-
         $roleName = is_object($role) ? $role->name : $role;
-        return in_array($permission, $permissions[$roleName] ?? []);
+        $rolePermissions = config("auth_permissions.role_permissions.{$roleName}", []);
+        return in_array($permission, $rolePermissions);
     }
 
     public static function userCan(string $permission): bool

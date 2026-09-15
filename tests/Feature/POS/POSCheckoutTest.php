@@ -3,6 +3,7 @@
 namespace Tests\Feature\POS;
 
 use App\Models\Branch;
+use App\Models\CashShift;
 use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Debt;
@@ -75,6 +76,16 @@ class POSCheckoutTest extends TestCase
             'type'            => 'cash',
             'current_balance' => 0,
             'is_active'       => true,
+        ]);
+
+        CashShift::create([
+            'tenant_id'            => $this->tenant->id,
+            'branch_id'            => $this->branch->id,
+            'user_id'              => $this->cashier->id,
+            'financial_account_id' => $this->cashAccount->id,
+            'opened_at'            => now(),
+            'opening_balance'      => 0,
+            'status'               => 'open',
         ]);
 
         $category = Category::create([
@@ -378,6 +389,46 @@ class POSCheckoutTest extends TestCase
         ]);
 
         $response->assertStatus(422);
+    }
+
+    public function test_cashier_cannot_register_sale_without_today_open_shift(): void
+    {
+        CashShift::where('tenant_id', $this->tenant->id)
+            ->where('branch_id', $this->branch->id)
+            ->where('user_id', $this->cashier->id)
+            ->delete();
+
+        $this->actingAs($this->cashier);
+
+        $response = $this->postJson('/pos/sale', [
+            'customer_name' => 'Cliente Balcão',
+            'items' => [[
+                'product_id' => $this->product1->id,
+                'quantity' => 1,
+                'unit_price' => 100.00,
+                'discount' => 0,
+            ]],
+            'discount_amount' => 0,
+            'payment_method' => 'cash',
+            'amount_paid' => 100.00,
+        ]);
+
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors('cash_shift');
+        $this->assertDatabaseCount('sales', 0);
+    }
+
+    public function test_cashier_dashboard_hides_management_financial_cards(): void
+    {
+        $response = $this->actingAs($this->cashier)->get(route('dashboard.index'));
+
+        $response->assertOk();
+        $response->assertSeeText('Vendas de Hoje');
+        $response->assertSeeText('Artigos Vendidos Hoje');
+        $response->assertDontSeeText('Valor Real do Negócio');
+        $response->assertDontSeeText('Faturação Mensal');
+        $response->assertDontSeeText('A Receber (Fiado)');
+        $response->assertDontSeeText('Lucro Real');
     }
 
     public function test_pos_navigation_links_are_rendered_in_layout(): void

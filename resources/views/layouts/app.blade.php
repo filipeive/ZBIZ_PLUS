@@ -530,7 +530,12 @@
         html.light .bg-slate-900\/85,
         html.light .bg-slate-900\/80,
         html.light .bg-slate-900\/70,
+        html.light .bg-slate-900\/60,
         html.light .bg-slate-900\/50,
+        html.light .bg-slate-900\/40,
+        html.light .bg-slate-900\/30,
+        html.light .bg-slate-900\/20,
+        html.light .bg-slate-900\/10,
         html.light .app-bootstrap-card,
         html.light .stats-card,
         html.light .card,
@@ -542,17 +547,27 @@
         }
 
         html.light .bg-slate-800,
+        html.light .bg-slate-800\/90,
         html.light .bg-slate-800\/80,
+        html.light .bg-slate-800\/70,
         html.light .bg-slate-800\/60,
-        html.light .bg-slate-800\/50 {
+        html.light .bg-slate-800\/50,
+        html.light .bg-slate-800\/40,
+        html.light .bg-slate-800\/30,
+        html.light .bg-slate-800\/20,
+        html.light .bg-slate-800\/10 {
             background-color: #f1f5f9 !important;
             color: #1e293b !important;
         }
 
+        html.light .bg-slate-950\/90,
         html.light .bg-slate-950\/80,
+        html.light .bg-slate-950\/70,
         html.light .bg-slate-950\/60,
+        html.light .bg-slate-950\/50,
         html.light .bg-slate-950\/40,
-        html.light .bg-slate-950\/30 {
+        html.light .bg-slate-950\/30,
+        html.light .bg-slate-950\/20 {
             background-color: #f8fafc !important;
             color: #0f172a !important;
         }
@@ -568,10 +583,33 @@
         }
 
         html.light .border-slate-800,
+        html.light .border-slate-800\/90,
         html.light .border-slate-800\/80,
         html.light .border-slate-800\/60,
+        html.light .border-slate-800\/50,
+        html.light .border-slate-800\/40,
         html.light .border-slate-700,
-        html.light .border-slate-700\/80 {
+        html.light .border-slate-700\/80,
+        html.light .border-slate-700\/60,
+        html.light .border-slate-700\/50 {
+            border-color: #e2e8f0 !important;
+        }
+
+        /* Divisores de listas e tabelas */
+        html.light .divide-slate-800,
+        html.light .divide-slate-800\/80,
+        html.light .divide-slate-800\/60,
+        html.light .divide-slate-800\/50,
+        html.light .divide-slate-700,
+        html.light .divide-slate-700\/80,
+        html.light .divide-slate-700\/60,
+        html.light .divide-slate-800 > :not([hidden]) ~ :not([hidden]),
+        html.light .divide-slate-800\/80 > :not([hidden]) ~ :not([hidden]),
+        html.light .divide-slate-800\/60 > :not([hidden]) ~ :not([hidden]),
+        html.light .divide-slate-800\/50 > :not([hidden]) ~ :not([hidden]),
+        html.light .divide-slate-700 > :not([hidden]) ~ :not([hidden]),
+        html.light .divide-slate-700\/80 > :not([hidden]) ~ :not([hidden]),
+        html.light .divide-slate-700\/60 > :not([hidden]) ~ :not([hidden]) {
             border-color: #e2e8f0 !important;
         }
 
@@ -584,23 +622,41 @@
         html.light .bg-slate-900\/85.text-white,
         html.light .bg-slate-900\/80.text-white,
         html.light .bg-slate-900\/70.text-white,
+        html.light .bg-slate-900\/60.text-white,
         html.light .bg-slate-900\/50.text-white,
+        html.light .bg-slate-900\/40.text-white,
+        html.light .bg-slate-900\/30.text-white,
         html.light .bg-slate-800.text-white,
         html.light .bg-slate-800\/80.text-white,
         html.light .bg-slate-800\/60.text-white,
         html.light .bg-slate-800\/50.text-white,
-        html.light .bg-slate-950 .text-white,
-        html.light .bg-slate-900 .text-white,
-        html.light .bg-slate-900\/95 .text-white,
-        html.light .bg-slate-900\/90 .text-white,
-        html.light .bg-slate-900\/85 .text-white,
-        html.light .bg-slate-900\/80 .text-white,
-        html.light .bg-slate-900\/70 .text-white,
-        html.light .bg-slate-900\/50 .text-white,
-        html.light .bg-slate-800 .text-white,
-        html.light .bg-slate-800\/80 .text-white,
-        html.light .bg-slate-800\/60 .text-white,
-        html.light .bg-slate-800\/50 .text-white {
+        html.light .bg-slate-800\/40.text-white,
+        html.light .bg-slate-800\/30.text-white,
+        html.light .bg-slate-950 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-900 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-900\/95 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-900\/90 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-900\/85 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-900\/80 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-900\/70 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-900\/60 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-900\/50 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-900\/40 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-900\/30 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-950\/80 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-950\/70 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-950\/60 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-950\/50 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-950\/40 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-800 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-800\/80 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-800\/60 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-800\/50 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-800\/40 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light .bg-slate-800\/30 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
+        html.light table td.text-white,
+        html.light table tbody td.text-white,
+        html.light table th.text-white {
             color: #0f172a !important;
         }
 
@@ -631,21 +687,77 @@
             color: #0f172a !important;
         }
 
+        /* ========================================================
+           SOLID BUTTONS, TABS, BADGES & COLORED SURFACES
+           Always keep crisp white text and white icons in Light Mode
+        ======================================================== */
         html.light .tenant-gradient,
-        html.light .bg-gradient-to-r {
-            color: #ffffff !important;
-        }
-
+        html.light .tenant-gradient *,
         html.light .tenant-gradient .text-white,
+        html.light .bg-gradient-to-r,
+        html.light .bg-gradient-to-r *,
         html.light .bg-gradient-to-r .text-white,
+        html.light .bg-gradient-to-br,
+        html.light .bg-gradient-to-br *,
         html.light .bg-emerald-500,
+        html.light .bg-emerald-500 *,
         html.light .bg-emerald-600,
+        html.light .bg-emerald-600 *,
+        html.light .bg-emerald-700,
+        html.light .bg-emerald-700 *,
         html.light .bg-rose-500,
+        html.light .bg-rose-500 *,
         html.light .bg-rose-600,
+        html.light .bg-rose-600 *,
+        html.light .bg-rose-700,
+        html.light .bg-rose-700 *,
         html.light .bg-sky-500,
+        html.light .bg-sky-500 *,
         html.light .bg-sky-600,
+        html.light .bg-sky-600 *,
+        html.light .bg-sky-700,
+        html.light .bg-sky-700 *,
+        html.light .bg-blue-500,
+        html.light .bg-blue-500 *,
+        html.light .bg-blue-600,
+        html.light .bg-blue-600 *,
+        html.light .bg-blue-700,
+        html.light .bg-blue-700 *,
         html.light .bg-indigo-500,
-        html.light .bg-indigo-600 {
+        html.light .bg-indigo-500 *,
+        html.light .bg-indigo-600,
+        html.light .bg-indigo-600 *,
+        html.light .bg-violet-500,
+        html.light .bg-violet-500 *,
+        html.light .bg-violet-600,
+        html.light .bg-violet-600 *,
+        html.light .bg-teal-500,
+        html.light .bg-teal-500 *,
+        html.light .bg-teal-600,
+        html.light .bg-teal-600 *,
+        html.light .bg-amber-600,
+        html.light .bg-amber-600 *,
+        html.light .tenant-button,
+        html.light .tenant-button *,
+        html.light .btn-primary,
+        html.light .btn-primary *,
+        html.light .btn-success,
+        html.light .btn-success *,
+        html.light .btn-danger,
+        html.light .btn-danger *,
+        html.light .btn-warning,
+        html.light .btn-warning *,
+        html.light .badge.bg-primary,
+        html.light .badge.bg-success,
+        html.light .badge.bg-danger,
+        html.light button.bg-emerald-600,
+        html.light button.bg-emerald-600 *,
+        html.light button.bg-emerald-500,
+        html.light button.bg-emerald-500 *,
+        html.light a.bg-emerald-600,
+        html.light a.bg-emerald-600 *,
+        html.light a.bg-emerald-500,
+        html.light a.bg-emerald-500 * {
             color: #ffffff !important;
         }
 
@@ -686,17 +798,31 @@
             color: #94a3b8 !important;
         }
 
+        html.light table,
         html.light .table,
         html.light .table-responsive,
+        html.light table thead th,
         html.light .table thead th,
+        html.light table tbody td,
         html.light .table tbody td,
+        html.light table tfoot td,
         html.light .table tfoot td {
             color: #1e293b !important;
             border-color: #e2e8f0 !important;
+        }
+
+        html.light table tbody,
+        html.light table tbody.bg-slate-900\/60,
+        html.light table tbody.bg-slate-900,
+        html.light table tbody.bg-slate-950 {
             background-color: transparent !important;
         }
 
-        html.light .table thead th {
+        html.light table thead th,
+        html.light .table thead th,
+        html.light table thead tr,
+        html.light table thead tr.bg-slate-950,
+        html.light table thead tr.bg-slate-900 {
             background-color: #f1f5f9 !important;
             color: #475569 !important;
         }
@@ -888,6 +1014,7 @@
                     @else
                     
                     <!-- Visão Geral -->
+                    @if(App\Helpers\PermissionHelper::userCan('view_dashboard'))
                     <div>
                         <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Visão Geral</div>
                         <div class="space-y-1">
@@ -898,13 +1025,21 @@
                             </a>
                         </div>
                     </div>
+                    @endif
 
                     <!-- Vendas & Comercial -->
-	                    @if(tenant_has_feature('sales') && (auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isCashier() || auth()->user()->isStaff()))
+                    @php
+                        $canPos = !$isOwnerConsole && tenant_has_feature('pos') && (auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin() || auth()->user()->hasPermission('create_sales')) && App\Helpers\PermissionHelper::userCan('create_sales');
+                        $canSales = tenant_has_feature('sales') && App\Helpers\PermissionHelper::userCan('view_sales');
+                        $canOrders = tenant_has_feature('sales') && App\Helpers\PermissionHelper::userCan('view_orders');
+                        $canDebts = tenant_has_feature('debts') && App\Helpers\PermissionHelper::userCan('view_debts');
+                        $canCustomers = App\Helpers\PermissionHelper::userCan('view_customers');
+                    @endphp
+                    @if($canPos || $canSales || $canOrders || $canDebts || $canCustomers)
                     <div>
                         <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Vendas & Comercial</div>
                         <div class="space-y-1">
-                            @if(!$isOwnerConsole && tenant_has_feature('pos') && (auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin() || auth()->user()->hasPermission('create_sales')))
+                            @if($canPos)
                             <a href="{{ route('pos.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('pos.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-cash-register w-4 text-center {{ request()->routeIs('pos.*') ? $theme['text_accent'] : 'text-emerald-400' }}"></i>
@@ -915,19 +1050,23 @@
                             </a>
                             @endif
 
+                            @if($canSales)
                             <a href="{{ route('sales.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('sales.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-receipt w-4 text-center {{ request()->routeIs('sales.*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Vendas & Faturação</span>
                             </a>
+                            @endif
 
+                            @if($canOrders)
                             <a href="{{ route('quotations.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('quotations.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-file-signature w-4 text-center {{ request()->routeIs('quotations.*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Cotações & Propostas</span>
                             </a>
+                            @endif
 
-	                            @if(tenant_has_feature('debts') && (auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isCashier()))
+                            @if($canDebts)
                             <a href="{{ route('debts.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('debts.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-hand-holding-dollar w-4 text-center {{ request()->routeIs('debts.*') ? $theme['text_accent'] : '' }}"></i>
@@ -935,17 +1074,21 @@
                             </a>
                             @endif
 
+                            @if($canOrders)
                             <a href="{{ route('orders.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('orders.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-clipboard-list w-4 text-center {{ request()->routeIs('orders.*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Pedidos & Encomendas</span>
                             </a>
+                            @endif
 
+                            @if($canCustomers)
                             <a href="{{ route('customers.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('customers.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-users w-4 text-center {{ request()->routeIs('customers.*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Clientes</span>
                             </a>
+                            @endif
                         </div>
                     </div>
                     @endif
@@ -963,29 +1106,41 @@
                     @endif
 
                     <!-- Catálogo & Stock -->
-	                    @if(tenant_has_feature('stock_basic') && (auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isStockManager() || auth()->user()->isCashier() || auth()->user()->isStaff()))
+                    @php
+                        $canProducts = tenant_has_feature('stock_basic') && App\Helpers\PermissionHelper::userCan('view_products');
+                        $canCategories = App\Helpers\PermissionHelper::userCan('view_categories');
+                        $canStockMovements = tenant_has_feature('stock_basic') && App\Helpers\PermissionHelper::userCan('view_stock_movements');
+                        $canSuppliers = App\Helpers\PermissionHelper::userCan('view_suppliers');
+                    @endphp
+                    @if($canProducts || $canCategories || $canStockMovements || $canSuppliers)
                     <div>
                         <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Catálogo & Stock</div>
                         <div class="space-y-1">
+                            @if($canProducts)
                             <a href="{{ route('products.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('products.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-box-open w-4 text-center {{ request()->routeIs('products.*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>{{ $theme['catalog_title'] ?? 'Artigos & Produtos' }}</span>
                             </a>
+                            @endif
 
-                            @if(auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isStockManager())
+                            @if($canCategories)
                             <a href="{{ route('categories.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('categories.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-tags w-4 text-center {{ request()->routeIs('categories.*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Categorias</span>
                             </a>
+                            @endif
 
+                            @if($canStockMovements)
                             <a href="{{ route('stock-movements.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('stock-movements.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-boxes-stacked w-4 text-center {{ request()->routeIs('stock-movements.*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Movimentos de Stock</span>
                             </a>
+                            @endif
 
+                            @if($canSuppliers)
                             <a href="{{ route('suppliers.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('suppliers.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-truck w-4 text-center {{ request()->routeIs('suppliers.*') ? $theme['text_accent'] : '' }}"></i>
@@ -997,11 +1152,17 @@
                     @endif
 
                     <!-- Financeiro & Despesas -->
-                    @if(auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isStockManager())
+                    @php
+                        $canFinances = tenant_has_feature('cash_management') && App\Helpers\PermissionHelper::userCan('view_finances');
+                        $canExpenses = App\Helpers\PermissionHelper::userCan('view_expenses');
+                        $canShifts = App\Helpers\PermissionHelper::userCan('view_shifts');
+                        $canReports = tenant_has_feature('reports_advanced') && App\Helpers\PermissionHelper::userCan('view_reports');
+                    @endphp
+                    @if($canFinances || $canExpenses || $canShifts || $canReports)
                     <div>
                         <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Financeiro & Caixa</div>
                         <div class="space-y-1">
-	                            @if(tenant_has_feature('cash_management') && (auth()->user()->isAdmin() || auth()->user()->isManager()))
+                            @if($canFinances)
                             <a href="{{ route('finances.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('finances.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-scale-balanced w-4 text-center {{ request()->routeIs('finances.*') ? $theme['text_accent'] : '' }}"></i>
@@ -1009,27 +1170,29 @@
                             </a>
                             @endif
 
-                            @if(auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isStockManager())
+                            @if($canExpenses)
                             <a href="{{ route('expenses.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('expenses.*') || request()->routeIs('expense-categories.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-money-bill-transfer w-4 text-center {{ request()->routeIs('expenses.*') || request()->routeIs('expense-categories.*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Despesas & Gastos</span>
                             </a>
+                            @endif
 
+                            @if($canShifts)
                             <a href="{{ route('cash-shifts.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('cash-shifts.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-cash-register w-4 text-center {{ request()->routeIs('cash-shifts.*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Turnos de Caixa (Fecho Z)</span>
                             </a>
+                            @endif
 
+                            @if($canReports)
                             <a href="{{ route('reports.tax-iva') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('reports.tax-iva*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-file-invoice-dollar w-4 text-center {{ request()->routeIs('reports.tax-iva*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Apuramento de IVA (AT)</span>
                             </a>
-                            @endif
 
-	                            @if(tenant_has_feature('reports_advanced') && (auth()->user()->isAdmin() || auth()->user()->isManager()))
                             <a href="{{ route('reports.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('reports.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-file-waveform w-4 text-center {{ request()->routeIs('reports.*') ? $theme['text_accent'] : '' }}"></i>
@@ -1041,12 +1204,16 @@
                     @endif
 
                     <!-- Administração & Equipa -->
-                    @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin() || auth()->user()->isManager())
+                    @php
+                        $canManageUsers = App\Helpers\PermissionHelper::userCan('manage_users');
+                        $canManageSettings = App\Helpers\PermissionHelper::userCan('manage_settings');
+                        $isSuper = auth()->user()->isSuperAdmin();
+                    @endphp
+                    @if($canManageUsers || $canManageSettings || $isSuper)
                     <div>
                         <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Administração & Equipa</div>
                         <div class="space-y-1">
-                            @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
-                            @if(auth()->user()->isSuperAdmin())
+                            @if($isSuper)
                             <a href="{{ route('owner.tenants.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('owner.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-building-shield w-4 text-center {{ request()->routeIs('owner.*') ? $theme['text_accent'] : '' }}"></i>
@@ -1054,46 +1221,53 @@
                             </a>
                             @endif
 
+                            @if($canManageUsers)
                             <a href="{{ route('users.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('users.*') && !request()->routeIs('users.activity') && !request()->routeIs('users.payroll') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-users-gear w-4 text-center {{ request()->routeIs('users.*') && !request()->routeIs('users.activity') && !request()->routeIs('users.payroll') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Colaboradores & Acessos</span>
                             </a>
 
-	                            @if(tenant_has_feature('salaries'))
-	                            <a href="{{ route('users.payroll') }}"
-	                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('users.payroll') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
-	                                <i class="fa-solid fa-money-check-dollar w-4 text-center {{ request()->routeIs('users.payroll') ? $theme['text_accent'] : '' }}"></i>
-	                                <span>Folha de Salários</span>
-	                            </a>
-	                            @endif
-
-	                            @if(tenant_has_feature('multi_branch'))
-	                            <a href="{{ route('branches.index') }}"
-	                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('branches.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
-	                                <i class="fa-solid fa-store w-4 text-center {{ request()->routeIs('branches.*') ? $theme['text_accent'] : '' }}"></i>
-	                                <span>Filiais & Lojas</span>
-	                            </a>
-	                            @endif
+                            @if(tenant_has_feature('salaries'))
+                            <a href="{{ route('users.payroll') }}"
+                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('users.payroll') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
+                                <i class="fa-solid fa-money-check-dollar w-4 text-center {{ request()->routeIs('users.payroll') ? $theme['text_accent'] : '' }}"></i>
+                                <span>Folha de Salários</span>
+                            </a>
+                            @endif
                             @endif
 
+                            @if(tenant_has_feature('multi_branch') && ($canManageSettings || auth()->user()->isAdmin()))
+                            <a href="{{ route('branches.index') }}"
+                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('branches.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
+                                <i class="fa-solid fa-store w-4 text-center {{ request()->routeIs('branches.*') ? $theme['text_accent'] : '' }}"></i>
+                                <span>Filiais & Lojas</span>
+                            </a>
+                            @endif
+
+                            @if($canManageSettings)
                             <a href="{{ route('document-templates.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('document-templates.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-file-invoice w-4 text-center {{ request()->routeIs('document-templates.*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Modelos de Documentos</span>
                             </a>
+                            @endif
 
+                            @if($canManageUsers || $canManageSettings)
                             <a href="{{ route('users.activity') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('users.activity') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-clock-rotate-left w-4 text-center {{ request()->routeIs('users.activity') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Auditoria & Atividade</span>
                             </a>
+                            @endif
 
+                            @if($canManageSettings)
                             <a href="{{ route('admin.settings') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('admin.settings*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-gears w-4 text-center {{ request()->routeIs('admin.settings*') ? $theme['text_accent'] : '' }}"></i>
                                 <span>Configurações do Sistema</span>
                             </a>
+                            @endif
 
                             <a href="{{ route('profile.edit') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('profile.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
@@ -1109,7 +1283,7 @@
             </div>
 
             <!-- Sidebar Bottom: Active Branch & User Info -->
-            <div class="border-t border-slate-800/60 bg-slate-950/50" x-data="{ userMenuOpen: false }">
+            <div class="border-t border-slate-800/60 bg-slate-900" x-data="{ userMenuOpen: false }">
                 <!-- Branch info strip -->
                 @if(!$isOwnerConsole && $branch)
                 <div class="px-4 py-2 border-b border-slate-800/40 flex items-center gap-2">
@@ -1127,7 +1301,7 @@
                             <div class="text-[11px] font-bold text-white truncate max-w-[110px]">{{ auth()->user()?->name ?? 'Utilizador' }}</div>
                             <div class="text-[9px] text-slate-500 truncate">{{ auth()->user()?->role?->name ?? 'Utilizador' }}</div>
                         </div>
-                        <i class="fa-solid fa-chevron-up text-[8px] text-slate-500 transition" :class="userMenuOpen ? 'rotate-0' : 'rotate-180'"></i>
+                        <i class="fa-solid fa-chevron-up text-[8px] text-white transition" :class="userMenuOpen ? 'rotate-0' : 'rotate-180'"></i>
                     </button>
 
                     <form method="POST" action="{{ route('logout') }}">
@@ -1143,7 +1317,8 @@
                     <a href="{{ route('profile.edit') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs text-slate-300 hover:bg-slate-700 hover:text-white transition">
                         <i class="fa-solid fa-user-gear w-4 text-center text-slate-400"></i> Perfil & Conta
                     </a>
-                    @if(!$isOwnerConsole)
+
+                    @if(!$isOwnerConsole && (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin() || auth()->user()->isManager()))
                     <a href="{{ route('admin.settings') }}" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs text-slate-300 hover:bg-slate-700 hover:text-white transition border-t border-slate-700/50">
                         <i class="fa-solid fa-sliders w-4 text-center text-slate-400"></i> Definições
                     </a>
@@ -1492,7 +1667,7 @@
                         <!-- POS Button -->
                         @if(!$isOwnerConsole && tenant_has_feature('pos') && (auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin() || auth()->user()->hasPermission('create_sales')))
                         <a href="{{ route('pos.index') }}"
-                           class="flex items-center gap-1.5 h-9 px-2.5 sm:px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm shadow-emerald-600/20 flex-shrink-0"
+                           class="flex items-center gap-1.5 h-9 px-2.5 sm:px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-emerald-100 dark:text-white text-xs font-bold transition shadow-sm shadow-emerald-600/20 flex-shrink-0"
                            title="Frente de Caixa (POS)">
                             <i class="fa-solid fa-cash-register text-xs"></i>
                             <span class="inline">POS</span>
@@ -1531,7 +1706,7 @@
                                 <!-- User Header -->
                                 <div class="px-4 py-3.5 border-b border-slate-100 dark:border-slate-800">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-xl {{ $theme['btn'] ?? 'bg-emerald-600' }} flex items-center justify-center text-sm font-black text-white flex-shrink-0">
+                                        <div class="w-9 h-9 rounded-xl {{ $theme['btn'] ?? 'bg-emerald-100' }} flex items-center justify-center text-sm font-black text-primary flex-shrink-0">
                                             {{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 2)) }}
                                         </div>
                                         <div class="min-w-0">
@@ -1567,20 +1742,20 @@
 
                                 <!-- Menu Links -->
                                 <div class="py-1">
-                                    @if(!$isOwnerConsole && tenant_has_feature('pos') && (auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin() || auth()->user()->hasPermission('create_sales')))
+                                    {{-- @if(!$isOwnerConsole && tenant_has_feature('pos') && (auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin() || auth()->user()->hasPermission('create_sales')))
                                     <a href="{{ route('pos.index') }}" @click="userMenuOpen = false"
                                        class="flex items-center gap-3 px-4 py-2.5 text-xs text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 font-bold transition border-b border-slate-100 dark:border-slate-800">
                                         <i class="fa-solid fa-cash-register w-4 text-center text-emerald-500"></i>
                                         <span>Frente de Caixa (POS)</span>
                                     </a>
-                                    @endif
+                                    @endif --}}
 
                                     <a href="{{ route('profile.edit') }}" @click="userMenuOpen = false"
                                        class="flex items-center gap-3 px-4 py-2.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white transition">
                                         <i class="fa-solid fa-user-circle w-4 text-center text-slate-400"></i>
                                         <span>Perfil & Conta</span>
                                     </a>
-                                    @if(!$isOwnerConsole)
+                                    @if(!$isOwnerConsole && auth()->user()->isAdmin())
                                     <a href="{{ route('admin.settings') }}" @click="userMenuOpen = false"
                                        class="flex items-center gap-3 px-4 py-2.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white transition">
                                         <i class="fa-solid fa-sliders w-4 text-center text-slate-400"></i>

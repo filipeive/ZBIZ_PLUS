@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CashShift;
+use App\Models\CashShiftAudit;
 use App\Models\FinancialAccount;
 use App\Models\Sale;
 use Illuminate\Http\JsonResponse;
@@ -32,7 +33,9 @@ class CashShiftController extends Controller
             $query->where('branch_id', $branchId);
         }
 
-        if ($operatorId) {
+        if (!auth()->user()?->isAdmin() && !auth()->user()?->isManager()) {
+            $query->where('user_id', auth()->id());
+        } elseif ($operatorId) {
             $query->where('user_id', $operatorId);
         }
 
@@ -49,6 +52,10 @@ class CashShiftController extends Controller
 
         if ($branchId && !auth()->user()?->isAdmin() && !auth()->user()?->isSuperAdmin()) {
             $baseKpiQuery->where('branch_id', $branchId);
+        }
+
+        if (!auth()->user()?->isAdmin() && !auth()->user()?->isManager()) {
+            $baseKpiQuery->where('user_id', auth()->id());
         }
 
         $totalShifts = (clone $baseKpiQuery)->count();
@@ -223,6 +230,68 @@ class CashShiftController extends Controller
                 'opened_date'     => $shift->opened_at->format('d/m/Y'),
                 'opening_balance' => (float)$shift->opening_balance,
             ],
+        ]);
+    }
+
+    public function show(CashShift $shift): View
+    {
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+        abort_unless($shift->tenant_id === $tenantId, 403);
+        abort_unless(auth()->user()?->isAdmin() || auth()->user()?->isManager(), 403);
+
+        $shift->load(['user', 'branch', 'tenant', 'audits.user', 'sales.items']);
+
+        return view('cash-shifts.show', compact('shift'));
+    }
+
+    public function correct(Request $request, CashShift $shift): JsonResponse
+    {
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+        abort_unless($shift->tenant_id === $tenantId, 403);
+        abort_unless(auth()->user()?->isAdmin(), 403);
+
+        if ($shift->status !== 'closed') {
+            return response()->json(['message' => 'Apenas turnos fechados podem ser corrigidos.'], 422);
+        }
+
+        $validated = $request->validate([
+            'closing_balance_actual' => 'required|numeric|min:0',
+            'reason' => 'required|string|min:10|max:500',
+        ]);
+
+        $before = [
+            'closing_balance_actual' => (float) $shift->closing_balance_actual,
+            'difference' => (float) $shift->difference,
+            'notes' => $shift->notes,
+        ];
+        $expectedCash = (float) ($shift->closing_balance_system ?? $shift->expected_cash);
+        $actualCash = (float) $validated['closing_balance_actual'];
+        $difference = round($actualCash - $expectedCash, 2);
+
+        $shift->update([
+            'closing_balance_actual' => $actualCash,
+            'difference' => $difference,
+            'notes' => trim(($shift->notes ? $shift->notes . ' | ' : '') . 'Correção administrativa: ' . $validated['reason']),
+        ]);
+
+        CashShiftAudit::create([
+            'tenant_id' => $tenantId,
+            'cash_shift_id' => $shift->id,
+            'user_id' => auth()->id(),
+            'action' => 'closing_correction',
+            'reason' => $validated['reason'],
+            'before_data' => $before,
+            'after_data' => [
+                'closing_balance_actual' => $actualCash,
+                'difference' => $difference,
+                'notes' => $shift->notes,
+            ],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Fecho corrigido e registado na auditoria.',
+            'difference' => $difference,
         ]);
     }
 

@@ -56,3 +56,4 @@ class LicenseAuditLog extends Model
         ]);
     }
 }
+

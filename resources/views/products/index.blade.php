@@ -179,7 +179,7 @@
                     <p class="text-xs text-slate-400 mt-1 line-clamp-1">{{ $product->category?->name ?? 'Geral' }}</p>
 
                     @if($isPharmacy && $earliestBatch)
-                        <div class="mt-2 text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg p-1.5 flex items-center gap-1.5">
+                        <div class="mt-2 text-[10px] text-amber-900 bg-amber-500/10 border border-amber-500/20 rounded-lg p-1.5 flex items-center gap-1.5">
                             <i class="fa-solid fa-calendar-day"></i> Validade: {{ $earliestBatch->expiry_date->format('m/Y') }} (Lote: {{ $earliestBatch->batch_number }})
                         </div>
                     @endif

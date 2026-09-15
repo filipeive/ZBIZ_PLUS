@@ -54,6 +54,11 @@ class CashShift extends Model
         return $this->hasMany(Sale::class);
     }
 
+    public function audits(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(CashShiftAudit::class);
+    }
+
     public function isOpen(): bool
     {
         return $this->status === 'open';

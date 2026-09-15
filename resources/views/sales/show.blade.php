@@ -189,7 +189,7 @@
                             <th class="p-3.5 text-right">Subtotal Líquido</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-800/60 bg-slate-900/60">
+                    <tbody class="divide-y divide-slate-800/60 bg-transparent">
                         @forelse($sale->items as $index => $item)
                             <tr class="hover:bg-slate-800/30 transition">
                                 <td class="p-3.5 text-slate-500 font-mono">{{ $index + 1 }}</td>
@@ -299,7 +299,7 @@
                                 <th class="p-3">Data / Hora</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-800/60 bg-slate-900/60">
+                        <tbody class="divide-y divide-slate-800/60 bg-transparent">
                             @foreach($stockMovements as $sm)
                                 <tr>
                                     <td class="p-3 font-mono text-slate-500">#{{ $sm->id }}</td>

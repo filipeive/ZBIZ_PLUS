@@ -362,7 +362,7 @@ class FinancialService
                 'description'          => $expense->description,
                 'reference_type'       => Expense::class,
                 'reference_id'         => $expense->id,
-                'payment_method'       => 'cash',
+                'payment_method'       => $expense->payment_method ?? 'cash',
                 'notes'                => $expense->notes,
             ], $validateBalance);
         });

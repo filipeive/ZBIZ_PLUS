@@ -36,9 +36,6 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="text-2xl font-black font-heading tracking-tight text-white">ZBIZ<span class="text-emerald-400">+</span></span>
-                    <span class="hidden sm:inline-block text-[10px] uppercase font-black tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
-                        Moçambique SaaS
-                    </span>
                 </div>
             </a>
 

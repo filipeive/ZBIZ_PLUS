@@ -5,6 +5,8 @@
 
 @php
     $theme = tenant_theme();
+    $isCashier = auth()->user()?->isCashier() && !auth()->user()?->isManager() && !auth()->user()?->isAdmin();
+    $canViewFinancialDashboard = !$isCashier;
 @endphp
 
 @section('content')
@@ -32,13 +34,13 @@
         <!-- Quick Action Buttons -->
         <div class="flex items-center gap-2.5">
             @if(auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin())
-            <a href="{{ route('pos.index') }}" class="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-2">
+            <a href="{{ route('pos.index') }}" class="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white light:text-white font-bold text-xs shadow-sm transition flex items-center gap-2">
                 <i class="fa-solid fa-cash-register"></i> Terminal POS
             </a>
             @endif
 
             @if(auth()->user()->isStockManager() || auth()->user()->isManager() || auth()->user()->isAdmin())
-            <a href="{{ route('products.create') }}" class="px-4 py-2.5 rounded-2xl bg-slate-900 dark:bg-primary text-primary dark:text-white hover:bg-slate-800 dark:hover:bg-slate-100 font-bold text-xs shadow-sm transition flex items-center gap-2">
+            <a href="{{ route('products.create') }}" class="px-4 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-sm transition flex items-center gap-2">
                 <i class="fa-solid fa-plus"></i> Novo Produto
             </a>
             @endif
@@ -52,8 +54,9 @@
     </div>
 
     <!-- KPI Stat Cards (Ajusta colunas dinamicamente para ocupar todo o espaço disponível) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 {{ (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin() || auth()->user()->isManager()) ? 'lg:grid-cols-5' : 'lg:grid-cols-4' }} gap-4 sm:gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 {{ $canViewFinancialDashboard ? ((auth()->user()->isAdmin() || auth()->user()->isSuperAdmin() || auth()->user()->isManager()) ? 'lg:grid-cols-5' : 'lg:grid-cols-4') : 'lg:grid-cols-2' }} gap-4 sm:gap-6">
         
+        @if($canViewFinancialDashboard)
         <!-- Card 1: Valor Real do Negócio -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
             <div class="flex items-center justify-between">
@@ -71,6 +74,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <!-- Card 2: Vendas de Hoje -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
@@ -93,6 +97,7 @@
             </div>
         </div>
 
+        @if($canViewFinancialDashboard)
         <!-- Card 3: Faturação Mensal -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
             <div class="flex items-center justify-between">
@@ -112,6 +117,25 @@
                 </div>
             </div>
         </div>
+        @else
+        <!-- Card 3: Artigos Vendidos Hoje -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Artigos Vendidos Hoje</span>
+                <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                </div>
+            </div>
+            <div class="mt-4">
+                <div class="text-2xl sm:text-3xl font-black font-heading text-slate-900 dark:text-white">
+                    {{ number_format($todayProductsSold ?? 0, 0, ',', '.') }} <span class="text-xs text-slate-400 font-normal">itens</span>
+                </div>
+                <div class="flex items-center gap-2 mt-2 text-xs text-slate-500 dark:text-slate-400">
+                    <span>Quantidade registada no turno do dia</span>
+                </div>
+            </div>
+        </div>
+        @endif
 
         <!-- Card 4: Lucro Real (Visível apenas para Administrador/Gerente da Tenant) -->
         @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin() || auth()->user()->isManager())
@@ -134,6 +158,7 @@
         </div>
         @endif
 
+        @if($canViewFinancialDashboard)
         <!-- Card 5: Contas a Receber (Fiados) -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
             <div class="flex items-center justify-between">
@@ -151,6 +176,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
     </div>
 
@@ -167,7 +193,7 @@
                 <h3 class="text-base font-black font-heading text-slate-900 dark:text-white flex items-center gap-2">
                     <i class="fa-solid fa-chart-line text-emerald-600 dark:text-emerald-400"></i> Evolução de Vendas
                 </h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Desempenho diário de faturação</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">{{ $chartScopeLabel ?? 'Desempenho diário de faturação' }}</p>
             </div>
             <span class="text-xs font-bold px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-700">Últimos 7 Dias</span>
         </div>
@@ -417,7 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const chartData = @json($salesChartData ?? ['labels' => [], 'salesData' => [], 'expensesData' => []]);
     const salesSeries = chartData.salesData || chartData.data || [0, 0, 0, 0, 0, 0, 0];
-    const expensesSeries = chartData.expensesData || [0, 0, 0, 0, 0, 0, 0];
+    const expensesSeries = chartData.expensesData || [];
 
     new Chart(ctx, {
         type: 'line',
@@ -437,6 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     pointBorderWidth: 2,
                     pointRadius: 4,
                 },
+                @if(!($isCashier ?? false))
                 {
                     label: 'Despesas (MT)',
                     data: expensesSeries,
@@ -451,6 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     pointBorderWidth: 2,
                     pointRadius: 3,
                 }
+                @endif
             ]
         },
         options: {

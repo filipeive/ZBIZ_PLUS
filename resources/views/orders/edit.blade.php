@@ -83,7 +83,7 @@
                                     <th class="p-3 text-center w-16">Ação</th>
                                 </tr>
                             </thead>
-                            <tbody id="cart-items" class="divide-y divide-slate-800/60 bg-slate-900/60">
+                            <tbody id="cart-items" class="divide-y divide-slate-800/60 bg-transparent">
                                 <!-- Preenchido via JS -->
                             </tbody>
                         </table>

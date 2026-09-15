@@ -18,7 +18,7 @@ class ExpenseCategory extends Model
      * @var array<string>
      */
     protected $fillable = [
-        'tenant_id', 'branch_id',
+        'tenant_id',
         'name',
         'description',
         'is_operational',

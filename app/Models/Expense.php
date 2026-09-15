@@ -13,9 +13,10 @@ class Expense extends Model
     use BelongsToTenant;
     protected $fillable = [
         'tenant_id', 'branch_id',
-        'user_id', 'expense_category_id', 'financial_account_id', 'description', 'amount',
+        'user_id', 'expense_category_id', 'financial_account_id', 'payment_method', 'description', 'amount',
         'expense_date', 'receipt_number', 'notes', 'product_id', 'quantity',
-        'receipt_file_path',
+        'receipt_path', 'receipt_file_path', 'is_operational',
+        'product_name', 'product_quantity', 'product_unit_price',
     ];
 
     protected $casts = [
@@ -51,12 +52,13 @@ class Expense extends Model
 
     public function hasReceiptFile(): bool
     {
-        return !empty($this->receipt_file_path);
+        return !empty($this->receipt_file_path) || !empty($this->receipt_path);
     }
 
     public function getReceiptFileUrlAttribute(): ?string
     {
-        return $this->receipt_file_path ? Storage::url($this->receipt_file_path) : null;
+        $path = $this->receipt_file_path ?: $this->receipt_path;
+        return $path ? Storage::url($path) : null;
     }
 
     public function isOperational(): bool

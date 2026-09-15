@@ -394,18 +394,72 @@ class UserController extends Controller
 
     /**
      * Display user activity log.
+     * Display user activity log / audit trail.
      */
     public function activity(?User $user = null)
+    public function activity(Request $request, ?User $user = null)
     {
         $user ??= auth()->user();
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+        $currentUser = auth()->user();
 
         if ($user->id !== auth()->id() && !auth()->user()->canView($user)) {
             return $this->error('users.index', 'Você não tem permissão para visualizar a atividade deste usuário.');
+        // Se o usuário passou um ID via rota ou query param
+        $selectedUserId = $user?->id ?? $request->query('user_id');
+
+        $query = UserActivity::with(['user.role'])
+            ->where('tenant_id', $tenantId);
+
+        // Se for um usuário comum sem permissão de auditoria/gestão, restringe estritamente às suas próprias atividades
+        $canAuditAll = $currentUser->isAdmin() || $currentUser->isSuperAdmin() || $currentUser->isManager() || $currentUser->hasPermission('manage_users');
+
+        if (!$canAuditAll) {
+            $selectedUserId = $currentUser->id;
         }
 
         $activities = $user->activities()->paginate(20);
+        if ($selectedUserId) {
+            $targetUser = User::where('tenant_id', $tenantId)->find($selectedUserId);
+            if ($targetUser) {
+                if ($targetUser->id !== $currentUser->id && !$currentUser->canView($targetUser)) {
+                    return redirect()->route('users.index')->with('error', 'Você não tem permissão para visualizar a atividade deste usuário.');
+                }
+                $query->where('user_id', $targetUser->id);
+                $user = $targetUser;
+            }
+        } else {
+            $user = null; // Visão global de auditoria de todos os utilizadores da empresa
+        }
 
         return view('users.activity', compact('user', 'activities'));
+        // Filtro opcional por tipo de ação
+        if ($action = $request->query('action')) {
+            $query->where('action', $action);
+        }
+
+        // Filtro opcional por data
+        if ($startDate = $request->query('start_date')) {
+            $query->whereDate('created_at', '>=', $startDate);
+        }
+        if ($endDate = $request->query('end_date')) {
+            $query->whereDate('created_at', '<=', $endDate);
+        }
+
+        $activities = $query->latest()->paginate(25)->withQueryString();
+
+        // Lista de usuários para o dropdown de filtro (apenas da empresa)
+        $usersList = $canAuditAll
+            ? User::where('tenant_id', $tenantId)->orderBy('name')->get()
+            : collect([$currentUser]);
+
+        // Lista de ações distintas registradas
+        $actionsList = UserActivity::where('tenant_id', $tenantId)
+            ->select('action')
+            ->distinct()
+            ->pluck('action');
+
+        return view('users.activity', compact('user', 'activities', 'usersList', 'actionsList'));
     }
     
     /**

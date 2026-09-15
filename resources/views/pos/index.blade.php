@@ -77,9 +77,17 @@
                     </button>
                 </template>
             </div>
+            <!-- Alternar Tela Cheia / Modo Janela (Kiosk helper) -->
+            <button type="button" 
+                    @click="toggleFullscreen()" 
+                    class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-2.5 py-1.5 rounded border border-slate-700 transition flex items-center gap-1.5 shadow-sm"
+                    title="Alternar Ecrã Inteiro / Modo Janela (F11)">
+                <i :class="isFullscreen ? 'fa-solid fa-compress text-amber-400' : 'fa-solid fa-expand text-emerald-400'"></i>
+                <span x-text="isFullscreen ? 'Modo Janela' : 'Ecrã Inteiro'"></span>
+            </button>
             <!-- Botão para rota dashboard com ícone e texto  e com cor de desligar e ligar-->
             <a href="{{ route('dashboard.index') }}" class="text-xs btn bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded transition">
-                <i class="fa-solid fa-power-off mr-1"></i> Sair
+                <i class="fa-solid fa-power-off mr-1"></i> Fechar POS
             </a>
         </div>
     </header>
@@ -739,12 +747,14 @@
                 pricesIncludeTax: true,
                 paymentMethod: 'cash',
                 amountPaid: 0,
+                canSellWithoutShift: @json(auth()->user()?->isAdmin() ?? false),
                 showCheckoutModal: false,
                 showCustomerModal: false,
                 isSubmitting: false,
                 isLoading: false,
                 isSyncing: false,
                 offlineQueue: [],
+                isFullscreen: false,
 
                 // Turno de Caixa
                 shift: @json($activeShift ? ['id' => $activeShift->id, 'opened_at' => ($activeShift->opened_at ? \Carbon\Carbon::parse($activeShift->opened_at)->format('H:i') : now()->format('H:i')), 'opening_balance' => (float)$activeShift->opening_balance] : null),
@@ -814,6 +824,12 @@
                         }
                     });
 
+                    // Monitor de estado de ecrã inteiro (Kiosk helper)
+                    this.isFullscreen = !!document.fullscreenElement;
+                    document.addEventListener('fullscreenchange', () => {
+                        this.isFullscreen = !!document.fullscreenElement;
+                    });
+
                     window.addEventListener('online', async () => {
                         const reachable = await this.checkServerReachability();
                         if (reachable && this.offlineQueue.length > 0) {
@@ -841,6 +857,20 @@
 
                 offlineQueueKey() {
                     return `zbiz_pos_offline_queue_${this.storageScope}`;
+                },
+
+                toggleFullscreen() {
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen().then(() => {
+                            this.isFullscreen = true;
+                        }).catch(() => {});
+                    } else {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen().then(() => {
+                                this.isFullscreen = false;
+                            }).catch(() => {});
+                        }
+                    }
                 },
 
                 get subtotal() {
@@ -1032,6 +1062,12 @@
                 },
 
                 openCheckoutModal() {
+                    if (!this.canSellWithoutShift && !this.shift) {
+                        this.openOpenShiftModal();
+                        this.notifyWarning('Caixa não aberto', 'Abra o caixa de hoje antes de finalizar uma venda.');
+                        return;
+                    }
+
                     if (this.paymentMethod === 'credit') {
                         this.amountPaid = 0;
                     } else {
@@ -1057,6 +1093,13 @@
                 },
 
                 async submitSale() {
+                    if (!this.canSellWithoutShift && !this.shift) {
+                        this.showCheckoutModal = false;
+                        this.openOpenShiftModal();
+                        this.notifyWarning('Caixa não aberto', 'Abra o caixa de hoje antes de registar uma venda.');
+                        return;
+                    }
+
                     this.isSubmitting = true;
 
                     const payload = {

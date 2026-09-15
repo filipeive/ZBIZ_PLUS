@@ -160,7 +160,7 @@
                                 <th class="p-3 text-right">Ação</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-800/60 bg-slate-900/60">
+                        <tbody class="divide-y divide-slate-800/60 bg-transparent">
                             @forelse($customer->debts as $debt)
                                 <tr>
                                     <td class="p-3 font-mono text-slate-400">{{ \Carbon\Carbon::parse($debt->debt_date)->format('d/m/Y') }}</td>
@@ -210,7 +210,7 @@
                                 <th class="p-3 text-right">Documentos</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-800/60 bg-slate-900/60">
+                        <tbody class="divide-y divide-slate-800/60 bg-transparent">
                             @forelse($customer->sales as $sale)
                                 <tr>
                                     <td class="p-3 font-mono text-slate-400">{{ $sale->created_at->format('d/m/Y H:i') }}</td>

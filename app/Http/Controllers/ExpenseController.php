@@ -10,6 +10,9 @@ use App\Models\Setting;
 use App\Models\StockMovement;
 use App\Services\FinancialService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\Rule;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class ExpenseController extends Controller
@@ -31,24 +34,32 @@ class ExpenseController extends Controller
 
     private function renderExpenseIndex(Request $request, bool $operationalOnly)
     {
+        $isCashier = auth()->user()?->isCashier() && !auth()->user()?->isManager() && !auth()->user()?->isAdmin();
+        $operationalOnly = $operationalOnly || $isCashier;
+
         // Agora buscamos todas as saídas financeiras confirmadas, unificando despesas e pagamentos de salários
         $query = \App\Models\FinancialTransaction::with(['user', 'account', 'reference'])
             ->outflows()
-            ->confirmed();
+            ->confirmed()
+            ->where('tenant_id', current_tenant_id());
 
         // Excluir ajustes técnicos da lista de despesas (ajustes não são gastos reais)
         $query->whereNotIn('type', ['cash_adjustment_out']);
 
-        // Filtrar por filial ativa
-        $branchId = current_branch_id();
+        // Filtrar por filial ativa vinculada ao utilizador
+        $user = auth()->user();
+        $branchId = ($user && !$user->canSwitchBranch() && $user->branch_id)
+            ? $user->branch_id
+            : (current_branch_id() ?? $user?->branch_id);
+
         if ($branchId) {
             $query->where('branch_id', $branchId);
         }
 
         // Somente Admin e Super Admin veem todas as transações. 
         // Gerentes e outros usuários veem apenas o que registraram.
-        if (! auth()->user()->isAdmin()) {
-            $query->where('user_id', auth()->id());
+        if (! $user?->isAdmin()) {
+            $query->where('user_id', $user?->id);
         }
 
         if ($request->filled('search')) {
@@ -63,11 +74,21 @@ class ExpenseController extends Controller
 
         if ($operationalOnly) {
             // No FinancialTransaction, despesas operacionais são identificadas pelo tipo ou pela referência
-            $query->where(function ($subQuery) {
+            $hasProductId = Schema::hasTable('expenses') && Schema::hasColumn('expenses', 'product_id');
+            $hasIsOperational = Schema::hasTable('expenses') && Schema::hasColumn('expenses', 'is_operational');
+
+            $query->where(function ($subQuery) use ($hasProductId, $hasIsOperational) {
                 $subQuery->whereIn('type', ['expense', 'expense_payment'])
-                    ->whereHasMorph('reference', [\App\Models\Expense::class], function ($q) {
-                        $q->whereNotNull('product_id')
-                            ->orWhereHas('category', fn ($cat) => $cat->where('is_operational', true));
+                    ->whereHasMorph('reference', [\App\Models\Expense::class], function ($q) use ($hasProductId, $hasIsOperational) {
+                        $q->where(function ($expenseQuery) use ($hasProductId, $hasIsOperational) {
+                            if ($hasIsOperational) {
+                                $expenseQuery->where('is_operational', true);
+                            }
+                            if ($hasProductId) {
+                                $expenseQuery->orWhereNotNull('product_id');
+                            }
+                            $expenseQuery->orWhereHas('category', fn ($cat) => $cat->where('is_operational', true));
+                        });
                     })
                     ->orWhereIn('type', ['payroll', 'salary_payment']); // Salários são sempre operacionais
             });
@@ -86,8 +107,19 @@ class ExpenseController extends Controller
         $categories = $operationalOnly
             ? ExpenseCategory::operational()->orderBy('name')->get()
             : ExpenseCategory::orderBy('name')->get();
-        $financialAccounts = FinancialAccount::operational()->orderBy('sort_order')->get();
-        $products = Product::where('type', 'product')->where('is_active', true)->orderBy('name')->get();
+        $financialAccounts = FinancialAccount::operational()
+            ->where('tenant_id', current_tenant_id() ?? $user?->tenant_id)
+            ->when($branchId, function ($query, $branchId) {
+                $query->where('branch_id', $branchId);
+            })
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+        $products = Product::where('tenant_id', current_tenant_id())
+            ->whereIn('type', ['product', 'physical'])
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
@@ -139,9 +171,32 @@ class ExpenseController extends Controller
      */
     public function store(Request $request)
     {
+        $user = auth()->user();
+        $isCashier = $user?->isCashier() && !$user->isManager() && !$user->isAdmin();
+        $tenantId = current_tenant_id() ?? $user?->tenant_id;
+        $branchId = ($user && !$user->canSwitchBranch() && $user->branch_id)
+            ? $user->branch_id
+            : (current_branch_id() ?? $user?->branch_id);
+
         $validated = $request->validate([
-            'expense_category_id' => 'required|exists:expense_categories,id',
-            'financial_account_id' => 'required|exists:financial_accounts,id',
+            'expense_category_id' => [
+                'required',
+                Rule::exists('expense_categories', 'id')->where(function ($query) use ($tenantId, $isCashier) {
+                    $query->where('tenant_id', $tenantId);
+                    if ($isCashier) {
+                        $query->where('is_operational', true);
+                    }
+                }),
+            ],
+            'financial_account_id' => [
+                'required',
+                Rule::exists('financial_accounts', 'id')->where(function ($query) use ($tenantId, $branchId) {
+                    $query->where('tenant_id', $tenantId)->where('is_active', true);
+                    if ($branchId) {
+                        $query->where('branch_id', $branchId);
+                    }
+                }),
+            ],
             'description' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0.01',
             'expense_date' => 'required|date',
@@ -161,25 +216,41 @@ class ExpenseController extends Controller
         }
 
         try {
-            $expense = DB::transaction(function () use ($validated, $productId, $quantity, $receiptPath) {
-                $branchId = current_branch_id();
-                $tenantId = current_tenant_id();
+            $expense = DB::transaction(function () use ($validated, $productId, $quantity, $receiptPath, $branchId, $tenantId) {
+                $account = FinancialAccount::find($validated['financial_account_id']);
+                $accountNorm = strtolower(str_replace(['-', '_', ' '], '', ($account?->slug ?? '') . ($account?->name ?? '')));
+                $paymentMethod = match($account?->type) {
+                    'mobile_money' => (str_contains($accountNorm, 'emola') ? 'emola' : (str_contains($accountNorm, 'mpesa') ? 'mpesa' : 'mobile_money')),
+                    'bank' => 'bank_transfer',
+                    default => 'cash',
+                };
 
-                $expense = Expense::create([
+                $expenseData = [
                     'tenant_id' => $tenantId,
                     'branch_id' => $branchId,
                     'user_id' => auth()->id(),
                     'expense_category_id' => $validated['expense_category_id'],
                     'financial_account_id' => $validated['financial_account_id'],
+                    'payment_method' => $paymentMethod,
                     'description' => $validated['description'],
                     'amount' => $validated['amount'],
                     'expense_date' => $validated['expense_date'],
-                    'receipt_number' => $validated['receipt_number'],
-                    'notes' => $validated['notes'],
+                    'receipt_number' => $validated['receipt_number'] ?? null,
+                    'notes' => $validated['notes'] ?? null,
+                    'receipt_path' => $receiptPath,
+                    'receipt_file_path' => $receiptPath,
                     'product_id' => $productId,
                     'quantity' => $quantity,
-                    'receipt_file_path' => $receiptPath,
-                ]);
+                ];
+
+                if ($productId) {
+                    $prod = Product::find($productId);
+                    $expenseData['product_name'] = $prod?->name;
+                    $expenseData['product_quantity'] = $quantity;
+                    $expenseData['product_unit_price'] = $prod?->cost_price ?? round($validated['amount'] / max((int) $quantity, 1), 2);
+                }
+
+                $expense = Expense::create($expenseData);
 
                 if ($productId) {
                     $product = Product::findOrFail($productId);

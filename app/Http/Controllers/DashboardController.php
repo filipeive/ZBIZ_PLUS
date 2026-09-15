@@ -147,6 +147,13 @@ class DashboardController extends Controller
 
         // --- DADOS DO GRÁFICO E LISTAS ---
         $salesChartData = $this->getSalesChartData($userIdFilter, $branchId);
+        $isCashier = $user?->isCashier() && !$user->isManager() && !$user->isAdmin();
+        $chartScopeLabel = $isCashier
+            ? 'Desempenho diário das suas vendas nos últimos 7 dias'
+            : 'Desempenho diário da filial nos últimos 7 dias';
+        if ($isCashier) {
+            $salesChartData['expensesData'] = [];
+        }
         $cashFlowChartData = $this->financialService->getCashFlowChartData(7, $userIdFilter, $branchId);
         $lowStockProducts = $this->lowStockProducts($tenantId, $branchId);
         $recentSalesQuery = Sale::with('user', 'items.product')->where('tenant_id', $tenantId);
@@ -186,6 +193,7 @@ class DashboardController extends Controller
             'monthSales', 'monthReceived', 'monthOutflows', 'monthExpenses', 'monthProfit', 'todayProductsSold',
             'prevMonthExpenses', 'prevMonthSales', 'prevMonthProfit',
             'monthActiveCustomers', 'salesChartData', 'cashFlowChartData',
+            'chartScopeLabel', 'isCashier',
             'monthCostOfGoods', 'monthGrossProfit', 'monthRealProfit', 'monthRoi',
             'monthGrossMargin', 'monthNetMargin',
             'currentCapital', 'accountsReceivable', 'totalRealValue', 'monthNetCashFlow',

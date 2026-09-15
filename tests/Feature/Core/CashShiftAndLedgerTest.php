@@ -152,6 +152,19 @@ class CashShiftAndLedgerTest extends TestCase
         ]);
 
         $response->assertOk()->assertJsonPath('success', true);
+
+        $correction = $this->putJson(route('cash-shifts.correction', $shift), [
+            'closing_balance_actual' => 1010,
+            'reason' => 'Valor digitado incorretamente no fecho original',
+        ]);
+
+        $correction->assertOk()->assertJsonPath('success', true);
+        $this->assertEquals(10.00, $shift->fresh()->difference);
+        $this->assertDatabaseHas('cash_shift_audits', [
+            'cash_shift_id' => $shift->id,
+            'user_id' => $admin->id,
+            'action' => 'closing_correction',
+        ]);
         $this->get(route('cash-shifts.receipt-a4', $shift))->assertOk();
     }
 

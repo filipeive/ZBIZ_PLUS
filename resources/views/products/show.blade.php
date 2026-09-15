@@ -108,7 +108,7 @@
                                 <th class="p-3 text-center">Estado</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-800/60 bg-slate-900/60">
+                        <tbody class="divide-y divide-slate-800/60 bg-transparent">
                             @forelse($product->batches()->orderBy('expiry_date', 'asc')->get() as $b)
                                 @php
                                     $days = $b->days_until_expiry;
@@ -157,7 +157,7 @@
                                 <th class="p-3">Operador</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-800/60 bg-slate-900/60">
+                        <tbody class="divide-y divide-slate-800/60 bg-transparent">
                             @foreach($product->stockMovements()->latest()->take(5)->get() as $mov)
                                 <tr>
                                     <td class="p-3 font-mono text-slate-400 text-[11px]">{{ $mov->created_at ? $mov->created_at->format('d/m/Y H:i') : 'N/D' }}</td>

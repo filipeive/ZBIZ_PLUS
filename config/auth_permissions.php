@@ -52,6 +52,12 @@ return [
             'manage_settings',
             'backup_system',
             'view_logs',
+            'view_shifts',
+            'manage_shifts',
+            'view_customers',
+            'manage_customers',
+            'view_suppliers',
+            'manage_suppliers',
         ],
         
         'manager' => [
@@ -85,6 +91,12 @@ return [
             'manage_stock',
             'view_stock_movements',
             'create_stock_movements',
+            'view_shifts',
+            'manage_shifts',
+            'view_customers',
+            'manage_customers',
+            'view_suppliers',
+            'manage_suppliers',
         ],
 
         'stock_manager' => [
@@ -102,6 +114,8 @@ return [
             'create_stock_movements',
             'view_expenses',
             'create_expenses',
+            'view_suppliers',
+            'manage_suppliers',
         ],
 
         'cashier' => [
@@ -115,6 +129,8 @@ return [
             'view_orders',
             'create_orders',
             'view_stock_movements',
+            'view_customers',
+            'manage_customers',
         ],
         
         'staff' => [
@@ -125,6 +141,7 @@ return [
             'view_orders',
             'create_orders',
             'view_stock_movements',
+            'view_customers',
         ],
     ],
     
@@ -179,6 +196,12 @@ return [
         'manage_settings'       => 'Gerir Configurações do Sistema',
         'backup_system'         => 'Realizar Backups',
         'view_logs'             => 'Visualizar Logs de Auditoria',
+        'view_shifts'           => 'Visualizar Turnos de Caixa',
+        'manage_shifts'         => 'Gerir e Auditar Turnos de Caixa',
+        'view_customers'        => 'Visualizar Clientes',
+        'manage_customers'      => 'Gerir e Criar Clientes',
+        'view_suppliers'        => 'Visualizar Fornecedores',
+        'manage_suppliers'      => 'Gerir e Criar Fornecedores',
     ],
 
     // Menu items configuration

@@ -29,12 +29,21 @@ class CheckPermissions
         }
 
         // Verificar permissões específicas
-        foreach ($permissions as $permission) {
-            if (!PermissionHelper::userCan($permission)) {
+        foreach ($permissions as $permissionGroup) {
+            $orPermissions = explode('|', $permissionGroup);
+            $granted = false;
+            foreach ($orPermissions as $perm) {
+                if (PermissionHelper::userCan(trim($perm))) {
+                    $granted = true;
+                    break;
+                }
+            }
+
+            if (!$granted) {
                 \Log::warning('Acesso negado', [
                     'user_id' => $user->id,
                     'user_role' => $user->role,
-                    'permission' => $permission,
+                    'permission' => $permissionGroup,
                     'url' => $request->url(),
                     'method' => $request->method(),
                 ]);
@@ -43,7 +52,7 @@ class CheckPermissions
                     return response()->json([
                         'success' => false,
                         'message' => 'Você não tem permissão para executar esta ação.',
-                        'required_permission' => $permission
+                        'required_permission' => $permissionGroup
                     ], 403);
                 }
 

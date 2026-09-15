@@ -54,9 +54,9 @@
     @endif
 
     {{-- Tabs & Filters --}}
-    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs transition-colors overflow-hidden">
+    <div class="dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs transition-colors overflow-hidden">
         <div class="border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 bg-">
                 <button id="btn-tab-notifications" onclick="switchTab('notifications')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all text-success dark:bg-success/10 dark:text-success shadow-xs">
                     <i class="fa-solid fa-inbox mr-1.5"></i> Notificações Do Usuário ({{ $notifications->total() }})
                 </button>

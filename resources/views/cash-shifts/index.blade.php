@@ -110,7 +110,11 @@
                         <th class="p-4 text-right">Contagem Física</th>
                         <th class="p-4 text-center">Diferença (Quebra/Sobra)</th>
                         <th class="p-4 text-center">Estado</th>
-                        <th class="p-4 text-right">Talão Z</th>
+                        @if(auth()->user()->isAdmin() || auth()->user()->isManager())
+                            <th class="p-4 text-right">Auditoria & Recibo</th>
+                        @else
+                            <th class="p-4 text-right">Talão Z</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-800/60 bg-slate-900/40">
@@ -169,9 +173,16 @@
                                 @endif
                             </td>
                             <td class="p-4 text-right">
-                                <a href="{{ route('cash-shifts.receipt', $s->id) }}" target="_blank" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-400 transition inline-flex items-center gap-1.5 font-bold" title="Imprimir Fecho Z">
-                                    <i class="fa-solid fa-receipt"></i> Fecho Z
-                                </a>
+                                <div class="flex items-center justify-end gap-1.5">
+                                    @if(auth()->user()->isAdmin() || auth()->user()->isManager())
+                                    <a href="{{ route('cash-shifts.show', $s->id) }}" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-400 transition inline-flex items-center justify-center" title="Ver auditoria">
+                                        <i class="fa-solid fa-magnifying-glass-chart text-xs"></i>
+                                    </a>
+                                    @endif
+                                    <a href="{{ route('cash-shifts.receipt', $s->id) }}" target="_blank" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 transition inline-flex items-center justify-center" title="Imprimir Fecho Z">
+                                        <i class="fa-solid fa-receipt text-xs"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     @empty

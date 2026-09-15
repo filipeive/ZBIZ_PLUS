@@ -32,8 +32,17 @@ class ExpenseCategoryController extends Controller
      */
     public function store(Request $request)
     {
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:expense_categories,name',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('expense_categories', 'name')->where(function ($query) use ($tenantId) {
+                    return $query->where('tenant_id', $tenantId);
+                }),
+            ],
             'description' => 'nullable|string|max:500',
             'is_operational' => 'nullable|boolean',
             'is_rent' => 'nullable|boolean',
@@ -92,8 +101,17 @@ class ExpenseCategoryController extends Controller
      */
     public function update(Request $request, ExpenseCategory $expenseCategory)
     {
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:expense_categories,name,' . $expenseCategory->id,
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('expense_categories', 'name')->where(function ($query) use ($tenantId) {
+                    return $query->where('tenant_id', $tenantId);
+                })->ignore($expenseCategory->id),
+            ],
             'description' => 'nullable|string|max:500',
             'is_operational' => 'nullable|boolean',
             'is_rent' => 'nullable|boolean',

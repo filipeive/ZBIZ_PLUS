@@ -48,7 +48,7 @@ Route::post('/demo-login', [AuthController::class, 'demoLogin'])->name('demo.log
 // ===== PROTECTED ROUTES =====
 Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->group(function () {
     // Dashboard - Acesso para todos os usuários logados
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index')->middleware('permissions:view_dashboard');
     Route::get('/dash', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/api/dashboard/metrics', [DashboardController::class, 'apiMetrics'])
         ->name('dashboard.api.metrics');
@@ -380,16 +380,42 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
 
     // ===== GESTÃO DE CLIENTES =====
     Route::post('/customers/quick-store', [\App\Http\Controllers\CustomerController::class, 'quickStore'])->name('customers.quick-store');
-    Route::resource('customers', \App\Http\Controllers\CustomerController::class);
+    Route::middleware('permissions:view_customers')->group(function () {
+        Route::get('/customers', [\App\Http\Controllers\CustomerController::class, 'index'])->name('customers.index');
+        Route::get('/customers/{customer}', [\App\Http\Controllers\CustomerController::class, 'show'])->name('customers.show');
+    });
+    Route::middleware('permissions:manage_customers')->group(function () {
+        Route::get('/customers/create', [\App\Http\Controllers\CustomerController::class, 'create'])->name('customers.create');
+        Route::post('/customers', [\App\Http\Controllers\CustomerController::class, 'store'])->name('customers.store');
+        Route::get('/customers/{customer}/edit', [\App\Http\Controllers\CustomerController::class, 'edit'])->name('customers.edit');
+        Route::put('/customers/{customer}', [\App\Http\Controllers\CustomerController::class, 'update'])->name('customers.update');
+        Route::delete('/customers/{customer}', [\App\Http\Controllers\CustomerController::class, 'destroy'])->name('customers.destroy');
+    });
 
     // ===== GESTÃO DE FORNECEDORES =====
     Route::post('/suppliers/quick-store', [\App\Http\Controllers\SupplierController::class, 'quickStore'])->name('suppliers.quick-store');
-    Route::patch('/suppliers/{supplier}/toggle-status', [\App\Http\Controllers\SupplierController::class, 'toggleStatus'])->name('suppliers.toggle-status');
-    Route::resource('suppliers', \App\Http\Controllers\SupplierController::class);
+    Route::middleware('permissions:view_suppliers')->group(function () {
+        Route::get('/suppliers', [\App\Http\Controllers\SupplierController::class, 'index'])->name('suppliers.index');
+        Route::get('/suppliers/{supplier}', [\App\Http\Controllers\SupplierController::class, 'show'])->name('suppliers.show');
+    });
+    Route::middleware('permissions:manage_suppliers')->group(function () {
+        Route::get('/suppliers/create', [\App\Http\Controllers\SupplierController::class, 'create'])->name('suppliers.create');
+        Route::post('/suppliers', [\App\Http\Controllers\SupplierController::class, 'store'])->name('suppliers.store');
+        Route::get('/suppliers/{supplier}/edit', [\App\Http\Controllers\SupplierController::class, 'edit'])->name('suppliers.edit');
+        Route::put('/suppliers/{supplier}', [\App\Http\Controllers\SupplierController::class, 'update'])->name('suppliers.update');
+        Route::delete('/suppliers/{supplier}', [\App\Http\Controllers\SupplierController::class, 'destroy'])->name('suppliers.destroy');
+        Route::patch('/suppliers/{supplier}/toggle-status', [\App\Http\Controllers\SupplierController::class, 'toggleStatus'])->name('suppliers.toggle-status');
+    });
 
     // ===== TURNOS E FECHO DE CAIXA (FECHO Z) =====
     Route::prefix('cash-shifts')->name('cash-shifts.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\CashShiftController::class, 'index'])->name('index');
+        Route::middleware('permissions:view_shifts')->group(function () {
+            Route::get('/', [\App\Http\Controllers\CashShiftController::class, 'index'])->name('index');
+        });
+        Route::middleware('permissions:manage_shifts')->group(function () {
+            Route::get('/{shift}', [\App\Http\Controllers\CashShiftController::class, 'show'])->name('show');
+            Route::put('/{shift}/correction', [\App\Http\Controllers\CashShiftController::class, 'correct'])->name('correction');
+        });
         Route::post('/open', [\App\Http\Controllers\CashShiftController::class, 'open'])->name('open');
         Route::post('/{shift}/close', [\App\Http\Controllers\CashShiftController::class, 'close'])->name('close');
         Route::get('/{shift}/receipt', [\App\Http\Controllers\CashShiftController::class, 'printReceipt'])->name('receipt');
@@ -425,7 +451,7 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
     });
 
     // ===== CATEGORIAS DE DESPESAS =====
-    Route::middleware('permissions:manage_categories')->group(function () {
+    Route::middleware('permissions:manage_expenses|manage_categories|create_expenses')->group(function () {
         Route::resource('expense-categories', ExpenseCategoryController::class);
     });
 

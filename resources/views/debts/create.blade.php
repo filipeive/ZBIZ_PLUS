@@ -174,7 +174,7 @@
                                         <th class="p-3 text-center w-20">Ação</th>
                                     </tr>
                                 </thead>
-                                <tbody id="products-tbody" class="divide-y divide-slate-800/60 bg-slate-900/60">
+                                <tbody id="products-tbody" class="divide-y divide-slate-800/60 bg-transparent">
                                     <!-- Produtos via JS -->
                                 </tbody>
                                 <tfoot>

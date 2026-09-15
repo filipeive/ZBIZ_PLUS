@@ -77,7 +77,7 @@
                             <th class="p-3 text-right">Recibo</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-800/60 bg-slate-900/60">
+                    <tbody class="divide-y divide-slate-800/60 bg-transparent">
                         @forelse($debt->payments ?? [] as $payment)
                             <tr>
                                 <td class="p-3 font-mono text-slate-400">{{ $payment->created_at ? $payment->created_at->format('d/m/Y H:i') : '-' }}</td>
@@ -117,7 +117,7 @@
                 <button @click="showPayModal = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <form action="{{ route('debts.payment', $debt->id) }}" method="POST" class="space-y-4">
+            <form action="{{ route('debts.add-payment', $debt->id) }}" method="POST" class="space-y-4">
                 @csrf
                 <div>
                     <label class="block text-xs font-bold text-slate-300 mb-1">Montante a Pagar (MT) *</label>

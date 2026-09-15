@@ -62,10 +62,12 @@ class POSController extends Controller
         // Verificar turno de caixa aberto
         $activeShift = null;
         if ($branchId) {
-            $activeShift = CashShift::where('branch_id', $branchId)
+            $activeShift = CashShift::where('tenant_id', $tenantId)
+                ->where('branch_id', $branchId)
                 ->where('status', 'open')
                 ->where('user_id', auth()->id())
-                ->latest()
+                ->when(!auth()->user()?->isAdmin(), fn ($query) => $query->whereDate('opened_at', today()))
+                ->latest('opened_at')
                 ->first();
         }
 
@@ -175,6 +177,21 @@ class POSController extends Controller
     {
         $tenantId = $this->resolveTenantId();
         $branchId = current_branch_id() ?? auth()->user()?->branch_id;
+
+        if (!auth()->user()?->isAdmin()) {
+            $hasTodayShift = CashShift::where('tenant_id', $tenantId)
+                ->where('branch_id', $branchId)
+                ->where('user_id', auth()->id())
+                ->where('status', 'open')
+                ->whereDate('opened_at', today())
+                ->exists();
+
+            if (!$hasTodayShift) {
+                throw ValidationException::withMessages([
+                    'cash_shift' => 'Abra o caixa de hoje antes de registar uma venda.',
+                ]);
+            }
+        }
 
         $validated = $request->validate([
             'customer_id'       => [
