@@ -127,6 +127,12 @@
                     class="px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition cursor-pointer select-none">
                 <i class="fa-solid fa-database"></i> 6. Backups & Base de Dados
             </button>
+
+            <button type="button" @click="currentTab = 'sync'" 
+                    :class="currentTab === 'sync' ? 'bg-teal-600 text-white shadow-lg' : 'bg-transparent text-slate-400 hover:text-white hover:bg-slate-800'"
+                    class="px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition cursor-pointer select-none">
+                <i class="fa-solid fa-cloud-arrow-up"></i> 7. Sincronização Cloud
+            </button>
         </div>
     </div>
 
@@ -550,6 +556,70 @@
                 <p>
                     Recomenda-se descarregar periodicamente o ficheiro SQL de backup para uma unidade externa (disco rígido, pendrive) ou serviço de armazenamento em nuvem pessoal.
                     Em caso de avaria ou troca de computador, a base de dados pode ser restaurada na íntegra sem perda de faturas ou stock.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 7: SINCRONIZAÇÃO COM A NUVEM -->
+    <div x-show="currentTab === 'sync'" class="space-y-6">
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-xl space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+                <div>
+                    <h3 class="text-sm font-black text-white font-heading flex items-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up text-teal-400"></i> Sincronização de Dados Local ➔ Nuvem
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">Transmissão assíncrona e idempotente de vendas e movimentos de stock locais para o servidor central.</p>
+                </div>
+                
+                <form action="{{ route('admin.sync.push') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs shadow-lg shadow-teal-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-rotate"></i> Sincronizar Agora com a Nuvem
+                    </button>
+                </form>
+            </div>
+
+            <!-- Status Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 block">Vendas Pendentes de Envio</span>
+                    <div class="text-2xl font-black text-white mt-1">
+                        {{ $pendingSyncSales ?? 0 }}
+                    </div>
+                    <span class="text-[11px] {{ ($pendingSyncSales ?? 0) > 0 ? 'text-amber-400' : 'text-emerald-400' }} mt-1 block">
+                        {{ ($pendingSyncSales ?? 0) > 0 ? 'A aguardar sincronização' : 'Tudo atualizado na nuvem' }}
+                    </span>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 block">Movimentos de Stock Pendentes</span>
+                    <div class="text-2xl font-black text-white mt-1">
+                        {{ $pendingSyncMovements ?? 0 }}
+                    </div>
+                    <span class="text-[11px] {{ ($pendingSyncMovements ?? 0) > 0 ? 'text-amber-400' : 'text-emerald-400' }} mt-1 block">
+                        {{ ($pendingSyncMovements ?? 0) > 0 ? 'A aguardar sincronização' : 'Stock alinhado com a nuvem' }}
+                    </span>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 block">Última Sincronização Bem-Sucedida</span>
+                    <div class="text-sm font-black text-white mt-2 font-mono">
+                        {{ $lastSyncAt ?? 'Ainda não sincronizado' }}
+                    </div>
+                    <span class="text-[11px] text-slate-400 mt-1 block">
+                        Destino: {{ config('services.sync.cloud_url') }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/80 text-xs text-slate-400 space-y-1.5">
+                <strong class="text-slate-200 flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-info text-teal-400"></i> Como funciona a sincronização idempotente:
+                </strong>
+                <p>
+                    O ZBIZ+ envia os registos locais com identificadores únicos (<code class="text-teal-300 font-mono">offline_id</code>). 
+                    Mesmo que a ligação caia ou o botão seja premido várias vezes, o servidor central garante que nenhuma venda ou movimento é duplicado.
                 </p>
             </div>
         </div>
