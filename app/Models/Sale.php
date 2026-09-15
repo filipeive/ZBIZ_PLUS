@@ -21,7 +21,8 @@ class Sale extends Model
         'amount_paid', 'change_amount',
         'tax_regime', 'tax_rate', 'tax_amount', 'tax_exemption_reason', 'prices_include_tax',
         'invoice_type', 'invoice_number', 'due_date', 'quotation_id',
-        'payment_method', 'notes', 'sale_date'
+        'payment_method', 'notes', 'sale_date',
+        'offline_id', 'synced_at'
     ];
 
     protected $casts = [
@@ -36,6 +37,7 @@ class Sale extends Model
         'prices_include_tax'  => 'boolean',
         'due_date'            => 'date',
         'sale_date'           => 'datetime',
+        'synced_at'           => 'datetime',
         'created_at'          => 'datetime',
         'updated_at'          => 'datetime',
     ];

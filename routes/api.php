@@ -344,3 +344,11 @@ Route::prefix('webhooks')->group(function () {
 Route::prefix('payments')->group(function () {
     Route::post('/mpesa/c2b', [\App\Http\Controllers\API\PaymentWebhookController::class, 'initiateMpesa'])->name('payments.mpesa.c2b');
 });
+
+// ==========================================
+// LOCAL -> CLOUD ASYNC SYNC INGESTION
+// ==========================================
+Route::prefix('sync')->name('sync.')->group(function () {
+    Route::post('/ingest', [\App\Http\Controllers\Api\SyncIngestController::class, 'ingest'])->name('ingest');
+});
+

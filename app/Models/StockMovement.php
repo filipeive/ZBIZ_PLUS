@@ -12,14 +12,16 @@ class StockMovement extends Model
     protected $fillable = [
         'tenant_id', 'branch_id',
         'product_id', 'user_id', 'movement_type', 'quantity',
-        'reason', 'reference_id', 'movement_date'
+        'reason', 'reference_id', 'movement_date',
+        'offline_id', 'synced_at'
     ];
 
     protected $casts = [
         'movement_date' => 'date',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'quantity' => 'integer',
+        'synced_at'     => 'datetime',
+        'created_at'    => 'datetime',
+        'updated_at'    => 'datetime',
+        'quantity'      => 'integer',
     ];
 
     public function product(): BelongsTo
