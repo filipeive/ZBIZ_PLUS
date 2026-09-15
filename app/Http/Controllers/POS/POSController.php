@@ -19,6 +19,7 @@ use App\Services\Inventory\StockManagerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -458,6 +459,36 @@ class POSController extends Controller
         ]);
     }
 
+    /**
+     * Registro de telemetria quando o POS entra em fallback offline.
+     */
+    public function logOfflineFallback(Request $request): JsonResponse
+    {
+        $reason = $request->input('reason', 'Desconhecido');
+        $details = $request->input('details', []);
+        $user = auth()->user();
+
+        Log::warning('[POS Offline Fallback] Venda salva localmente em cache offline.', [
+            'tenant_id'  => current_tenant_id() ?? $user?->tenant_id,
+            'branch_id'  => current_branch_id() ?? $user?->branch_id,
+            'user_id'    => $user?->id,
+            'user_name'  => $user?->name,
+            'reason'     => $reason,
+            'details'    => $details,
+            'ip'         => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'timestamp'  => now()->toDateTimeString(),
+        ]);
+
+        return response()->json([
+            'logged' => true,
+        ]);
+    }
+
+    /**
+     * Resolve o Tenant ID atual, seja do contexto do Tenant ou do usuário autenticado.
+     * Lança exceção se não for possível determinar o Tenant.
+     */
     protected function resolveTenantId(): int
     {
         $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
