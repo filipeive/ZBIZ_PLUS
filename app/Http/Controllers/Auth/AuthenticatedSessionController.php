@@ -20,7 +20,12 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        $tenant = function_exists('current_tenant') ? current_tenant() : null;
+        if (!$tenant && (config('app.installation_mode') === 'offline' || env('INSTALLATION_MODE') === 'offline')) {
+            $tenant = \App\Models\Tenant::withoutGlobalScopes()->first();
+        }
+
+        return view('auth.login', compact('tenant'));
     }
 
     /**

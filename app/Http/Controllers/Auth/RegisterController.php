@@ -27,10 +27,32 @@ class RegisterController extends Controller
     }
 
     /**
+     * Guard para bloquear registo em instalações locais/offline.
+     */
+    protected function abortIfOffline(): void
+    {
+        $isOffline = config('app.installation_mode') === 'offline'
+            || env('INSTALLATION_MODE') === 'offline';
+
+        if (!$isOffline && function_exists('current_tenant')) {
+            $current = current_tenant();
+            if ($current && $current->installation_mode === 'offline') {
+                $isOffline = true;
+            }
+        }
+
+        if ($isOffline) {
+            abort(404);
+        }
+    }
+
+    /**
      * Exibir formulário de Pré-Registo e Criação de Empresa SaaS.
      */
     public function showRegistrationForm(Request $request)
     {
+        $this->abortIfOffline();
+
         $plans = Plan::where('is_active', true)->orderBy('sort_order')->get();
         $selectedPlan = $request->query('plan', 'starter');
         $selectedSector = $request->query('sector', 'retail');
@@ -43,6 +65,8 @@ class RegisterController extends Controller
      */
     public function register(Request $request)
     {
+        $this->abortIfOffline();
+
         $validated = $request->validate([
             'company_name'   => 'required|string|max:150',
             'business_type'  => 'required|string|in:retail,pharmacy,reprography,restaurant,services,other',
@@ -205,6 +229,8 @@ class RegisterController extends Controller
      */
     public function showSuccess()
     {
+        $this->abortIfOffline();
+
         if (!session('reg_pending')) {
             return redirect()->route('login');
         }
