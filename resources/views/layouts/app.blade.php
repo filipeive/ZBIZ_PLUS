@@ -904,6 +904,17 @@
                     <div>
                         <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Vendas & Comercial</div>
                         <div class="space-y-1">
+                            @if(!$isOwnerConsole && tenant_has_feature('pos') && (auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin() || auth()->user()->hasPermission('create_sales')))
+                            <a href="{{ route('pos.index') }}"
+                               class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('pos.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
+                                <i class="fa-solid fa-cash-register w-4 text-center {{ request()->routeIs('pos.*') ? $theme['text_accent'] : 'text-emerald-400' }}"></i>
+                                <span class="flex items-center justify-between flex-1">
+                                    <span>Frente de Caixa (POS)</span>
+                                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold uppercase tracking-wider">Rápido</span>
+                                </span>
+                            </a>
+                            @endif
+
                             <a href="{{ route('sales.index') }}"
                                class="flex items-center space-x-3 px-3 py-2 rounded-xl transition {{ request()->routeIs('sales.*') ? 'bg-slate-800 text-white font-bold border-l-2 ' . $theme['border'] : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                                 <i class="fa-solid fa-receipt w-4 text-center {{ request()->routeIs('sales.*') ? $theme['text_accent'] : '' }}"></i>
@@ -1481,9 +1492,10 @@
                         <!-- POS Button -->
                         @if(!$isOwnerConsole && tenant_has_feature('pos') && (auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin() || auth()->user()->hasPermission('create_sales')))
                         <a href="{{ route('pos.index') }}"
-                           class="hidden md:flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm shadow-emerald-600/20 flex-shrink-0">
+                           class="flex items-center gap-1.5 h-9 px-2.5 sm:px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm shadow-emerald-600/20 flex-shrink-0"
+                           title="Frente de Caixa (POS)">
                             <i class="fa-solid fa-cash-register text-xs"></i>
-                            <span>POS</span>
+                            <span class="inline">POS</span>
                         </a>
                         @endif
 
@@ -1555,6 +1567,14 @@
 
                                 <!-- Menu Links -->
                                 <div class="py-1">
+                                    @if(!$isOwnerConsole && tenant_has_feature('pos') && (auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin() || auth()->user()->hasPermission('create_sales')))
+                                    <a href="{{ route('pos.index') }}" @click="userMenuOpen = false"
+                                       class="flex items-center gap-3 px-4 py-2.5 text-xs text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 font-bold transition border-b border-slate-100 dark:border-slate-800">
+                                        <i class="fa-solid fa-cash-register w-4 text-center text-emerald-500"></i>
+                                        <span>Frente de Caixa (POS)</span>
+                                    </a>
+                                    @endif
+
                                     <a href="{{ route('profile.edit') }}" @click="userMenuOpen = false"
                                        class="flex items-center gap-3 px-4 py-2.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white transition">
                                         <i class="fa-solid fa-user-circle w-4 text-center text-slate-400"></i>
