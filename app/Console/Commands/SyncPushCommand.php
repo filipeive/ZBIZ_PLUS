@@ -53,7 +53,7 @@ class SyncPushCommand extends Command
             $pendingSales = Sale::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
                 ->whereNull('synced_at')
-                ->with(['items'])
+                ->with(['items.product', 'branch', 'user'])
                 ->limit($limit)
                 ->get();
 
@@ -61,6 +61,7 @@ class SyncPushCommand extends Command
             $pendingMovements = StockMovement::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
                 ->whereNull('synced_at')
+                ->with(['product', 'branch', 'user'])
                 ->limit($limit)
                 ->get();
 
@@ -81,27 +82,47 @@ class SyncPushCommand extends Command
                 }
 
                 $salesPayload[] = [
-                    'offline_id'      => $offlineId,
-                    'branch_id'       => $sale->branch_id,
-                    'user_id'         => $sale->user_id,
-                    'customer_id'     => $sale->customer_id,
-                    'customer_name'   => $sale->customer_name,
-                    'customer_phone'  => $sale->customer_phone,
-                    'customer_nuit'   => $sale->customer_nuit,
-                    'subtotal'        => (float)$sale->subtotal,
-                    'discount_amount' => (float)$sale->discount_amount,
-                    'total_amount'    => (float)$sale->total_amount,
-                    'amount_paid'     => (float)$sale->amount_paid,
-                    'change_amount'   => (float)$sale->change_amount,
-                    'tax_regime'      => $sale->tax_regime,
-                    'tax_rate'        => (float)$sale->tax_rate,
-                    'tax_amount'      => (float)$sale->tax_amount,
-                    'payment_method'  => $sale->payment_method,
-                    'sale_date'       => $sale->sale_date ? $sale->sale_date->toDateTimeString() : $sale->created_at->toDateTimeString(),
-                    'items'           => $sale->items->map(fn($item) => [
-                        'product_id' => $item->product_id,
-                        'quantity'   => $item->quantity,
-                        'unit_price' => (float)$item->unit_price,
+                    'offline_id'           => $offlineId,
+                    'branch_id'            => $sale->branch_id,
+                    'branch_name'          => $sale->branch?->name,
+                    'user_id'              => $sale->user_id,
+                    'user_name'            => $sale->user?->name,
+                    'customer_id'          => $sale->customer_id,
+                    'customer_name'        => $sale->customer_name,
+                    'customer_phone'       => $sale->customer_phone,
+                    'customer_nuit'        => $sale->customer_nuit,
+                    'customer_address'     => $sale->customer_address,
+                    'subtotal'             => (float)$sale->subtotal,
+                    'discount_amount'      => (float)$sale->discount_amount,
+                    'discount_percentage'  => (float)($sale->discount_percentage ?? 0),
+                    'discount_type'        => $sale->discount_type,
+                    'discount_reason'      => $sale->discount_reason,
+                    'total_amount'         => (float)$sale->total_amount,
+                    'amount_paid'          => (float)$sale->amount_paid,
+                    'change_amount'        => (float)$sale->change_amount,
+                    'tax_regime'           => $sale->tax_regime,
+                    'tax_rate'             => (float)$sale->tax_rate,
+                    'tax_amount'           => (float)$sale->tax_amount,
+                    'tax_exemption_reason' => $sale->tax_exemption_reason,
+                    'prices_include_tax'   => (bool)$sale->prices_include_tax,
+                    'invoice_type'         => $sale->invoice_type,
+                    'invoice_number'       => $sale->invoice_number,
+                    'payment_method'       => $sale->payment_method,
+                    'notes'                => $sale->notes,
+                    'sale_date'            => $sale->sale_date ? $sale->sale_date->toDateTimeString() : $sale->created_at->toDateTimeString(),
+                    'items'                => $sale->items->map(fn($item) => [
+                        'product_id'          => $item->product_id,
+                        'product_name'        => $item->product?->name,
+                        'product_barcode'     => $item->product?->barcode,
+                        'product_sku'         => $item->product?->sku,
+                        'quantity'            => $item->quantity,
+                        'original_unit_price' => (float)($item->original_unit_price ?? $item->unit_price),
+                        'unit_price'          => (float)$item->unit_price,
+                        'total_price'         => (float)($item->total_price ?? ($item->quantity * $item->unit_price)),
+                        'discount_amount'     => (float)($item->discount_amount ?? 0),
+                        'discount_percentage' => (float)($item->discount_percentage ?? 0),
+                        'discount_type'       => $item->discount_type,
+                        'discount_reason'     => $item->discount_reason,
                     ])->toArray(),
                 ];
             }
@@ -115,20 +136,26 @@ class SyncPushCommand extends Command
                 }
 
                 $movementsPayload[] = [
-                    'offline_id'    => $offlineId,
-                    'branch_id'     => $mov->branch_id,
-                    'product_id'    => $mov->product_id,
-                    'user_id'       => $mov->user_id,
-                    'movement_type' => $mov->movement_type,
-                    'quantity'      => (int)$mov->quantity,
-                    'reason'        => $mov->reason,
-                    'reference_id'  => $mov->reference_id,
-                    'movement_date' => $mov->movement_date ? $mov->movement_date->toDateString() : $mov->created_at->toDateString(),
+                    'offline_id'      => $offlineId,
+                    'branch_id'       => $mov->branch_id,
+                    'branch_name'     => $mov->branch?->name,
+                    'product_id'      => $mov->product_id,
+                    'product_name'    => $mov->product?->name,
+                    'product_barcode' => $mov->product?->barcode,
+                    'product_sku'     => $mov->product?->sku,
+                    'user_id'         => $mov->user_id,
+                    'user_name'       => $mov->user?->name,
+                    'movement_type'   => $mov->movement_type,
+                    'quantity'        => (int)$mov->quantity,
+                    'reason'          => $mov->reason,
+                    'reference_id'    => $mov->reference_id,
+                    'movement_date'   => $mov->movement_date ? $mov->movement_date->toDateString() : $mov->created_at->toDateString(),
                 ];
             }
 
             $requestData = [
                 'tenant_id'       => $tenant->id,
+                'tenant_slug'     => $tenant->slug,
                 'source_instance' => gethostname() ?: 'local-machine',
                 'sales'           => $salesPayload,
                 'stock_movements' => $movementsPayload,
