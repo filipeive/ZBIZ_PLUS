@@ -34,6 +34,7 @@ class SyncPushCommand extends Command
         if ($tenantIdOption) {
             $tenants = Tenant::withoutGlobalScopes()->where('id', $tenantIdOption)->get();
         } else {
+            $tenants = Tenant::withoutGlobalScopes()->where('status', 'active')->get();
             $tenants = Tenant::withoutGlobalScopes()->whereIn('status', ['active', 'trial'])->get();
         }
 
@@ -64,11 +65,10 @@ class SyncPushCommand extends Command
                 ->get();
 
             if ($pendingSales->isEmpty() && $pendingMovements->isEmpty()) {
-                $this->info("   ✓ Nada pendente para sincronizar neste tenant.");
-                continue;
+                $this->line("   -> Sem registos comerciais pendentes. Enviando pacote de verificação (heartbeat)...");
+            } else {
+                $this->line("   -> Pendentes: <info>{$pendingSales->count()} vendas</info>, <info>{$pendingMovements->count()} movimentos de stock</info>.");
             }
-
-            $this->line("   -> Pendentes: <info>{$pendingSales->count()} vendas</info>, <info>{$pendingMovements->count()} movimentos de stock</info>.");
 
             // 3. Montar Carga Útil Idempotente
             $salesPayload = [];
@@ -172,6 +172,37 @@ class SyncPushCommand extends Command
                     $this->info("   ✓ Sincronização concluída com sucesso!");
                     $this->line("     - Vendas sincronizadas: <info>{$pendingSales->count()}</info>");
                     $this->line("     - Movimentos sincronizados: <info>{$pendingMovements->count()}</info>");
+
+                    // Processar metadados e atualizações remotas de licença da nuvem
+                    $licenseMeta = $resJson['license_meta'] ?? null;
+                    if ($licenseMeta) {
+                        $remoteLicStatus = $licenseMeta['remote_license_status'] ?? null;
+                        $remoteLicExpires = $licenseMeta['remote_license_expires_at'] ?? null;
+                        $remoteTenantStatus = $licenseMeta['remote_tenant_status'] ?? null;
+
+                        if ($remoteLicStatus === 'revoked' || $remoteTenantStatus === 'suspended') {
+                            $tenant->updateQuietly([
+                                'license_status' => $remoteLicStatus ?? 'revoked',
+                                'status'         => $remoteTenantStatus ?? $tenant->status,
+                            ]);
+                            \App\Models\LicenseKey::withoutGlobalScopes()
+                                ->where('tenant_id', $tenant->id)
+                                ->where('status', 'active')
+                                ->update(['status' => 'revoked', 'revoked_at' => now()]);
+
+                            $this->warn("     ! Alerta: Licença foi revogada/suspensa remotamente pelo servidor central.");
+                        } elseif ($remoteLicExpires) {
+                            $newExpiry = \Carbon\Carbon::parse($remoteLicExpires);
+                            if (!$tenant->license_expires_at || $newExpiry->greaterThan($tenant->license_expires_at)) {
+                                $tenant->updateQuietly([
+                                    'license_expires_at'   => $newExpiry,
+                                    'subscription_ends_at' => $newExpiry,
+                                    'license_status'       => 'active',
+                                ]);
+                                $this->info("     ✓ Licença renovada pela nuvem até: {$newExpiry->format('d/m/Y')}.");
+                            }
+                        }
+                    }
 
                     \Illuminate\Support\Facades\Cache::put('tenant_' . $tenant->id . '_last_sync_push', now()->format('d/m/Y H:i:s'), now()->addDays(30));
 

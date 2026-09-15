@@ -27,6 +27,14 @@ class LicenseActivationController extends Controller
         try {
             $licenses->activateForTenant($validated['license_key'], current_tenant());
         } catch (RuntimeException $e) {
+            \App\Models\LicenseAuditLog::log(
+                'verify_failed',
+                current_tenant(),
+                null,
+                \Illuminate\Support\Str::limit($validated['license_key'] ?? '', 30),
+                ['error' => $e->getMessage()]
+            );
+
             return back()->withInput()->with('error', $e->getMessage());
         }
 

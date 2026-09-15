@@ -48,18 +48,56 @@
         </div>
         @endif
 
-        <form method="POST" action="{{ route('license.activate.store') }}" class="space-y-5">
+        <form method="POST" action="{{ route('license.activate.store') }}" class="space-y-5" 
+              x-data="{
+                  key: '{{ old('license_key') }}',
+                  formatKey(val) {
+                      if (!val || val.includes('.')) {
+                          this.key = val ? val.trim() : '';
+                          return;
+                      }
+                      let cleaned = val.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                      if (cleaned.startsWith('ZBIZ')) {
+                          cleaned = cleaned.substring(4);
+                      }
+                      cleaned = cleaned.substring(0, 16);
+                      let parts = ['ZBIZ'];
+                      for (let i = 0; i < cleaned.length; i += 4) {
+                          let chunk = cleaned.substring(i, i + 4);
+                          if (chunk.length > 0) {
+                              parts.push(chunk);
+                          }
+                      }
+                      this.key = parts.join('-');
+                  },
+                  async pasteKey() {
+                      try {
+                          const text = await navigator.clipboard.readText();
+                          if (text) {
+                              this.formatKey(text);
+                          }
+                      } catch (err) {
+                          // Clipboard API restrita ou sem permissão
+                      }
+                  }
+              }">
             @csrf
 
             <div>
-                <label for="license_key" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                    Código de Activação ou Token de Licença *
-                </label>
+                <div class="flex items-center justify-between mb-2">
+                    <label for="license_key" class="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+                        Código de Activação ou Token de Licença *
+                    </label>
+                    <button type="button" @click="pasteKey()" class="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 transition flex items-center gap-1 cursor-pointer">
+                        <i class="fa-regular fa-paste"></i> Colar da Área de Transferência
+                    </button>
+                </div>
                 <div class="relative">
                     <input type="text" 
                            id="license_key"
                            name="license_key" 
-                           value="{{ old('license_key') }}"
+                           x-model="key"
+                           @input="formatKey($event.target.value)"
                            required 
                            autofocus
                            class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white font-mono text-sm tracking-wider placeholder:text-slate-600 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" 
@@ -70,7 +108,7 @@
                 @enderror
                 <p class="text-[11px] text-slate-400 mt-2">
                     <i class="fa-solid fa-circle-info text-emerald-400 mr-1"></i>
-                    O código serial possui o formato <span class="font-mono text-slate-300">ZBIZ-XXXX-XXXX-XXXX-XXXX</span> e é enviado por SMS para o contacto da empresa logo após a emissão pelo operador.
+                    O código serial possui o formato <span class="font-mono text-slate-300">ZBIZ-XXXX-XXXX-XXXX-XXXX</span> e é formatado automaticamente enquanto digita ou cola.
                 </p>
             </div>
 

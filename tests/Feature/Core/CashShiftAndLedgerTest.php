@@ -107,6 +107,54 @@ class CashShiftAndLedgerTest extends TestCase
         $this->assertEquals(-20.00, $shift->fresh()->difference);
     }
 
+    public function test_only_owner_or_admin_can_close_and_print_a_cash_shift(): void
+    {
+        $shift = CashShift::create([
+            'tenant_id'            => $this->tenant->id,
+            'branch_id'            => $this->branch->id,
+            'user_id'              => $this->user->id,
+            'financial_account_id' => $this->account->id,
+            'opened_at'            => now(),
+            'opening_balance'      => 1000.00,
+            'status'               => 'open',
+        ]);
+
+        $otherRole = Role::firstOrCreate(['name' => 'cashier', 'guard_name' => 'web']);
+        $otherUser = User::create([
+            'tenant_id' => $this->tenant->id,
+            'branch_id' => $this->branch->id,
+            'name' => 'Outro Operador',
+            'email' => 'outro@boutique.co.mz',
+            'password' => bcrypt('password123'),
+            'role_id' => $otherRole->id,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($otherUser);
+        $this->postJson(route('cash-shifts.close', $shift), [
+            'closing_balance_actual' => 1000,
+        ])->assertForbidden();
+
+        $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        $admin = User::create([
+            'tenant_id' => $this->tenant->id,
+            'branch_id' => $this->branch->id,
+            'name' => 'Administrador',
+            'email' => 'admin@boutique.co.mz',
+            'password' => bcrypt('password123'),
+            'role_id' => $adminRole->id,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($admin);
+        $response = $this->postJson(route('cash-shifts.close', $shift), [
+            'closing_balance_actual' => 1000,
+        ]);
+
+        $response->assertOk()->assertJsonPath('success', true);
+        $this->get(route('cash-shifts.receipt-a4', $shift))->assertOk();
+    }
+
     public function test_ledger_calculates_branch_metrics_accurately(): void
     {
         // Outflow of 500 MT expense

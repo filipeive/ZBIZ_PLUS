@@ -39,6 +39,7 @@ class AdminController extends Controller
             usort($backups, fn($a, $b) => $b['timestamp'] <=> $a['timestamp']);
         }
 
+        return view('settings.index', compact('tenant', 'settings', 'allPermissions', 'rolePermissions', 'backups'));
         $pendingSyncSales = \App\Models\Sale::withoutGlobalScopes()
             ->where('tenant_id', $tenant?->id)
             ->whereNull('synced_at')

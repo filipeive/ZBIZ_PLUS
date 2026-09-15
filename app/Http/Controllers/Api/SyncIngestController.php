@@ -44,6 +44,7 @@ class SyncIngestController extends Controller
         ]);
 
         $tenantId = (int)$request->tenant_id;
+        $tenant = Tenant::find($tenantId);
         $tenant = Tenant::withoutGlobalScopes()->find($tenantId);
 
         if (!$tenant || !in_array($tenant->status, ['active', 'trial'])) {
@@ -217,6 +218,12 @@ class SyncIngestController extends Controller
                     'created'  => $createdMovementsCount,
                     'skipped'  => $skippedMovementsCount,
                 ],
+            ],
+            'license_meta' => [
+                'remote_license_status'     => $tenant->license_status ?? 'active',
+                'remote_license_expires_at' => $tenant->license_expires_at?->toIso8601String(),
+                'remote_tenant_status'      => $tenant->status,
+                'server_time'               => now()->toIso8601String(),
             ],
             'sales_results'     => $salesResults,
             'movements_results' => $movementsResults,

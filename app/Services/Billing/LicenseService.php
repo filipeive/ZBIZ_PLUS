@@ -2,6 +2,7 @@
 
 namespace App\Services\Billing;
 
+use App\Models\LicenseAuditLog;
 use App\Models\LicenseKey;
 use App\Models\Plan;
 use App\Models\Subscription;
@@ -77,6 +78,12 @@ class LicenseService
             'payload' => $payload,
             'signature' => $signature,
             'notes' => $notes,
+        ]);
+
+        LicenseAuditLog::log('issued', $tenant, $license, $keyCode, [
+            'plan' => $plan->slug,
+            'mode' => $mode,
+            'issued_by' => $issuer?->email,
         ]);
 
         return ['license' => $license, 'token' => $token, 'key_code' => $keyCode, 'payload' => $payload];
@@ -240,6 +247,11 @@ class LicenseService
                 'subscription_ends_at' => Carbon::parse($payload['expires_at']),
             ]);
 
+            LicenseAuditLog::log('activated', $tenant, $license, $license->key_code, [
+                'mode'       => $license->mode,
+                'expires_at' => $license->expires_at?->toIso8601String(),
+            ]);
+
             return $license;
         });
     }
@@ -250,6 +262,8 @@ class LicenseService
             'status' => 'revoked',
             'revoked_at' => now(),
         ]);
+
+        LicenseAuditLog::log('revoked', $license->tenant, $license, $license->key_code);
 
         return $license;
     }

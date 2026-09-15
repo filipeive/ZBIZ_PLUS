@@ -140,6 +140,7 @@ class CashShiftController extends Controller
     {
         $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
         abort_unless($shift->tenant_id === $tenantId, 403);
+        $this->authorizeShiftAccess($shift);
 
         if ($shift->status === 'closed') {
             if ($request->wantsJson()) {
@@ -147,6 +148,7 @@ class CashShiftController extends Controller
                     'success'     => false,
                     'message'     => 'Este turno já se encontra fechado.',
                     'receipt_url' => route('cash-shifts.receipt', $shift->id),
+                    'receipt_a4_url' => route('cash-shifts.receipt-a4', $shift->id),
                 ]);
             }
             return back()->with('error', 'Este turno já está fechado.');
@@ -168,10 +170,13 @@ class CashShiftController extends Controller
             'closing_balance_actual' => $actualCash,
             'difference'             => $diff,
             'status'                 => 'closed',
-            'notes'                  => $validated['notes'] ? ($shift->notes ? $shift->notes . " | Fecho: " . $validated['notes'] : $validated['notes']) : $shift->notes,
+            'notes'                  => !empty($validated['notes'])
+                ? ($shift->notes ? $shift->notes . " | Fecho: " . $validated['notes'] : $validated['notes'])
+                : $shift->notes,
         ]);
 
         $receiptUrl = route('cash-shifts.receipt', $shift->id);
+        $receiptA4Url = route('cash-shifts.receipt-a4', $shift->id);
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -182,6 +187,7 @@ class CashShiftController extends Controller
                 'actual_cash'     => $actualCash,
                 'difference'      => $diff,
                 'receipt_url'     => $receiptUrl,
+                'receipt_a4_url'  => $receiptA4Url,
             ]);
         }
 
@@ -224,10 +230,28 @@ class CashShiftController extends Controller
     {
         $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
         abort_unless($shift->tenant_id === $tenantId, 403);
+        $this->authorizeShiftAccess($shift);
 
         $shift->load(['user', 'branch', 'tenant', 'sales']);
 
         return view('pos.shift-receipt', compact('shift'));
+    }
+
+    public function printA4Receipt(CashShift $shift): View
+    {
+        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
+        abort_unless($shift->tenant_id === $tenantId, 403);
+        $this->authorizeShiftAccess($shift);
+
+        $shift->load(['user', 'branch', 'tenant', 'sales']);
+
+        return view('documents.templates.cash_shift_a4', compact('shift'));
+    }
+
+    private function authorizeShiftAccess(CashShift $shift): void
+    {
+        $user = auth()->user();
+        abort_unless($user && ($user->isAdmin() || (int) $shift->user_id === (int) $user->id), 403);
     }
 }
 

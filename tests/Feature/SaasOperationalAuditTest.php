@@ -102,6 +102,7 @@ class SaasOperationalAuditTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('sales.show', $sale->id));
         $response->assertStatus(200);
+        $response->assertSeeText('Fatura / Venda #' . str_pad($sale->id, 5, '0', STR_PAD_LEFT));
         $response->assertSeeText($sale->official_invoice_title);
         $response->assertSeeText(number_format($sale->total_amount, 2, ',', '.'));
     }

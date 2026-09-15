@@ -1626,9 +1626,15 @@
             <!-- Main Content Scroll Area -->
             <main class="app-main flex-1 overflow-y-auto p-4 sm:p-8">
                 
-                <!-- Alerta Global de Expiração / Suspensão -->
+                <!-- Alerta Global de Expiração / Suspensão & Semáforo Preventivo -->
                 @php
                     $isExpiredOrSuspended = !$isOwnerConsole && ($tenant?->status === 'suspended' || $tenant?->license_status === 'expired' || ($tenant?->license_expires_at && $tenant->license_expires_at->isPast()) || ($isTrialAccount && $trialDaysLeft !== null && $trialDaysLeft <= 0));
+
+                    $licenseDaysRemaining = null;
+                    if (!$isExpiredOrSuspended && !$isOwnerConsole && $tenant?->license_expires_at) {
+                        $diff = now()->diffInDays($tenant->license_expires_at, false);
+                        $licenseDaysRemaining = (int) ceil($diff);
+                    }
                 @endphp
                 @if($isExpiredOrSuspended)
                     <div class="mb-6 p-4 sm:p-5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl backdrop-blur-xl">
@@ -1649,6 +1655,51 @@
                             <a href="https://wa.me/258862134230?text={{ rawurlencode('Olá Fdsmultiservices, a licença da empresa ' . ($tenant?->name ?? '') . ' expirou e pretendo efetuar o pagamento/renovação.') }}" target="_blank" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-bold text-xs text-center transition flex items-center justify-center gap-1.5">
                                 <i class="fa-brands fa-whatsapp text-emerald-400 text-sm"></i>
                                 <span>Suporte</span>
+                            </a>
+                        </div>
+                    </div>
+                @elseif($licenseDaysRemaining !== null && $licenseDaysRemaining <= 7)
+                    <!-- Semáforo Âmbar: Alerta Urgente de Expiração Próxima (<= 7 dias) -->
+                    <div class="mb-6 p-4 sm:p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl backdrop-blur-xl">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 text-lg shadow-inner">
+                                <i class="fa-solid fa-triangle-exclamation animate-bounce"></i>
+                            </div>
+                            <div>
+                                <strong class="font-black text-white text-xs sm:text-sm block">
+                                    Atenção: A sua licença expira em {{ $licenseDaysRemaining }} {{ $licenseDaysRemaining === 1 ? 'dia' : 'dias' }} ({{ $tenant->license_expires_at->format('d/m/Y') }})
+                                </strong>
+                                <span class="text-xs text-slate-400">Renove com antecedência para garantir a continuidade ininterrupta das vendas e emissão de talões.</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">
+                            <a href="https://wa.me/258862134230?text={{ rawurlencode('Olá Fdsmultiservices, pretendo renovar antecipadamente a licença da empresa ' . ($tenant?->name ?? '') . ' que expira em ' . $licenseDaysRemaining . ' dias.') }}" target="_blank" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs text-center transition shadow-md shadow-amber-900/30 flex items-center justify-center gap-1.5">
+                                <i class="fa-brands fa-whatsapp text-sm"></i>
+                                <span>Renovar no WhatsApp</span>
+                            </a>
+                            <a href="{{ route('license.activate') }}" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs text-center transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-key"></i>
+                                <span>Inserir Chave</span>
+                            </a>
+                        </div>
+                    </div>
+                @elseif($licenseDaysRemaining !== null && $licenseDaysRemaining <= 15)
+                    <!-- Semáforo Amarelo: Aviso Preventivo de Renovação (8 a 15 dias) -->
+                    <div class="mb-6 p-4 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg backdrop-blur-xl">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-yellow-500/20 text-yellow-400 flex items-center justify-center flex-shrink-0 text-base">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                            </div>
+                            <div>
+                                <strong class="font-bold text-white text-xs sm:text-sm block">
+                                    Aviso de Renovação: Licença ativa por mais {{ $licenseDaysRemaining }} dias (até {{ $tenant->license_expires_at->format('d/m/Y') }})
+                                </strong>
+                                <span class="text-xs text-slate-400">Contacte a equipa da Fdsmultiservices para emitir a renovação programada.</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">
+                            <a href="https://wa.me/258862134230?text={{ rawurlencode('Olá Fdsmultiservices, a licença da empresa ' . ($tenant?->name ?? '') . ' expira em ' . $tenant->license_expires_at->format('d/m/Y') . ' e gostaria de agendar a renovação.') }}" target="_blank" class="px-4 py-2 rounded-xl bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 border border-yellow-500/40 text-xs font-bold transition flex items-center gap-1.5">
+                                <i class="fa-brands fa-whatsapp"></i> Contactar Suporte
                             </a>
                         </div>
                     </div>

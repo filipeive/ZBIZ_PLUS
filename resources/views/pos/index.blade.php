@@ -1327,22 +1327,47 @@
                                 icon: icon,
                                 title: 'Caixa Fechado com Sucesso!',
                                 html: `
-                                    <div class="text-left text-xs space-y-1.5 p-3 bg-gray-100 rounded-lg">
-                                        <div class="flex justify-between"><span>Esperado pelo Sistema:</span> <strong>${this.formatCurrency(data.expected_cash)}</strong></div>
-                                        <div class="flex justify-between"><span>Contagem Física:</span> <strong>${this.formatCurrency(data.actual_cash)}</strong></div>
-                                        <div class="flex justify-between border-t pt-1 font-bold ${diff < 0 ? 'text-red-600' : (diff > 0 ? 'text-emerald-600' : 'text-gray-800')}">
-                                            <span>Diferença:</span> <span>${diff > 0 ? '+' : ''}${this.formatCurrency(diff)}</span>
+                                    <div class="text-left space-y-3">
+                                        <div class="rounded-2xl border ${diff < 0 ? 'border-rose-400/30 bg-rose-500/10' : (diff > 0 ? 'border-emerald-400/30 bg-emerald-500/10' : 'border-sky-400/30 bg-sky-500/10')} p-3 text-center">
+                                            <div class="text-[10px] font-black uppercase tracking-widest ${diff < 0 ? 'text-rose-300' : (diff > 0 ? 'text-emerald-300' : 'text-sky-300')}">
+                                                ${diff < 0 ? 'Quebra de Caixa' : (diff > 0 ? 'Sobra de Caixa' : 'Caixa Certo')}
+                                            </div>
+                                            <div class="mt-1 text-sm font-bold text-white">${diffMessage}</div>
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div class="rounded-xl border border-slate-700 bg-slate-950/70 p-3">
+                                                <div class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Esperado pelo sistema</div>
+                                                <div class="mt-1 text-base font-black text-white">${this.formatCurrency(data.expected_cash)}</div>
+                                            </div>
+                                            <div class="rounded-xl border border-slate-700 bg-slate-950/70 p-3">
+                                                <div class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Contagem física</div>
+                                                <div class="mt-1 text-base font-black text-white">${this.formatCurrency(data.actual_cash)}</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center justify-between rounded-xl bg-slate-950 px-3 py-2.5">
+                                            <span class="text-xs font-bold text-slate-300">Diferença apurada</span>
+                                            <strong class="text-base font-black ${diff < 0 ? 'text-rose-400' : (diff > 0 ? 'text-emerald-400' : 'text-sky-400')}">
+                                                ${diff > 0 ? '+' : ''}${this.formatCurrency(diff)}
+                                            </strong>
                                         </div>
                                     </div>
-                                    <p class="mt-3 text-xs text-gray-600">${diffMessage}</p>
                                 `,
+                                customClass: { popup: 'dark-swal' },
+                                width: 460,
+                                showDenyButton: true,
+                                denyButtonColor: '#059669',
+                                denyButtonText: '<i class="fa-solid fa-file-pdf mr-1"></i> Relatório A4',
                                 confirmButtonColor: '#0f172a',
-                                confirmButtonText: '<i class="fa-solid fa-print mr-1"></i> Imprimir Talão de Fecho Z',
+                                confirmButtonText: '<i class="fa-solid fa-receipt mr-1"></i> Talão 80mm',
                                 showCancelButton: true,
                                 cancelButtonText: 'Fechar'
                             }).then((result) => {
                                 if (result.isConfirmed && data.receipt_url) {
                                     window.open(data.receipt_url + '?autoprint=1', '_blank', 'width=400,height=600');
+                                } else if (result.isDenied && data.receipt_a4_url) {
+                                    window.open(data.receipt_a4_url + '?autoprint=1', '_blank', 'width=900,height=1000');
                                 }
                             });
 
