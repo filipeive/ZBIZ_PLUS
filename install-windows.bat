@@ -166,6 +166,48 @@ if %errorlevel% equ 0 (
     if not exist .env copy .env.example .env
     php artisan key:generate --force
     php artisan migrate --force
+
+    echo.
+    echo ==============================================================================
+    echo        CONFIGURAÇÃO DE SINCRONIZAÇÃO HÍBRIDA (LOCAL ^<--^> NUVEM)
+    echo ==============================================================================
+    echo Deseja ativar a Sincronização Híbrida Automática com a Nuvem Central ZBIZ+?
+    echo [S] Sim, ativar sincronização em background a cada 5 minutos (Recomendado)
+    echo [N] Não, operar exclusivamente offline
+    set /p ENABLE_SYNC="Escolha [S/N, Padrão: S]: "
+    if "%ENABLE_SYNC%"=="" set ENABLE_SYNC=S
+
+    if /i "%ENABLE_SYNC%"=="S" (
+        echo.
+        echo Informe a URL da Nuvem Central:
+        echo [Padrão: http://146.235.224.99/zbiz_plus/api/sync/ingest]
+        set /p SYNC_URL="URL: "
+        if "%SYNC_URL%"=="" set SYNC_URL=http://146.235.224.99/zbiz_plus/api/sync/ingest
+
+        echo.
+        echo Informe o Token Secreto de Sincronização:
+        echo [Padrão: zbiz_sync_default_token]
+        set /p SYNC_TOKEN="Token: "
+        if "%SYNC_TOKEN%"=="" set SYNC_TOKEN=zbiz_sync_default_token
+
+        findstr /v /c:"CLOUD_SYNC_URL=" /c:"CLOUD_SYNC_TOKEN=" .env > .env.tmp
+        move /y .env.tmp .env >nul
+        echo.>> .env
+        echo CLOUD_SYNC_URL=%SYNC_URL%>> .env
+        echo CLOUD_SYNC_TOKEN=%SYNC_TOKEN%>> .env
+
+        :: Criar script VBS para execução 100% silenciosa em segundo plano (sem piscar tela preta)
+        set "SYNC_VBS=%~dp0zbiz_sync_silent.vbs"
+        (
+            echo Set WshShell = CreateObject^("WScript.Shell"^)
+            echo WshShell.CurrentDirectory = "%~dp0"
+            echo WshShell.Run "php artisan zbiz:sync-push", 0, True
+        ) > "%SYNC_VBS%"
+
+        schtasks /create /tn "ZBIZ_Hybrid_Sync" /tr "wscript.exe \"%SYNC_VBS%\"" /sc minute /mo 5 /f >nul 2>nul
+        echo [✓] Sincronização Híbrida agendada com sucesso no Windows a cada 5 minutos!
+    )
+
     echo.
     echo Iniciando servidor em segundo plano na porta 8000...
     start /b php artisan serve --host=127.0.0.1 --port=8000

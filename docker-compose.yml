@@ -21,6 +21,8 @@ services:
       - SESSION_DRIVER=database
       - QUEUE_CONNECTION=database
       - CACHE_STORE=database
+      - CLOUD_SYNC_URL=${CLOUD_SYNC_URL:-http://146.235.224.99/zbiz_plus/api/sync/ingest}
+      - CLOUD_SYNC_TOKEN=${CLOUD_SYNC_TOKEN:-zbiz_sync_default_token}
     volumes:
       - app_storage:/var/www/html/storage
     depends_on:

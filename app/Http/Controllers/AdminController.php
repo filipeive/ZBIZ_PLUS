@@ -39,7 +39,6 @@ class AdminController extends Controller
             usort($backups, fn($a, $b) => $b['timestamp'] <=> $a['timestamp']);
         }
 
-        return view('settings.index', compact('tenant', 'settings', 'allPermissions', 'rolePermissions', 'backups'));
         $pendingSyncSales = \App\Models\Sale::withoutGlobalScopes()
             ->where('tenant_id', $tenant?->id)
             ->whereNull('synced_at')
@@ -83,6 +82,8 @@ class AdminController extends Controller
             'allow_debt'            => 'nullable|boolean',
             'allow_discount'        => 'nullable|boolean',
             'enable_notifications'  => 'nullable|boolean',
+            'cloud_sync_url'        => 'nullable|string|max:255',
+            'cloud_sync_token'      => 'nullable|string|max:255',
             'role_permissions'      => 'nullable|array',
         ]);
 
@@ -115,6 +116,13 @@ class AdminController extends Controller
         $settings['allow_debt'] = $request->has('allow_debt') ? '1' : '0';
         $settings['allow_discount'] = $request->has('allow_discount') ? '1' : '0';
         $settings['enable_notifications'] = $request->has('enable_notifications') ? '1' : '0';
+
+        if ($request->has('cloud_sync_url')) {
+            $settings['cloud_sync_url'] = $request->input('cloud_sync_url');
+        }
+        if ($request->has('cloud_sync_token')) {
+            $settings['cloud_sync_token'] = $request->input('cloud_sync_token');
+        }
 
         if ($tenant) {
             $tenant->update([
@@ -151,19 +159,34 @@ class AdminController extends Controller
             'enable_notifications'  => $settings['enable_notifications'],
         ];
 
+        if ($request->has('cloud_sync_url')) {
+            $settingKeys['cloud_sync_url'] = $request->input('cloud_sync_url') ?? '';
+        }
+        if ($request->has('cloud_sync_token')) {
+            $settingKeys['cloud_sync_token'] = $request->input('cloud_sync_token') ?? '';
+        }
+
         foreach ($settingKeys as $k => $v) {
             $attributes = ['key' => $k];
-            $values = ['value' => (string)$v];
+            if (Schema::hasColumn('settings', 'tenant_id') && $tenant) {
+                $attributes['tenant_id'] = $tenant->id;
+            }
 
-            if (Schema::hasColumn('settings', 'tenant_id')) {
-                $values['tenant_id'] = $tenant?->id;
+            $values = ['value' => (string)$v];
+            if (Schema::hasColumn('settings', 'tenant_id') && $tenant) {
+                $values['tenant_id'] = $tenant->id;
             }
 
             Setting::updateOrCreate($attributes, $values);
         }
 
+        if ($request->filled('tab')) {
+            return redirect()->route('admin.settings', ['tab' => $request->input('tab')])
+                ->with('success', 'Configurações do sistema atualizadas com sucesso!');
+        }
+
         return redirect()->route('admin.settings')
-            ->with('success', 'Configurações do sistema, logotipo e identidade visual atualizados com sucesso!');
+            ->with('success', 'Configurações do sistema atualizadas com sucesso!');
     }
 
     /**
@@ -437,6 +460,64 @@ class AdminController extends Controller
         } catch (\Throwable $e) {
             return redirect()->route('admin.settings', ['tab' => 'sync'])
                 ->with('error', 'Erro ao executar sincronização: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Testar conexão em tempo real com o servidor de sincronização da nuvem.
+     */
+    public function testSyncConnection(Request $request)
+    {
+        $tenant = current_tenant();
+        $cloudUrl = $request->input('cloud_url') 
+            ?: ($tenant ? \App\Models\Setting::where('tenant_id', $tenant->id)->where('key', 'cloud_sync_url')->value('value') : null)
+            ?: config('services.sync.cloud_url', 'http://146.235.224.99/zbiz_plus/api/sync/ingest');
+
+        $syncToken = $request->input('sync_token')
+            ?: ($tenant ? \App\Models\Setting::where('tenant_id', $tenant->id)->where('key', 'cloud_sync_token')->value('value') : null)
+            ?: config('services.sync.token', env('SYNC_TOKEN', 'zbiz_sync_default_token'));
+
+        $startTime = microtime(true);
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(6)
+                ->withHeaders([
+                    'X-Sync-Token' => $syncToken,
+                    'Accept'       => 'application/json',
+                ])
+                ->post($cloudUrl, [
+                    'tenant_id'   => $tenant?->id,
+                    'tenant_slug' => $tenant?->slug,
+                    'dry_run'     => true,
+                ]);
+
+            $latency = round((microtime(true) - $startTime) * 1000);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                return response()->json([
+                    'success'    => true,
+                    'message'    => 'Conexão com a nuvem estabelecida com sucesso! O servidor central está online e a responder normalmente.',
+                    'latency_ms' => $latency,
+                    'cloud_url'  => $cloudUrl,
+                    'meta'       => $data['license_meta'] ?? null,
+                ]);
+            } else {
+                return response()->json([
+                    'success'    => false,
+                    'message'    => 'O servidor da nuvem respondeu com erro (HTTP ' . $response->status() . '). Verifique o Token ou o endereço informado.',
+                    'latency_ms' => $latency,
+                    'cloud_url'  => $cloudUrl,
+                ], 422);
+            }
+        } catch (\Throwable $e) {
+            $latency = round((microtime(true) - $startTime) * 1000);
+            return response()->json([
+                'success'    => false,
+                'message'    => 'Falha de conectividade ao contactar a nuvem: ' . $e->getMessage(),
+                'latency_ms' => $latency,
+                'cloud_url'  => $cloudUrl,
+            ], 500);
         }
     }
 

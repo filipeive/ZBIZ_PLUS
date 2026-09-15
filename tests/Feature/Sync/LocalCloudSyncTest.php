@@ -285,4 +285,68 @@ class LocalCloudSyncTest extends TestCase
             ->expectsOutputToContain('Falha de conectividade ao comunicar com a nuvem')
             ->assertExitCode(0);
     }
+
+    public function test_admin_can_test_cloud_sync_connection_via_endpoint(): void
+    {
+        $this->actingAs($this->user);
+
+        Http::fake([
+            'https://mock-cloud.zbizplus.com/api/sync/ingest' => Http::response([
+                'success' => true,
+                'message' => 'Lote de sincronização processado com sucesso.',
+                'license_meta' => [
+                    'remote_license_status' => 'active',
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->postJson(route('admin.sync.test_connection'), [
+            'cloud_url'  => 'https://mock-cloud.zbizplus.com/api/sync/ingest',
+            'sync_token' => $this->syncToken,
+        ]);
+
+        $response->assertOk()
+            ->assertJson([
+                'success' => true,
+            ])
+            ->assertJsonStructure(['success', 'message', 'latency_ms', 'cloud_url']);
+    }
+
+    public function test_admin_can_update_cloud_sync_settings_and_view_stats(): void
+    {
+        $this->actingAs($this->user);
+
+        // Criar venda pendente
+        Sale::create([
+            'tenant_id'      => $this->tenant->id,
+            'branch_id'      => $this->branch->id,
+            'customer_name'  => 'Cliente Sync UI Test',
+            'total_amount'   => 120.00,
+            'payment_method' => 'cash',
+            'synced_at'      => null,
+        ]);
+
+        // Aceder à aba de definições de sincronização
+        $viewResponse = $this->get(route('admin.settings', ['tab' => 'sync']));
+        $viewResponse->assertOk()
+            ->assertViewHas('pendingSyncSales', 1)
+            ->assertSee('Sincronização Híbrida de Dados');
+
+        // Atualizar URL e Token via formulário
+        $postResponse = $this->post(route('admin.settings.update'), [
+            'tab'              => 'sync',
+            'company_name'     => $this->tenant->name,
+            'business_type'    => 'pharmacy',
+            'cloud_sync_url'   => 'https://custom-cloud.zbizplus.com/api/sync/ingest',
+            'cloud_sync_token' => 'custom_token_456',
+        ]);
+
+        $postResponse->assertRedirect(route('admin.settings', ['tab' => 'sync']));
+
+        $this->assertDatabaseHas('settings', [
+            'tenant_id' => $this->tenant->id,
+            'key'       => 'cloud_sync_url',
+            'value'     => 'https://custom-cloud.zbizplus.com/api/sync/ingest',
+        ]);
+    }
 }

@@ -161,21 +161,27 @@ class SyncPushCommand extends Command
                 'stock_movements' => $movementsPayload,
             ];
 
+            // Permitir override por definições do próprio Tenant
+            $tenantCloudUrl = \App\Models\Setting::where('tenant_id', $tenant->id)->where('key', 'cloud_sync_url')->value('value');
+            $tenantSyncToken = \App\Models\Setting::where('tenant_id', $tenant->id)->where('key', 'cloud_sync_token')->value('value');
+            $effectiveCloudUrl = (!empty($tenantCloudUrl) && filter_var($tenantCloudUrl, FILTER_VALIDATE_URL)) ? $tenantCloudUrl : $cloudUrl;
+            $effectiveSyncToken = !empty($tenantSyncToken) ? $tenantSyncToken : $syncToken;
+
             if ($dryRun) {
-                $this->warn("   [SIMULAÇÃO / DRY-RUN] Lote preparado com sucesso. Nada foi enviado.");
+                $this->warn("   [SIMULAÇÃO / DRY-RUN] Lote preparado com sucesso para {$effectiveCloudUrl}. Nada foi enviado.");
                 continue;
             }
 
             // 4. Envio HTTP para o Servidor Central
-            $this->line("   A enviar pacote para a nuvem: <comment>{$cloudUrl}</comment>...");
+            $this->line("   A enviar pacote para a nuvem: <comment>{$effectiveCloudUrl}</comment>...");
 
             try {
                 $response = Http::timeout(15)
                     ->withHeaders([
-                        'X-Sync-Token' => $syncToken,
+                        'X-Sync-Token' => $effectiveSyncToken,
                         'Accept'       => 'application/json',
                     ])
-                    ->post($cloudUrl, $requestData);
+                    ->post($effectiveCloudUrl, $requestData);
 
                 if ($response->successful()) {
                     $resJson = $response->json();

@@ -562,22 +562,59 @@
     </div>
 
     <!-- TAB 7: SINCRONIZAÇÃO COM A NUVEM -->
-    <div x-show="currentTab === 'sync'" class="space-y-6">
+    <div x-show="currentTab === 'sync'" class="space-y-6" x-data="{
+        testing: false,
+        testResult: null,
+        testSuccess: false,
+        testLatency: null,
+        testCloud() {
+            this.testing = true;
+            this.testResult = null;
+            const url = document.getElementById('cloud_sync_url_input').value;
+            const token = document.getElementById('cloud_sync_token_input').value;
+            
+            fetch('{{ route('admin.sync.test_connection') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ cloud_url: url, sync_token: token })
+            })
+            .then(res => res.json().then(data => ({ status: res.status, ok: res.ok, data })))
+            .then(res => {
+                this.testing = false;
+                this.testSuccess = res.ok && res.data.success;
+                this.testResult = res.data.message;
+                this.testLatency = res.data.latency_ms;
+            })
+            .catch(err => {
+                this.testing = false;
+                this.testSuccess = false;
+                this.testResult = 'Erro ao contactar a rota de teste: ' + err.message;
+            });
+        }
+    }">
         <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-xl space-y-6">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
                 <div>
                     <h3 class="text-sm font-black text-white font-heading flex items-center gap-2">
-                        <i class="fa-solid fa-cloud-arrow-up text-teal-400"></i> Sincronização de Dados Local ➔ Nuvem
+                        <i class="fa-solid fa-cloud-arrow-up text-teal-400"></i> Sincronização Híbrida de Dados (Local ➔ Nuvem)
                     </h3>
-                    <p class="text-xs text-slate-400 mt-1">Transmissão assíncrona e idempotente de vendas e movimentos de stock locais para o servidor central.</p>
+                    <p class="text-xs text-slate-400 mt-1">
+                        Arquitetura de alta disponibilidade: vendas e movimentações funcionam 100% offline no caixa local e sobem de forma idempotente e assíncrona para a nuvem central.
+                    </p>
                 </div>
                 
-                <form action="{{ route('admin.sync.push') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs shadow-lg shadow-teal-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2 cursor-pointer">
-                        <i class="fa-solid fa-rotate"></i> Sincronizar Agora com a Nuvem
-                    </button>
-                </form>
+                <div class="flex items-center gap-3">
+                    <form action="{{ route('admin.sync.push') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs shadow-lg shadow-teal-500/20 hover:scale-105 active:scale-95 transition flex items-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-rotate"></i> Sincronizar Agora com a Nuvem
+                        </button>
+                    </form>
+                </div>
             </div>
 
             <!-- Status Cards -->
@@ -587,8 +624,9 @@
                     <div class="text-2xl font-black text-white mt-1">
                         {{ $pendingSyncSales ?? 0 }}
                     </div>
-                    <span class="text-[11px] {{ ($pendingSyncSales ?? 0) > 0 ? 'text-amber-400' : 'text-emerald-400' }} mt-1 block">
-                        {{ ($pendingSyncSales ?? 0) > 0 ? 'A aguardar sincronização' : 'Tudo atualizado na nuvem' }}
+                    <span class="text-[11px] {{ ($pendingSyncSales ?? 0) > 0 ? 'text-amber-400' : 'text-emerald-400' }} mt-1 block font-medium">
+                        <i class="fa-solid {{ ($pendingSyncSales ?? 0) > 0 ? 'fa-clock' : 'fa-circle-check' }} mr-1"></i>
+                        {{ ($pendingSyncSales ?? 0) > 0 ? 'Aguardando próximo lote' : 'Tudo atualizado na nuvem' }}
                     </span>
                 </div>
 
@@ -597,30 +635,123 @@
                     <div class="text-2xl font-black text-white mt-1">
                         {{ $pendingSyncMovements ?? 0 }}
                     </div>
-                    <span class="text-[11px] {{ ($pendingSyncMovements ?? 0) > 0 ? 'text-amber-400' : 'text-emerald-400' }} mt-1 block">
-                        {{ ($pendingSyncMovements ?? 0) > 0 ? 'A aguardar sincronização' : 'Stock alinhado com a nuvem' }}
+                    <span class="text-[11px] {{ ($pendingSyncMovements ?? 0) > 0 ? 'text-amber-400' : 'text-emerald-400' }} mt-1 block font-medium">
+                        <i class="fa-solid {{ ($pendingSyncMovements ?? 0) > 0 ? 'fa-clock' : 'fa-circle-check' }} mr-1"></i>
+                        {{ ($pendingSyncMovements ?? 0) > 0 ? 'Aguardando próximo lote' : 'Stock alinhado com a nuvem' }}
                     </span>
                 </div>
 
                 <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
-                    <span class="text-[10px] uppercase font-bold text-slate-400 block">Última Sincronização Bem-Sucedida</span>
+                    <span class="text-[10px] uppercase font-bold text-slate-400 block">Última Sincronização Concluída</span>
                     <div class="text-sm font-black text-white mt-2 font-mono">
                         {{ $lastSyncAt ?? 'Ainda não sincronizado' }}
                     </div>
-                    <span class="text-[11px] text-slate-400 mt-1 block">
-                        Destino: {{ config('services.sync.cloud_url') }}
+                    <span class="text-[11px] text-slate-400 mt-1 block truncate" title="{{ $settings['cloud_sync_url'] ?? config('services.sync.cloud_url') }}">
+                        <i class="fa-solid fa-server text-teal-400 mr-1"></i> {{ \Illuminate\Support\Str::limit($settings['cloud_sync_url'] ?? config('services.sync.cloud_url'), 35) }}
                     </span>
                 </div>
             </div>
 
-            <div class="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/80 text-xs text-slate-400 space-y-1.5">
-                <strong class="text-slate-200 flex items-center gap-1.5">
-                    <i class="fa-solid fa-circle-info text-teal-400"></i> Como funciona a sincronização idempotente:
-                </strong>
-                <p>
-                    O ZBIZ+ envia os registos locais com identificadores únicos (<code class="text-teal-300 font-mono">offline_id</code>). 
-                    Mesmo que a ligação caia ou o botão seja premido várias vezes, o servidor central garante que nenhuma venda ou movimento é duplicado.
-                </p>
+            <!-- Formulário de Configuração de Ligação com a Nuvem -->
+            <div class="p-5 rounded-2xl bg-slate-950/50 border border-slate-800/80 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-xs font-black uppercase tracking-wider text-slate-200 flex items-center gap-2">
+                        <i class="fa-solid fa-plug text-teal-400"></i> Parâmetros de Conexão com o Servidor Central ZBIZ+ Cloud
+                    </h4>
+                    <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">
+                        Tenant Slug: {{ $tenant?->slug ?? 'local' }}
+                    </span>
+                </div>
+
+                <form action="{{ route('admin.settings.update') }}" method="POST" class="space-y-4">
+                    @csrf
+                    <input type="hidden" name="tab" value="sync">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="cloud_sync_url_input" class="block text-xs font-bold text-slate-300 mb-1.5">
+                                Endpoint Central da Nuvem (Ingest URL) *
+                            </label>
+                            <input type="url" 
+                                   id="cloud_sync_url_input" 
+                                   name="cloud_sync_url" 
+                                   value="{{ $settings['cloud_sync_url'] ?? config('services.sync.cloud_url', 'http://146.235.224.99/zbiz_plus/api/sync/ingest') }}" 
+                                   required
+                                   placeholder="http://146.235.224.99/zbiz_plus/api/sync/ingest"
+                                   class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:ring-2 focus:ring-teal-500/50 outline-none font-mono">
+                            <span class="text-[10px] text-slate-500 mt-1 block">Endereço HTTP/HTTPS da API de recepção no servidor central.</span>
+                        </div>
+
+                        <div>
+                            <label for="cloud_sync_token_input" class="block text-xs font-bold text-slate-300 mb-1.5">
+                                Token Secreto de Sincronização (Sync Token) *
+                            </label>
+                            <input type="text" 
+                                   id="cloud_sync_token_input" 
+                                   name="cloud_sync_token" 
+                                   value="{{ $settings['cloud_sync_token'] ?? config('services.sync.token', 'zbiz_sync_default_token') }}" 
+                                   required
+                                   placeholder="zbiz_sync_default_token"
+                                   class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:ring-2 focus:ring-teal-500/50 outline-none font-mono">
+                            <span class="text-[10px] text-slate-500 mt-1 block">Chave de autenticação autorizada para envio de pacotes assíncronos.</span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+                        <div class="flex items-center gap-2">
+                            <button type="button" 
+                                    @click="testCloud()" 
+                                    :disabled="testing"
+                                    class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-teal-300 font-bold text-xs rounded-xl flex items-center gap-2 transition disabled:opacity-50 cursor-pointer">
+                                <i class="fa-solid fa-signal" :class="testing ? 'fa-spin' : ''"></i>
+                                <span x-text="testing ? 'A testar conexão...' : 'Testar Conexão em Tempo Real'"></span>
+                            </button>
+
+                            <template x-if="testResult">
+                                <span class="text-xs px-3 py-1.5 rounded-xl border flex items-center gap-1.5 font-bold"
+                                      :class="testSuccess ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'">
+                                    <i class="fa-solid" :class="testSuccess ? 'fa-circle-check' : 'fa-triangle-exclamation'"></i>
+                                    <span x-text="testResult"></span>
+                                    <template x-if="testLatency">
+                                        <span class="text-[10px] text-slate-400 font-mono" x-text="'(' + testLatency + 'ms)'"></span>
+                                    </template>
+                                </span>
+                            </template>
+                        </div>
+
+                        <button type="submit" class="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs shadow-sm hover:scale-105 active:scale-95 transition flex items-center gap-2 cursor-pointer border border-slate-700">
+                            <i class="fa-solid fa-floppy-disk text-teal-400"></i> Guardar Parâmetros de Nuvem
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Informações Técnicas & Agendador Automático -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/80 text-xs text-slate-400 space-y-2">
+                    <strong class="text-slate-200 flex items-center gap-1.5">
+                        <i class="fa-solid fa-clock text-teal-400"></i> Agendador Automático em Segundo Plano
+                    </strong>
+                    <p>
+                        No modo híbrido, o sistema executa automaticamente a sincronização a cada <strong>5 minutos</strong> sem qualquer intervenção humana. Se o computador ficar temporariamente sem internet, os dados permanecem salvos localmente e sobem automaticamente assim que a rede for restabelecida.
+                    </p>
+                    <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800 font-mono text-[11px] text-slate-300 flex items-center justify-between">
+                        <span>php artisan zbiz:sync-push</span>
+                        <span class="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-bold">A cada 5 min</span>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/80 text-xs text-slate-400 space-y-2">
+                    <strong class="text-slate-200 flex items-center gap-1.5">
+                        <i class="fa-solid fa-shield-halved text-teal-400"></i> Garantia de Idempotência & Integridade
+                    </strong>
+                    <p>
+                        Cada venda e movimento possui um identificador único imutável (<code class="text-teal-300 font-mono">offline_id</code>). O servidor central verifica se o registo já existe antes de inserir, impedindo duplicação de receitas ou movimentos mesmo em caso de falhas intermitentes de conexão.
+                    </p>
+                    <p class="text-[11px] text-slate-500">
+                        O mapeamento de empresas é feito automaticamente pelo slug institucional (<code class="text-slate-400 font-mono">{{ $tenant?->slug ?? 'slug' }}</code>).
+                    </p>
+                </div>
             </div>
         </div>
     </div>

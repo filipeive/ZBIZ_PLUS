@@ -161,6 +161,31 @@ Categories=Office;Finance;PointOfSale;
         php artisan migrate --force
         php artisan db:seed --class=PlanSeeder --force || true
 
+        echo ""
+        echo "=============================================================================="
+        echo "       CONFIGURAÇÃO DE SINCRONIZAÇÃO HÍBRIDA (LOCAL <--> NUVEM)"
+        echo "=============================================================================="
+        read -rp "Deseja ativar Sincronização Híbrida Automática com a Nuvem Central? [S/n]: " SYNC_CONFIRM
+        SYNC_CONFIRM="${SYNC_CONFIRM:-S}"
+        if [[ "$SYNC_CONFIRM" =~ ^[Ss]$ ]]; then
+            read -rp "URL da Nuvem [ENTER para padrão: http://146.235.224.99/zbiz_plus/api/sync/ingest]: " CLOUD_URL
+            CLOUD_URL="${CLOUD_URL:-http://146.235.224.99/zbiz_plus/api/sync/ingest}"
+            read -rp "Token de Sincronização [ENTER para padrão: zbiz_sync_default_token]: " CLOUD_TOKEN
+            CLOUD_TOKEN="${CLOUD_TOKEN:-zbiz_sync_default_token}"
+
+            # Atualizar ou adicionar ao .env
+            sed -i '/^CLOUD_SYNC_URL=/d' .env 2>/dev/null || true
+            sed -i '/^CLOUD_SYNC_TOKEN=/d' .env 2>/dev/null || true
+            echo "" >> .env
+            echo "CLOUD_SYNC_URL=${CLOUD_URL}" >> .env
+            echo "CLOUD_SYNC_TOKEN=${CLOUD_TOKEN}" >> .env
+
+            # Configurar cron job do utilizador para rodar a cada 5 minutos
+            CRON_CMD="*/5 * * * * cd ${SCRIPT_DIR} && $(which php) artisan zbiz:sync-push > /dev/null 2>&1"
+            (crontab -l 2>/dev/null | grep -Fv "zbiz:sync-push" ; echo "$CRON_CMD") | crontab -
+            echo "✅ Sincronização Híbrida agendada no Cron (a cada 5 minutos)!"
+        fi
+
         # Criar serviço systemd do utilizador para manter servidor rodando
         SERVICE_DIR="${HOME}/.config/systemd/user"
         mkdir -p "${SERVICE_DIR}"

@@ -393,18 +393,13 @@ class UserController extends Controller
     }
 
     /**
-     * Display user activity log.
      * Display user activity log / audit trail.
      */
-    public function activity(?User $user = null)
     public function activity(Request $request, ?User $user = null)
     {
-        $user ??= auth()->user();
         $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
         $currentUser = auth()->user();
 
-        if ($user->id !== auth()->id() && !auth()->user()->canView($user)) {
-            return $this->error('users.index', 'Você não tem permissão para visualizar a atividade deste usuário.');
         // Se o usuário passou um ID via rota ou query param
         $selectedUserId = $user?->id ?? $request->query('user_id');
 
@@ -418,7 +413,6 @@ class UserController extends Controller
             $selectedUserId = $currentUser->id;
         }
 
-        $activities = $user->activities()->paginate(20);
         if ($selectedUserId) {
             $targetUser = User::where('tenant_id', $tenantId)->find($selectedUserId);
             if ($targetUser) {
@@ -432,7 +426,6 @@ class UserController extends Controller
             $user = null; // Visão global de auditoria de todos os utilizadores da empresa
         }
 
-        return view('users.activity', compact('user', 'activities'));
         // Filtro opcional por tipo de ação
         if ($action = $request->query('action')) {
             $query->where('action', $action);

@@ -51,9 +51,19 @@ if [ "${APP_ENV:-production}" = "production" ]; then
     php artisan config:cache || true
     php artisan route:cache || true
     php artisan view:cache || true
+# Iniciar daemon de sincronização híbrida em background (a cada 5 min)
+if [ -n "${CLOUD_SYNC_URL}" ]; then
+    echo "🔄 Ativando daemon de sincronização híbrida com a nuvem central..."
+    (
+        while true; do
+            sleep 300
+            php /var/www/html/artisan zbiz:sync-push > /dev/null 2>&1 || true
+        done
+    ) &
 fi
 
 echo "🟢 ZBIZ+ pronto para conexões na porta 80!"
 
 exec "$@"
+
 
