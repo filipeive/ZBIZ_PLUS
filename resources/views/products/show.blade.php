@@ -18,8 +18,11 @@
         </a>
 
         <div class="flex items-center gap-2.5">
+            <a href="{{ route('products.stock-history', $product->id) }}" class="px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 font-bold text-xs rounded-xl border border-amber-500/30 transition flex items-center gap-2">
+                <i class="fa-solid fa-timeline text-amber-400"></i> Histórico & Kardex
+            </a>
             <a href="{{ route('stock-movements.index') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-2">
-                <i class="fa-solid fa-boxes-stacked text-emerald-400"></i> Movimentações
+                <i class="fa-solid fa-boxes-stacked text-emerald-400"></i> Movimentações Gerais
             </a>
             @if(auth()->user()->isStockManager() || auth()->user()->isManager() || auth()->user()->isAdmin())
             <a href="{{ route('products.edit', $product->id) }}" class="px-5 py-2 rounded-xl {{ $theme['btn'] }} text-xs transition flex items-center gap-2">

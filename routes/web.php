@@ -150,6 +150,7 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         // Rotas com wildcard {product} DEPOIS das rotas estáticas
         Route::middleware('permissions:view_products')->group(function () {
             Route::get('/{product}', [ProductController::class, 'show'])->name('show');
+            Route::get('/{product}/stock-history', [StockMovementController::class, 'productHistory'])->name('stock-history');
         });
 
         Route::middleware('permissions:edit_products')->group(function () {
@@ -392,6 +393,7 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         Route::post('/open', [\App\Http\Controllers\CashShiftController::class, 'open'])->name('open');
         Route::post('/{shift}/close', [\App\Http\Controllers\CashShiftController::class, 'close'])->name('close');
         Route::get('/{shift}/receipt', [\App\Http\Controllers\CashShiftController::class, 'printReceipt'])->name('receipt');
+        Route::get('/{shift}/receipt-a4', [\App\Http\Controllers\CashShiftController::class, 'printA4Receipt'])->name('receipt-a4');
         Route::get('/api/status', [\App\Http\Controllers\CashShiftController::class, 'currentStatus'])->name('status');
     });
 

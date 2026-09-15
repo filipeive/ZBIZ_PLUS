@@ -192,6 +192,9 @@
                     </div>
 
                     <div class="flex items-center gap-2">
+                        <a href="{{ route('products.stock-history', $product->id) }}" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-amber-400 flex items-center justify-center transition" title="Kardex / Histórico de Stock">
+                            <i class="fa-solid fa-boxes-stacked text-xs"></i>
+                        </a>
                         <a href="{{ route('products.show', $product->id) }}" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-emerald-400 flex items-center justify-center transition" title="Ficha Técnica">
                             <i class="fa-solid fa-eye text-xs"></i>
                         </a>
@@ -279,6 +282,9 @@
                             </td>
                             <td class="py-3.5 text-right">
                                 <div class="flex items-center justify-end gap-1.5">
+                                    <a href="{{ route('products.stock-history', $product->id) }}" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-amber-400 hover:bg-slate-700 flex items-center justify-center transition" title="Kardex / Histórico de Stock">
+                                        <i class="fa-solid fa-boxes-stacked text-xs"></i>
+                                    </a>
                                     <a href="{{ route('products.show', $product->id) }}" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-emerald-400 hover:bg-slate-700 flex items-center justify-center transition" title="Ver Ficha Técnica">
                                         <i class="fa-solid fa-eye text-xs"></i>
                                     </a>
