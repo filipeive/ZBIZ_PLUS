@@ -50,13 +50,13 @@ class TenantOnboardingTest extends TestCase
         ];
 
         $response = $this->post('/register', $payload);
-        $response->assertRedirect('/dashboard');
+        $response->assertRedirect('/register/success');
 
         // 1. Verify Tenant Created
         $tenant = Tenant::where('name', 'Farmácia Vida Saudável')->first();
         $this->assertNotNull($tenant);
         $this->assertEquals('pharmacy', $tenant->business_type);
-        $this->assertEquals('trial', $tenant->status);
+        $this->assertEquals('pending', $tenant->status);
         $this->assertEquals('400998877', $tenant->nuit);
 
         // 2. Verify Branch Created
@@ -73,17 +73,17 @@ class TenantOnboardingTest extends TestCase
         $categories = Category::where('tenant_id', $tenant->id)->get();
         $this->assertGreaterThanOrEqual(4, $categories->count());
 
-        // 5. Verify User Created and Logged In
+        // 5. Verify User Created (Pending Approval)
         $user = User::where('email', 'antonio@vidasaudavel.co.mz')->first();
         $this->assertNotNull($user);
         $this->assertEquals($tenant->id, $user->tenant_id);
         $this->assertEquals($branch->id, $user->branch_id);
-        $this->assertAuthenticatedAs($user);
+        $this->assertFalse((bool)$user->is_active);
 
-        // 6. Verify Subscription Trial
+        // 6. Verify Subscription Created in Pending Status
         $subscription = Subscription::where('tenant_id', $tenant->id)->first();
         $this->assertNotNull($subscription);
-        $this->assertEquals('trialing', $subscription->status);
+        $this->assertEquals('pending', $subscription->status);
         $this->assertEquals('pharmacy_plus', $subscription->plan->slug);
     }
 }

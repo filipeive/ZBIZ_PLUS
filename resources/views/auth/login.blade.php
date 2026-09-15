@@ -1,10 +1,21 @@
+@php
+    $tenant = $tenant ?? (function_exists('current_tenant') ? current_tenant() : null);
+    if (!$tenant && (config('app.installation_mode') === 'offline' || env('INSTALLATION_MODE') === 'offline')) {
+        $tenant = \App\Models\Tenant::withoutGlobalScopes()->first();
+    }
+    $isOffline = config('app.installation_mode') === 'offline' 
+        || env('INSTALLATION_MODE') === 'offline' 
+        || ($tenant && $tenant->installation_mode === 'offline');
+    $brandName = $tenant?->name ?? 'ZBIZ+';
+    $brandLogo = $tenant?->logo_url;
+@endphp
 <!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Entrar - ZBIZ+</title>
-    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <title>Entrar - {{ $brandName }}</title>
+    <link rel="icon" type="image/png" href="{{ $brandLogo ?? asset('favicon.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -23,10 +34,26 @@
         <!-- Header Brand -->
         <div class="text-center mb-8">
             <a href="/" class="inline-flex items-center space-x-2.5">
-                <img src="{{ asset('favicon.png') }}" alt="ZBIZ+" class="w-10 h-10 rounded-xl shadow-lg shadow-emerald-500/20 object-contain bg-slate-900 border border-slate-800 p-0.5">
-                <span class="text-3xl font-black font-heading text-white tracking-tight">ZBIZ<span class="text-emerald-400">+</span></span>
+                @if($brandLogo)
+                    <img src="{{ $brandLogo }}" alt="{{ $brandName }}" class="w-12 h-12 rounded-xl shadow-lg shadow-emerald-500/20 object-contain bg-slate-900 border border-slate-800 p-1">
+                @else
+                    <img src="{{ asset('favicon.png') }}" alt="ZBIZ+" class="w-10 h-10 rounded-xl shadow-lg shadow-emerald-500/20 object-contain bg-slate-900 border border-slate-800 p-0.5">
+                @endif
+                <span class="text-3xl font-black font-heading text-white tracking-tight">
+                    @if($tenant)
+                        {{ $tenant->name }}
+                    @else
+                        ZBIZ<span class="text-emerald-400">+</span>
+                    @endif
+                </span>
             </a>
-            <p class="text-xs text-slate-400 mt-2">Acesse a sua conta empresarial</p>
+            <p class="text-xs text-slate-400 mt-2">
+                @if($tenant)
+                    Acesso ao Sistema de Gestão & POS
+                @else
+                    Acesse a sua conta empresarial
+                @endif
+            </p>
         </div>
 
         <!-- Login Card -->
@@ -88,21 +115,23 @@
                 </div>
 
                 <button type="submit" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow-md transition transform active:scale-95">
-                    Entrar no ZBIZ+
+                    Entrar no {{ $tenant ? $tenant->name : 'ZBIZ+' }}
                 </button>
             </form>
 
-            <div class="mt-6 pt-6 border-t border-slate-800/80 text-center">
-                <p class="text-xs text-slate-400">
-                    Ainda não tem conta empresarial?
-                    <a href="{{ route('register') }}" class="text-emerald-400 font-bold hover:underline ml-1">Fazer Pré-Registo</a>
-                </p>
-            </div>
+            @if(!$isOffline)
+                <div class="mt-6 pt-6 border-t border-slate-800/80 text-center">
+                    <p class="text-xs text-slate-400">
+                        Ainda não tem conta empresarial?
+                        <a href="{{ route('register') }}" class="text-emerald-400 font-bold hover:underline ml-1">Fazer Pré-Registo</a>
+                    </p>
+                </div>
+            @endif
         </div>
 
         <!-- Footer Watermark -->
         <div class="mt-8 text-center text-[11px] text-slate-500 space-y-1">
-            <p>Desenvolvido por <strong class="text-slate-400">Fdsmultiservices</strong></p>
+            <p>Desenvolvido por <strong class="text-slate-400">Fdsmultiservices</strong> • Powered by <strong class="text-emerald-400">ZBIZ+</strong></p>
             <div class="flex items-center justify-center gap-3 text-slate-500">
                 <a href="https://wa.me/258862134230" target="_blank" class="hover:text-emerald-400 transition inline-flex items-center gap-1">
                     <i class="fa-brands fa-whatsapp text-emerald-400"></i> (+258) 86 213 4230
