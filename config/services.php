@@ -40,4 +40,9 @@ return [
         'from' => env('HTTPSMS_FROM', '+258862134230'),
     ],
 
+    'sync' => [
+        'cloud_url' => env('CLOUD_SYNC_URL', 'https://cloud.zbizplus.com/api/sync/ingest'),
+        'token'     => env('CLOUD_SYNC_TOKEN', env('SYNC_TOKEN', 'zbiz_sync_default_token')),
+    ],
+
 ];
