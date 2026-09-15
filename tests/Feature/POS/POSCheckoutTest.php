@@ -379,5 +379,27 @@ class POSCheckoutTest extends TestCase
 
         $response->assertStatus(422);
     }
+
+    public function test_pos_navigation_links_are_rendered_in_layout(): void
+    {
+        $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        $admin = User::create([
+            'tenant_id' => $this->tenant->id,
+            'branch_id' => $this->branch->id,
+            'name'      => 'Gerente Admin',
+            'email'     => 'admin@super.co.mz',
+            'password'  => bcrypt('password'),
+            'role_id'   => $adminRole->id,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('dashboard.index'));
+        $response->assertOk();
+
+        // Must render both sidebar link and topbar link
+        $response->assertSee(route('pos.index'));
+        $response->assertSee('Frente de Caixa (POS)');
+    }
 }
+
+
 
