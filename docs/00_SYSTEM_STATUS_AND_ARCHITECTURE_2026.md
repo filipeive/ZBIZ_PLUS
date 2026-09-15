@@ -66,6 +66,9 @@ O **ZBIZ+** é uma plataforma empresarial completa de **Gestão Comercial (ERP),
 * **Calculadora MZN de Cédulas e Moedas:** Contagem física guiada das notas e moedas de Meticais moçambicanos.
 * **Apuramento Automático:** Cálculo imediato de faltas (quebras) e excessos (sobras) de caixa para auditoria gerencial.
 * **Comprovativo Fecho Z:** Impressão térmica com resumo financeiro por meio de pagamento e assinaturas.
+* **Relatório de Fecho A4:** Versão completa para arquivo e auditoria, disponível em `/cash-shifts/{shift}/receipt-a4`.
+* **Regra de operação diária:** Operadores não administradores só podem finalizar vendas depois de abrir um turno na data atual; administradores podem operar sem turno.
+* **Regularização de turnos antigos:** Deve ser feita por um administrador/supervisor com contagem física e justificação, sem encerramento automático presumido.
 
 ### 2.7. Fiscalidade Moçambique (CIVA) e Modelo A da AT
 * **Suporte à Lei do IVA:** Taxa normal de 16% e regime de isenção nos termos do Artigo 9º do CIVA (farmácias/medicamentos e bens de saúde).
@@ -80,6 +83,12 @@ O **ZBIZ+** é uma plataforma empresarial completa de **Gestão Comercial (ERP),
 * **Dump SQL Seguro:** Geração direta de cópias de segurança da base de dados pelas Definições do Sistema, com download e rotação de arquivos.
 * **Branding Dinâmico:** Gestão de logotipo com fundo limpo neutro e aplicação automática em recibos térmicos (80mm/58mm) e relatórios oficiais.
 
+### Nota de evolução financeira
+
+O card de saldo exibido no Dashboard e o card equivalente em Finanças usam atualmente a mesma métrica (`currentCapital`), calculada pela soma dos saldos das contas operacionais ativas. Esta duplicação está documentada para futura racionalização: o saldo deve permanecer em Finanças como **Liquidez Atual**, enquanto o Dashboard deverá destacar **Fluxo Líquido do Mês** ou outro indicador operacional não redundante.
+
+A regularização administrativa de turnos antigos e a validação da resolução de contas por tenant/filial estão documentadas em `docs/14_FUTURE_FINANCIAL_RECONCILIATION.md`.
+
 ---
 
 ## 3. INVENTÁRIO DAS ROTAS E MÓDULOS PRINCIPAIS
@@ -89,7 +98,7 @@ O **ZBIZ+** é uma plataforma empresarial completa de **Gestão Comercial (ERP),
 | **Owner Console** | `/owner/tenants` | KPIs MRR/ARR, Gestão de Clientes, Chaves Seriais, Certificados, Impersonate |
 | **Dashboard** | `/dashboard` | Resumo de vendas diárias, faturamento mensal, comparativos, gráficos de tendência |
 | **POS 2.0** | `/pos` | Frente de caixa rápida, suporte a código de barras, atalhos, descontos, clientes e IVA |
-| **Caixas & Turnos** | `/cash-shifts` | Abertura com fundo de maneio, fecho cego com calculadora de MZN, comprovativo Fecho Z |
+| **Caixas & Turnos** | `/cash-shifts` | Abertura com fundo de maneio, fecho cego com calculadora de MZN, Fecho Z térmico e Relatório A4 |
 | **Clientes** | `/customers` | Fichas de clientes, histórico de compras, limite de crédito e saldos devedores |
 | **Fornecedores** | `/suppliers` | Distribuidores, laboratórios, prazos comerciais e vínculo a produtos |
 | **Mapa de IVA** | `/reports/tax-iva` | Apuramento Modelo A (AT Moçambique), isenção Art. 9º CIVA, exportação PDF oficial |

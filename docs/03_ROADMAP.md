@@ -57,6 +57,12 @@ FASE 8: Faturação Fiscal Moçambicana (AT, NUIT, IVA 16%, Séries)
 1. **Módulo KDS (Kitchen Display System) para Restaurantes:** Telas em tempo real para despache de pedidos na cozinha e bar.
 2. **Sincronização Híbrida Offline-Online (Edge Sync):** Sincronização em background quando termina o corte de energia/internet local.
 3. **App Mobile PWA para Gestores:** Dashboards operacionais rápidos para acompanhamento no smartphone.
+4. **Regularização Administrativa de Turnos:** Fecho controlado de turnos antigos com contagem física, justificação, responsável administrativo, auditoria e emissão de Talão Z/Relatório A4.
+5. **Racionalização das Métricas Financeiras:** Manter Liquidez Atual e A Receber em Finanças, apresentar Valor Real do Negócio no Dashboard e reforçar a resolução de contas por tenant/filial.
+
+### Documento de desenho futuro
+
+O desenho funcional e os riscos conhecidos estão detalhados em [`docs/14_FUTURE_FINANCIAL_RECONCILIATION.md`](14_FUTURE_FINANCIAL_RECONCILIATION.md).
 
 ---
 

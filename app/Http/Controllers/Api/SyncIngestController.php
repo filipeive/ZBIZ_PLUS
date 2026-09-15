@@ -44,7 +44,7 @@ class SyncIngestController extends Controller
         ]);
 
         $tenantId = (int)$request->tenant_id;
-        $tenant = Tenant::find($tenantId);
+        $tenant = Tenant::withoutGlobalScopes()->find($tenantId);
 
         if (!$tenant || !in_array($tenant->status, ['active', 'trial'])) {
             return response()->json([

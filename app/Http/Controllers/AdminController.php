@@ -39,7 +39,20 @@ class AdminController extends Controller
             usort($backups, fn($a, $b) => $b['timestamp'] <=> $a['timestamp']);
         }
 
-        return view('settings.index', compact('tenant', 'settings', 'allPermissions', 'rolePermissions', 'backups'));
+        $pendingSyncSales = \App\Models\Sale::withoutGlobalScopes()
+            ->where('tenant_id', $tenant?->id)
+            ->whereNull('synced_at')
+            ->count();
+        $pendingSyncMovements = \App\Models\StockMovement::withoutGlobalScopes()
+            ->where('tenant_id', $tenant?->id)
+            ->whereNull('synced_at')
+            ->count();
+        $lastSyncAt = \Illuminate\Support\Facades\Cache::get('tenant_' . ($tenant?->id ?? 0) . '_last_sync_push');
+
+        return view('settings.index', compact(
+            'tenant', 'settings', 'allPermissions', 'rolePermissions', 'backups',
+            'pendingSyncSales', 'pendingSyncMovements', 'lastSyncAt'
+        ));
     }
 
     /**
@@ -392,6 +405,37 @@ class AdminController extends Controller
         } catch (\Throwable $e) {
             return redirect()->route('admin.settings', ['tab' => 'backups'])
                 ->with('error', 'Erro ao eliminar backup: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Disparo manual de Sincronização Push da Máquina Local para a Nuvem.
+     */
+    public function syncPush(Request $request)
+    {
+        $tenant = current_tenant();
+        if (!$tenant) {
+            return redirect()->route('admin.settings', ['tab' => 'sync'])
+                ->with('error', 'Nenhum tenant identificado para sincronização.');
+        }
+
+        try {
+            $exitCode = \Illuminate\Support\Facades\Artisan::call('zbiz:sync-push', [
+                '--tenant' => $tenant->id,
+            ]);
+
+            $output = \Illuminate\Support\Facades\Artisan::output();
+
+            if ($exitCode === 0) {
+                return redirect()->route('admin.settings', ['tab' => 'sync'])
+                    ->with('success', 'Sincronização enviada para a nuvem com sucesso!');
+            } else {
+                return redirect()->route('admin.settings', ['tab' => 'sync'])
+                    ->with('error', 'Falha ao sincronizar: ' . \Illuminate\Support\Str::limit($output, 200));
+            }
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.settings', ['tab' => 'sync'])
+                ->with('error', 'Erro ao executar sincronização: ' . $e->getMessage());
         }
     }
 

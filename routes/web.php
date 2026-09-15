@@ -573,6 +573,7 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         Route::post('/settings/backups/create', [AdminController::class, 'createBackup'])->name('admin.backup.create');
         Route::get('/settings/backups/{filename}/download', [AdminController::class, 'downloadBackup'])->name('admin.backup.download');
         Route::delete('/settings/backups/{filename}', [AdminController::class, 'deleteBackup'])->name('admin.backup.delete');
+        Route::post('/settings/sync/push', [AdminController::class, 'syncPush'])->name('admin.sync.push');
         Route::prefix('documents/templates')->name('documents.templates.')->group(function () {
             Route::get('/', [DocumentTemplateController::class, 'index'])->name('index');
             Route::post('/settings', [DocumentTemplateController::class, 'updateSettings'])->name('settings.update');

@@ -8,6 +8,11 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ## [Unreleased]
 ### Added
+- **Racionalização financeira:** removida a duplicação do saldo no Dashboard, substituída por Fluxo Líquido do Mês; Finanças passou a apresentar Liquidez Atual com descrição de caixa, carteiras e contas operacionais.
+- **Isolamento do ledger por tenant/filial:** a sincronização de recebimentos de vendas passou a resolver contas financeiras dentro da empresa e filial corretas, evitando associação por slug global.
+- **Controlo diário de turnos no POS:** operadores não administradores precisam abrir o caixa do dia antes de finalizar vendas; a regra é aplicada na interface, no endpoint de venda e na sincronização offline.
+- **Relatório de Fecho de Caixa A4:** adicionada a rota `/cash-shifts/{shift}/receipt-a4`, com resumo financeiro, auditoria de numerário, diferença e assinaturas para arquivo.
+- **Procedimento para turnos antigos:** documentada a regularização administrativa com contagem física e justificação obrigatória, sem encerramento automático com valores presumidos.
 - **Alertas automáticos de validade por filial:** o dashboard consulta lotes vencidos e próximos do vencimento (90 dias) da filial ativa, atualiza a cada 30 segundos, exibe estados de carregamento/erro e oferece som configurável com Web Audio API.
 - **Consultas de produto entre filiais:** adicionado fluxo protegido por tenant para solicitar disponibilidade de produto a outra filial, responder, cancelar e acompanhar o estado da consulta.
 - **Proteção reforçada do Owner:** rotas `/owner` e `/owner/tenants` passam a exigir explicitamente o middleware de Super Admin, preservando o fluxo de suporte/impersonation.

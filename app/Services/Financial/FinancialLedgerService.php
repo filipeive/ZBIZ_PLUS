@@ -88,9 +88,24 @@ class FinancialLedgerService
             default          => 'caixa-principal',
         };
 
-        $account = FinancialAccount::where('slug', $accountSlug)->where('is_active', true)->first();
+        $accountQuery = FinancialAccount::where('tenant_id', $sale->tenant_id)
+            ->where('slug', $accountSlug)
+            ->where('is_active', true);
+
+        $account = $sale->branch_id
+            ? (clone $accountQuery)->where('branch_id', $sale->branch_id)->first()
+            : null;
+
+        $account ??= (clone $accountQuery)->whereNull('branch_id')->first();
+        $account ??= (clone $accountQuery)->first();
+
         if (!$account) {
-            $account = FinancialAccount::where('is_active', true)->first();
+            $account = FinancialAccount::where('tenant_id', $sale->tenant_id)
+                ->where('is_active', true)
+                ->when($sale->branch_id, fn ($query) => $query->where(function ($branchQuery) use ($sale) {
+                    $branchQuery->where('branch_id', $sale->branch_id)->orWhereNull('branch_id');
+                }))
+                ->first();
         }
 
         if (!$account) {

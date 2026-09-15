@@ -233,6 +233,7 @@ O ZBIZ+ implementa as melhores práticas de auditoria contábil com o mecanismo 
 1. Ao iniciar o dia ou troca de funcionário, aceda a **Caixas & Turnos** (`/cash-shifts`) ou ao POS.
 2. O sistema solicita o **Fundo de Maneio Inicial** (troco deixado na gaveta).
 3. O turno é aberto com data, hora e operador identificado.
+4. Operadores que não sejam administradores devem abrir o turno do dia antes de finalizar qualquer venda no POS. Ao tentar vender sem turno válido, o sistema abre automaticamente o modal de abertura.
 
 ### 11.2 Operação Contínua
 Todas as vendas realizadas pelo operador são vinculadas automaticamente ao seu turno ativo (`cash_shift_id`). O sistema contabiliza em tempo real as entradas em Dinheiro, M-Pesa, E-Mola, Cartão e Fiados.
@@ -253,6 +254,18 @@ No encerramento do expediente:
   - 🔴 **Quebra de Caixa (Falta)**: Diferença negativa exigindo justificativa.
   - 🟡 **Sobra de Caixa (Excesso)**: Diferença positiva para auditoria.
 * **Impressão do Fecho Z**: Emissão do talão térmico resumido com resumo financeiro por meio de pagamento, quebra/sobra e campos de assinatura do Operador e do Gerente.
+* **Relatório de Fecho A4**: Após o encerramento, também é possível imprimir o relatório completo em A4, com dados da empresa, auditoria de numerário, resumo por método de pagamento, diferença apurada e assinaturas.
+
+### 11.5 Turno antigo deixado aberto
+Se um operador deixar um turno aberto de um dia anterior, o sistema não cria automaticamente outro turno nem encerra o anterior com valores presumidos. O turno deve ser regularizado por um administrador ou supervisor através de um **fecho administrativo**, com:
+
+* contagem física real da gaveta;
+* justificação obrigatória para o atraso;
+* cálculo da quebra ou sobra;
+* identificação do operador original e do responsável pela regularização;
+* emissão do Talão Fecho Z e do Relatório A4.
+
+Esta regularização preserva a auditoria e evita alterar artificialmente o saldo do caixa.
 
 ---
 

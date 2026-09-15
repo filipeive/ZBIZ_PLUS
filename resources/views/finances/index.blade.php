@@ -71,11 +71,11 @@
             <span class="text-[10px] text-slate-500 block mt-1">Capital em Caixa + A Receber</span>
         </div>
 
-        <!-- Saldo Real em Caixa -->
+        <!-- Liquidez Atual -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl relative overflow-hidden group">
             <div class="w-1.5 h-full absolute left-0 top-0 bg-emerald-500"></div>
             <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Saldo Real em Caixa</span>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Liquidez Atual</span>
                 <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xs">
                     <i class="fa-solid fa-vault"></i>
                 </div>
@@ -83,7 +83,7 @@
             <div class="text-xl font-black font-heading text-emerald-400">
                 {{ number_format($currentCapital ?? 0, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
             </div>
-            <span class="text-[10px] text-slate-500 block mt-1">Dinheiro líquido recebido acumulado</span>
+            <span class="text-[10px] text-slate-500 block mt-1">Soma atual de caixa, carteiras e contas operacionais</span>
         </div>
 
         <!-- A Receber (Dívidas) -->

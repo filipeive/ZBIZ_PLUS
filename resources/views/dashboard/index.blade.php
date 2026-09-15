@@ -54,20 +54,20 @@
     <!-- KPI Stat Cards (Ajusta colunas dinamicamente para ocupar todo o espaço disponível) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 {{ (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin() || auth()->user()->isManager()) ? 'lg:grid-cols-5' : 'lg:grid-cols-4' }} gap-4 sm:gap-6">
         
-        <!-- Card 1: Saldo em Caixa Real (Disponível Líquido) -->
+        <!-- Card 1: Valor Real do Negócio -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Saldo em Caixa (Real)</span>
-                <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base">
-                    <i class="fa-solid fa-vault"></i>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Valor Real do Negócio</span>
+                <div class="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-base">
+                    <i class="fa-solid fa-building-columns"></i>
                 </div>
             </div>
             <div class="mt-4">
-                <div class="text-2xl sm:text-3xl font-black font-heading text-emerald-600 dark:text-emerald-400">
-                    {{ number_format($currentCapital ?? 0, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
+                <div class="text-2xl sm:text-3xl font-black font-heading text-blue-600 dark:text-blue-400">
+                    {{ number_format($totalRealValue ?? 0, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
                 </div>
                 <div class="flex items-center gap-2 mt-2 text-xs text-slate-500 dark:text-slate-400">
-                    <span>Dinheiro real recebido líquido</span>
+                    <span>Capital em caixa + valores a receber</span>
                 </div>
             </div>
         </div>

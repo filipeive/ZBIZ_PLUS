@@ -34,7 +34,7 @@ class SyncPushCommand extends Command
         if ($tenantIdOption) {
             $tenants = Tenant::withoutGlobalScopes()->where('id', $tenantIdOption)->get();
         } else {
-            $tenants = Tenant::withoutGlobalScopes()->where('status', 'active')->get();
+            $tenants = Tenant::withoutGlobalScopes()->whereIn('status', ['active', 'trial'])->get();
         }
 
         if ($tenants->isEmpty()) {
@@ -172,6 +172,8 @@ class SyncPushCommand extends Command
                     $this->info("   ✓ Sincronização concluída com sucesso!");
                     $this->line("     - Vendas sincronizadas: <info>{$pendingSales->count()}</info>");
                     $this->line("     - Movimentos sincronizados: <info>{$pendingMovements->count()}</info>");
+
+                    \Illuminate\Support\Facades\Cache::put('tenant_' . $tenant->id . '_last_sync_push', now()->format('d/m/Y H:i:s'), now()->addDays(30));
 
                     Log::info("[SyncPush] Lote sincronizado com sucesso.", [
                         'tenant_id' => $tenant->id,
