@@ -743,6 +743,7 @@
                 showCustomerModal: false,
                 isSubmitting: false,
                 isLoading: false,
+                isSyncing: false,
                 offlineQueue: [],
 
                 // Turno de Caixa
@@ -771,6 +772,30 @@
                     );
                 },
 
+                async checkServerReachability(timeoutMs = 2500) {
+                    if (!navigator.onLine) {
+                        this.isOnline = false;
+                        return false;
+                    }
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+                        const res = await fetch('/api/ping?t=' + Date.now(), {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: { 'Accept': 'application/json' },
+                            signal: controller.signal
+                        });
+                        clearTimeout(timeoutId);
+                        const reachable = res.ok;
+                        this.isOnline = reachable;
+                        return reachable;
+                    } catch (e) {
+                        this.isOnline = false;
+                        return false;
+                    }
+                },
+
                 init() {
                     const previousScope = sessionStorage.getItem('zbiz_pos_scope');
                     if (previousScope && previousScope !== this.storageScope) {
@@ -782,14 +807,33 @@
                     sessionStorage.setItem('zbiz_pos_scope', this.storageScope);
                     this.offlineQueue = JSON.parse(localStorage.getItem(this.offlineQueueKey()) || '[]');
 
-                    window.addEventListener('online', () => { this.isOnline = true; this.syncOffline(); });
-                    window.addEventListener('offline', () => { this.isOnline = false; });
+                    // Verificação real de conectividade no arranque
+                    this.checkServerReachability().then(reachable => {
+                        if (reachable && this.offlineQueue.length > 0) {
+                            this.syncOffline();
+                        }
+                    });
+
+                    window.addEventListener('online', async () => {
+                        const reachable = await this.checkServerReachability();
+                        if (reachable && this.offlineQueue.length > 0) {
+                            this.syncOffline();
+                        }
+                    });
+                    window.addEventListener('offline', () => { 
+                        this.isOnline = false; 
+                    });
                     window.addEventListener('pageshow', (event) => {
                         if (event.persisted) {
                             this.products = [];
                             this.searchProducts();
                         }
                     });
+
+                    // Verificação periódica suave de conectividade a cada 30s
+                    setInterval(() => {
+                        this.checkServerReachability();
+                    }, 30000);
 
                     this.searchProducts();
                     this.$nextTick(() => this.$refs.searchInput.focus());
@@ -1026,16 +1070,12 @@
                         prices_include_tax: this.pricesIncludeTax,
                         payment_method: this.paymentMethod,
                         amount_paid: this.amountPaid,
-                        offline_id: 'OFF-' + Date.now(),
+                        offline_id: 'OFF-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7),
                     };
 
-                    if (!this.isOnline) {
-                        // Salvar offline
-                        this.offlineQueue.push(payload);
-                        localStorage.setItem(this.offlineQueueKey(), JSON.stringify(this.offlineQueue));
-                        this.notifyWarning('Modo Offline', 'Venda guardada em cache local. Será sincronizada automaticamente assim que a conexão retornar.');
-                        this.clearCart();
-                        this.showCheckoutModal = false;
+                    // 1. Se o navegador já indicar offline sem rede física
+                    if (!navigator.onLine) {
+                        this.handleOfflineFallback(payload, 'Navegador offline (navigator.onLine = false)');
                         this.isSubmitting = false;
                         return;
                     }
@@ -1045,28 +1085,121 @@
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
+                                'Accept': 'application/json',
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
                             },
                             body: JSON.stringify(payload)
                         });
-                        const data = await res.json();
-                        if (data.success) {
-                            window.open(data.receipt_url + '?autoprint=1', '_blank', 'width=400,height=600');
-                            this.notifySuccess('Venda Concluída!', 'Venda #' + data.sale_id + ' processada com sucesso.');
-                            this.clearCart();
-                            this.showCheckoutModal = false;
-                        } else {
-                            this.notifyError('Erro na Venda', data.message || 'Ocorreu um erro ao processar a venda.');
+
+                        // 2. Resposta de Sucesso (200 / 201)
+                        if (res.status === 200 || res.status === 201) {
+                            const data = await res.json();
+                            if (data.success) {
+                                window.open(data.receipt_url + '?autoprint=1', '_blank', 'width=400,height=600');
+                                this.notifySuccess('Venda Concluída!', 'Venda #' + data.sale_id + ' processada com sucesso.');
+                                this.clearCart();
+                                this.showCheckoutModal = false;
+                                this.isOnline = true;
+                            } else {
+                                this.notifyError('Erro na Venda', data.message || 'Ocorreu um erro ao processar a venda.');
+                            }
+                            return;
                         }
-                    } catch (e) {
-                        this.notifyWarning('Conexão Interrompida', 'A guardar venda em cache offline...');
-                        this.offlineQueue.push(payload);
-                        localStorage.setItem(this.offlineQueueKey(), JSON.stringify(this.offlineQueue));
-                        this.clearCart();
-                        this.showCheckoutModal = false;
+
+                        // 3. Sessão ou Token CSRF Expirado (419)
+                        if (res.status === 419) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Sessão Expirada',
+                                text: 'A sua sessão de segurança expirou. Por favor, recarregue a página para continuar a vender sem inconsistências.',
+                                confirmButtonColor: '#0f172a',
+                                confirmButtonText: '<i class="fa-solid fa-rotate-right mr-1"></i> Recarregar Página',
+                                allowOutsideClick: false
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                            return;
+                        }
+
+                        // 4. Erro de Validação de Regra de Negócio (422)
+                        if (res.status === 422) {
+                            let errorMsg = 'Dados da venda inválidos.';
+                            try {
+                                const errData = await res.json();
+                                if (errData.errors) {
+                                    const firstKey = Object.keys(errData.errors)[0];
+                                    errorMsg = errData.errors[firstKey][0] || errData.message || errorMsg;
+                                } else if (errData.message) {
+                                    errorMsg = errData.message;
+                                }
+                            } catch (ignore) {}
+
+                            this.notifyError('Validação da Venda', errorMsg);
+                            return;
+                        }
+
+                        // 5. Erro Interno do Servidor (500+)
+                        if (res.status >= 500) {
+                            let serverMsg = 'Ocorreu um erro interno no servidor (Código #' + res.status + '). A venda NÃO foi registada.';
+                            try {
+                                const errData = await res.json();
+                                if (errData.message) {
+                                    serverMsg += ' Detalhe: ' + errData.message;
+                                }
+                            } catch (ignore) {}
+
+                            this.notifyError('Erro no Servidor', serverMsg);
+                            return;
+                        }
+
+                        // 6. Outros códigos de erro HTTP
+                        let genericMsg = 'Não foi possível processar a venda (HTTP ' + res.status + ').';
+                        try {
+                            const errData = await res.json();
+                            if (errData.message) genericMsg = errData.message;
+                        } catch (ignore) {}
+                        this.notifyError('Atenção', genericMsg);
+
+                    } catch (networkError) {
+                        console.warn('Exceção de rede na venda:', networkError);
+                        const isReachable = await this.checkServerReachability(2000);
+                        if (!isReachable) {
+                            this.handleOfflineFallback(payload, 'Queda de conexão comprovada: ' + networkError.message);
+                        } else {
+                            this.notifyError('Falha de Comunicação', 'Não foi possível concluir o envio da venda. Verifique os dados e tente novamente.');
+                        }
                     } finally {
                         this.isSubmitting = false;
                     }
+                },
+
+                handleOfflineFallback(payload, reason) {
+                    this.isOnline = false;
+                    this.offlineQueue.push(payload);
+                    localStorage.setItem(this.offlineQueueKey(), JSON.stringify(this.offlineQueue));
+                    this.clearCart();
+                    this.showCheckoutModal = false;
+                    this.notifyWarning('Modo Offline Ativado', 'Sem conexão com o servidor. A venda foi guardada com segurança em cache local e será sincronizada assim que a rede voltar.');
+
+                    // Telemetria não bloqueante para auditoria no Laravel
+                    try {
+                        fetch('/pos/log-offline-fallback', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({
+                                reason: reason,
+                                details: {
+                                    offline_id: payload.offline_id,
+                                    items_count: payload.items?.length || 0,
+                                    amount_paid: payload.amount_paid
+                                }
+                            })
+                        }).catch(() => {});
+                    } catch (ignore) {}
                 },
 
                 async saveQuickCustomer() {
@@ -1226,25 +1359,49 @@
                 },
 
                 async syncOffline() {
-                    if (this.offlineQueue.length === 0) return;
+                    if (this.offlineQueue.length === 0 || this.isSyncing) return;
+
+                    const isReachable = await this.checkServerReachability(2500);
+                    if (!isReachable) {
+                        return;
+                    }
+
+                    this.isSyncing = true;
                     try {
                         const res = await fetch('/pos/sync-offline', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
+                                'Accept': 'application/json',
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
                             },
                             body: JSON.stringify({ sales: this.offlineQueue })
                         });
-                        const data = await res.json();
-                        if (data.success) {
-                            this.offlineQueue = [];
-                            localStorage.removeItem(this.offlineQueueKey());
-                            this.notifySuccess('Sincronização', 'Vendas offline sincronizadas com sucesso com o servidor!');
+
+                        if (res.status === 200 || res.status === 201) {
+                            const data = await res.json();
+                            if (data.success) {
+                                if (Array.isArray(data.results)) {
+                                    const successfulIds = data.results.filter(r => r.synced).map(r => r.offline_id);
+                                    this.offlineQueue = this.offlineQueue.filter(item => !successfulIds.includes(item.offline_id));
+                                } else {
+                                    this.offlineQueue = [];
+                                }
+                                localStorage.setItem(this.offlineQueueKey(), JSON.stringify(this.offlineQueue));
+                                this.isOnline = true;
+                                this.notifySuccess('Sincronização Concluída', 'Vendas offline foram sincronizadas com sucesso com o servidor.');
+                            } else {
+                                this.notifyError('Falha no Sync', data.message || 'Erro ao sincronizar vendas offline.');
+                            }
+                        } else if (res.status === 419) {
+                            console.warn('Sync offline adiado: Sessão ou token expirado.');
+                        } else {
+                            console.warn('Sync offline retornou status HTTP', res.status);
                         }
                     } catch (e) {
                         console.error('Falha ao sincronizar vendas offline:', e);
-                        this.notifyError('Erro de Sync', 'Não foi possível sincronizar as vendas offline no momento.');
+                    } finally {
+                        this.isSyncing = false;
                     }
                 }
             }));

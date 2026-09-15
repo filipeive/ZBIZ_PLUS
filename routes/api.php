@@ -318,7 +318,7 @@ Route::prefix('webhooks')->name('webhooks.')->group(function () {
 });
 
 // ==========================================
-// HEALTH CHECK (PUBLIC)
+// HEALTH CHECK & CONNECTIVITY (PUBLIC)
 // ==========================================
 Route::get('/health', function () {
     return response()->json([
@@ -327,6 +327,13 @@ Route::get('/health', function () {
         'version' => config('app.version', '1.0.0')
     ]);
 })->name('health');
+
+Route::get('/ping', function () {
+    return response()->json([
+        'pong' => true,
+        'timestamp' => now()->timestamp,
+    ]);
+})->name('ping');
 // ==========================================
 // M-PESA & MOBILE PAYMENTS (ZBIZ+)
 // ==========================================

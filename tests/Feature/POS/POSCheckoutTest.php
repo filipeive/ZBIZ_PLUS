@@ -331,4 +331,53 @@ class POSCheckoutTest extends TestCase
         $this->assertEquals(4650.00, $this->customer->fresh()->available_credit);
         $this->assertEquals(150.00, $this->cashAccount->fresh()->current_balance);
     }
+
+    public function test_ping_endpoint_is_accessible_and_returns_pong(): void
+    {
+        $response = $this->getJson('/api/ping');
+        $response->assertOk()
+            ->assertJson([
+                'pong' => true,
+            ])
+            ->assertJsonStructure(['pong', 'timestamp']);
+    }
+
+    public function test_log_offline_fallback_records_warning_and_returns_200(): void
+    {
+        $this->actingAs($this->cashier);
+
+        \Illuminate\Support\Facades\Log::shouldReceive('warning')
+            ->once()
+            ->withArgs(function ($message, $context) {
+                return str_contains($message, 'POS Offline Fallback')
+                    && ($context['reason'] ?? '') === 'Rede offline simulada'
+                    && ($context['tenant_id'] ?? null) == $this->tenant->id;
+            });
+
+        $response = $this->postJson('/pos/log-offline-fallback', [
+            'reason'  => 'Rede offline simulada',
+            'details' => [
+                'offline_id' => 'OFF-TEST-123',
+                'items_count' => 1,
+                'amount_paid' => 100,
+            ],
+        ]);
+
+        $response->assertOk()
+            ->assertJson(['logged' => true]);
+    }
+
+    public function test_pos_sale_validation_error_returns_422(): void
+    {
+        $this->actingAs($this->cashier);
+
+        // Submitting invalid payload (missing items, etc.)
+        $response = $this->postJson('/pos/sale', [
+            'customer_name' => 'Teste',
+            'payment_method' => 'cash',
+        ]);
+
+        $response->assertStatus(422);
+    }
 }
+

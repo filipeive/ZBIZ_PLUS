@@ -613,8 +613,17 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         Route::post('/sale', [\App\Http\Controllers\POS\POSController::class, 'storeSale'])->name('sale');
         Route::get('/receipt/{sale}', [\App\Http\Controllers\POS\POSController::class, 'printReceipt'])->name('receipt');
         Route::post('/sync-offline', [\App\Http\Controllers\POS\POSController::class, 'syncOfflineSales'])->name('sync-offline');
+        Route::post('/log-offline-fallback', [\App\Http\Controllers\POS\POSController::class, 'logOfflineFallback'])->name('log-offline-fallback');
     });
 
 });
+
+// Verificação de conectividade rápida (fallback sem dependência de autenticação)
+Route::get('/api/ping', function () {
+    return response()->json([
+        'pong' => true,
+        'timestamp' => now()->timestamp,
+    ]);
+})->name('web.ping');
 
 require __DIR__ . '/auth.php';
