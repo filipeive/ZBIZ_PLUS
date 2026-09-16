@@ -31,7 +31,7 @@
             <div>
                 <h2 class="text-lg font-black font-heading text-white">Activar Licença do ZBIZ+</h2>
                 <p class="text-xs text-slate-400 mt-0.5">
-                    Insira o código de activação recebido por SMS após confirmação de pagamento ou cole o token completo da sua licença.
+                    Insira o código serial oficial (<span class="font-mono text-teal-300">ZBIZ-XXXX-XXXX-...</span>) emitido na Nuvem. O sistema valida com o servidor central, ativa a licença e <strong class="text-slate-200">configura automaticamente a sincronização em nuvem</strong>.
                 </p>
             </div>
         </div>

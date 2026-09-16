@@ -49,7 +49,42 @@ class SyncPushCommand extends Command
         foreach ($tenants as $tenant) {
             $this->line("A verificar registos pendentes para: <comment>{$tenant->name}</comment> (ID: {$tenant->id})...");
 
-            // 1. Buscar Vendas Pendentes
+            // 1. Buscar Categorias Locais
+            $localCategories = \App\Models\Category::withoutGlobalScopes()
+                ->where('tenant_id', $tenant->id)
+                ->get()
+                ->map(fn($c) => [
+                    'name'        => $c->name,
+                    'description' => $c->description,
+                    'type'        => $c->type ?? 'product',
+                    'color'       => $c->color,
+                    'icon'        => $c->icon,
+                    'is_active'   => (bool)$c->is_active,
+                ])->toArray();
+
+            // 2. Buscar Produtos Locais
+            $localProducts = \App\Models\Product::withoutGlobalScopes()
+                ->where('tenant_id', $tenant->id)
+                ->with('category')
+                ->get()
+                ->map(fn($p) => [
+                    'name'              => $p->name,
+                    'barcode'           => $p->barcode,
+                    'sku'               => $p->sku,
+                    'category_name'     => $p->category?->name,
+                    'type'              => $p->type ?? 'product',
+                    'purchase_price'    => (float)($p->purchase_price ?? 0),
+                    'selling_price'     => (float)($p->selling_price ?? 0),
+                    'promotional_price' => $p->promotional_price ? (float)$p->promotional_price : null,
+                    'stock_quantity'    => (int)($p->stock_quantity ?? 0),
+                    'min_stock_level'   => (int)($p->min_stock_level ?? 5),
+                    'unit'              => $p->unit ?? 'unidade',
+                    'is_active'         => (bool)$p->is_active,
+                    'is_tax_exempt'     => (bool)$p->is_tax_exempt,
+                    'tax_rate'          => (float)($p->tax_rate ?? 16),
+                ])->toArray();
+
+            // 3. Buscar Vendas Pendentes
             $pendingSales = Sale::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
                 ->whereNull('synced_at')
@@ -57,7 +92,7 @@ class SyncPushCommand extends Command
                 ->limit($limit)
                 ->get();
 
-            // 2. Buscar Movimentos de Stock Pendentes
+            // 4. Buscar Movimentos de Stock Pendentes
             $pendingMovements = StockMovement::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
                 ->whereNull('synced_at')
@@ -65,13 +100,15 @@ class SyncPushCommand extends Command
                 ->limit($limit)
                 ->get();
 
+            $this->line("   -> Catálogo Local: <info>" . count($localCategories) . " categorias</info>, <info>" . count($localProducts) . " produtos</info>.");
+
             if ($pendingSales->isEmpty() && $pendingMovements->isEmpty()) {
-                $this->line("   -> Sem registos comerciais pendentes. Enviando pacote de verificação (heartbeat)...");
+                $this->line("   -> Sem transações comerciais pendentes. Enviando pacote de alinhamento de catálogo e status...");
             } else {
                 $this->line("   -> Pendentes: <info>{$pendingSales->count()} vendas</info>, <info>{$pendingMovements->count()} movimentos de stock</info>.");
             }
 
-            // 3. Montar Carga Útil Idempotente
+            // 5. Montar Carga Útil Idempotente
             $salesPayload = [];
             foreach ($pendingSales as $sale) {
                 $offlineId = $sale->offline_id ?: ('OFF-' . $sale->id . '-' . $sale->created_at->timestamp);
@@ -157,6 +194,8 @@ class SyncPushCommand extends Command
                 'tenant_id'       => $tenant->id,
                 'tenant_slug'     => $tenant->slug,
                 'source_instance' => gethostname() ?: 'local-machine',
+                'categories'      => $localCategories,
+                'products'        => $localProducts,
                 'sales'           => $salesPayload,
                 'stock_movements' => $movementsPayload,
             ];

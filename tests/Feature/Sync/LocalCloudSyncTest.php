@@ -4,6 +4,7 @@ namespace Tests\Feature\Sync;
 
 use App\Models\Branch;
 use App\Models\Category;
+use App\Models\LicenseKey;
 use App\Models\Plan;
 use App\Models\Product;
 use App\Models\Role;
@@ -347,6 +348,95 @@ class LocalCloudSyncTest extends TestCase
             'tenant_id' => $this->tenant->id,
             'key'       => 'cloud_sync_url',
             'value'     => 'https://custom-cloud.zbizplus.com/api/sync/ingest',
+        ]);
+    }
+
+    public function test_verify_license_endpoint_returns_tenant_and_sync_config(): void
+    {
+        $licenseKey = 'ZBIZ-TEST-VERI-FY99-0001';
+        $license = LicenseKey::create([
+            'tenant_id'  => $this->tenant->id,
+            'plan_id'    => $this->tenant->plan_id ?? 1,
+            'key_code'   => $licenseKey,
+            'mode'       => 'local_online',
+            'status'     => 'active',
+            'starts_at'  => now()->subDay(),
+            'expires_at' => now()->addYear(),
+        ]);
+
+        $response = $this->postJson(route('sync.verify_license'), [
+            'license_key' => $licenseKey,
+        ]);
+
+        $response->assertOk()
+            ->assertJson([
+                'valid'   => true,
+                'license' => [
+                    'key_code' => $licenseKey,
+                    'status'   => 'active',
+                ],
+                'tenant'  => [
+                    'slug' => $this->tenant->slug,
+                    'name' => $this->tenant->name,
+                ],
+            ])
+            ->assertJsonStructure([
+                'valid', 'license', 'tenant', 'plan', 'sync_config' => ['ingest_url', 'sync_token']
+            ]);
+    }
+
+    public function test_sync_ingest_upserts_categories_and_products(): void
+    {
+        $payload = [
+            'tenant_slug' => $this->tenant->slug,
+            'categories'  => [
+                [
+                    'name'        => 'Bebidas e Refrescos',
+                    'description' => 'Sucos, refrigerantes e águas',
+                    'type'        => 'product',
+                    'is_active'   => true,
+                ]
+            ],
+            'products'    => [
+                [
+                    'name'           => 'Suco de Manga 1L',
+                    'barcode'        => '6001234567890',
+                    'sku'            => 'SUCO-MANGA-1L',
+                    'category_name'  => 'Bebidas e Refrescos',
+                    'selling_price'  => 85.00,
+                    'purchase_price' => 50.00,
+                    'stock_quantity' => 20,
+                    'unit'           => 'garrafa',
+                    'is_active'      => true,
+                ]
+            ],
+            'sales'           => [],
+            'stock_movements' => [],
+        ];
+
+        $response = $this->withHeaders([
+            'X-Sync-Token' => $this->syncToken,
+        ])->postJson(route('sync.ingest'), $payload);
+
+        $response->assertOk()
+            ->assertJson([
+                'success' => true,
+                'summary' => [
+                    'categories' => ['received' => 1, 'upserted' => 1],
+                    'products'   => ['received' => 1, 'upserted' => 1],
+                ]
+            ]);
+
+        $this->assertDatabaseHas('categories', [
+            'tenant_id' => $this->tenant->id,
+            'name'      => 'Bebidas e Refrescos',
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'tenant_id' => $this->tenant->id,
+            'barcode'   => '6001234567890',
+            'sku'       => 'SUCO-MANGA-1L',
+            'name'      => 'Suco de Manga 1L',
         ]);
     }
 }

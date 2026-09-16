@@ -618,7 +618,7 @@
             </div>
 
             <!-- Status Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
                     <span class="text-[10px] uppercase font-bold text-slate-400 block">Vendas Pendentes de Envio</span>
                     <div class="text-2xl font-black text-white mt-1">
@@ -631,7 +631,7 @@
                 </div>
 
                 <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
-                    <span class="text-[10px] uppercase font-bold text-slate-400 block">Movimentos de Stock Pendentes</span>
+                    <span class="text-[10px] uppercase font-bold text-slate-400 block">Movimentos de Stock</span>
                     <div class="text-2xl font-black text-white mt-1">
                         {{ $pendingSyncMovements ?? 0 }}
                     </div>
@@ -642,14 +642,47 @@
                 </div>
 
                 <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
-                    <span class="text-[10px] uppercase font-bold text-slate-400 block">Última Sincronização Concluída</span>
-                    <div class="text-sm font-black text-white mt-2 font-mono">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 block">Catálogo no Servidor</span>
+                    <div class="text-2xl font-black text-white mt-1">
+                        {{ $totalLocalProducts ?? 0 }} <span class="text-xs font-normal text-slate-400">artigos</span>
+                    </div>
+                    <span class="text-[11px] text-teal-400 mt-1 block font-medium">
+                        <i class="fa-solid fa-tags mr-1"></i> {{ $totalLocalCategories ?? 0 }} categorias ativas
+                    </span>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 block">Última Sincronização</span>
+                    <div class="text-sm font-black text-white mt-2 font-mono truncate">
                         {{ $lastSyncAt ?? 'Ainda não sincronizado' }}
                     </div>
                     <span class="text-[11px] text-slate-400 mt-1 block truncate" title="{{ $settings['cloud_sync_url'] ?? config('services.sync.cloud_url') }}">
-                        <i class="fa-solid fa-server text-teal-400 mr-1"></i> {{ \Illuminate\Support\Str::limit($settings['cloud_sync_url'] ?? config('services.sync.cloud_url'), 35) }}
+                        <i class="fa-solid fa-server text-teal-400 mr-1"></i> {{ \Illuminate\Support\Str::limit($settings['cloud_sync_url'] ?? config('services.sync.cloud_url'), 25) }}
                     </span>
                 </div>
+            </div>
+
+            <!-- Zero-Config License & Auto-Sync Banner -->
+            <div class="p-4 rounded-2xl bg-gradient-to-r from-teal-950/40 via-slate-900 to-slate-950 border border-teal-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-400 flex items-center justify-center text-lg flex-shrink-0">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold text-white flex items-center gap-2">
+                            <span>Ativação Zero-Config (Nuvem ➔ Local)</span>
+                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-teal-500/10 text-teal-300 border border-teal-500/30">
+                                {{ $activeLicenseKey?->key_code ?? 'Sem licença ativa' }}
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">
+                            Basta colar a Chave de Licença emitida pelo dono na consola da Nuvem na tela de ativação para ligar o sync automaticamente.
+                        </p>
+                    </div>
+                </div>
+                <a href="{{ route('license.activate') }}" class="px-4 py-2 rounded-xl bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 border border-teal-500/30 text-xs font-bold transition flex items-center gap-1.5 flex-shrink-0">
+                    <i class="fa-solid fa-key"></i> Ativar com Chave da Nuvem
+                </a>
             </div>
 
             <!-- Formulário de Configuração de Ligação com a Nuvem -->

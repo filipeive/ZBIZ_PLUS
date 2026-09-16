@@ -47,11 +47,23 @@ class AdminController extends Controller
             ->where('tenant_id', $tenant?->id)
             ->whereNull('synced_at')
             ->count();
+        $totalLocalCategories = \App\Models\Category::withoutGlobalScopes()
+            ->where('tenant_id', $tenant?->id)
+            ->count();
+        $totalLocalProducts = \App\Models\Product::withoutGlobalScopes()
+            ->where('tenant_id', $tenant?->id)
+            ->count();
+        $activeLicenseKey = \App\Models\LicenseKey::withoutGlobalScopes()
+            ->where('tenant_id', $tenant?->id)
+            ->where('status', 'active')
+            ->latest()
+            ->first();
         $lastSyncAt = \Illuminate\Support\Facades\Cache::get('tenant_' . ($tenant?->id ?? 0) . '_last_sync_push');
 
         return view('settings.index', compact(
             'tenant', 'settings', 'allPermissions', 'rolePermissions', 'backups',
-            'pendingSyncSales', 'pendingSyncMovements', 'lastSyncAt'
+            'pendingSyncSales', 'pendingSyncMovements', 'lastSyncAt',
+            'totalLocalCategories', 'totalLocalProducts', 'activeLicenseKey'
         ));
     }
 

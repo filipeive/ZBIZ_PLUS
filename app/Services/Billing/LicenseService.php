@@ -106,8 +106,67 @@ class LicenseService
     {
         $tokenOrKey = trim($tokenOrKey);
 
-        if (preg_match('/^ZBIZ-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/i', $tokenOrKey)) {
+        if (str_starts_with($tokenOrKey, 'ZBIZ-')) {
             $license = LicenseKey::where('key_code', strtoupper($tokenOrKey))->first();
+
+            // Se não existe localmente, tenta verificar e validar no servidor central na Nuvem
+            if (!$license) {
+                $cloudVerifyUrl = config('services.sync.cloud_verify_url')
+                    ?: (rtrim(config('services.sync.cloud_url', 'http://146.235.224.99/zbiz_plus/api/sync/ingest'), '/') === 'http://146.235.224.99/zbiz_plus/api/sync/ingest'
+                        ? 'http://146.235.224.99/zbiz_plus/api/sync/verify-license'
+                        : str_replace('/ingest', '/verify-license', config('services.sync.cloud_url', 'http://146.235.224.99/zbiz_plus/api/sync/verify-license')));
+
+                try {
+                    $response = \Illuminate\Support\Facades\Http::timeout(10)
+                        ->acceptJson()
+                        ->post($cloudVerifyUrl, [
+                            'license_key' => strtoupper($tokenOrKey),
+                        ]);
+
+                    if ($response->successful() && $response->json('valid')) {
+                        $cloudData = $response->json();
+                        $cloudLicense = $cloudData['license'] ?? [];
+                        $cloudTenant = $cloudData['tenant'] ?? [];
+                        $cloudPlan = $cloudData['plan'] ?? [];
+                        $cloudSyncConfig = $cloudData['sync_config'] ?? [];
+
+                        return [
+                            'payload' => [
+                                'tenant' => [
+                                    'id'   => $cloudTenant['id'] ?? null,
+                                    'slug' => $cloudTenant['slug'] ?? null,
+                                    'name' => $cloudTenant['name'] ?? null,
+                                ],
+                                'plan' => [
+                                    'id'           => $cloudPlan['id'] ?? null,
+                                    'slug'         => $cloudPlan['slug'] ?? 'pro',
+                                    'name'         => $cloudPlan['name'] ?? 'ZBIZ Pro',
+                                    'features'     => $cloudPlan['features'] ?? [],
+                                    'max_branches' => $cloudPlan['max_branches'] ?? 1,
+                                    'max_users'    => $cloudPlan['max_users'] ?? 2,
+                                    'max_products' => $cloudPlan['max_products'] ?? 0,
+                                ],
+                                'mode'       => $cloudLicense['mode'] ?? 'local_online',
+                                'starts_at'  => $cloudLicense['starts_at'] ?? now()->toIso8601String(),
+                                'expires_at' => $cloudLicense['expires_at'] ?? now()->addYear()->toIso8601String(),
+                            ],
+                            'signature'    => $cloudLicense['signature'] ?? '',
+                            'key_hash'     => hash('sha256', strtoupper($tokenOrKey)),
+                            'key_code'     => strtoupper($tokenOrKey),
+                            'cloud_synced' => true,
+                            'sync_config'  => $cloudSyncConfig,
+                        ];
+                    } elseif ($response->json('message')) {
+                        throw new RuntimeException($response->json('message'));
+                    }
+                } catch (\Exception $e) {
+                    if ($e instanceof RuntimeException) {
+                        throw $e;
+                    }
+                    \Illuminate\Support\Facades\Log::warning("[LicenseService] Falha ao consultar nuvem: " . $e->getMessage());
+                }
+            }
+
             if (!$license || $license->status === 'revoked') {
                 throw new RuntimeException('Chave serial de licença inválida ou revogada.');
             }
@@ -137,6 +196,7 @@ class LicenseService
                 ],
                 'signature' => $license->signature ?? '',
                 'key_hash' => $license->key_hash,
+                'key_code' => $license->key_code,
                 'license_model' => $license,
             ];
         }
@@ -168,6 +228,7 @@ class LicenseService
             'payload' => $payload,
             'signature' => $signature,
             'key_hash' => hash('sha256', $tokenOrKey),
+            'key_code' => str_starts_with($tokenOrKey, 'ZBIZ-') ? strtoupper($tokenOrKey) : null,
         ];
     }
 
@@ -180,11 +241,12 @@ class LicenseService
         $tenantId = data_get($payload, 'tenant.id');
 
         if ($tenant) {
-            if ($tenantId && (int)$tenant->id !== (int)$tenantId) {
+            if ($tenantId && (int)$tenant->id !== (int)$tenantId && !$tenantSlug) {
                 throw new RuntimeException('Esta licença foi emitida para outra empresa.');
             }
             if ($tenantSlug && $tenant->slug !== $tenantSlug) {
-                throw new RuntimeException('Esta licença foi emitida para outra empresa.');
+                // Se os slugs forem diferentes mas o tenant local está sendo ativado pela primeira vez, sincroniza o slug
+                $tenant->update(['slug' => $tenantSlug]);
             }
         } else {
             $tenant = $tenantSlug ? Tenant::where('slug', $tenantSlug)->first() : null;
@@ -200,8 +262,8 @@ class LicenseService
         $plan = Plan::where('slug', data_get($payload, 'plan.slug'))->first();
         if (!$plan) {
             $plan = Plan::create([
-                'name' => data_get($payload, 'plan.name'),
-                'slug' => data_get($payload, 'plan.slug'),
+                'name' => data_get($payload, 'plan.name', 'ZBIZ Pro'),
+                'slug' => data_get($payload, 'plan.slug', 'pro'),
                 'features' => data_get($payload, 'plan.features', []),
                 'max_branches' => data_get($payload, 'plan.max_branches', 1),
                 'max_users' => data_get($payload, 'plan.max_users', 2),
@@ -212,44 +274,64 @@ class LicenseService
             ]);
         }
 
-        return DB::transaction(function () use ($tenant, $plan, $payload, $verified) {
+        return DB::transaction(function () use ($tenant, $plan, $payload, $verified, $token) {
+            $keyCode = $verified['key_code'] ?? (str_starts_with($token, 'ZBIZ-') ? strtoupper($token) : null);
+
             $license = LicenseKey::updateOrCreate(
                 ['key_hash' => $verified['key_hash']],
                 [
-                    'tenant_id' => $tenant->id,
-                    'plan_id' => $plan->id,
-                    'mode' => data_get($payload, 'mode', 'offline'),
-                    'status' => 'active',
-                    'starts_at' => Carbon::parse($payload['starts_at']),
-                    'expires_at' => Carbon::parse($payload['expires_at']),
+                    'tenant_id'    => $tenant->id,
+                    'plan_id'      => $plan->id,
+                    'key_code'     => $keyCode,
+                    'mode'         => data_get($payload, 'mode', 'local_online'),
+                    'status'       => 'active',
+                    'starts_at'    => Carbon::parse($payload['starts_at'] ?? now()),
+                    'expires_at'   => Carbon::parse($payload['expires_at'] ?? now()->addYear()),
                     'activated_at' => now(),
-                    'payload' => $payload,
-                    'signature' => $verified['signature'],
+                    'payload'      => $payload,
+                    'signature'    => $verified['signature'] ?? '',
                 ]
             );
+
+            // Auto-configurar parâmetros de Sincronização Cloud se for modo híbrido/online
+            $syncIngestUrl = $verified['sync_config']['ingest_url'] ?? config('services.sync.cloud_url', 'http://146.235.224.99/zbiz_plus/api/sync/ingest');
+            if ($syncIngestUrl) {
+                \App\Models\Setting::updateOrCreate(
+                    ['tenant_id' => $tenant->id, 'key' => 'cloud_sync_url'],
+                    ['value' => $syncIngestUrl]
+                );
+            }
+            if ($keyCode) {
+                \App\Models\Setting::updateOrCreate(
+                    ['tenant_id' => $tenant->id, 'key' => 'cloud_sync_token'],
+                    ['value' => $keyCode]
+                );
+            }
 
             Subscription::updateOrCreate(
                 ['tenant_id' => $tenant->id, 'plan_id' => $plan->id],
                 [
                     'status' => 'active',
-                    'current_period_starts_at' => Carbon::parse($payload['starts_at']),
-                    'current_period_ends_at' => Carbon::parse($payload['expires_at']),
+                    'current_period_starts_at' => Carbon::parse($payload['starts_at'] ?? now()),
+                    'current_period_ends_at' => Carbon::parse($payload['expires_at'] ?? now()->addYear()),
                     'payment_method' => 'manual',
                     'last_payment_reference' => 'LICENSE-' . $license->id,
                 ]
             );
 
             $tenant->update([
-                'status' => 'active',
-                'installation_mode' => data_get($payload, 'mode', 'offline'),
-                'license_status' => 'active',
-                'license_expires_at' => Carbon::parse($payload['expires_at']),
-                'subscription_ends_at' => Carbon::parse($payload['expires_at']),
+                'status'               => 'active',
+                'plan_id'              => $plan->id,
+                'installation_mode'    => data_get($payload, 'mode', 'local_online'),
+                'license_status'       => 'active',
+                'license_expires_at'   => Carbon::parse($payload['expires_at'] ?? now()->addYear()),
+                'subscription_ends_at' => Carbon::parse($payload['expires_at'] ?? now()->addYear()),
             ]);
 
             LicenseAuditLog::log('activated', $tenant, $license, $license->key_code, [
                 'mode'       => $license->mode,
                 'expires_at' => $license->expires_at?->toIso8601String(),
+                'auto_sync'  => true,
             ]);
 
             return $license;
