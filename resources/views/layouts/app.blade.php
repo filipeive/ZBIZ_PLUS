@@ -2,8 +2,14 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="light">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ZBIZ+">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
 
     @php
         $theme = tenant_theme();
@@ -1799,7 +1805,7 @@
             </header>
 
             <!-- Main Content Scroll Area -->
-            <main class="app-main flex-1 overflow-y-auto p-4 sm:p-8">
+            <main class="app-main flex-1 overflow-y-auto p-4 sm:p-8 pb-28 lg:pb-8">
                 
                 <!-- Alerta Global de Expiração / Suspensão & Semáforo Preventivo -->
                 @php
@@ -1912,12 +1918,61 @@
         </div>
     </div>
 
+    <!-- Mobile PWA Bottom Navigation Bar (Smartphones & Tablets <= 1024px) -->
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-xl border-t border-slate-800/80 px-3 py-2 flex items-center justify-around text-slate-400 shadow-2xl transition-all pb-[max(0.6rem,env(safe-area-inset-bottom))]">
+        <a href="{{ route('dashboard.index') }}" 
+           class="flex flex-col items-center justify-center gap-1 py-1 px-2.5 rounded-xl transition {{ request()->routeIs('dashboard*') ? 'text-emerald-400 font-bold' : 'hover:text-slate-200' }}">
+            <i class="fa-solid fa-chart-pie text-lg"></i>
+            <span class="text-[10px]">Início</span>
+        </a>
+
+        <a href="{{ route('products.index') }}" 
+           class="flex flex-col items-center justify-center gap-1 py-1 px-2.5 rounded-xl transition {{ request()->routeIs('products*') ? 'text-emerald-400 font-bold' : 'hover:text-slate-200' }}">
+            <i class="fa-solid fa-boxes-stacked text-lg"></i>
+            <span class="text-[10px]">Stock</span>
+        </a>
+
+        <!-- Botão Central de Ação Rápida: Ponto de Venda (PDV) -->
+        <a href="{{ route('pos.index') }}" 
+           class="flex flex-col items-center justify-center -mt-5 bg-gradient-to-tr from-emerald-600 to-teal-500 text-white w-14 h-14 rounded-full shadow-lg shadow-emerald-500/40 border-4 border-slate-950 active:scale-95 transition-transform"
+           title="Abrir PDV / Caixa">
+            <i class="fa-solid fa-cash-register text-xl"></i>
+            <span class="text-[8px] font-black uppercase tracking-wider mt-0.5">PDV</span>
+        </a>
+
+        <a href="{{ route('sales.index') }}" 
+           class="flex flex-col items-center justify-center gap-1 py-1 px-2.5 rounded-xl transition {{ request()->routeIs('sales*') ? 'text-emerald-400 font-bold' : 'hover:text-slate-200' }}">
+            <i class="fa-solid fa-file-invoice-dollar text-lg"></i>
+            <span class="text-[10px]">Vendas</span>
+        </a>
+
+        <button @click="sidebarOpen = !sidebarOpen" 
+                type="button" 
+                class="flex flex-col items-center justify-center gap-1 py-1 px-2.5 rounded-xl transition hover:text-slate-200 cursor-pointer"
+                title="Abrir Menu Lateral">
+            <i class="fa-solid fa-bars-staggered text-lg"></i>
+            <span class="text-[10px]">Menu</span>
+        </button>
+    </nav>
+
     <!-- Toast Notifications -->
     @include('partials.toasts')
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('{{ asset("sw.js") }}')
+                    .then(reg => console.log('ZBIZ+ PWA ServiceWorker activo:', reg.scope))
+                    .catch(err => console.warn('ZBIZ+ PWA ServiceWorker indisponível:', err));
+            });
+        }
+    </script>
+    
     @stack('scripts')
 </body>
 </html>

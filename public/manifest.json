@@ -1,0 +1,53 @@
+{
+  "name": "ZBIZ+ Gestão Empresarial & Farmácia",
+  "short_name": "ZBIZ+",
+  "description": "Sistema ERP Híbrido, PDV e Gestão Farmacêutica em Moçambique",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#090d16",
+  "theme_color": "#0f172a",
+  "lang": "pt-MZ",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ponto de Venda (PDV)",
+      "short_name": "PDV",
+      "description": "Abrir caixa e operar vendas rápidas",
+      "url": "/pos",
+      "icons": [{ "src": "/favicon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Catálogo de Produtos & Farmácia",
+      "short_name": "Produtos",
+      "description": "Consultar stock e medicamentos",
+      "url": "/products",
+      "icons": [{ "src": "/favicon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Painel de Controlo",
+      "short_name": "Dashboard",
+      "description": "Visão executiva de faturamento",
+      "url": "/dashboard",
+      "icons": [{ "src": "/favicon.png", "sizes": "96x96" }]
+    }
+  ]
+}

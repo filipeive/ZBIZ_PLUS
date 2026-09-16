@@ -445,6 +445,93 @@ class AdminController extends Controller
     }
 
     /**
+     * Resolve a URL do endpoint de upload de backup na nuvem.
+     */
+    private function resolveCloudBackupUrl(?string $configuredUrl = null): string
+    {
+        $url = $configuredUrl ?: config('services.sync.cloud_url', 'http://146.235.224.99/zbiz_plus/api/sync/ingest');
+        if (str_contains($url, '/api/sync/ingest')) {
+            return str_replace('/api/sync/ingest', '/api/sync/backup-upload', $url);
+        }
+        return rtrim($url, '/') . '/api/sync/backup-upload';
+    }
+
+    /**
+     * Envia um ficheiro de backup local existente para a Nuvem ZBIZ+.
+     */
+    public function pushBackupToCloud($filename)
+    {
+        try {
+            $filename = basename($filename);
+            $backupPath = storage_path('app/backups/' . $filename);
+
+            if (!\Illuminate\Support\Facades\File::exists($backupPath)) {
+                return redirect()->route('admin.settings', ['tab' => 'backups'])
+                    ->with('error', 'Ficheiro de backup não encontrado localmente.');
+            }
+
+            $tenant = current_tenant();
+            $cloudUrl = ($tenant ? \App\Models\Setting::where('tenant_id', $tenant->id)->where('key', 'cloud_sync_url')->value('value') : null)
+                ?: config('services.sync.cloud_url', 'http://146.235.224.99/zbiz_plus/api/sync/ingest');
+
+            $uploadUrl = $this->resolveCloudBackupUrl($cloudUrl);
+
+            $syncToken = ($tenant ? \App\Models\Setting::where('tenant_id', $tenant->id)->where('key', 'cloud_sync_token')->value('value') : null)
+                ?: config('services.sync.token', env('SYNC_TOKEN', 'zbiz_sync_default_token'));
+
+            $response = \Illuminate\Support\Facades\Http::timeout(120)
+                ->withHeaders([
+                    'X-Sync-Token' => $syncToken,
+                    'Accept'       => 'application/json',
+                ])
+                ->attach('backup_file', file_get_contents($backupPath), $filename)
+                ->post($uploadUrl, [
+                    'tenant_id' => $tenant?->id ?? 1,
+                    'filename'  => $filename,
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $msg = $data['message'] ?? 'Backup enviado com sucesso para a Nuvem ZBIZ+!';
+                return redirect()->route('admin.settings', ['tab' => 'backups'])
+                    ->with('success', '☁️ ' . $msg . ' (' . $filename . ')');
+            }
+
+            $errorMsg = $response->json('message') ?? 'O servidor de nuvem respondeu com código ' . $response->status();
+            return redirect()->route('admin.settings', ['tab' => 'backups'])
+                ->with('error', 'Falha ao enviar backup para a Nuvem: ' . $errorMsg);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Erro ao enviar backup para a nuvem:', ['error' => $e->getMessage()]);
+            return redirect()->route('admin.settings', ['tab' => 'backups'])
+                ->with('error', 'Erro de comunicação ao enviar backup para a Nuvem: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Gera um novo backup e envia-o imediatamente para a Nuvem.
+     */
+    public function createAndPushBackup(Request $request)
+    {
+        // 1. Cria o backup chamando createBackup internamente
+        $this->createBackup($request);
+
+        // 2. Localiza o ficheiro mais recente gerado
+        $backupPath = storage_path('app/backups');
+        $files = \Illuminate\Support\Facades\File::files($backupPath);
+        if (empty($files)) {
+            return redirect()->route('admin.settings', ['tab' => 'backups'])
+                ->with('error', 'Falha ao localizar o ficheiro de backup gerado.');
+        }
+
+        // Ordenar por data decrescente
+        usort($files, fn($a, $b) => $b->getMTime() <=> $a->getMTime());
+        $latestFile = $files[0]->getFilename();
+
+        // 3. Enviar para a nuvem
+        return $this->pushBackupToCloud($latestFile);
+    }
+
+    /**
      * Disparo manual de Sincronização Push da Máquina Local para a Nuvem.
      */
     public function syncPush(Request $request)

@@ -118,6 +118,17 @@ Plano [pharmacy_plus]: pharmacy_plus
 * Cria as categorias de farmácia ANARME e os caixas financeiros zerados.
 * Deixa o inventário de produtos e o histórico de vendas **100% limpos**.
 
+#### Passo 3: Importar o Catálogo Farmacêutico Nacional (Moçambique / ANARME / Art. 9º CIVA)
+Para que a farmácia não precise cadastrar manualmente centenas de medicamentos comuns do zero, execute:
+```bash
+php artisan zbiz:seed-pharma-catalog
+```
+* **O que faz:** Importa instantaneamente mais de 60 medicamentos mais consumidos no país (Coartem, Paracetamol, Amoxicilina, Azitromicina, Amlodipina, Metformina, Sais SRO, etc.) com suas substâncias ativas (DCI), dosagens e enquadramento fiscal no **Artigo 9º do CIVA** (Isento de IVA).
+* **Opção com Stock Zerado (Contagem Inicial):** Se a farmácia quiser fazer a contagem física do stock sem quantidades predefinidas:
+  ```bash
+  php artisan zbiz:seed-pharma-catalog --no-stock
+  ```
+
 ---
 
 ## 3. Instalação em Computador Windows (Terminal de Balcão / Caixa)
@@ -321,7 +332,39 @@ Para imprimir faturas em rolo de 80mm ou 58mm sem abrir janelas de confirmação
 
 ---
 
-## 11. Contactos de Assistência e Suporte
+## 11. Cópia de Segurança e Backup na Nuvem ZBIZ+
+
+O ZBIZ+ possui redundância e salvaguarda completa dos dados:
+
+1. **Geração Manual de Backup Local**:
+   - Aceda a **Definições > Backups** (`/settings?tab=backups`).
+   - Clique em **"Criar Backup Local (SQL)"** para descarregar o dump da base de dados para a sua máquina.
+2. **Envio Direto para a Nuvem Central**:
+   - Na lista de backups, clique no botão **"Enviar p/ Nuvem"** com ícone de nuvem.
+   - Ou clique em **"Criar & Enviar p/ Nuvem"** para criar e transmitir instantaneamente uma cópia criptografada para o cofre seguro no servidor central (`146.235.224.99`).
+3. **Backup Automático via Linha de Comandos**:
+   - Pode ser agendado no agendador de tarefas do Windows ou Cron do Linux:
+     ```bash
+     php artisan zbiz:backup-cloud-push --create
+     ```
+
+---
+
+## 12. Acesso Móvel & Instalação PWA no Smartphone / Tablet
+
+O ZBIZ+ é uma **Progressive Web App (PWA)** totalmente adaptada para telemóveis Android e iOS (iPhone):
+
+1. **Como Instalar no Telemóvel**:
+   - Abra o navegador (Chrome no Android ou Safari no iPhone) e aceda ao link do sistema: `http://146.235.224.99/zbiz_plus`.
+   - **No Chrome (Android):** Toque nos 3 pontinhos e selecione **"Instalar aplicação"** ou toque no banner que surge no rodapé.
+   - **No Safari (iOS):** Toque no botão de Partilha (quadrado com seta para cima) e selecione **"Adicionar ao Ecrã Principal"**.
+2. **Bottom Navigation Bar (Navegação com o Polegar)**:
+   - Em ecrãs móveis, o sistema exibe uma barra inferior fixa com 5 botões de acesso rápido: **Início (Dashboard)**, **Stock**, **PDV (Caixa Central)**, **Vendas** e **Menu**.
+   - O botão central de **PDV** abre o caixa em modo otimizado para toque rápido sem atrasos.
+
+---
+
+## 13. Contactos de Assistência e Suporte
 
 A equipa técnica da **Fdsmultiservices** está disponível para apoio presencial e remoto:
 

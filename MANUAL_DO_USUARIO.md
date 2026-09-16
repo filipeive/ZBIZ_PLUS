@@ -1,6 +1,6 @@
 # 📖 Manual do Usuário — ZBIZ+ Enterprise Cloud & POS Suite
 
-**Versão 1.0.20 — Guia Completo para Gestores, Operadores de Caixa e Administradores**  
+**Versão 1.0.22 — Guia Completo para Gestores, Operadores de Caixa e Administradores**  
 **Desenvolvido por:** Fdsmultiservices  
 **Suporte Técnico Oficial:** (+258) 86 213 4230 | (+258) 84 724 0296 | fdsmultiservices@gmail.com  
 **Servidor em Produção (Nuvem):** [http://146.235.224.99/zbiz_plus](http://146.235.224.99/zbiz_plus)  
@@ -188,6 +188,16 @@ Para farmácias, drogarias e postos de medicamentos:
   - Nome, NUIT e BI do Paciente.
   - Livro de Registo de Psicotrópicos e Estupefacientes exportável para a Direcção Provincial de Saúde.
 
+### 8.3 Catálogo Farmacêutico Nacional de Moçambique (ANARME / MISAU)
+* O sistema inclui o catálogo com mais de 60 medicamentos essenciais mais vendidos em Moçambique:
+  - Antimaláricos (Coartem adulto e dispersível infantil, Artefan, Artesunato, Quinino).
+  - Antibióticos de largo espectro (Amoxicilina cápsulas e xarope, Clavulanato, Azitromicina, Ciprofloxacina, Doxiciclina, Ceftriaxona).
+  - Analgésicos, antipiréticos e AINEs (Paracetamol comps e pediátrico, Ibuprofeno, Diclofenac, Aspirina Cardio).
+  - Medicamentos para Hipertensão e Diabetes (Amlodipina, Enalapril, Captopril, Metformina, Glibenclamida).
+  - Suplementos materno-infantis (Sulfato Ferroso + Ácido Fólico, SRO sais de reidratação oral, Zinco dispersível).
+* **Isenção Fiscal Automática:** Todos enquadrados nos termos do **Artigo 9º do CIVA** (taxa 0,00% / Isento de IVA).
+* **Comando de Importação:** `php artisan zbiz:seed-pharma-catalog` (com opção `--no-stock` para contagem física inicial).
+
 ---
 
 ## 9. Módulo Específico: Restaurante, Bar e Cafetaria
@@ -336,12 +346,19 @@ Aceda a **Definições do Sistema** (`/settings`):
   - Recibos Térmicos de Amortização de Dívidas.
   - Relatórios Oficiais de Apuramento de IVA Modelo A.
 
-### 14.2 Gestão de Backups & Cópias de Segurança
+### 14.2 Gestão de Backups & Cópias de Segurança na Nuvem
 Na aba **"6. Backups & Base de Dados"**:
-* **Criar Backup Agora**: Gera com 1 clique um dump SQL integral e criptograficamente íntegro de toda a base de dados do tenant.
-* **Tabela de Histórico**: Visualize o nome do ficheiro (com carimbo de data e hora), tamanho em KB/MB e data de criação.
-* **Descarregar Backup**: Descarregue o ficheiro `.sql` para o seu computador ou pen-drive externa para segurança física dos dados.
-* **Eliminar Backup**: Exclua arquivos antigos quando necessário para manter o armazenamento limpo.
+* **Criar Backup Local (SQL)**: Gera um dump SQL integral e seguro da base de dados no computador local.
+* **Criar & Enviar p/ Nuvem**: Cria o backup e transmite-o automaticamente via API segura e criptografada para o cofre central na Nuvem ZBIZ+.
+* **Enviar p/ Nuvem (por arquivo)**: Na tabela de backups existentes, qualquer cópia gerada pode ser enviada para a Nuvem com 1 clique.
+* **Descarregar Backup**: Descarregue o ficheiro `.sql` para uma pen-drive externa para segurança física.
+* **Eliminar Backup**: Exclua arquivos antigos para manter o disco limpo.
+* **Linha de Comandos**: `php artisan zbiz:backup-cloud-push --create` para rotinas automáticas de salvaguarda.
+
+### 14.3 Aplicação Móvel & PWA (Telemóvel e Tablet)
+* **Instalação Sem Lojas de Apps**: Aceda ao ZBIZ+ no smartphone e toque em "Instalar aplicação" (Chrome) ou "Adicionar ao Ecrã Principal" (Safari).
+* **Bottom Navigation Bar**: Barra inferior otimizada com 5 atalhos de polegar (Início, Stock da Farmácia, Botão Central Flutuante de PDV, Vendas e Menu).
+* **Funcionamento Rápido**: Otimizado com Service Worker nativo para navegação fluida sem travamentos.
 
 ---
 

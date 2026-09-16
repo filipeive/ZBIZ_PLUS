@@ -351,5 +351,6 @@ Route::prefix('payments')->group(function () {
 Route::prefix('sync')->name('sync.')->group(function () {
     Route::post('/ingest', [\App\Http\Controllers\Api\SyncIngestController::class, 'ingest'])->name('ingest');
     Route::post('/verify-license', [\App\Http\Controllers\Api\SyncIngestController::class, 'verifyLicense'])->name('verify_license');
+    Route::post('/backup-upload', [\App\Http\Controllers\Api\SyncIngestController::class, 'uploadBackup'])->name('backup_upload');
 });
 

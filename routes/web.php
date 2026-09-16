@@ -598,8 +598,9 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         Route::get('/settings', [AdminController::class, 'settingsView'])->name('admin.settings');
         Route::post('/settings', [AdminController::class, 'updateSettings'])->name('admin.settings.update');
         Route::get('/api/admin/settings', [AdminController::class, 'getSettings'])->name('admin.settings.get');
-        Route::post('/admin/settings', [AdminController::class, 'saveSettings'])->name('admin.settings.save');
         Route::post('/settings/backups/create', [AdminController::class, 'createBackup'])->name('admin.backup.create');
+        Route::post('/settings/backups/create-and-push', [AdminController::class, 'createAndPushBackup'])->name('admin.backup.create_and_push');
+        Route::post('/settings/backups/{filename}/cloud-push', [AdminController::class, 'pushBackupToCloud'])->name('admin.backup.cloud_push');
         Route::get('/settings/backups/{filename}/download', [AdminController::class, 'downloadBackup'])->name('admin.backup.download');
         Route::delete('/settings/backups/{filename}', [AdminController::class, 'deleteBackup'])->name('admin.backup.delete');
         Route::post('/settings/sync/push', [AdminController::class, 'syncPush'])->name('admin.sync.push');

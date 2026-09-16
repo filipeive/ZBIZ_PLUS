@@ -487,15 +487,23 @@
                         <i class="fa-solid fa-database text-purple-400"></i> Gestão de Backups & Cópias de Segurança
                     </h3>
                     <p class="text-xs text-slate-400 mt-1">
-                        Crie cópias de segurança completas do banco de dados (SQL) sob demanda e descarregue para seu computador com segurança.
+                        Crie cópias de segurança completas do banco de dados (SQL) e envie cópias criptografadas diretamente para o cofre na Nuvem ZBIZ+.
                     </p>
                 </div>
-                <form action="{{ route('admin.backup.create') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-purple-600/25 transition flex items-center gap-2 cursor-pointer">
-                        <i class="fa-solid fa-download"></i> Criar Backup Agora (SQL)
-                    </button>
-                </form>
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <form action="{{ route('admin.backup.create') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs rounded-xl shadow-lg transition flex items-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-download text-purple-400"></i> Criar Backup Local (SQL)
+                        </button>
+                    </form>
+                    <form action="{{ route('admin.backup.create_and_push') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-purple-600/30 transition flex items-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Criar & Enviar p/ Nuvem
+                        </button>
+                    </form>
+                </div>
             </div>
 
             <!-- Tabela de Backups Existentes -->
@@ -519,9 +527,17 @@
                                 <td class="py-3 px-3 font-mono text-slate-400">{{ $b['size'] }}</td>
                                 <td class="py-3 px-3 text-slate-400">{{ $b['date'] }}</td>
                                 <td class="py-3 px-4 text-right whitespace-nowrap">
+                                    <form action="{{ route('admin.backup.cloud_push', $b['filename']) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit" 
+                                                class="px-3 py-1.5 bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 border border-teal-500/20 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 mr-2 cursor-pointer"
+                                                title="Transferir cópia para a Nuvem ZBIZ+">
+                                            <i class="fa-solid fa-cloud-arrow-up"></i> Enviar p/ Nuvem
+                                        </button>
+                                    </form>
                                     <a href="{{ route('admin.backup.download', $b['filename']) }}" 
                                        class="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 mr-2"
-                                       title="Descarregar cópia">
+                                       title="Descarregar cópia para o computador">
                                         <i class="fa-solid fa-download"></i> Descarregar
                                     </a>
                                     <form action="{{ route('admin.backup.delete', $b['filename']) }}" method="POST" class="inline" onsubmit="return confirm('Tem a certeza que deseja eliminar permanentemente este ficheiro de backup?');">

@@ -553,4 +553,71 @@ class SyncIngestController extends Controller
             'movements_results' => $movementsResults,
         ]);
     }
+
+    /**
+     * Recebe upload de ficheiro de backup (.sql ou .sqlite) enviado pelo PDV local.
+     */
+    public function uploadBackup(Request $request): JsonResponse
+    {
+        // 1. Autenticação por Token (Master Token ou Chave de Licença)
+        $providedToken = $request->header('X-Sync-Token')
+            ?? $request->bearerToken()
+            ?? $request->input('sync_token');
+
+        $expectedToken = config('services.sync.token', env('SYNC_TOKEN', 'zbiz_sync_default_token'));
+        $isMasterToken = $providedToken && hash_equals((string)$expectedToken, (string)$providedToken);
+        $licenseTenantId = null;
+
+        if (!$isMasterToken && $providedToken) {
+            $license = \App\Models\LicenseKey::withoutGlobalScopes()
+                ->where('key_code', trim($providedToken))
+                ->whereIn('status', ['active', 'issued'])
+                ->first();
+            if ($license) {
+                $licenseTenantId = $license->tenant_id;
+            }
+        }
+
+        if (!$isMasterToken && !$licenseTenantId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Token de sincronização inválido ou não autorizado.',
+            ], 401);
+        }
+
+        // 2. Validação do Ficheiro de Backup
+        $request->validate([
+            'backup_file' => 'required|file|max:102400', // até 100MB
+            'tenant_id'   => 'nullable|integer',
+            'filename'    => 'nullable|string|max:255',
+        ]);
+
+        $tenantId = $licenseTenantId ?? $request->input('tenant_id') ?? 1;
+        $file = $request->file('backup_file');
+        $originalName = $request->input('filename') ?? $file->getClientOriginalName();
+        $safeName = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $originalName);
+
+        $cloudBackupDir = storage_path("app/cloud_backups/tenant_{$tenantId}");
+        if (!\Illuminate\Support\Facades\File::exists($cloudBackupDir)) {
+            \Illuminate\Support\Facades\File::makeDirectory($cloudBackupDir, 0755, true);
+        }
+
+        $destinationPath = $cloudBackupDir . '/' . $safeName;
+        $file->move($cloudBackupDir, $safeName);
+
+        \Illuminate\Support\Facades\Log::info("Backup na Nuvem recebido com sucesso", [
+            'tenant_id' => $tenantId,
+            'filename'  => $safeName,
+            'size'      => \Illuminate\Support\Facades\File::size($destinationPath),
+        ]);
+
+        return response()->json([
+            'success'     => true,
+            'message'     => 'Backup recebido e armazenado com sucesso na Nuvem ZBIZ+!',
+            'filename'    => $safeName,
+            'size_bytes'  => \Illuminate\Support\Facades\File::size($destinationPath),
+            'uploaded_at' => now()->toIso8601String(),
+        ]);
+    }
 }
+
