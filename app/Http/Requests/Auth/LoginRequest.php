@@ -27,7 +27,8 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'login' => ['sometimes', 'required', 'string'],
+            'email' => ['sometimes', 'required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -41,15 +42,43 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+        $login = trim((string) $this->input('login', $this->input('email')));
+        $password = (string) $this->input('password');
 
-            throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
-            ]);
+        $digitsOnly = preg_replace('/[^0-9]/', '', $login);
+        $phoneCandidates = [];
+        if (!empty($digitsOnly)) {
+            $phoneCandidates[] = $digitsOnly;
+            if (str_starts_with($digitsOnly, '258') && strlen($digitsOnly) >= 11) {
+                $phoneCandidates[] = substr($digitsOnly, 3);
+            } elseif (strlen($digitsOnly) === 9 && in_array(substr($digitsOnly, 0, 2), ['82', '83', '84', '85', '86', '87'])) {
+                $phoneCandidates[] = '258' . $digitsOnly;
+            }
         }
 
-        RateLimiter::clear($this->throttleKey());
+        $user = \App\Models\User::withoutGlobalScopes()
+            ->where(function ($q) use ($login, $phoneCandidates) {
+                $q->where('email', $login)
+                  ->orWhere('name', $login)
+                  ->orWhere('employee_code', $login);
+                if (!empty($phoneCandidates)) {
+                    $q->orWhereIn('phone', $phoneCandidates);
+                }
+            })
+            ->first();
+
+        if ($user && \Illuminate\Support\Facades\Hash::check($password, $user->password)) {
+            Auth::login($user, $this->boolean('remember'));
+            RateLimiter::clear($this->throttleKey());
+            return;
+        }
+
+        RateLimiter::hit($this->throttleKey());
+
+        throw ValidationException::withMessages([
+            'login' => trans('auth.failed'),
+            'email' => trans('auth.failed'),
+        ]);
     }
 
     /**
@@ -68,7 +97,7 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
+            'login' => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
@@ -80,6 +109,7 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        $login = (string) $this->input('login', $this->input('email'));
+        return Str::transliterate(Str::lower($login).'|'.$this->ip());
     }
 }

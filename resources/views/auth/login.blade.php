@@ -79,13 +79,13 @@
                 @csrf
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1.5">E-mail Corporativo</label>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">E-mail, Usuário ou Telemóvel</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 text-sm">
-                            <i class="fa-solid fa-envelope"></i>
+                            <i class="fa-solid fa-user"></i>
                         </span>
-                        <input type="email" name="email" value="{{ old('email') }}" required autofocus
-                               placeholder="seu.email@empresa.co.mz"
+                        <input type="text" name="login" value="{{ old('login', old('email')) }}" required autofocus
+                               placeholder="ex: admin, email@empresa.com ou 841234567"
                                class="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-600 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition">
                     </div>
                 </div>
@@ -118,15 +118,6 @@
                     Entrar no {{ $tenant ? $tenant->name : 'ZBIZ+' }}
                 </button>
             </form>
-
-            @if(!$isOffline)
-                <div class="mt-6 pt-6 border-t border-slate-800/80 text-center">
-                    <p class="text-xs text-slate-400">
-                        Ainda não tem conta empresarial?
-                        <a href="{{ route('register') }}" class="text-emerald-400 font-bold hover:underline ml-1">Fazer Pré-Registo</a>
-                    </p>
-                </div>
-            @endif
         </div>
 
         <!-- Footer Watermark -->

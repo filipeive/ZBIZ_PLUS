@@ -7,14 +7,15 @@
 
 O **ZBIZ+** é uma plataforma empresarial completa de **Gestão Comercial (ERP), Ponto de Venda (POS) e Controlo Financeiro Multi-Tenant**, arquitetada e desenvolvida especificamente para resolver os desafios do comércio, saúde e serviços em **Moçambique**.
 
-* **Versão de Produção Atual:** `1.0.20`
+* **Versão de Produção Atual:** `1.0.21`
 * **Arquitetura:** Monólito Modular de Alta Coesão (Modular Monolith) com isolamento rigoroso por Tenant e Branch.
 * **Stack Tecnológico:**
   * **Backend:** PHP 8.3+, Laravel 12.20.0
   * **Frontend:** Blade Templates, TailwindCSS, Alpine.js 3.x, FontAwesome 6
-  * **Banco de Dados:** MySQL 8.0+ (Produção), SQLite em Memória (Ambiente de Testes Automatizados)
-  * **Segurança:** RBAC via `spatie/laravel-permission`, Autenticação Laravel Breeze, Criptografia SHA-256 HMAC para Licenças Offline
-  * **Suite de Testes:** Pest 3.x / PHPUnit (100% de testes de isolamento de dados aprovados)
+  * **Banco de Dados:** MySQL 8.0+ (Produção), MariaDB 11.x (Local), SQLite em Memória (Testes Automatizados)
+  * **Sessões & Cache:** Drivers em `file` para alta resiliência e velocidade em balcões monomáquina, com tela de diagnóstico de auto-recuperação (`errors.database`).
+  * **Segurança & Autenticação:** Autenticação flexível (Email, Nome de Usuário, Telemóvel e Código de Funcionário), Recuperação de senha por E-mail ou SMS OTP, RBAC via `spatie/laravel-permission`, Soft Deletes para preservação de licenças/certificados, Criptografia SHA-256 HMAC para Licenças Offline
+  * **Suite de Testes:** Pest 3.x / PHPUnit (Testes de isolamento de dados, licensing, sync e fallback 100% aprovados)
 
 ---
 

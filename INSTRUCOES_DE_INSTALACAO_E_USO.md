@@ -175,11 +175,19 @@ O instalador gera instantaneamente na sua Área de Trabalho o atalho **"ZBIZ+ Te
 ### Opção A: Copiar via Pen Drive / Flash (Recomendado para técnicos em campo)
 1. No seu computador principal, copie toda a pasta `ZBIZ_PLUS` para a Pen Drive, **garantindo que a pasta `vendor/` está incluída**.
 2. Cole a pasta no computador Windows do cliente (ex: `C:\ZBIZ_PLUS`).
-3. Instale o **Docker Desktop** (ou o pacote **PHP 8.3 + MySQL / XAMPP**).
+3. Instale o **XAMPP** (ou PHP 8.2+ e MySQL / Docker Desktop).
 4. Abra a pasta `C:\ZBIZ_PLUS` e execute `install-windows.bat`.
-5. Escolha a **Opção [2]** (*Instalar Servidor Local Completo*).
-   - Se tiver Docker: O instalador subirá os contentores do PHP e MySQL automaticamente.
-   - Se tiver PHP/XAMPP: O instalador inicializará as migrações e o servidor na porta `8000`.
+5. Escolha a **Opção [2]** (*Instalar Servidor Local Completo*):
+   - O instalador gera o arquivo `.env` otimizado com `SESSION_DRIVER=file` e `CACHE_STORE=file` (máxima resiliência contra reinicializações).
+   - Executa `php artisan key:generate` e `php artisan migrate --force`.
+   - Cria o atalho oficial **"ZBIZ+ Servidor Local"** na Área de Trabalho do Windows.
+6. **Para Iniciar o Sistema no Dia a Dia**:
+   - Dê 2 cliques no atalho da Área de Trabalho ou no arquivo `iniciar-servidor.bat`.
+   - O inicializador detecta o PHP/XAMPP automaticamente, sobe o servidor na porta `8000` em janela própria e abre o seu navegador no Modo App Nativo (`http://127.0.0.1:8000`).
+
+> [!TIP]
+> **Resiliência a Reinicializações do Computador**:
+> Se o cliente reiniciar o computador e abrir o sistema antes do MySQL arrancar, o ZBIZ+ exibirá a tela amigável **"Base de Dados a Inicializar"** com contador de 10 segundos para reconexão automática, instruções rápidas em português e botão de suporte via WhatsApp.
 
 ### Opção B: Via Git Clone (Se a máquina tiver acesso temporário à internet)
 Abra o terminal (PowerShell) e execute:
@@ -188,7 +196,7 @@ git clone https://github.com/filipeive/ZBIZ_PLUS.git
 cd ZBIZ_PLUS
 .\install-windows.bat
 ```
-Escolha a **Opção [2]**.
+Escolha a **Opção [2]** e, em seguida, inicie com `.\iniciar-servidor.bat`.
 
 ---
 

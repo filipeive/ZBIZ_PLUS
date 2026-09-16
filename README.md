@@ -40,15 +40,19 @@ O ZBIZ+ oferece 4 métodos de arranque adaptados a cada perfil de operação:
 Para postos de venda em farmácias e lojas, o operador não deve navegar com barras de browser, abas ou risco de fechar acidentalmente. Os instaladores configuram o sistema como uma **App Nativa Kiosk** com atalho no ambiente de trabalho e suporte a **impressão térmica silenciosa**.
 
 #### No Windows:
-1. Faça duplo clique no ficheiro:
+1. Para configurar o **Terminal de Caixa** ou instalar o **Servidor Local**, dê duplo clique em:
    ```cmd
    install-windows.bat
    ```
-2. O instalador detectará o Microsoft Edge ou Google Chrome e perguntará:
-   - **URL do Servidor:** Pressione `ENTER` para usar o servidor Nuvem (`http://146.235.224.99/zbiz_plus`) ou digite o IP local.
-   - **Formato:** Modo App (Janela limpa nativa) ou Modo Kiosk Total (Tela cheia travada).
-   - **Inicialização Automática:** Opção de abrir o ZBIZ+ assim que o computador ligar.
-3. Um atalho **"ZBIZ+ Terminal POS"** com o ícone oficial será gerado na Área de Trabalho.
+2. Opções disponíveis:
+   - **`[1] Configurar Terminal POS`**: Cria o atalho de App Nativo na Área de Trabalho conectando à Nuvem (`http://146.235.224.99/zbiz_plus`) ou IP local.
+   - **`[2] Instalar Servidor Local Completo`**: Configura o `.env` com drivers `file` ultrarrápidos e resilientes, roda as migrações e cria o atalho no Desktop.
+   - **`[3] Iniciar Servidor Agora`**: Inicia o servidor local imediatamente.
+3. Para iniciar o servidor local no dia a dia com 1 clique:
+   ```cmd
+   iniciar-servidor.bat
+   ```
+   *(Abre o servidor na porta `8000` em janela própria e carrega o navegador no modo App sem travar o Windows).*
 
 #### No Linux (Ubuntu, Mint, Debian, etc.):
 1. Torne o script executável e execute:

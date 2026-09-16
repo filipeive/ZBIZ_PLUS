@@ -69,13 +69,23 @@ O ZBIZ+ adapta a interface, formulários e regras conforme o setor configurado n
    - **Passo 3**: Criação da Palavra-passe de Acesso.
 3. **Aprovação de Segurança**: O pré-registo é analisado pela equipa da Fdsmultiservices. Assim que aprovado, você recebe um **SMS no seu telemóvel** com as credenciais confirmadas e o link de acesso imediato.
 
-### 3.2 Iniciar Sessão (Login)
+### 3.2 Iniciar Sessão (Login Flexível)
 1. Aceda a `/login`.
-2. Insira o seu e-mail e palavra-passe.
-3. Se a sua empresa estiver ativa ou em período de teste aprovado, você será direcionado para o Dashboard Geral da sua filial.
+2. O sistema suporta autenticação flexível através de múltiplos identificadores no mesmo campo:
+   - **E-mail Corporativo**: ex: `admin@farmacia.co.mz`
+   - **Nome de Usuário**: ex: `caixa1` ou `gestor_balcao`
+   - **Número de Telemóvel**: ex: `841234567` ou `+258841234567`
+   - **Código de Funcionário**: ex: `EMP-001`
+3. Insira a sua palavra-passe de acesso.
+4. Se a sua empresa estiver ativa ou em período de teste aprovado, você será direcionado para o Dashboard Geral ou ecrã de Frente de Caixa (POS).
 
-### 3.3 Recuperação de Acesso
-Caso se esqueça da senha, utilize o link **"Recuperar Palavra-passe"** ou solicite assistência direta via WhatsApp da Fdsmultiservices: `(+258) 86 213 4230`.
+### 3.3 Recuperação de Palavra-passe (E-mail ou SMS com Código OTP)
+Caso se esqueça da palavra-passe:
+1. No ecrã de login, clique em **"Esqueceu a senha?"** (ou aceda a `/forgot-password`).
+2. Digite o seu **E-mail** OU o seu **Número de Telemóvel** cadastrado:
+   - **Se informar o Telemóvel**: O ZBIZ+ envia instantaneamente um **código SMS de 6 dígitos (OTP)** válido por 15 minutos. Você é direcionado para a tela de validação para digitar o código e definir a nova senha de imediato no telemóvel ou computador.
+   - **Se informar o E-mail**: O sistema dispara o link seguro de redefinição para a sua caixa de entrada.
+3. Se necessitar de apoio presencial, utilize o botão de WhatsApp oficial da assistência técnica: `(+258) 86 213 4230`.
 
 ---
 
