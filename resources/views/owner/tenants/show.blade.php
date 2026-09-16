@@ -351,7 +351,31 @@
 
         <!-- License History Table -->
         <div class="xl:col-span-2 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl overflow-hidden space-y-4">
-            <h3 class="text-sm font-black font-heading text-white">Histórico de Chaves & Licenças</h3>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <h3 class="text-sm font-black font-heading text-white">Histórico de Chaves & Licenças</h3>
+                    @if($archivedLicensesCount > 0)
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                            {{ $archivedLicensesCount }} arquivada(s)
+                        </span>
+                    @endif
+                </div>
+
+                <div>
+                    @if($showArchived)
+                        <a href="{{ route('owner.tenants.show', $tenant) }}" 
+                           class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-eye-slash text-slate-400"></i> Ocultar Arquivadas
+                        </a>
+                    @else
+                        <a href="{{ route('owner.tenants.show', [$tenant, 'show_archived' => 1]) }}" 
+                           class="px-3 py-1.5 rounded-xl bg-slate-800/70 hover:bg-slate-800 text-slate-400 hover:text-slate-200 font-bold text-xs border border-slate-800 transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-box-archive text-teal-400"></i> Ver Arquivadas ({{ $archivedLicensesCount }})
+                        </a>
+                    @endif
+                </div>
+            </div>
+
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs">
                     <thead>
@@ -366,9 +390,9 @@
                     </thead>
                     <tbody class="divide-y divide-slate-800/60">
                         @forelse($tenant->licenseKeys as $license)
-                            <tr class="hover:bg-slate-800/30 transition">
+                            <tr class="hover:bg-slate-800/30 transition {{ $license->trashed() ? 'opacity-60 bg-slate-950/40' : '' }}">
                                 <td class="py-3">
-                                    <div class="font-mono font-bold text-emerald-400 flex items-center gap-1.5">
+                                    <div class="font-mono font-bold {{ $license->trashed() ? 'text-slate-400 line-through' : 'text-emerald-400' }} flex items-center gap-1.5">
                                         <span>{{ $license->key_code }}</span>
                                         <button type="button" @click="copyRowKey('{{ $license->key_code }}', {{ $license->id }})" title="Copiar Chave" class="text-slate-400 hover:text-white transition">
                                             <i class="fa-solid" :class="copiedKeyId === {{ $license->id }} ? 'fa-check text-emerald-400' : 'fa-copy text-[11px]'"></i>
@@ -378,9 +402,15 @@
                                 <td class="py-3 font-semibold text-slate-200">{{ $license->plan?->name ?? 'Sem plano' }}</td>
                                 <td class="py-3 text-slate-400">{{ $license->mode }}</td>
                                 <td class="py-3">
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border {{ $license->status === 'active' || $license->status === 'issued' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border-rose-500/30' }}">
-                                        {{ $license->status }}
-                                    </span>
+                                    @if($license->trashed())
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border bg-slate-800 text-slate-400 border-slate-700">
+                                            Arquivada
+                                        </span>
+                                    @else
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border {{ $license->status === 'active' || $license->status === 'issued' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border-rose-500/30' }}">
+                                            {{ $license->status }}
+                                        </span>
+                                    @endif
                                 </td>
                                 <td class="py-3 text-slate-400 font-mono text-[11px]">{{ $license->starts_at?->format('d/m/Y') }} - {{ $license->expires_at?->format('d/m/Y') }}</td>
                                 <td class="py-3 text-right">
@@ -392,7 +422,7 @@
                                             }
                                             $rowSmsMsg = "Olá {$tenant->name}, a sua licença do ZBIZ+ (" . ($license->plan?->name ?? 'Plano Empresarial') . ") está pronta! Código de Ativação: {$license->key_code}. Validade: " . ($license->expires_at?->format('d/m/Y') ?? 'Vitalício') . ". Ativar em: " . url('/license/activate');
                                         @endphp
-                                        @if($destRowPhone)
+                                        @if(!$license->trashed() && $destRowPhone)
                                             <a href="https://wa.me/{{ $destRowPhone }}?text={{ rawurlencode($rowSmsMsg) }}" target="_blank"
                                                class="px-2 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold transition flex items-center gap-1"
                                                title="Enviar dados da licença no WhatsApp">
@@ -415,20 +445,46 @@
                                             <span>PDF</span>
                                         </a>
 
-                                        @if($license->status !== 'revoked')
-                                            <form method="POST" action="{{ route('owner.tenants.licenses.revoke', [$tenant, $license]) }}" onsubmit="return confirm('Tem a certeza que deseja revogar esta licença?')">
+                                        @if($license->trashed())
+                                            <form method="POST" action="{{ route('owner.tenants.licenses.restore', [$tenant, $license->id]) }}" onsubmit="return confirm('Deseja restaurar esta licença arquivada?')">
                                                 @csrf
                                                 @method('PATCH')
-                                                <button class="px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold text-[11px] transition">
-                                                    Revogar
+                                                <button type="submit" class="px-2.5 py-1.5 rounded-lg bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 border border-teal-500/30 font-bold text-[11px] transition flex items-center gap-1" title="Restaurar Licença">
+                                                    <i class="fa-solid fa-trash-arrow-up"></i> Restaurar
                                                 </button>
                                             </form>
+                                        @else
+                                            @if($license->status !== 'revoked')
+                                                <form method="POST" action="{{ route('owner.tenants.licenses.revoke', [$tenant, $license]) }}" onsubmit="return confirm('Tem a certeza que deseja revogar esta licença?')">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold text-[11px] transition" title="Revogar Licença">
+                                                        <i class="fa-solid fa-ban"></i> Revogar
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <form method="POST" action="{{ route('owner.tenants.licenses.reactivate', [$tenant, $license]) }}" onsubmit="return confirm('Deseja reativar esta licença revogada?')">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold text-[11px] transition flex items-center gap-1" title="Reativar Licença">
+                                                        <i class="fa-solid fa-rotate-left"></i> Reactivar
+                                                    </button>
+                                                </form>
+
+                                                <form method="POST" action="{{ route('owner.tenants.licenses.archive', [$tenant, $license]) }}" onsubmit="return confirm('Tem a certeza que deseja arquivar esta licença? Ela será ocultada da lista ativa mantendo os certificados preservados.')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-500/30 font-bold text-[11px] transition flex items-center gap-1" title="Arquivar Licença">
+                                                        <i class="fa-solid fa-box-archive"></i> Arquivar
+                                                    </button>
+                                                </form>
+                                            @endif
                                         @endif
                                     </div>
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="py-10 text-center text-slate-500">Nenhuma licença emitida até o momento.</td></tr>
+                            <tr><td colspan="6" class="py-10 text-center text-slate-500">Nenhuma licença encontrada.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

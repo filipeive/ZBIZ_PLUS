@@ -350,6 +350,30 @@ class LicenseService
         return $license;
     }
 
+    public function reactivate(LicenseKey $license): LicenseKey
+    {
+        $targetStatus = ($license->expires_at && $license->expires_at->isPast()) ? 'expired' : 'active';
+
+        $license->update([
+            'status'     => $targetStatus,
+            'revoked_at' => null,
+        ]);
+
+        if ($license->tenant && $targetStatus === 'active') {
+            $license->tenant->update([
+                'status'             => 'active',
+                'license_status'     => 'active',
+                'license_expires_at' => $license->expires_at,
+            ]);
+        }
+
+        LicenseAuditLog::log('reactivated', $license->tenant, $license, $license->key_code, [
+            'restored_status' => $targetStatus,
+        ]);
+
+        return $license;
+    }
+
     private function splitToken(string $token): array
     {
         $parts = explode('.', trim($token), 2);

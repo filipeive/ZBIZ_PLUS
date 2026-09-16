@@ -287,20 +287,28 @@ class TenantControlCenterController extends Controller
             ->with('success', "Empresa '{$tenant->name}' reativada com sucesso por 1 ano!");
     }
 
-    public function show(Tenant $tenant): View
+    public function show(Request $request, Tenant $tenant): View
     {
         $this->authorizeOwner();
+
+        $showArchived = $request->boolean('show_archived', false);
 
         $tenant->load([
             'branches',
             'users.role',
             'currentSubscription.plan',
-            'licenseKeys' => fn ($query) => $query->with('plan')->latest(),
+            'licenseKeys' => function ($query) use ($showArchived) {
+                if ($showArchived) {
+                    $query->withTrashed();
+                }
+                $query->with('plan')->latest();
+            },
         ]);
 
         $plans = Plan::where('is_active', true)->orderBy('sort_order')->get();
+        $archivedLicensesCount = \App\Models\LicenseKey::onlyTrashed()->where('tenant_id', $tenant->id)->count();
 
-        return view('owner.tenants.show', compact('tenant', 'plans'));
+        return view('owner.tenants.show', compact('tenant', 'plans', 'showArchived', 'archivedLicensesCount'));
     }
 
     public function update(Request $request, Tenant $tenant, LicenseService $licenses): RedirectResponse
@@ -486,7 +494,48 @@ class TenantControlCenterController extends Controller
 
         $licenses->revoke($license);
 
-        return redirect()->route('owner.tenants.show', $tenant)->with('success', 'Licença revogada.');
+        return redirect()->route('owner.tenants.show', $tenant)->with('success', "Licença '{$license->key_code}' revogada com sucesso.");
+    }
+
+    public function reactivateLicense(Tenant $tenant, LicenseKey $license, LicenseService $licenses): RedirectResponse
+    {
+        $this->authorizeOwner();
+
+        abort_unless($license->tenant_id === $tenant->id, 404);
+
+        $licenses->reactivate($license);
+
+        return redirect()->route('owner.tenants.show', $tenant)->with('success', "Licença '{$license->key_code}' reativada com sucesso.");
+    }
+
+    public function archiveLicense(Tenant $tenant, LicenseKey $license): RedirectResponse
+    {
+        $this->authorizeOwner();
+
+        abort_unless($license->tenant_id === $tenant->id, 404);
+
+        $keyCode = $license->key_code;
+        $license->delete();
+
+        \App\Models\LicenseAuditLog::log('archived', $tenant, $license, $keyCode, [
+            'action_by' => auth()->user()?->email,
+        ]);
+
+        return redirect()->route('owner.tenants.show', $tenant)->with('success', "Licença '{$keyCode}' arquivada com sucesso. Foi ocultada da lista ativa mantendo a integridade dos certificados.");
+    }
+
+    public function restoreLicense(Tenant $tenant, int $licenseId): RedirectResponse
+    {
+        $this->authorizeOwner();
+
+        $license = \App\Models\LicenseKey::onlyTrashed()->where('tenant_id', $tenant->id)->findOrFail($licenseId);
+        $license->restore();
+
+        \App\Models\LicenseAuditLog::log('restored', $tenant, $license, $license->key_code, [
+            'action_by' => auth()->user()?->email,
+        ]);
+
+        return redirect()->route('owner.tenants.show', [$tenant, 'show_archived' => 1])->with('success', "Licença '{$license->key_code}' restaurada com sucesso.");
     }
 
     private function authorizeOwner(): void

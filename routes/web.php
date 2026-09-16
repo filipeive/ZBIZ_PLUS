@@ -67,6 +67,9 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         Route::post('/tenants/leave-impersonate', [TenantControlCenterController::class, 'leaveImpersonate'])->name('tenants.leave-impersonate');
         Route::post('/tenants/{tenant}/licenses', [TenantControlCenterController::class, 'issueLicense'])->name('tenants.licenses.issue');
         Route::patch('/tenants/{tenant}/licenses/{license}/revoke', [TenantControlCenterController::class, 'revokeLicense'])->name('tenants.licenses.revoke');
+        Route::patch('/tenants/{tenant}/licenses/{license}/reactivate', [TenantControlCenterController::class, 'reactivateLicense'])->name('tenants.licenses.reactivate');
+        Route::delete('/tenants/{tenant}/licenses/{license}', [TenantControlCenterController::class, 'archiveLicense'])->name('tenants.licenses.archive');
+        Route::patch('/tenants/{tenant}/licenses/{licenseId}/restore', [TenantControlCenterController::class, 'restoreLicense'])->name('tenants.licenses.restore');
         Route::get('/tenants/{tenant}/licenses/{license}/certificate', [TenantControlCenterController::class, 'certificate'])->name('tenants.licenses.certificate');
         Route::get('/tenants/{tenant}/licenses/{license}/certificate-pdf', [TenantControlCenterController::class, 'downloadCertificatePdf'])->name('tenants.licenses.certificate-pdf');
         Route::post('/tenants/{tenant}/simulate-expiration', [TenantControlCenterController::class, 'simulateExpiration'])->name('tenants.simulate-expiration');

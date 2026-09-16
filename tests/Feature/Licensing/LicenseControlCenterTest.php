@@ -294,4 +294,92 @@ class LicenseControlCenterTest extends TestCase
             ->assertSeeText($tenant->name)
             ->assertSeeText($license->key_code);
     }
+
+    public function test_owner_can_reactivate_archive_and_restore_license(): void
+    {
+        config(['license.signing_key' => 'testing-license-secret']);
+        $this->seed(PlanSeeder::class);
+
+        $tenant = Tenant::create([
+            'name' => 'Empresa Teste Reactivacao',
+            'slug' => 'empresa-teste-reactivacao',
+            'business_type' => 'retail',
+            'status' => 'active',
+        ]);
+        $plan = Plan::where('slug', 'pro')->firstOrFail();
+
+        $ownerRole = Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
+        $owner = User::create([
+            'name' => 'Super Dono Gestao',
+            'email' => 'super-dono-gestao@test.com',
+            'password' => bcrypt('password'),
+            'role_id' => $ownerRole->id,
+            'is_active' => true,
+        ]);
+
+        $issued = app(LicenseService::class)->issue(
+            $tenant,
+            $plan,
+            now(),
+            now()->addYear(),
+            'local_online',
+            $owner,
+            $tenant->name
+        );
+
+        $license = LicenseKey::where('tenant_id', $tenant->id)->latest()->firstOrFail();
+
+        // 1. Revogar a licença
+        $this->actingAs($owner)
+            ->patch(route('owner.tenants.licenses.revoke', [$tenant, $license]))
+            ->assertRedirect(route('owner.tenants.show', $tenant));
+
+        $this->assertSame('revoked', $license->fresh()->status);
+        $this->assertNotNull($license->fresh()->revoked_at);
+
+        // 2. Reativar a licença
+        $this->actingAs($owner)
+            ->patch(route('owner.tenants.licenses.reactivate', [$tenant, $license]))
+            ->assertRedirect(route('owner.tenants.show', $tenant));
+
+        $this->assertSame('active', $license->fresh()->status);
+        $this->assertNull($license->fresh()->revoked_at);
+        $this->assertSame('active', $tenant->fresh()->license_status);
+
+        // 3. Revogar novamente para poder arquivar
+        $license->update(['status' => 'revoked', 'revoked_at' => now()]);
+
+        // 4. Arquivar (Soft Delete) a licença
+        $this->actingAs($owner)
+            ->delete(route('owner.tenants.licenses.archive', [$tenant, $license]))
+            ->assertRedirect(route('owner.tenants.show', $tenant));
+
+        $this->assertTrue($license->fresh()->trashed());
+        $this->assertSoftDeleted('license_keys', ['id' => $license->id]);
+
+        $this->flushSession();
+
+        // Não aparece na lista padrão ativa da tabela
+        $this->actingAs($owner)
+            ->get(route('owner.tenants.show', $tenant))
+            ->assertOk()
+            ->assertDontSee('<span>' . $license->key_code . '</span>', false)
+            ->assertSee('Ver Arquivadas (1)');
+
+        // Aparece com o parâmetro show_archived
+        $this->actingAs($owner)
+            ->get(route('owner.tenants.show', [$tenant, 'show_archived' => 1]))
+            ->assertOk()
+            ->assertSee($license->key_code)
+            ->assertSee('Arquivada')
+            ->assertSee('Restaurar');
+
+        // 5. Restaurar a licença arquivada
+        $this->actingAs($owner)
+            ->patch(route('owner.tenants.licenses.restore', [$tenant, $license->id]))
+            ->assertRedirect(route('owner.tenants.show', [$tenant, 'show_archived' => 1]));
+
+        $this->assertFalse($license->fresh()->trashed());
+        $this->assertDatabaseHas('license_keys', ['id' => $license->id, 'deleted_at' => null]);
+    }
 }

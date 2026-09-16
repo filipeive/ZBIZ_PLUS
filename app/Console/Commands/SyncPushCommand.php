@@ -49,6 +49,7 @@ class SyncPushCommand extends Command
         foreach ($tenants as $tenant) {
             $this->line("A verificar registos pendentes para: <comment>{$tenant->name}</comment> (ID: {$tenant->id})...");
 
+            // 1. Buscar Vendas Pendentes
             // 1. Buscar Categorias Locais
             $localCategories = \App\Models\Category::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
@@ -92,6 +93,7 @@ class SyncPushCommand extends Command
                 ->limit($limit)
                 ->get();
 
+            // 2. Buscar Movimentos de Stock Pendentes
             // 4. Buscar Movimentos de Stock Pendentes
             $pendingMovements = StockMovement::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
@@ -103,11 +105,13 @@ class SyncPushCommand extends Command
             $this->line("   -> Catálogo Local: <info>" . count($localCategories) . " categorias</info>, <info>" . count($localProducts) . " produtos</info>.");
 
             if ($pendingSales->isEmpty() && $pendingMovements->isEmpty()) {
+                $this->line("   -> Sem registos comerciais pendentes. Enviando pacote de verificação (heartbeat)...");
                 $this->line("   -> Sem transações comerciais pendentes. Enviando pacote de alinhamento de catálogo e status...");
             } else {
                 $this->line("   -> Pendentes: <info>{$pendingSales->count()} vendas</info>, <info>{$pendingMovements->count()} movimentos de stock</info>.");
             }
 
+            // 3. Montar Carga Útil Idempotente
             // 5. Montar Carga Útil Idempotente
             $salesPayload = [];
             foreach ($pendingSales as $sale) {
