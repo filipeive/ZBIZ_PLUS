@@ -14,7 +14,7 @@ class AdminController extends Controller
      */
     public function settingsView(Request $request)
     {
-        $tenant = current_tenant();
+        $tenant = current_tenant() ?? (auth()->user()?->isSuperAdmin() ? \App\Models\Tenant::first() : null);
         $settings = $this->settingsForTenant($tenant);
         $allPermissions = config('auth_permissions.all_permissions', []);
         $rolePermissions = \App\Services\PermissionService::getRolePermissionsMap($tenant);
@@ -72,7 +72,7 @@ class AdminController extends Controller
      */
     public function updateSettings(Request $request)
     {
-        $tenant = current_tenant();
+        $tenant = current_tenant() ?? (auth()->user()?->isSuperAdmin() ? \App\Models\Tenant::first() : null);
 
         $validated = $request->validate([
             'company_name'          => 'required|string|max:150',
@@ -178,18 +178,17 @@ class AdminController extends Controller
             $settingKeys['cloud_sync_token'] = $request->input('cloud_sync_token') ?? '';
         }
 
+        $tenantId = $tenant?->id ?? 1;
         foreach ($settingKeys as $k => $v) {
-            $attributes = ['key' => $k];
-            if (Schema::hasColumn('settings', 'tenant_id') && $tenant) {
-                $attributes['tenant_id'] = $tenant->id;
-            }
-
-            $values = ['value' => (string)$v];
-            if (Schema::hasColumn('settings', 'tenant_id') && $tenant) {
-                $values['tenant_id'] = $tenant->id;
-            }
-
-            Setting::updateOrCreate($attributes, $values);
+            Setting::updateOrCreate(
+                [
+                    'tenant_id' => $tenantId,
+                    'key'       => $k,
+                ],
+                [
+                    'value'     => (string)$v,
+                ]
+            );
         }
 
         if ($request->filled('tab')) {
@@ -233,17 +232,19 @@ class AdminController extends Controller
     public function saveSettings(Request $request)
     {
         try {
+            $tenantId = current_tenant_id() ?? (auth()->user()?->isSuperAdmin() ? 1 : null);
             foreach ($request->all() as $key => $value) {
                 if (in_array($key, ['_token', 'api_token'])) continue;
-                
-                $attributes = ['key' => $key];
-                $values = ['value' => is_bool($value) ? ($value ? '1' : '0') : $value];
 
-                if (Schema::hasColumn('settings', 'tenant_id')) {
-                    $values['tenant_id'] = current_tenant_id();
-                }
-
-                Setting::updateOrCreate($attributes, $values);
+                Setting::updateOrCreate(
+                    [
+                        'tenant_id' => $tenantId,
+                        'key'       => $key,
+                    ],
+                    [
+                        'value'     => is_bool($value) ? ($value ? '1' : '0') : $value,
+                    ]
+                );
             }
             return response()->json(['message' => 'Configurações salvas com sucesso!']);
         } catch (\Exception $e) {
