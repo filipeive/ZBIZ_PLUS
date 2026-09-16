@@ -2132,7 +2132,7 @@
                 formData.append('products', document.getElementById('debt-items-input').value);
 
                 // Fazer requisição para a rota correta
-                fetch('/debts/from-sale', {
+                fetch('{{ url("debts/from-sale") }}', {
                         method: 'POST',
                         body: formData,
                         headers: {

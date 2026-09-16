@@ -233,7 +233,7 @@ function switchTab(tab) {
 }
 
 function markAsRead(id) {
-    fetch(`/notifications/${id}/read`, {
+    fetch(`{{ url('notifications') }}/${id}/read`, {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -250,7 +250,7 @@ function markAsRead(id) {
 }
 
 function markAllAsRead() {
-    fetch('/notifications/mark-all-read', {
+    fetch('{{ url("notifications/mark-all-read") }}', {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -268,7 +268,7 @@ function markAllAsRead() {
 
 function clearAllNotifications() {
     if(!confirm('Tem certeza que deseja apagar todas as notificações?')) return;
-    fetch('/notifications/clear-all', {
+    fetch('{{ url("notifications/clear-all") }}', {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': '{{ csrf_token() }}',

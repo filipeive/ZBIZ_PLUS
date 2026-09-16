@@ -282,7 +282,7 @@
 <script>
 function updateOrderStatus(orderId, status) {
     if (confirm('Confirmar alteração de status?')) {
-        fetch(`/orders/${orderId}/status`, {
+        fetch(`{{ url('orders') }}/${orderId}/status`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -306,7 +306,7 @@ function updateOrderStatus(orderId, status) {
 
 function cancelOrder(orderId) {
     if (confirm('Tem certeza que deseja cancelar este pedido?')) {
-        fetch(`/orders/${orderId}`, {
+        fetch(`{{ url('orders') }}/${orderId}`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -328,7 +328,7 @@ function cancelOrder(orderId) {
 
 function convertToSale(orderId) {
     if (confirm('Converter este pedido em venda?')) {
-        fetch(`/orders/${orderId}/convert-to-sale`, {
+        fetch(`{{ url('orders') }}/${orderId}/convert-to-sale`, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,

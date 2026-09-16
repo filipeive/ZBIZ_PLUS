@@ -790,7 +790,7 @@
                     try {
                         const controller = new AbortController();
                         const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-                        const res = await fetch('/api/ping?t=' + Date.now(), {
+                        const res = await fetch('{{ url("api/ping") }}?t=' + Date.now(), {
                             method: 'GET',
                             cache: 'no-store',
                             headers: { 'Accept': 'application/json' },
@@ -935,7 +935,7 @@
                             tenant_scope: this.storageScope,
                             _: Date.now()
                         });
-                        const res = await fetch(`/pos/search?${params}`, {
+                        const res = await fetch(`{{ url("pos/search") }}?${params}`, {
                             cache: 'no-store',
                             headers: {
                                 'Accept': 'application/json',
@@ -1124,7 +1124,7 @@
                     }
 
                     try {
-                        const res = await fetch('/pos/sale', {
+                        const res = await fetch('{{ url("pos/sale") }}', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1226,7 +1226,7 @@
 
                     // Telemetria não bloqueante para auditoria no Laravel
                     try {
-                        fetch('/pos/log-offline-fallback', {
+                        fetch('{{ url("pos/log-offline-fallback") }}', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1249,7 +1249,7 @@
                     if (!this.newCustomer.name) return;
                     this.isSavingCustomer = true;
                     try {
-                        const res = await fetch('/customers/quick-store', {
+                        const res = await fetch('{{ url("customers/quick-store") }}', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1436,7 +1436,7 @@
 
                     this.isSyncing = true;
                     try {
-                        const res = await fetch('/pos/sync-offline', {
+                        const res = await fetch('{{ url("pos/sync-offline") }}', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',

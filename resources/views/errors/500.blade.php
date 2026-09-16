@@ -27,7 +27,18 @@
             </a>
             <button onclick="window.history.back()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
                 Voltar
+        <div class="pt-2 flex flex-col gap-2.5">
+            <button onclick="window.location.reload()" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md active:scale-95 transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-rotate-right"></i> Tentar Novamente
             </button>
+            <div class="flex gap-2">
+                <a href="{{ url('/dashboard') }}" class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-house"></i> Início
+                </a>
+                <a href="https://wa.me/258862134230?text={{ rawurlencode('Olá Suporte Fdsmultiservices, ocorreu um Erro 500 no ZBIZ+: ' . request()->fullUrl()) }}" target="_blank" class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 font-bold text-xs border border-slate-700 transition flex items-center justify-center gap-1.5">
+                    <i class="fa-brands fa-whatsapp"></i> Suporte
+                </a>
+            </div>
         </div>
     </div>
 </body>

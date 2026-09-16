@@ -32,4 +32,36 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
+        $exceptions->render(function (\PDOException $e, \Illuminate\Http\Request $request) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'status' => 'database_offline',
+                    'message' => 'O serviço de base de dados está temporariamente indisponível ou a inicializar.',
+                    'retry_after' => 10,
+                ], 503);
+            }
+            return response()->view('errors.database', ['exception' => $e], 503);
+        });
+
+        $exceptions->render(function (\Illuminate\Database\QueryException $e, \Illuminate\Http\Request $request) {
+            $prev = $e->getPrevious();
+            $msg = $e->getMessage();
+            $isConnectionError = ($prev instanceof \PDOException)
+                || in_array((int)$e->getCode(), [2002, 1045, 1049], true)
+                || str_contains($msg, '2002')
+                || str_contains($msg, 'Connection refused')
+                || str_contains($msg, 'No such file or directory')
+                || str_contains($msg, 'Access denied');
+
+            if ($isConnectionError) {
+                if ($request->expectsJson() || $request->is('api/*')) {
+                    return response()->json([
+                        'status' => 'database_offline',
+                        'message' => 'O serviço de base de dados está temporariamente indisponível ou a inicializar.',
+                        'retry_after' => 10,
+                    ], 503);
+                }
+                return response()->view('errors.database', ['exception' => $e], 503);
+            }
+        });
     })->create();
