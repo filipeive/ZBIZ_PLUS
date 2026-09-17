@@ -23,35 +23,33 @@ class OfflineRegistrationGuardTest extends TestCase
 
         $response = $this->get('/register');
         $response->assertStatus(200);
-        $response->assertSee('Pré-Registo');
+        $response->assertSee('Pré-Registo Empresarial');
     }
 
     public function test_registration_returns_404_in_offline_mode(): void
     {
         config(['app.installation_mode' => 'offline']);
 
-        $responseGet = $this->get('/register');
-        $responseGet->assertStatus(404);
+        $response = $this->get('/register');
+        $response->assertStatus(404);
 
         $responsePost = $this->post('/register', [
-            'company_name'          => 'Farmácia Teste',
-            'business_type'         => 'pharmacy',
-            'province'              => 'Maputo Cidade',
-            'admin_name'            => 'Administrador',
-            'email'                 => 'admin@farmaciateste.co.mz',
-            'phone'                 => '841234567',
-            'password'              => 'password123',
+            'company_name' => 'Farmácia Offline Teste',
+            'admin_name'   => 'Admin Offline',
+            'email'        => 'offline@teste.co.mz',
+            'phone'        => '840001122',
+            'password'     => 'password123',
             'password_confirmation' => 'password123',
-            'plan_slug'             => 'pharmacy_plus',
+            'plan_slug'    => 'starter',
         ]);
         $responsePost->assertStatus(404);
     }
 
     public function test_login_page_renders_tenant_branding_and_hides_registration_in_offline_mode(): void
     {
-        $tenant = Tenant::create([
+        Tenant::create([
             'name'              => 'Farmácia Esperança de Quelimane',
-            'slug'              => 'farmacia-esperanca',
+            'slug'              => 'farmacia-esperanca-quelimane',
             'business_type'     => 'pharmacy',
             'status'            => 'active',
             'installation_mode' => 'offline',

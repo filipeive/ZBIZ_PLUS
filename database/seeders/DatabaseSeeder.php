@@ -14,9 +14,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Planos de Subscrição do ZBIZ+
+        // 1. Planos de Subscrição do ZBIZ+ e Super Administrador (Owner)
         $this->call([
             PlanSeeder::class,
+            SuperAdminSeeder::class,
         ]);
 
         // 2. Perfis de Acesso Essenciais do Sistema

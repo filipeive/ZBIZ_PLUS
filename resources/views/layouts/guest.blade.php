@@ -107,6 +107,7 @@
         .auth-button {
             width: 100%;
             border-radius: 9999px;
+            background: #005c68;
             background: #071529;
             color: #fff;
             padding: 0.875rem 1.5rem;
@@ -115,8 +116,12 @@
             letter-spacing: 0.08em;
             text-transform: uppercase;
             box-shadow: 0 18px 35px rgba(7, 21, 41, 0.24);
+            transition: transform 0.2s ease, background-color 0.2s ease, opacity 0.2s ease;
             transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
         }
+        .auth-button:hover { background: #071529; }
+        .auth-button:hover { background: #0f172a; }
+        .auth-button:active { transform: scale(0.98); }
         .auth-button:hover {
             background: #0f2744;
             transform: translateY(-1.5px);

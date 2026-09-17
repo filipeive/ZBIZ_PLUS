@@ -241,6 +241,7 @@
                 <div class="pt-4">
                     <button type="submit" 
                             :disabled="isSubmitting"
+                            class="w-full py-3.5 px-6 rounded-full bg-navy-950 hover:bg-slate-900 active:scale-[0.98] text-white text-xs font-bold tracking-widest uppercase transition-all duration-200 shadow-xl shadow-navy-950/25 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed">
                             class="auth-button flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed">
                         
                         <template x-if="!isSubmitting">

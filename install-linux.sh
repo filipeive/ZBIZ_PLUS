@@ -160,6 +160,7 @@ Categories=Office;Finance;PointOfSale;
         php artisan key:generate --force
         php artisan migrate --force
         php artisan db:seed --class=PlanSeeder --force || true
+        php artisan db:seed --class=SuperAdminSeeder --force || true
 
         echo ""
         echo "=============================================================================="

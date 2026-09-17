@@ -127,10 +127,10 @@ if not exist .env (
     echo [✓] Arquivo .env já existe.
 )
 
-echo [2/4] Gerando chave de segurança da aplicação...
+echo [2/5] Gerando chave de segurança da aplicação...
 "%PHP_BIN%" artisan key:generate --force
 
-echo [3/4] Atualizando estrutura do banco de dados (migrações)...
+echo [3/5] Atualizando estrutura do banco de dados (migrações)...
 "%PHP_BIN%" artisan migrate --force
 if %errorlevel% neq 0 (
     echo [!] AVISO: Não foi possível conectar ao banco de dados agora.
@@ -138,13 +138,21 @@ if %errorlevel% neq 0 (
     echo     O sistema continuará com o driver de sessões resiliente.
 )
 
-echo [4/4] Criando atalho "ZBIZ+ Servidor Local" na Área de Trabalho...
+echo [4/5] Configurando Super Administrador (Owner) e Planos do Sistema...
+"%PHP_BIN%" artisan db:seed --class=SuperAdminSeeder --force 2>nul
+"%PHP_BIN%" artisan db:seed --class=PlanSeeder --force 2>nul
+
+echo [5/5] Criando atalho "ZBIZ+ Servidor Local" na Área de Trabalho...
 set "SERVER_SCRIPT=%~dp0iniciar-servidor.bat"
 powershell -ExecutionPolicy Bypass -Command "$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut([System.Environment]::GetFolderPath('Desktop') + '\ZBIZ+ Servidor Local.lnk'); $s.TargetPath = '%SERVER_SCRIPT%'; $s.WorkingDirectory = '%~dp0'; $s.Description = 'ZBIZ+ Servidor Local - Fdsmultiservices'; $s.Save()"
 
 echo.
 echo ==============================================================================
 echo [✓] INSTALAÇÃO CONCLUÍDA COM SUCESSO!
+echo     Conta do Owner / SuperAdmin configurada:
+echo     - E-mail:        superadmin@zbizpos.com (ou telefone: 841234567)
+echo     - Palavra-passe: password123
+echo.
 echo     Criado atalho na Área de Trabalho: "ZBIZ+ Servidor Local"
 echo     Para iniciar o sistema a qualquer momento, dê 2 cliques no atalho.
 echo ==============================================================================

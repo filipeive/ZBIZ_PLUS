@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\Plan;
 use App\Models\Tenant;
 use Database\Seeders\PlanSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -44,7 +43,6 @@ class CustomLoginAndOfflineGuardTest extends TestCase
         $response = $this->get('/login');
         $response->assertOk();
         $response->assertSee('Farmácia Popular da Matola');
-        // No modo offline, o link de pré-registo deve estar oculto
         $response->assertDontSee('Fazer Pré-Registo');
     }
 
@@ -61,10 +59,8 @@ class CustomLoginAndOfflineGuardTest extends TestCase
         config(['app.installation_mode' => 'offline']);
 
         $response = $this->post('/register', [
-            'company_name' => 'Tentativa Bloqueada',
-            'email'        => 'bloqueado@offline.test',
+            'company_name' => 'Teste Offline',
         ]);
-
         $response->assertNotFound();
     }
 
@@ -74,6 +70,5 @@ class CustomLoginAndOfflineGuardTest extends TestCase
 
         $response = $this->get('/register');
         $response->assertOk();
-        $response->assertSee('Pré-Registo Empresarial');
     }
 }
