@@ -65,3 +65,4 @@ ssh -i "$KEY" "$SERVER" "cd $PROJECT_DIR && \
     echo '🔄 Recarregando PHP-FPM e Nginx...' && \
     sudo systemctl reload php8.3-fpm nginx && \
     echo '🎉 Deploy do ZBIZ+ concluído com sucesso!'"
+
