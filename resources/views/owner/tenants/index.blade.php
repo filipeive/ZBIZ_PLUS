@@ -248,11 +248,9 @@
                     </div>
 
                     <div class="flex items-center gap-1.5">
-                        <a href="{{ route('owner.tenants.show', $tenant) }}" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition flex items-center gap-1">
-                            <i class="fa-solid fa-chart-line text-emerald-400"></i> Painel
-                        </a>
-                        <a href="{{ route('owner.tenants.financial', $tenant) }}" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 flex items-center justify-center transition" title="Financeiro & Faturas">
-                            <i class="fa-solid fa-receipt text-xs"></i>
+                        <a href="{{ route('owner.tenants.show', $tenant) }}" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold transition flex items-center gap-1.5 border border-slate-700">
+                            <i class="fa-solid fa-chart-line text-emerald-400"></i>
+                            <span>Gerir Empresa</span>
                         </a>
                     </div>
                 </div>
