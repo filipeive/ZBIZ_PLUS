@@ -1,1 +1,1 @@
-@include('layouts.guest')
+@extends('layouts.guest')

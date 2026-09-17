@@ -13,9 +13,10 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
         .font-heading { font-family: 'Outfit', sans-serif; }
+        @include('partials.auth-surface-styles')
     </style>
 </head>
-<body class="bg-slate-950 min-h-screen flex items-center justify-center p-4 relative overflow-x-hidden">
+<body class="aura-bg min-h-screen flex items-center justify-center p-4 relative overflow-x-hidden antialiased selection:bg-sky-500 selection:text-white">
 
     <!-- Ambient Glow Background -->
     <div class="fixed inset-0 bg-[radial-gradient(ellipse_70%_70%_at_50%_30%,rgba(16,185,129,0.15),rgba(255,255,255,0))] pointer-events-none"></div>
@@ -25,15 +26,15 @@
         <!-- Header -->
         <div class="text-center mb-6">
             <a href="/" class="inline-flex items-center space-x-2">
-                <div class="w-12 h-12 rounded-2xl bg-slate-900 border border-emerald-500/30 flex items-center justify-center shadow-lg shadow-emerald-500/20 overflow-hidden">
-                    <img src="{{ asset('favicon.png') }}" alt="Z+" class="w-full h-full object-cover">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-500 to-sky-600 text-white flex items-center justify-center shadow-lg shadow-sky-500/25 overflow-hidden">
+                    <img src="{{ asset('favicon.png') }}" alt="Z+" class="w-full h-full object-contain p-1">
                 </div>
-                <span class="text-3xl font-black font-heading text-white">ZBIZ<span class="text-emerald-400">+</span></span>
+                <span class="text-3xl font-black font-heading text-white">ZBIZ+</span>
             </a>
         </div>
 
         <!-- Success Card -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 shadow-2xl backdrop-blur-xl">
+        <div class="auth-card bg-white/95 border border-white/60 rounded-[2.5rem] p-8 shadow-2xl shadow-slate-950/30 backdrop-blur-xl">
             
             <div class="text-center mb-6">
                 <div class="w-16 h-16 bg-amber-500/10 border-2 border-amber-500/30 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
@@ -124,9 +125,9 @@
         </div>
 
         <!-- Footer Watermark -->
-        <div class="mt-8 text-center text-[11px] text-slate-500 space-y-1">
-            <p>Desenvolvido por <strong class="text-slate-400">Fdsmultiservices</strong></p>
-            <div class="flex items-center justify-center gap-3 text-slate-500">
+        <div class="mt-8 text-center text-[11px] text-white/70 space-y-1">
+            <p>Desenvolvido por <strong class="text-white">Fdsmultiservices</strong></p>
+            <div class="flex items-center justify-center gap-3 text-white/70">
                 <a href="https://wa.me/258862134230" target="_blank" class="hover:text-emerald-400 transition inline-flex items-center gap-1">
                     <i class="fa-brands fa-whatsapp text-emerald-400"></i> (+258) 86 213 4230
                 </a>

@@ -174,7 +174,11 @@
                 </div>
             @endif
 
-            @yield('content')
+            @isset($slot)
+                {{ $slot }}
+            @else
+                @yield('content')
+            @endisset
 
             <div class="mt-8 pt-6 border-t border-slate-100 text-center">
                 <p class="text-[11px] text-slate-400">
