@@ -17,7 +17,7 @@
     showDeleteModal: false,
     deleteUserId: null,
     deleteUserName: '',
-    viewMode: window.innerWidth < 768 ? 'grid' : (localStorage.getItem('preferredViewMode') || 'grid')
+    viewMode: window.innerWidth < 1024 ? 'grid' : (localStorage.getItem('preferredView_users') || 'table')
 }">
 
     <!-- Top Action Bar & Metrics -->
@@ -85,10 +85,10 @@
         <div class="flex items-center gap-2">
             <!-- View Switcher -->
             <div class="bg-slate-950 border border-slate-800 rounded-2xl p-1 flex items-center gap-1">
-                <button @click="viewMode = 'grid'" :class="viewMode === 'grid' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                <button @click="viewMode = 'grid'; localStorage.setItem('preferredView_users', 'grid')" :class="viewMode === 'grid' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5" title="Modo Cartão (Mobile)">
                     <i class="fa-solid fa-border-all"></i> Grid
                 </button>
-                <button @click="viewMode = 'table'" :class="viewMode === 'table' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                <button @click="viewMode = 'table'; localStorage.setItem('preferredView_users', 'table')" :class="viewMode === 'table' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5" title="Modo Tabela (Desktop)">
                     <i class="fa-solid fa-list"></i> Tabela
                 </button>
             </div>

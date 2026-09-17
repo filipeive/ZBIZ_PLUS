@@ -8,7 +8,7 @@
 @endphp
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6" x-data="{ viewMode: window.innerWidth < 1024 ? 'grid' : (localStorage.getItem('preferredView_quotations') || 'table') }">
 
     <!-- Top Bar & Ações -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-2xl backdrop-blur-xl">
@@ -22,7 +22,17 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+            <!-- View Switcher -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-1 flex items-center gap-1">
+                <button @click="viewMode = 'grid'; localStorage.setItem('preferredView_quotations', 'grid')" :class="viewMode === 'grid' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5" title="Modo Cartão (Mobile / Tablet)">
+                    <i class="fa-solid fa-border-all"></i> Grid
+                </button>
+                <button @click="viewMode = 'table'; localStorage.setItem('preferredView_quotations', 'table')" :class="viewMode === 'table' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5" title="Modo Tabela (Desktop)">
+                    <i class="fa-solid fa-list"></i> Tabela
+                </button>
+            </div>
+
             <a href="{{ route('documents.templates.index') }}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition flex items-center gap-2 border border-slate-700">
                 <i class="fa-solid fa-sliders text-emerald-400"></i> Modelos & IVA
             </a>
@@ -90,8 +100,85 @@
         </form>
     </div>
 
-    <!-- Tabela de Cotações -->
-    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+    <!-- GRID VIEW CARDS (Mobile & PWA) -->
+    <div x-show="viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        @forelse($quotations as $quote)
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl flex flex-col justify-between hover:border-slate-700 transition group relative overflow-hidden">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="font-mono font-black text-sm text-sky-400">
+                            {{ $quote->quotation_number }}
+                        </span>
+                        @if($quote->status === 'converted')
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Convertida</span>
+                        @elseif($quote->status === 'approved')
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20">Aprovada</span>
+                        @elseif($quote->status === 'sent')
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">Enviada</span>
+                        @elseif($quote->status === 'rejected')
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">Rejeitada</span>
+                        @else
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300">Rascunho</span>
+                        @endif
+                    </div>
+
+                    <h3 class="text-base font-black text-white font-heading">
+                        <a href="{{ route('quotations.show', $quote) }}" class="hover:text-sky-400 transition">
+                            {{ $quote->customer_name }}
+                        </a>
+                    </h3>
+                    @if($quote->customer_nuit)
+                        <p class="text-xs text-slate-400 mt-0.5 font-mono">
+                            NUIT: {{ $quote->customer_nuit }}
+                        </p>
+                    @endif
+
+                    <div class="mt-3 p-3 bg-slate-950/70 border border-slate-800 rounded-2xl space-y-1.5 text-xs">
+                        <div class="flex items-center justify-between text-slate-400">
+                            <span>Data de Emissão:</span>
+                            <span class="text-slate-200 font-mono">{{ $quote->date ? $quote->date->format('d/m/Y') : '-' }}</span>
+                        </div>
+                        @if($quote->valid_until)
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400">Validade:</span>
+                                <span class="font-mono {{ $quote->isExpired() ? 'text-rose-400 font-bold' : 'text-slate-300' }}">
+                                    {{ $quote->valid_until->format('d/m/Y') }} {{ $quote->isExpired() ? '(Expirado)' : '' }}
+                                </span>
+                            </div>
+                        @endif
+                        <div class="flex items-center justify-between text-slate-400 pt-1 border-t border-slate-800/60">
+                            <span>Subtotal / IVA:</span>
+                            <span class="text-slate-300 font-mono">{{ number_format($quote->subtotal, 2, ',', '.') }} MT ({{ $quote->tax_regime === 'exempt' ? 'Isento' : $quote->tax_rate.'%' }})</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] text-slate-500 font-bold block uppercase">Total Geral</span>
+                        <span class="text-lg font-black text-white font-mono">{{ number_format($quote->total_amount, 2, ',', '.') }} MT</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('quotations.show', $quote) }}" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition" title="Ver Detalhes">
+                            <i class="fa-solid fa-eye text-xs"></i>
+                        </a>
+                        <a href="{{ route('quotations.pdf', $quote) }}" class="w-9 h-9 rounded-xl bg-sky-600/20 hover:bg-sky-600/30 text-sky-400 border border-sky-500/30 flex items-center justify-center transition" title="Descarregar PDF">
+                            <i class="fa-solid fa-file-pdf text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <div class="col-span-full py-16 text-center text-slate-500 bg-slate-900/50 border border-dashed border-slate-800 rounded-3xl">
+                <i class="fa-solid fa-file-signature text-4xl mb-3 text-slate-600"></i>
+                <p class="text-sm">Nenhuma cotação encontrada.</p>
+            </div>
+        @endforelse
+    </div>
+
+    <!-- Tabela de Cotações (Desktop) -->
+    <div x-show="viewMode === 'table'" class="bg-slate-900/90 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-xs text-slate-300">
                 <thead class="bg-slate-950/80 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">

@@ -487,9 +487,16 @@
                         <i class="fa-solid fa-database text-purple-400"></i> Gestão de Backups & Cópias de Segurança
                     </h3>
                     <p class="text-xs text-slate-400 mt-1">
+                        Crie cópias de segurança completas do banco de dados (SQL) sob demanda e descarregue para seu computador com segurança.
                         Crie cópias de segurança completas do banco de dados (SQL) e envie cópias criptografadas diretamente para o cofre na Nuvem ZBIZ+.
                     </p>
                 </div>
+                <form action="{{ route('admin.backup.create') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-purple-600/25 transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-download"></i> Criar Backup Agora (SQL)
+                    </button>
+                </form>
                 <div class="flex flex-wrap items-center gap-2.5">
                     <form action="{{ route('admin.backup.create') }}" method="POST">
                         @csrf
@@ -537,6 +544,7 @@
                                     </form>
                                     <a href="{{ route('admin.backup.download', $b['filename']) }}" 
                                        class="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 mr-2"
+                                       title="Descarregar cópia">
                                        title="Descarregar cópia para o computador">
                                         <i class="fa-solid fa-download"></i> Descarregar
                                     </a>

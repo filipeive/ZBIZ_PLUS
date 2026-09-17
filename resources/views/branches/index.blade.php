@@ -8,7 +8,7 @@
 @endphp
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6" x-data="{ viewMode: window.innerWidth < 1024 ? 'grid' : (localStorage.getItem('preferredView_branches') || 'table') }">
 
     <!-- Top Action Bar -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
@@ -21,15 +21,25 @@
                 <p class="text-xs text-slate-400">Faça a gestão dos pontos de venda, armazéns e alterne entre unidades.</p>
             </div>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
+            <!-- View Switcher -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-1 flex items-center gap-1">
+                <button @click="viewMode = 'grid'; localStorage.setItem('preferredView_branches', 'grid')" :class="viewMode === 'grid' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5" title="Modo Cartão (Mobile / Tablet)">
+                    <i class="fa-solid fa-border-all"></i> Grid
+                </button>
+                <button @click="viewMode = 'table'; localStorage.setItem('preferredView_branches', 'table')" :class="viewMode === 'table' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5" title="Modo Tabela (Desktop)">
+                    <i class="fa-solid fa-list"></i> Tabela
+                </button>
+            </div>
+
             <a href="{{ route('branches.create') }}" class="px-5 py-2.5 rounded-2xl {{ $theme['btn'] }} text-xs hover:scale-105 active:scale-95 transition flex items-center gap-2">
                 <i class="fa-solid fa-plus"></i> Registar Nova Filial
             </a>
         </div>
     </div>
 
-    <!-- Grid of Branches -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Grid of Branches (Mobile & PWA) -->
+    <div x-show="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @forelse($branches as $branch)
             @php
                 $isCurrent = $branch->id === $currentBranchId;
@@ -115,6 +125,104 @@
                 <p class="text-xs text-slate-400 mt-1">Crie a sua primeira filial para gerir stock e vendas em múltiplos locais.</p>
             </div>
         @endforelse
+    </div>
+
+    <!-- Table of Branches (Desktop) -->
+    <div x-show="viewMode === 'table'" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider font-bold">
+                        <th class="pb-3">Código & Filial</th>
+                        <th class="pb-3">Tipo / Sede</th>
+                        <th class="pb-3">Endereço</th>
+                        <th class="pb-3">Contacto</th>
+                        <th class="pb-3 text-center">Colaboradores</th>
+                        <th class="pb-3 text-center">Estado</th>
+                        <th class="pb-3 text-right">Ações Rápidas</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                    @forelse($branches as $branch)
+                        @php
+                            $isCurrent = $branch->id === $currentBranchId;
+                        @endphp
+                        <tr class="hover:bg-slate-800/30 transition {{ $isCurrent ? 'bg-emerald-500/5' : '' }}">
+                            <td class="py-3.5">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center font-mono font-bold text-xs text-white">
+                                        {{ $branch->code ?? 'FL' }}
+                                    </span>
+                                    <div>
+                                        <div class="font-bold text-white text-sm">{{ $branch->name }}</div>
+                                        @if($isCurrent)
+                                            <span class="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Ativa Agora
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-3.5">
+                                @if($branch->is_main)
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                                        <i class="fa-solid fa-star text-[9px] mr-1"></i> Sede / Matriz
+                                    </span>
+                                @else
+                                    <span class="text-slate-400 text-xs">Ponto de Venda</span>
+                                @endif
+                            </td>
+                            <td class="py-3.5 text-slate-300 max-w-[220px] truncate">
+                                {{ $branch->address ?? 'Endereço não especificado' }}
+                            </td>
+                            <td class="py-3.5 text-slate-300 font-mono">
+                                {{ $branch->phone ?? 'N/D' }}
+                            </td>
+                            <td class="py-3.5 text-center font-bold text-white">
+                                {{ $branch->users_count ?? 0 }}
+                            </td>
+                            <td class="py-3.5 text-center">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase {{ $branch->is_active ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' : 'text-slate-500 bg-slate-800 border border-slate-700' }}">
+                                    {{ $branch->is_active ? 'Em Operação' : 'Inativa' }}
+                                </span>
+                            </td>
+                            <td class="py-3.5 text-right">
+                                <div class="flex items-center justify-end gap-1.5">
+                                    @if(!$isCurrent)
+                                        <form action="{{ route('branches.switch', $branch->id) }}" method="POST" class="inline">
+                                            @csrf
+                                            <button type="submit" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[11px] rounded-xl border border-slate-700 transition flex items-center gap-1">
+                                                <i class="fa-solid fa-arrow-right-arrow-left text-[10px]"></i> Alternar
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    <a href="{{ route('branches.edit', $branch->id) }}" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition" title="Editar Filial">
+                                        <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                    </a>
+
+                                    @if(!$branch->is_main)
+                                        <form action="{{ route('branches.destroy', $branch->id) }}" method="POST" onsubmit="return confirm('Tem a certeza que deseja eliminar esta filial?')" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 flex items-center justify-center transition" title="Eliminar Filial">
+                                                <i class="fa-solid fa-trash text-xs"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="py-8 text-center text-slate-500">
+                                Nenhuma filial registada.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 
 </div>

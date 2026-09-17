@@ -69,6 +69,9 @@
                 <div class="mb-5 p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-xs">
                     <ul class="list-disc list-inside space-y-1">
                         @foreach($errors->all() as $error)
+                            <!--eror deve ser em portugues-->
+                            <?php 
+                            ?>
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>

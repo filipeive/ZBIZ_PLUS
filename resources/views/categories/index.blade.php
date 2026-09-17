@@ -43,7 +43,16 @@
 @endphp
 
 @section('content')
-<div class="space-y-6" x-data="{ showModal: false, editMode: false, categoryId: null, categoryName: '', categoryDesc: '', categoryIcon: 'fa-tag', categoryActive: true }">
+<div class="space-y-6" x-data="{ 
+    showModal: false, 
+    editMode: false, 
+    categoryId: null, 
+    categoryName: '', 
+    categoryDesc: '', 
+    categoryIcon: 'fa-tag', 
+    categoryActive: true,
+    viewMode: window.innerWidth < 1024 ? 'grid' : (localStorage.getItem('preferredView_categories') || 'table')
+}">
     
     <!-- Top Controls Bar -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
@@ -52,14 +61,26 @@
             <p class="text-xs text-slate-400">Organize os seus artigos para busca rápida e categorização no POS.</p>
         </div>
 
-        <button @click="editMode = false; categoryName = ''; categoryDesc = ''; categoryIcon = 'fa-tag'; categoryActive = true; showModal = true" 
-                class="px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-sm transition flex items-center gap-2">
-            <i class="fa-solid fa-plus"></i> Nova Categoria
-        </button>
+        <div class="flex flex-wrap items-center gap-3">
+            <!-- View Switcher -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-1 flex items-center gap-1">
+                <button @click="viewMode = 'grid'; localStorage.setItem('preferredView_categories', 'grid')" :class="viewMode === 'grid' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5" title="Modo Cartão (Mobile / Tablet)">
+                    <i class="fa-solid fa-border-all"></i> Grid
+                </button>
+                <button @click="viewMode = 'table'; localStorage.setItem('preferredView_categories', 'table')" :class="viewMode === 'table' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5" title="Modo Tabela (Desktop)">
+                    <i class="fa-solid fa-list"></i> Tabela
+                </button>
+            </div>
+
+            <button @click="editMode = false; categoryName = ''; categoryDesc = ''; categoryIcon = 'fa-tag'; categoryActive = true; showModal = true" 
+                    class="px-5 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-sm transition flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i> Nova Categoria
+            </button>
+        </div>
     </div>
 
-    <!-- Categories Grid / Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+    <!-- Categories Grid / Cards (Mobile & PWA) -->
+    <div x-show="viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         @forelse($categories as $category)
             <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl flex flex-col justify-between hover:border-slate-700 transition group">
                 <div>
@@ -103,6 +124,70 @@
                 <p class="text-sm">Nenhuma categoria registada ainda.</p>
             </div>
         @endforelse
+    </div>
+
+    <!-- Categories Table (Desktop) -->
+    <div x-show="viewMode === 'table'" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider font-bold">
+                        <th class="pb-3">Ícone & Categoria</th>
+                        <th class="pb-3">Descrição</th>
+                        <th class="pb-3 text-center">Artigos Cadastrados</th>
+                        <th class="pb-3 text-center">Estado</th>
+                        <th class="pb-3 text-right">Ações Rápidas</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                    @forelse($categories as $category)
+                        <tr class="hover:bg-slate-800/30 transition">
+                            <td class="py-3.5">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center flex-shrink-0">
+                                        <i class="fa-solid {{ $category->icon ?? 'fa-tag' }} {{ $theme['text_accent'] }}"></i>
+                                    </div>
+                                    <span class="font-bold text-white text-sm">{{ $category->name }}</span>
+                                </div>
+                            </td>
+                            <td class="py-3.5 text-slate-400 max-w-sm truncate">
+                                {{ $category->description ?? '-' }}
+                            </td>
+                            <td class="py-3.5 text-center font-bold text-slate-200">
+                                {{ $category->products_count ?? 0 }}
+                            </td>
+                            <td class="py-3.5 text-center">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border {{ $category->is_active ? $theme['badge'] : 'bg-rose-500/10 text-rose-400 border-rose-500/30' }}">
+                                    {{ $category->is_active ? 'Ativa' : 'Inativa' }}
+                                </span>
+                            </td>
+                            <td class="py-3.5 text-right">
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <button @click="editMode = true; categoryId = {{ $category->id }}; categoryName = '{{ addslashes($category->name) }}'; categoryDesc = '{{ addslashes($category->description ?? '') }}'; categoryIcon = '{{ $category->icon ?? 'fa-tag' }}'; categoryActive = {{ $category->is_active ? 'true' : 'false' }}; showModal = true"
+                                            class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition" title="Editar">
+                                        <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                    </button>
+                                    
+                                    <form method="POST" action="{{ route('categories.destroy', $category->id) }}" onsubmit="return confirm('Tem certeza que deseja apagar esta categoria?');" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-rose-400 flex items-center justify-center transition" title="Apagar">
+                                            <i class="fa-solid fa-trash text-xs"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="py-8 text-center text-slate-500">
+                                Nenhuma categoria registada ainda.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Modal Criar/Editar Categoria -->

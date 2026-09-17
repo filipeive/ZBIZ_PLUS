@@ -15,6 +15,7 @@
     trialDays: 14,
     selectedPlanId: '',
     copiedKeyId: null,
+    viewMode: window.innerWidth < 1024 ? 'grid' : (localStorage.getItem('preferredView_tenants') || 'table'),
     openApproveModal(tenant, planId) {
         this.selectedTenant = tenant;
         this.selectedPlanId = planId || '{{ $plans->first()?->id }}';
@@ -141,7 +142,17 @@
             @endif
         </form>
 
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+            <!-- View Switcher -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-1 flex items-center gap-1">
+                <button @click="viewMode = 'grid'; localStorage.setItem('preferredView_tenants', 'grid')" :class="viewMode === 'grid' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5" title="Modo Cartão (Mobile / Tablet)">
+                    <i class="fa-solid fa-border-all"></i> Grid
+                </button>
+                <button @click="viewMode = 'table'; localStorage.setItem('preferredView_tenants', 'table')" :class="viewMode === 'table' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5" title="Modo Tabela (Desktop)">
+                    <i class="fa-solid fa-list"></i> Tabela
+                </button>
+            </div>
+
             <a href="{{ route('license.activate') }}" class="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs transition flex items-center gap-2 border border-slate-700">
                 <i class="fa-solid fa-key text-emerald-400"></i> Validar Licença
             </a>
@@ -152,8 +163,110 @@
         </div>
     </div>
 
-    <!-- Tenants Table -->
-    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden">
+    <!-- Tenants Grid Cards (Mobile & PWA) -->
+    <div x-show="viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        @forelse($tenants as $tenant)
+            @php
+                $subscription = $tenant->currentSubscription;
+                $latestLicense = $tenant->latestLicenseKey;
+                $statusClass = match($tenant->status) {
+                    'active' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+                    'trial' => 'bg-sky-500/10 text-sky-400 border-sky-500/30',
+                    'pending' => 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+                    'suspended' => 'bg-rose-500/10 text-rose-400 border-rose-500/30',
+                    default => 'bg-slate-800 text-slate-400 border-slate-700',
+                };
+                $sectorIcon = match($tenant->business_type) {
+                    'pharmacy' => 'fa-pills text-emerald-400',
+                    'reprography' => 'fa-print text-amber-400',
+                    'restaurant' => 'fa-utensils text-rose-400',
+                    'services' => 'fa-briefcase text-sky-400',
+                    default => 'fa-store text-violet-400',
+                };
+            @endphp
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl flex flex-col justify-between hover:border-slate-700 transition group relative overflow-hidden">
+                <div>
+                    <div class="flex items-start justify-between gap-3 mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid {{ $sectorIcon }} text-base"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-white text-base">
+                                    <a href="{{ route('owner.tenants.show', $tenant) }}" class="hover:text-emerald-400 transition">
+                                        {{ $tenant->name }}
+                                    </a>
+                                </h3>
+                                <span class="text-[11px] text-slate-400 font-mono">{{ $tenant->slug }}</span>
+                            </div>
+                        </div>
+
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase {{ $statusClass }}">
+                            {{ $tenant->status }}
+                        </span>
+                    </div>
+
+                    <div class="mt-3 p-3 bg-slate-950/70 border border-slate-800 rounded-2xl space-y-2 text-xs">
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-400">Plano & Modo:</span>
+                            <span class="font-bold text-white flex items-center gap-1.5">
+                                {{ $subscription?->plan?->name ?? 'Sem plano' }}
+                                <span class="px-1.5 py-0.5 rounded text-[9px] bg-slate-800 text-slate-400 uppercase font-mono">{{ $tenant->installation_mode ?? 'cloud' }}</span>
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-400">Estrutura:</span>
+                            <span class="text-slate-300 font-medium">{{ $tenant->branches_count ?? 1 }} Filial(is) · {{ $tenant->users_count ?? 1 }} Usuário(s)</span>
+                        </div>
+                        @if($latestLicense && $latestLicense->key_code)
+                            <div class="pt-2 border-t border-slate-800/80">
+                                <span class="text-[10px] text-slate-500 font-bold uppercase block mb-1">Licença Ativa:</span>
+                                <div class="flex items-center justify-between gap-2 bg-slate-900 border border-slate-800 px-2.5 py-1.5 rounded-xl">
+                                    <span class="font-mono text-emerald-400 font-bold text-[11px] truncate select-all">{{ $latestLicense->key_code }}</span>
+                                    <div class="flex items-center gap-1 flex-shrink-0">
+                                        <button type="button" @click="copyKey('{{ $latestLicense->key_code }}', {{ $tenant->id }})" 
+                                                class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition"
+                                                title="Copiar Serial">
+                                            <i class="fa-solid" :class="copiedKeyId === {{ $tenant->id }} ? 'fa-check text-emerald-400' : 'fa-copy'"></i>
+                                        </button>
+                                        <a href="{{ route('owner.tenants.licenses.certificate', [$tenant, $latestLicense]) }}" 
+                                           class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition"
+                                           title="Certificado">
+                                            <i class="fa-solid fa-file-shield text-xs"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] text-slate-500 font-bold block uppercase">Contacto</span>
+                        <span class="text-xs text-slate-300 font-mono">{{ $tenant->phone ?? ($tenant->email ?? '-') }}</span>
+                    </div>
+
+                    <div class="flex items-center gap-1.5">
+                        <a href="{{ route('owner.tenants.show', $tenant) }}" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition flex items-center gap-1">
+                            <i class="fa-solid fa-chart-line text-emerald-400"></i> Painel
+                        </a>
+                        <a href="{{ route('owner.tenants.financial', $tenant) }}" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 flex items-center justify-center transition" title="Financeiro & Faturas">
+                            <i class="fa-solid fa-receipt text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <div class="col-span-full py-16 text-center text-slate-500 bg-slate-900/50 border border-dashed border-slate-800 rounded-3xl">
+                <i class="fa-solid fa-building text-4xl mb-3 text-slate-600"></i>
+                <p class="text-sm">Nenhum cliente/empresa encontrado.</p>
+            </div>
+        @endforelse
+    </div>
+
+    <!-- Tenants Table (Desktop) -->
+    <div x-show="viewMode === 'table'" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
                 <thead>

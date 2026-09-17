@@ -2,6 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="light">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#0f172a">
@@ -1805,6 +1806,7 @@
             </header>
 
             <!-- Main Content Scroll Area -->
+            <main class="app-main flex-1 overflow-y-auto p-4 sm:p-8">
             <main class="app-main flex-1 overflow-y-auto p-4 sm:p-8 pb-28 lg:pb-8">
                 
                 <!-- Alerta Global de Expiração / Suspensão & Semáforo Preventivo -->
