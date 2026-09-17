@@ -214,19 +214,21 @@
                             </label>
                             <div class="relative group">
                                 <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-emerald-400 transition text-sm">
-                                    <i class="fa-regular fa-user"></i>
+                                    <i class="fa-solid fa-user"></i>
                                 </span>
                                 <input type="text" 
                                        name="login" 
-                                       value="{{ old('login', old('email')) }}" 
+                                       id="login"
+                                       value="{{ old('login') }}" 
                                        required 
-                                       autofocus
+                                       autofocus 
+                                       autocomplete="username"
                                        placeholder="ex: admin, 841234567 ou email@empresa.com"
                                        class="w-full pl-10 pr-4 py-3 bg-slate-950/90 border border-slate-800 rounded-xl text-xs sm:text-sm text-white placeholder-slate-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition duration-150">
                             </div>
                         </div>
 
-                        <!-- Password Input with Toggle View -->
+                        <!-- Password Input -->
                         <div>
                             <div class="flex items-center justify-between mb-1.5">
                                 <label class="block text-xs font-bold text-slate-300">
@@ -241,7 +243,7 @@
 
                             <div class="relative group">
                                 <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-emerald-400 transition text-sm">
-                                    <i class="fa-regular fa-lock"></i>
+                                    <i class="fa-solid fa-lock"></i>
                                 </span>
                                 <input :type="showPassword ? 'text' : 'password'" 
                                        name="password" 
