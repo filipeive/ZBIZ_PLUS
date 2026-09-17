@@ -34,6 +34,11 @@ Thumbs.db
 .codex
 scratch/
 storage/app/public/salary-receipts/*
-# ignore deployment files
+# Deploy & Infraestrutura privada
 /deploy.php
-./deploy.sh
+/deploy.sh
+.deploy.env
+
+# AI & Diretórios de contexto interno
+/agents/
+/.agents/

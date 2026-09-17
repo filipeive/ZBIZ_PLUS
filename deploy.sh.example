@@ -3,13 +3,22 @@
 set -euo pipefail
 
 # ==============================================================================
-# Script de Deploy de Produção - ZBIZ+
+# Script de Deploy de Produção - ZBIZ+ (Exemplo / Template)
 # Desenvolvido por Fdsmultiservices
 # Suporte: (+258) 86 213 4230 | fdsmultiservices@gmail.com
 # ==============================================================================
+# Instruções:
+# 1. Copie este arquivo para deploy.sh: cp deploy.sh.example deploy.sh
+# 2. Configure suas variáveis de ambiente abaixo ou crie um arquivo .deploy.env
+# ==============================================================================
 
-SERVER="${SERVER:-ubuntu@146.235.224.99}"
-KEY="${KEY:-/home/fdev-ms/.ssh/oracle-2025}"
+if [ -f .deploy.env ]; then
+    # shellcheck disable=SC1091
+    source .deploy.env
+fi
+
+SERVER="${SERVER:-user@your-server-ip}"
+KEY="${KEY:-$HOME/.ssh/id_rsa}"
 PROJECT_DIR="${PROJECT_DIR:-/var/www/html/zbiz_plus}"
 BRANCH="${BRANCH:-main}"
 
@@ -34,7 +43,7 @@ echo "🚀 Iniciando deploy do ZBIZ+ para o servidor de produção ($SERVER)..."
 
 ssh -i "$KEY" "$SERVER" "cd $PROJECT_DIR && \
     echo '🔧 Ajustando permissões de trabalho...' && \
-    sudo chown -R ubuntu:ubuntu .git && \
+    sudo chown -R \$(whoami):\$(whoami) .git && \
     echo '📥 Sincronizando código-fonte (git fetch & reset)...' && \
     git fetch origin $BRANCH && \
     git reset --hard origin/$BRANCH && \
@@ -51,7 +60,7 @@ ssh -i "$KEY" "$SERVER" "cd $PROJECT_DIR && \
     php artisan route:cache && \
     php artisan view:cache && \
     echo '🔒 Protegendo permissões de storage e bootstrap/cache...' && \
-    sudo chown -R ubuntu:www-data storage bootstrap/cache && \
+    sudo chown -R \$(whoami):www-data storage bootstrap/cache && \
     sudo chmod -R 775 storage bootstrap/cache && \
     echo '🔄 Recarregando PHP-FPM e Nginx...' && \
     sudo systemctl reload php8.3-fpm nginx && \
