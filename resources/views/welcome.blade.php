@@ -18,55 +18,15 @@
         body { font-family: 'Inter', sans-serif; }
         .font-heading { font-family: 'Outfit', sans-serif; }
         [x-cloak] { display: none !important; }
-        @include('partials.auth-surface-styles')
-        .welcome-shell .bg-slate-950,
-        .welcome-shell .bg-slate-900,
-        .welcome-shell .bg-slate-900\/60,
-        .welcome-shell .bg-slate-900\/80,
-        .welcome-shell .bg-slate-900\/90 {
-            background-color: rgba(255, 255, 255, 0.9) !important;
-        }
-        .welcome-shell .border-slate-800,
-        .welcome-shell .border-slate-800\/80,
-        .welcome-shell .border-slate-900 {
-            border-color: rgba(255, 255, 255, 0.42) !important;
-        }
-        .welcome-shell .text-white,
-        .welcome-shell .text-slate-100,
-        .welcome-shell .text-slate-200,
-        .welcome-shell .text-slate-300 {
-            color: #0f172a !important;
-        }
-        .welcome-shell .text-slate-400 {
-            color: #475569 !important;
-        }
-        .welcome-shell .bg-slate-800 {
-            background-color: #071529 !important;
-            color: #ffffff !important;
-        }
-        .welcome-shell .bg-emerald-600,
-        .welcome-shell .bg-emerald-500,
-        .welcome-shell .bg-slate-800 {
-            color: #ffffff !important;
-        }
-        .welcome-shell nav {
-            background-color: rgba(255, 255, 255, 0.86) !important;
-            border-color: rgba(255, 255, 255, 0.36) !important;
-            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
-        }
-        .welcome-shell footer {
-            background-color: rgba(255, 255, 255, 0.9) !important;
-            border-color: rgba(255, 255, 255, 0.38) !important;
-        }
     </style>
 </head>
-<body class="welcome-shell aura-bg text-slate-800 antialiased overflow-x-hidden selection:bg-sky-500 selection:text-white" x-data="{ sector: 'retail', mobileMenu: false }">
+<body class="bg-slate-950 text-slate-100 antialiased overflow-x-hidden selection:bg-emerald-500 selection:text-slate-950" x-data="{ sector: 'retail', mobileMenu: false }">
 
     <!-- Top Glow Grid Background -->
     <div class="fixed inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(16,185,129,0.18),rgba(255,255,255,0))] pointer-events-none z-0"></div>
 
     <!-- Navigation Bar -->
-    <nav class="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-white/30">
+    <nav class="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
             
             <!-- Brand Logo -->
@@ -94,7 +54,7 @@
                         <span>Painel</span> <i class="fa-solid fa-arrow-right text-xs"></i>
                     </a>
                 @else
-                    <a href="{{ route('login') }}" class="text-slate-700 hover:text-slate-950 font-bold text-xs sm:text-sm px-3 py-2 transition">
+                    <a href="{{ route('login') }}" class="text-slate-300 hover:text-white font-bold text-xs sm:text-sm px-3 py-2 transition">
                         Entrar
                     </a>
                     <a href="{{ route('register') }}" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm transition shadow-lg shadow-emerald-600/25 hover:scale-105 active:scale-95 flex items-center gap-2">

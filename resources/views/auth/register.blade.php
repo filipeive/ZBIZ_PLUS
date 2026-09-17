@@ -15,7 +15,60 @@
         body { font-family: 'Inter', sans-serif; }
         .font-heading { font-family: 'Outfit', sans-serif; }
         [x-cloak] { display: none !important; }
-        @include('partials.auth-surface-styles')
+        .aura-bg {
+            background-color: #1e3a4c;
+            background-image:
+                radial-gradient(at 10% 20%, #115e59 0px, transparent 50%),
+                radial-gradient(at 90% 15%, #0369a1 0px, transparent 50%),
+                radial-gradient(at 80% 80%, #38bdf8 0px, transparent 50%),
+                radial-gradient(at 20% 85%, #475569 0px, transparent 50%),
+                radial-gradient(at 50% 50%, #0f766e 0px, transparent 50%);
+            background-size: cover;
+            background-attachment: fixed;
+        }
+        .register-card input:not([type="hidden"]),
+        .register-card select {
+            border: 0 !important;
+            border-bottom: 1.5px solid #cbd5e1 !important;
+            border-radius: 0 !important;
+            background: transparent !important;
+            color: #1e293b !important;
+            box-shadow: none !important;
+            outline: none !important;
+        }
+        .register-card input:focus,
+        .register-card select:focus {
+            border-bottom-color: #0284c7 !important;
+            box-shadow: 0 1px 0 0 #0284c7 !important;
+        }
+        .register-card input::placeholder { color: #94a3b8 !important; }
+        .register-card label,
+        .register-card .text-slate-300,
+        .register-card .text-slate-200,
+        .register-card .text-white {
+            color: #1e293b !important;
+        }
+        .register-card .text-slate-400,
+        .register-card .text-slate-500 {
+            color: #64748b !important;
+        }
+        .register-card .bg-slate-950,
+        .register-card .bg-slate-900,
+        .register-card .bg-slate-800 {
+            background-color: #f8fafc !important;
+        }
+        .register-card .border-slate-800 {
+            border-color: #e2e8f0 !important;
+        }
+        .register-card .bg-emerald-600 {
+            background-color: #005c68 !important;
+            color: #fff !important;
+        }
+        .register-card .bg-emerald-600:hover { background-color: #071529 !important; }
+        .register-card .text-emerald-400,
+        .register-card .text-emerald-300 {
+            color: #0284c7 !important;
+        }
     </style>
 </head>
 <body class="aura-bg min-h-screen py-10 px-4 relative flex items-center justify-center antialiased selection:bg-sky-500 selection:text-white"
@@ -24,8 +77,6 @@
           sector: '{{ $selectedSector ?? "retail" }}',
           selectedPlan: '{{ $selectedPlan ?? "starter" }}',
       }">
-
-    <div class="fixed inset-0 bg-[radial-gradient(ellipse_70%_70%_at_50%_30%,rgba(16,185,129,0.12),rgba(255,255,255,0))] pointer-events-none"></div>
 
     <div class="w-full max-w-2xl relative z-10">
         
@@ -65,7 +116,7 @@
         </div>
 
         <!-- Main Form Card -->
-        <div class="auth-card bg-white/95 border border-white/60 rounded-[2.5rem] p-8 shadow-2xl shadow-slate-950/30 backdrop-blur-xl">
+        <div class="register-card bg-white/95 border border-white/60 rounded-[2.5rem] p-8 shadow-2xl shadow-slate-950/30 backdrop-blur-xl">
             
             @if($errors->any())
                 <div class="mb-6 p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-xs space-y-1">

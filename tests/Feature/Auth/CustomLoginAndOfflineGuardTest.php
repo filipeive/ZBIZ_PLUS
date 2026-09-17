@@ -25,8 +25,8 @@ class CustomLoginAndOfflineGuardTest extends TestCase
         $response = $this->get('/login');
         $response->assertOk();
         $response->assertSee('ZBIZ+');
-        $response->assertSee('Fazer Pré-Registo');
-        $response->assertSee('Acesso ao Sistema');
+        $response->assertDontSee('Fazer Pré-Registo');
+        $response->assertSee('ENTRAR');
     }
 
     public function test_login_page_renders_tenant_custom_branding_in_offline_mode(): void

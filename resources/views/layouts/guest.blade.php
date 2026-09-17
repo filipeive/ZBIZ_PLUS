@@ -63,66 +63,95 @@
         .auth-shell {
             width: min(100%, var(--auth-card-width, 420px));
         }
-        .auth-card input:not([type="checkbox"]):not([type="radio"]),
-        .auth-card select,
-        .auth-card textarea {
+        .auth-title {
+            color: #1e293b;
+            font-size: 1.5rem;
+            line-height: 2rem;
+            font-weight: 900;
+            letter-spacing: -0.015em;
+        }
+        .auth-copy {
+            color: #64748b;
+            font-size: 0.75rem;
+            line-height: 1.35rem;
+        }
+        .auth-label {
+            display: block;
+            margin-bottom: 0.375rem;
+            color: #475569;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .auth-input {
             width: 100%;
-            border: none !important;
-            border-bottom: 1.5px solid #cbd5e1 !important;
-            border-radius: 0 !important;
-            background: transparent !important;
-            color: #1e293b !important;
+            border: 0;
+            border-bottom: 1.5px solid #cbd5e1;
+            border-radius: 0;
+            background: transparent;
+            color: #1e293b;
             font-size: 0.95rem;
             padding: 0.75rem 0.5rem;
-            box-shadow: none !important;
-            outline: none !important;
+            transition: all 0.2s ease-in-out;
+            outline: none;
         }
-        .auth-card input:focus,
-        .auth-card select:focus,
-        .auth-card textarea:focus {
-            border-bottom-color: #0284c7 !important;
-            box-shadow: 0 1px 0 0 #0284c7 !important;
+        .auth-input:focus {
+            border-bottom-color: #0284c7;
+            box-shadow: 0 1px 0 0 #0284c7;
         }
-        .auth-card input::placeholder,
-        .auth-card textarea::placeholder {
-            color: #94a3b8 !important;
+        .auth-input::placeholder {
+            color: #94a3b8;
         }
-        .auth-card .bg-slate-950,
-        .auth-card .bg-slate-950\/60,
-        .auth-card .bg-slate-950\/80,
-        .auth-card .bg-slate-900,
-        .auth-card .bg-slate-900\/80,
-        .auth-card .bg-slate-900\/85,
-        .auth-card .bg-slate-900\/90 {
-            background-color: rgba(248, 250, 252, 0.72) !important;
+        .auth-icon {
+            color: rgba(14, 165, 233, 0.82);
         }
-        .auth-card .border-slate-800,
-        .auth-card .border-slate-800\/60,
-        .auth-card .border-slate-800\/80 {
-            border-color: #e2e8f0 !important;
+        .auth-button {
+            width: 100%;
+            border-radius: 9999px;
+            background: #071529;
+            color: #fff;
+            padding: 0.875rem 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            box-shadow: 0 18px 35px rgba(7, 21, 41, 0.24);
+            transition: transform 0.2s ease, background-color 0.2s ease, opacity 0.2s ease;
         }
-        .auth-card .text-white,
-        .auth-card .text-slate-100,
-        .auth-card .text-slate-200,
-        .auth-card .text-slate-300 {
-            color: #1e293b !important;
+        .auth-button:hover { background: #0f172a; }
+        .auth-button:active { transform: scale(0.98); }
+        .auth-secondary-button {
+            width: 100%;
+            border-radius: 9999px;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            color: #334155;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            transition: background-color 0.2s ease, color 0.2s ease;
         }
-        .auth-card .text-slate-400,
-        .auth-card .text-slate-500 {
-            color: #64748b !important;
+        .auth-secondary-button:hover {
+            background: #e2e8f0;
+            color: #0f172a;
         }
-        .auth-card .text-emerald-300,
-        .auth-card .text-emerald-400 {
-            color: #0284c7 !important;
+        .auth-link {
+            color: #0284c7;
+            font-size: 0.75rem;
+            font-weight: 700;
         }
-        .auth-card .bg-emerald-600,
-        .auth-card .bg-gradient-to-r {
-            background: #071529 !important;
-            color: #ffffff !important;
+        .auth-link:hover { color: #075985; text-decoration: underline; }
+        .auth-note {
+            border: 1px solid #bae6fd;
+            background: #f0f9ff;
+            color: #075985;
+            border-radius: 1rem;
+            padding: 0.875rem;
+            font-size: 0.75rem;
         }
-        .auth-card .bg-slate-800 {
-            background: #e2e8f0 !important;
-            color: #334155 !important;
+        .auth-card-soft {
+            border: 1px solid #e2e8f0;
+            background: rgba(248, 250, 252, 0.8);
+            border-radius: 1rem;
         }
     </style>
     @stack('styles')
@@ -138,36 +167,40 @@
     </div>
 
     <main id="main-content" class="auth-shell my-auto" style="--auth-card-width: @yield('cardWidth', '420px')">
-        <div class="auth-card bg-white/95 backdrop-blur-xl rounded-[2.5rem] shadow-2xl shadow-slate-950/30 p-8 sm:p-10 border border-white/60 transition-all">
+        <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] shadow-2xl shadow-slate-950/30 p-8 sm:p-10 border border-white/60 transition-all">
             <div class="text-center mb-8">
-                <a href="{{ url('/') }}" class="inline-flex flex-col items-center" aria-label="Voltar para a página inicial">
-                    @if($brandLogo)
-                        <img src="{{ $brandLogo }}" alt="{{ $brandName }}" class="h-12 w-auto object-contain max-w-[180px] mb-3">
-                    @else
-                        <span class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-500 to-sky-600 text-white shadow-lg shadow-sky-500/25 mb-3">
-                            <i class="fa-solid fa-layer-group text-2xl"></i>
-                        </span>
-                    @endif
-                    <span class="text-2xl font-black text-slate-800 tracking-tight">{{ $brandName }}</span>
-                </a>
+                @if($brandLogo)
+                    <div class="flex justify-center mb-3">
+                        <img src="{{ $brandLogo }}" alt="{{ $brandName }}" class="h-12 w-auto object-contain max-w-[180px]">
+                    </div>
+                @else
+                    <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-500 to-sky-600 text-white shadow-lg shadow-sky-500/25 mb-3">
+                        <i class="fa-solid fa-layer-group text-2xl"></i>
+                    </div>
+                @endif
+                <h1 class="text-2xl font-black text-slate-800 tracking-tight">{{ $brandName }}</h1>
                 <p class="text-xs font-medium text-slate-400 mt-0.5">@yield('subtitle', 'Plataforma de Gestão & Faturação')</p>
             </div>
 
-            @if (session('success') || session('status'))
-                <div class="mb-6 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-xs flex items-center gap-2 font-medium" role="status">
+            @php
+                $authStatus = session('success') ?? session('status');
+                if ($authStatus === 'verification-link-sent') {
+                    $authStatus = 'Um novo link de verificação foi enviado para o seu e-mail.';
+                }
+            @endphp
+
+            @if($authStatus)
+                <div class="mb-6 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-xs flex items-center gap-2 font-medium" role="status" aria-live="polite">
                     <i class="fa-solid fa-circle-check text-emerald-500 shrink-0"></i>
-                    <span>{{ session('success') ?? session('status') }}</span>
+                    <span>{{ $authStatus }}</span>
                 </div>
             @endif
 
-            @if (session('error') || $errors->any())
-                <div class="mb-6 p-3.5 rounded-2xl bg-rose-50 border border-rose-200/80 text-rose-700 text-xs flex items-start gap-2.5" role="alert">
+            @if($errors->any())
+                <div class="mb-6 p-3.5 rounded-2xl bg-rose-50 border border-rose-200/80 text-rose-700 text-xs flex items-start gap-2.5" role="alert" aria-live="assertive">
                     <i class="fa-solid fa-circle-exclamation mt-0.5 text-rose-500 shrink-0"></i>
                     <div class="space-y-0.5 font-medium">
-                        @if(session('error'))
-                            <div>{{ session('error') }}</div>
-                        @endif
-                        @foreach (collect($errors->all())->unique() as $error)
+                        @foreach(collect($errors->all())->unique() as $error)
                             <div>{{ $error }}</div>
                         @endforeach
                     </div>

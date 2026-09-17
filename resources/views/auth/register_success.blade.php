@@ -13,13 +13,50 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
         .font-heading { font-family: 'Outfit', sans-serif; }
-        @include('partials.auth-surface-styles')
+        .aura-bg {
+            background-color: #1e3a4c;
+            background-image:
+                radial-gradient(at 10% 20%, #115e59 0px, transparent 50%),
+                radial-gradient(at 90% 15%, #0369a1 0px, transparent 50%),
+                radial-gradient(at 80% 80%, #38bdf8 0px, transparent 50%),
+                radial-gradient(at 20% 85%, #475569 0px, transparent 50%),
+                radial-gradient(at 50% 50%, #0f766e 0px, transparent 50%);
+            background-size: cover;
+            background-attachment: fixed;
+        }
+        .success-card .text-white,
+        .success-card .text-slate-200,
+        .success-card .text-slate-300 {
+            color: #1e293b !important;
+        }
+        .success-card .text-slate-400,
+        .success-card .text-slate-500 {
+            color: #64748b !important;
+        }
+        .success-card .bg-slate-950\/80,
+        .success-card .bg-slate-900 {
+            background-color: #f8fafc !important;
+        }
+        .success-card .border-slate-800,
+        .success-card .border-slate-800\/80,
+        .success-card .border-slate-800\/60 {
+            border-color: #e2e8f0 !important;
+        }
+        .success-card .text-emerald-400,
+        .success-card .text-emerald-300 {
+            color: #0284c7 !important;
+        }
+        .success-card .bg-emerald-600 {
+            background-color: #005c68 !important;
+            color: #fff !important;
+        }
+        .success-card .bg-slate-800 {
+            background-color: #e2e8f0 !important;
+            color: #334155 !important;
+        }
     </style>
 </head>
 <body class="aura-bg min-h-screen flex items-center justify-center p-4 relative overflow-x-hidden antialiased selection:bg-sky-500 selection:text-white">
-
-    <!-- Ambient Glow Background -->
-    <div class="fixed inset-0 bg-[radial-gradient(ellipse_70%_70%_at_50%_30%,rgba(16,185,129,0.15),rgba(255,255,255,0))] pointer-events-none"></div>
 
     <div class="w-full max-w-xl relative z-10 my-8">
         
@@ -34,7 +71,7 @@
         </div>
 
         <!-- Success Card -->
-        <div class="auth-card bg-white/95 border border-white/60 rounded-[2.5rem] p-8 shadow-2xl shadow-slate-950/30 backdrop-blur-xl">
+        <div class="success-card bg-white/95 border border-white/60 rounded-[2.5rem] p-8 shadow-2xl shadow-slate-950/30 backdrop-blur-xl">
             
             <div class="text-center mb-6">
                 <div class="w-16 h-16 bg-amber-500/10 border-2 border-amber-500/30 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">

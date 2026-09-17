@@ -65,16 +65,17 @@ class OfflineRegistrationGuardTest extends TestCase
         $response = $this->get('/login');
         $response->assertStatus(200);
         $response->assertSee('Farmácia Esperança de Quelimane');
-        $response->assertSee('Entrar no Farmácia Esperança de Quelimane');
+        $response->assertSee('ENTRAR');
         $response->assertDontSee('Fazer Pré-Registo');
     }
 
-    public function test_login_page_shows_registration_link_in_cloud_mode(): void
+    public function test_login_page_renders_clean_login_in_cloud_mode(): void
     {
         config(['app.installation_mode' => 'cloud']);
 
         $response = $this->get('/login');
         $response->assertStatus(200);
-        $response->assertSee('Fazer Pré-Registo');
+        $response->assertSee('ENTRAR');
+        $response->assertDontSee('Fazer Pré-Registo');
     }
 }
