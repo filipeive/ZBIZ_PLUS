@@ -25,6 +25,7 @@ class CustomLoginAndOfflineGuardTest extends TestCase
         $response = $this->get('/login');
         $response->assertOk();
         $response->assertSee('ZBIZ+');
+        $response->assertSee('Fazer Pré-Registo');
         $response->assertSee('Acesso ao Sistema');
     }
 
