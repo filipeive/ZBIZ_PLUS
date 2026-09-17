@@ -29,3 +29,4 @@ test('new business tenants can submit pre-registration', function () {
 
     $response->assertRedirect('/register/success');
 });
+

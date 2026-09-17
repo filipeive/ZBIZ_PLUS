@@ -40,7 +40,7 @@ class SuperAdminSeeder extends Seeder
         $name     = env('SUPERADMIN_NAME', 'Super Admin ZBPOS+');
         $email    = env('SUPERADMIN_EMAIL', 'superadmin@zbizpos.com');
         $password = env('SUPERADMIN_PASSWORD', 'password123');
-        $phone    = env('SUPERADMIN_PHONE', '841234567');
+        $phone    = env('SUPERADMIN_PHONE', '862134230');
 
         // 3. Em ambientes locais/offline, se existir um tenant primário, vincular para conveniência
         $tenantId = null;
@@ -84,3 +84,4 @@ class SuperAdminSeeder extends Seeder
         $this->command?->info("=================================================================");
     }
 }
+

@@ -30,17 +30,19 @@ class OfflineRegistrationGuardTest extends TestCase
     {
         config(['app.installation_mode' => 'offline']);
 
-        $response = $this->get('/register');
-        $response->assertStatus(404);
+        $responseGet = $this->get('/register');
+        $responseGet->assertStatus(404);
 
         $responsePost = $this->post('/register', [
-            'company_name' => 'Farmácia Offline Teste',
-            'admin_name'   => 'Admin Offline',
-            'email'        => 'offline@teste.co.mz',
-            'phone'        => '840001122',
-            'password'     => 'password123',
+            'company_name'          => 'Farmácia Offline Teste',
+            'business_type'         => 'pharmacy',
+            'province'              => 'Maputo Cidade',
+            'admin_name'            => 'Admin Offline',
+            'email'                 => 'offline@teste.co.mz',
+            'phone'                 => '840001122',
+            'password'              => 'password123',
             'password_confirmation' => 'password123',
-            'plan_slug'    => 'starter',
+            'plan_slug'             => 'pharmacy_plus',
         ]);
         $responsePost->assertStatus(404);
     }
@@ -77,3 +79,4 @@ class OfflineRegistrationGuardTest extends TestCase
         $response->assertDontSee('Fazer Pré-Registo');
     }
 }
+

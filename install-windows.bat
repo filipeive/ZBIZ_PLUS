@@ -119,7 +119,7 @@ if %errorlevel% neq 0 (
     )
 )
 
-echo [1/4] Verificando arquivo de ambiente .env...
+echo [1/5] Verificando arquivo de ambiente .env...
 if not exist .env (
     copy .env.example .env >nul
     echo [✓] Arquivo .env criado a partir de .env.example.
