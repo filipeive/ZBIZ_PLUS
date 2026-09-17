@@ -19,6 +19,7 @@ use App\Services\PermissionService;
 
 class User extends Authenticatable
 {
+    use HasFactory, HasApiTokens;
     use HasFactory, HasApiTokens, Notifiable;
 
     protected $fillable = [

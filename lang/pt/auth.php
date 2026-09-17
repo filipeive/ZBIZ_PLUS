@@ -5,3 +5,4 @@ return [
     'password' => 'A palavra-passe fornecida está incorreta.',
     'throttle' => 'Muitas tentativas de acesso. Por favor, tente novamente em :seconds segundos.',
 ];
+

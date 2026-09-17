@@ -86,6 +86,29 @@
             color: #94a3b8;
             font-weight: 400;
         }
+
+        /* Pill button style matching password reset */
+        .auth-button {
+            width: 100%;
+            border-radius: 9999px;
+            background: #071529;
+            color: #fff;
+            padding: 0.875rem 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            box-shadow: 0 18px 35px rgba(7, 21, 41, 0.24);
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+        }
+        .auth-button:hover {
+            background: #0f2744;
+            transform: translateY(-1.5px);
+            box-shadow: 0 22px 42px rgba(7, 21, 41, 0.35);
+        }
+        .auth-button:active {
+            transform: translateY(0) scale(0.98);
+        }
     </style>
 </head>
 <body class="aura-bg min-h-screen flex flex-col justify-between items-center p-4 sm:p-6 antialiased selection:bg-sky-500 selection:text-white"
@@ -218,7 +241,7 @@
                 <div class="pt-4">
                     <button type="submit" 
                             :disabled="isSubmitting"
-                            class="w-full py-3.5 px-6 rounded-full bg-navy-950 hover:bg-slate-900 active:scale-[0.98] text-white text-xs font-bold tracking-widest uppercase transition-all duration-200 shadow-xl shadow-navy-950/25 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed">
+                            class="auth-button flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed">
                         
                         <template x-if="!isSubmitting">
                             <span class="tracking-wider">ENTRAR</span>

@@ -7,3 +7,4 @@ return [
     'token' => 'Este código ou token de recuperação é inválido ou expirou.',
     'user' => 'Não conseguimos encontrar nenhum utilizador com os dados fornecidos.',
 ];
+
