@@ -266,7 +266,6 @@ class LoginController extends AppBaseController
 
         return $request->wantsJson()
             ? new JsonResponse([], 204)
-            : redirect('/')
-              ->with('status', "Até logo, {$userName}! Você saiu com segurança.");
+            : redirect()->route('login');
     }
 }
