@@ -139,7 +139,7 @@
                 <div class="mb-6 p-3.5 rounded-2xl bg-rose-50 border border-rose-200/80 text-rose-700 text-xs flex items-start gap-2.5">
                     <i class="fa-solid fa-circle-exclamation mt-0.5 text-rose-500 shrink-0"></i>
                     <div class="space-y-0.5 font-medium">
-                        @foreach ($errors->all() as $error)
+                        @foreach (collect($errors->all())->unique() as $error)
                             <div>{{ $error }}</div>
                         @endforeach
                     </div>

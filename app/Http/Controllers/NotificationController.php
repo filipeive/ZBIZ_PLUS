@@ -19,7 +19,8 @@ class NotificationController extends Controller
 
         // User notifications (DB)
         $notifications = Notification::where('user_id', $user->id)
-            ->orderByRaw('read ASC, created_at DESC')
+            ->orderBy('read', 'asc')
+            ->orderBy('created_at', 'desc')
             ->paginate(20);
 
         $unreadCount = Notification::where('user_id', $user->id)
@@ -82,7 +83,8 @@ class NotificationController extends Controller
         $branchId = session('active_branch_id');
 
         $notifications = Notification::where('user_id', $user->id)
-            ->orderByRaw('read ASC, created_at DESC')
+            ->orderBy('read', 'asc')
+            ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get()
             ->map(fn ($n) => [

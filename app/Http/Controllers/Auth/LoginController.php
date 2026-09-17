@@ -16,6 +16,8 @@ use App\Http\Controllers\AppBaseController;
 
 class LoginController extends AppBaseController
 {
+    private const FAILED_LOGIN_MESSAGE = 'Os dados de acesso não correspondem aos nossos registos.';
+
     /*
     |--------------------------------------------------------------------------
     | Login Controller
@@ -227,7 +229,7 @@ class LoginController extends AppBaseController
         }
 
         throw ValidationException::withMessages([
-            $this->username() => [trans('auth.failed')],
+            $this->username() => [self::FAILED_LOGIN_MESSAGE],
         ]);
     }
 

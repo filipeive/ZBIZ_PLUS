@@ -11,6 +11,8 @@ use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
 {
+    private const FAILED_LOGIN_MESSAGE = 'Os dados de acesso não correspondem aos nossos registos.';
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -76,8 +78,7 @@ class LoginRequest extends FormRequest
         RateLimiter::hit($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'login' => trans('auth.failed'),
-            'email' => trans('auth.failed'),
+            'login' => self::FAILED_LOGIN_MESSAGE,
         ]);
     }
 
@@ -97,10 +98,7 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'login' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
+            'login' => 'Muitas tentativas de acesso. Tente novamente em '.$seconds.' segundos.',
         ]);
     }
 
