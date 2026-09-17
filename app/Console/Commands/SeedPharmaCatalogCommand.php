@@ -72,3 +72,4 @@ class SeedPharmaCatalogCommand extends Command
         return 0;
     }
 }
+

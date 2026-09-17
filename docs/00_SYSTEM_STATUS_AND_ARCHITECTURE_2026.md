@@ -1,3 +1,4 @@
+# RELATÓRIO DO ESTADO ATUAL DO SISTEMA: ZBIZ+ (v1.0.20)
 # RELATÓRIO DO ESTADO ATUAL DO SISTEMA: ZBIZ+ (v1.0.22)
 ## `docs/00_SYSTEM_STATUS_AND_ARCHITECTURE_2026.md`
 
@@ -7,6 +8,7 @@
 
 O **ZBIZ+** é uma plataforma empresarial completa de **Gestão Comercial (ERP), Ponto de Venda (POS) e Controlo Financeiro Multi-Tenant**, arquitetada e desenvolvida especificamente para resolver os desafios do comércio, saúde e serviços em **Moçambique**.
 
+* **Versão de Produção Atual:** `1.0.21`
 * **Versão de Produção Atual:** `1.0.22`
 * **Arquitetura:** Monólito Modular de Alta Coesão (Modular Monolith) com isolamento rigoroso por Tenant e Branch.
 * **Stack Tecnológico:**
@@ -16,6 +18,7 @@ O **ZBIZ+** é uma plataforma empresarial completa de **Gestão Comercial (ERP),
   * **Banco de Dados:** MySQL 8.0+ (Produção), MariaDB 11.x (Local), SQLite em Memória (Testes Automatizados)
   * **Sessões & Cache:** Drivers em `file` para alta resiliência e velocidade em balcões monomáquina, com tela de diagnóstico de auto-recuperação (`errors.database`).
   * **Segurança & Autenticação:** Autenticação flexível (Email, Nome de Usuário, Telemóvel e Código de Funcionário), Recuperação de senha por E-mail ou SMS OTP, RBAC via `spatie/laravel-permission`, Soft Deletes para preservação de licenças/certificados, Criptografia SHA-256 HMAC para Licenças Offline
+  * **Suite de Testes:** Pest 3.x / PHPUnit (Testes de isolamento de dados, licensing, sync e fallback 100% aprovados)
   * **Backup em Nuvem:** Cofre centralizado com endpoint `/api/sync/backup-upload` e comando agendável `php artisan zbiz:backup-cloud-push`
   * **Suite de Testes:** Pest 3.x / PHPUnit (Testes de isolamento de dados, licensing, sync, fallback e cloud backup 100% aprovados)
 

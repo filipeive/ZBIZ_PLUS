@@ -332,6 +332,7 @@ Para imprimir faturas em rolo de 80mm ou 58mm sem abrir janelas de confirmação
 
 ---
 
+## 11. Contactos de Assistência e Suporte
 ## 11. Cópia de Segurança e Backup na Nuvem ZBIZ+
 
 O ZBIZ+ possui redundância e salvaguarda completa dos dados:

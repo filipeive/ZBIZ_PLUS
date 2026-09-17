@@ -1,5 +1,6 @@
 # 📖 Manual do Usuário — ZBIZ+ Enterprise Cloud & POS Suite
 
+**Versão 1.0.20 — Guia Completo para Gestores, Operadores de Caixa e Administradores**  
 **Versão 1.0.22 — Guia Completo para Gestores, Operadores de Caixa e Administradores**  
 **Desenvolvido por:** Fdsmultiservices  
 **Suporte Técnico Oficial:** (+258) 86 213 4230 | (+258) 84 724 0296 | fdsmultiservices@gmail.com  
@@ -346,8 +347,13 @@ Aceda a **Definições do Sistema** (`/settings`):
   - Recibos Térmicos de Amortização de Dívidas.
   - Relatórios Oficiais de Apuramento de IVA Modelo A.
 
+### 14.2 Gestão de Backups & Cópias de Segurança
 ### 14.2 Gestão de Backups & Cópias de Segurança na Nuvem
 Na aba **"6. Backups & Base de Dados"**:
+* **Criar Backup Agora**: Gera com 1 clique um dump SQL integral e criptograficamente íntegro de toda a base de dados do tenant.
+* **Tabela de Histórico**: Visualize o nome do ficheiro (com carimbo de data e hora), tamanho em KB/MB e data de criação.
+* **Descarregar Backup**: Descarregue o ficheiro `.sql` para o seu computador ou pen-drive externa para segurança física dos dados.
+* **Eliminar Backup**: Exclua arquivos antigos quando necessário para manter o armazenamento limpo.
 * **Criar Backup Local (SQL)**: Gera um dump SQL integral e seguro da base de dados no computador local.
 * **Criar & Enviar p/ Nuvem**: Cria o backup e transmite-o automaticamente via API segura e criptografada para o cofre central na Nuvem ZBIZ+.
 * **Enviar p/ Nuvem (por arquivo)**: Na tabela de backups existentes, qualquer cópia gerada pode ser enviada para a Nuvem com 1 clique.

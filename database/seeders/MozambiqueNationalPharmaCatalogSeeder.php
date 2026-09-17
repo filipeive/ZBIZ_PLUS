@@ -1062,3 +1062,4 @@ class MozambiqueNationalPharmaCatalogSeeder extends Seeder
         ];
     }
 }
+

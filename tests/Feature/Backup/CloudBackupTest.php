@@ -74,3 +74,4 @@ class CloudBackupTest extends TestCase
         $this->assertEquals(0, $exitCode);
     }
 }
+

@@ -4,6 +4,7 @@
 
 ![ZBIZ+ Banner](public/favicon.png)
 
+[![Versão](https://img.shields.io/badge/versão-v1.0.20-emerald.svg)](./docs/20_CHANGELOG.md)
 [![Versão](https://img.shields.io/badge/versão-v1.0.22-emerald.svg)](./docs/20_CHANGELOG.md)
 [![PHP](https://img.shields.io/badge/PHP-8.3-blue.svg)](https://www.php.net)
 [![Laravel](https://img.shields.io/badge/Laravel-12.x-red.svg)](https://laravel.com)
@@ -18,6 +19,7 @@
 O **ZBIZ+** é uma evolução de nível empresarial do ReproSys, arquitetado como um Monólito Modular Multi-Tenant com isolamento estrito de dados por empresa e filial. Desenvolvido para resolver os desafios reais do comércio e serviços em Moçambique: conectividade instável, necessidade de conformidade regulatória (ANARME / AT Moçambique), gestão de múltiplos balcões/filiais e reconciliação financeira (M-Pesa e e-Mola).
 
 ### 🧩 Módulos e Recursos Principais:
+* **💊 ZBIZ Farmácia & Saúde:** Rastreabilidade estrita de Lotes, Validades (alertas dinâmicos de 30/60/90 dias), algoritmo FEFO (*First Expire, First Out*), enquadramento de isenção de IVA (Art. 9º CIVA), dosagem, substância ativa e relatórios de psicotrópicos em conformidade com a **ANARME**.
 * **💊 ZBIZ Farmácia & Saúde:** Catálogo Nacional Moçambicano oficial pré-populado com mais de 60 medicamentos de alta rotatividade, rastreabilidade estrita de Lotes, Validades (alertas dinâmicos de 30/60/90 dias), algoritmo FEFO (*First Expire, First Out*), enquadramento de isenção de IVA (Art. 9º CIVA), dosagem, substância ativa e relatórios de psicotrópicos em conformidade com a **ANARME**. Comando Artisan: `php artisan zbiz:seed-pharma-catalog`.
 * **📱 PWA & Mobile UI/UX:** Instalação como App nativo em smartphones Android e iOS (PWA), Service Worker para cache inteligente e Bottom Navigation Bar inferior com acesso rápido em 1 toque a Dashboard, Stock, Caixa PDV, Vendas e Menu.
 * **☁️ Backup em Nuvem Central:** Envio seguro com 1 clique (ou via cron/CLI) de dumps SQL criptografados diretamente para o cofre centralizado na Nuvem ZBIZ+ (`php artisan zbiz:backup-cloud-push`).
@@ -27,6 +29,9 @@ O **ZBIZ+** é uma evolução de nível empresarial do ReproSys, arquitetado com
 * **👥 Clientes & Fornecedores:** Gestão cadastral completa, limite de crédito, contas correntes, controle de distribuidores ativos/inativos e vínculo direto fornecedor-produto.
 * **🔒 Fecho Cego de Caixa (Anti-Fraude):** Abertura de turnos com fundo de maneio, fecho cego sem revelar valor esperado ao operador, calculadora embutida de notas/moedas de Meticais (MZN), apuramento imediato de quebra/sobra e emissão de Fecho Z térmico.
 * **🇲🇿 Fiscalidade & IVA Moçambique (Modelo A):** Apuramento automático de vendas isentas (Art. 9º CIVA) e tributáveis (16%), base tributável, IVA liquidado e exportação oficial do Mapa Modelo A da Autoridade Tributária em PDF timbrado.
+* **🧾 Comprovativos Térmicos com Logótipo Dinâmico:** Padronização visual em 80mm/58mm com o logótipo oficial do tenant, talões de venda, comprovativo térmico de amortização de dívidas e fecho de turno.
+* **💾 Backups & Segurança de Dados:** Criação sob demanda de dumps completos da base de dados (.sql) diretamente pela interface das Definições, com download e exclusão segura.
+* **💳 Pagamentos Nacionais:** Suporte a pagamentos em Dinheiro, M-Pesa (C2B STK Push), e-Mola, Cartão POS (POS físico) e Vendas a Crédito com gestão de amortizações.
 * **🔑 Login Flexível & Recuperação por SMS OTP:** Autenticação unificada por E-mail, Nome de Usuário, Telemóvel (Vodacom/Tmcel/Movitel) ou Código de Colaborador, além de recuperação de senha instantânea via SMS OTP.
 * **🏢 SaaS & Centro de Controlo do Proprietário:** Emissão de chaves de licença seriais offline (certificados PDF oficiais), upgrade instantâneo de planos e modo suporte (*impersonate*) com 1 clique.
 
