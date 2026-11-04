@@ -1976,8 +1976,8 @@
                 <span class="text-[8px] font-black uppercase tracking-wider mt-0.5">SaaS</span>
             </a>
 
-            <a href="{{ route('admin.users') }}" 
-               class="flex flex-col items-center justify-center gap-1 py-1 px-2.5 rounded-xl transition {{ request()->routeIs('admin.users*') ? 'text-emerald-400 font-bold' : 'hover:text-slate-200' }}">
+            <a href="{{ route('users.index') }}" 
+               class="flex flex-col items-center justify-center gap-1 py-1 px-2.5 rounded-xl transition {{ request()->routeIs('users.*') ? 'text-emerald-400 font-bold' : 'hover:text-slate-200' }}">
                 <i class="fa-solid fa-users-gear text-lg"></i>
                 <span class="text-[10px]">Contas</span>
             </a>
