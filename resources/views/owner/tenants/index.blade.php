@@ -192,8 +192,8 @@
                                 <i class="fa-solid {{ $sectorIcon }} text-base"></i>
                             </div>
                             <div>
-                                <h3 class="font-bold text-white text-base">
-                                    <a href="{{ route('owner.tenants.show', $tenant) }}" class="hover:text-emerald-400 transition">
+                                <h3 class="font-bold text-slate-900 dark:text-white text-base">
+                                    <a href="{{ route('owner.tenants.show', $tenant) }}" class="hover:text-emerald-600 dark:hover:text-emerald-400 transition">
                                         {{ $tenant->name }}
                                     </a>
                                 </h3>
@@ -241,16 +241,41 @@
                     </div>
                 </div>
 
-                <div class="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                <div class="mt-5 pt-4 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
                     <div>
                         <span class="text-[10px] text-slate-500 font-bold block uppercase">Contacto</span>
                         <span class="text-xs text-slate-300 font-mono">{{ $tenant->phone ?? ($tenant->email ?? '-') }}</span>
                     </div>
 
-                    <div class="flex items-center gap-1.5">
-                        <a href="{{ route('owner.tenants.show', $tenant) }}" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold transition flex items-center gap-1.5 border border-slate-700">
-                            <i class="fa-solid fa-chart-line text-emerald-400"></i>
-                            <span>Gerir Empresa</span>
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        @if($tenant->status === 'pending')
+                            <button type="button"
+                                    @click="openApproveModal({
+                                        id: {{ $tenant->id }},
+                                        name: '{{ addslashes($tenant->name) }}',
+                                        email: '{{ addslashes($tenant->email ?? '') }}',
+                                        phone: '{{ addslashes($tenant->phone ?? '') }}',
+                                        business_type: '{{ $tenant->business_type }}',
+                                        admin_name: '{{ addslashes($tenant->users->first()?->name ?? 'Gestor') }}'
+                                    }, {{ $subscription?->plan_id ?? ($plans->first()?->id ?? 1) }})"
+                                    class="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm transition flex items-center gap-1.5 animate-pulse cursor-pointer"
+                                    title="Definir tempo de teste e aprovar acesso via SMS">
+                                <i class="fa-solid fa-check-circle text-xs"></i>
+                                <span>Aprovar Teste</span>
+                            </button>
+                        @else
+                            <form method="POST" action="{{ route('owner.tenants.impersonate', $tenant) }}" class="inline">
+                                @csrf
+                                <button type="submit" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-400 hover:text-sky-300 font-bold text-[11px] border border-slate-700 transition flex items-center gap-1.5 cursor-pointer" title="Aceder como Suporte Técnico">
+                                    <i class="fa-solid fa-right-to-bracket text-[10px]"></i>
+                                    <span>Suporte</span>
+                                </button>
+                            </form>
+                        @endif
+
+                        <a href="{{ route('owner.tenants.show', $tenant) }}" class="px-3 py-1.5 rounded-xl {{ $theme['btn'] }} text-xs font-bold transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-sliders text-[10px]"></i>
+                            <span>Gerir</span>
                         </a>
                     </div>
                 </div>
