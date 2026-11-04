@@ -11,39 +11,7 @@
 <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
 <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
 <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
-<script src="https://cdn.tailwindcss.com"></script>
-<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script>
-tailwind.config = {
-  theme: {
-    extend: {
-      fontFamily: {
-        sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
-        mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace']
-      },
-      colors: {
-        ink: '#0F1A15',
-        muted: '#5A6B62',
-        line: '#E2E8E4',
-        surface: '#F7F8F6',
-        brand: {
-          DEFAULT: '#166534',
-          dark: '#124D2A',
-          soft: '#E8F5EE'
-        }
-      },
-      boxShadow: {
-        'soft': '0 4px 24px -4px rgba(15, 26, 21, 0.07)',
-        'card': '0 14px 40px -16px rgba(15, 26, 21, 0.12)',
-        'receipt': '0 22px 50px -18px rgba(15, 26, 21, 0.16)'
-      }
-    }
-  }
-}
-</script>
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 <style>
   [x-cloak] { display: none !important; }
   body { font-variant-numeric: tabular-nums; }

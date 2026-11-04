@@ -1,7 +1,8 @@
-// ZBIZ+ PWA Service Worker v1.0.22
-const CACHE_NAME = 'zbiz-pwa-v1';
+// ZBIZ+ PWA Service Worker v1.0.23 (Local Assets & Safe Offline Cache)
+const CACHE_NAME = 'zbiz-pwa-v2';
 const STATIC_ASSETS = [
     '/favicon.png',
+    '/favicon.ico',
     '/apple-touch-icon.png',
     '/manifest.json'
 ];
@@ -37,45 +38,48 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     const request = event.request;
 
-    // Ignorar requisições não GET ou endpoints de sync/transações
+    // Regra estrita de segurança: NUNCA armazenar em cache requisições não-GET,
+    // transações financeiras, endpoints de sync ou chamadas da API
     if (request.method !== 'GET' || 
-        request.url.includes('/api/sync/') || 
+        request.url.includes('/api/') || 
         request.url.includes('/pos/sale') ||
-        request.url.includes('/api/ping')) {
+        request.url.includes('/cash/') ||
+        request.url.includes('/sales/') ||
+        request.url.includes('/login') ||
+        request.url.includes('/logout')) {
         return;
     }
 
-    // Para páginas de navegação HTML: Network First com fallback de cache
+    // Para páginas de navegação HTML: Network First sem armazenar HTML autenticado no cache
     if (request.mode === 'navigate') {
         event.respondWith(
             fetch(request).catch(() => {
-                return caches.match(request).then((response) => {
-                    return response || caches.match('/favicon.png');
-                });
+                return caches.match('/favicon.png');
             })
         );
         return;
     }
 
-    // Para arquivos estáticos (CSS, JS, Imagens, Fontes): Stale-While-Revalidate
-    if (request.destination === 'style' || 
+    // Para assets locais estáticos compilados em /build/ (CSS, JS, Fontes WOFF2, Imagens)
+    if (request.url.includes('/build/') || 
+        request.destination === 'style' || 
         request.destination === 'script' || 
-        request.destination === 'image' || 
-        request.destination === 'font') {
+        request.destination === 'font' || 
+        request.destination === 'image') {
         event.respondWith(
             caches.open(CACHE_NAME).then((cache) => {
                 return cache.match(request).then((cachedResponse) => {
-                    const fetchPromise = fetch(request).then((networkResponse) => {
+                    if (cachedResponse) {
+                        return cachedResponse;
+                    }
+                    return fetch(request).then((networkResponse) => {
                         if (networkResponse && networkResponse.status === 200) {
                             cache.put(request, networkResponse.clone());
                         }
                         return networkResponse;
                     }).catch(() => cachedResponse);
-
-                    return cachedResponse || fetchPromise;
                 });
             })
         );
     }
 });
-

@@ -356,7 +356,7 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{{-- Chart.js carregado no app.js via Vite --}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Dados das comparações
