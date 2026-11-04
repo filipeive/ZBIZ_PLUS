@@ -320,7 +320,7 @@ Route::prefix('webhooks')->name('webhooks.')->group(function () {
 // ==========================================
 // HEALTH CHECK & CONNECTIVITY (PUBLIC)
 // ==========================================
-Route::get('/health', function () {
+Route::get('/health', function (\Illuminate\Http\Request $request) {
     $dbOnline = false;
     try {
         \Illuminate\Support\Facades\DB::connection()->getPdo();
@@ -329,19 +329,56 @@ Route::get('/health', function () {
         $dbOnline = false;
     }
 
-    $storageWritable = is_writable(storage_path('logs'));
-    $queueDriver = (string) config('queue.default', 'sync');
+    $logsPath = (string) config('services.health.storage_path', storage_path('logs'));
+    $storageWritable = is_dir($logsPath) && is_writable($logsPath);
 
-    return response()->json([
-        'status'    => ($dbOnline && $storageWritable) ? 'ok' : 'degraded',
+    $queueDriver = (string) config('queue.default', 'sync');
+    $queueStatus = 'n/a';
+    $queueHealthy = true;
+
+    try {
+        if ($queueDriver === 'database') {
+            if ($dbOnline && \Illuminate\Support\Facades\Schema::hasTable('jobs')) {
+                \Illuminate\Support\Facades\DB::table('jobs')->limit(1)->count();
+                $queueStatus = 'up';
+            } else {
+                $queueStatus = 'down';
+                $queueHealthy = false;
+            }
+        } elseif ($queueDriver === 'redis') {
+            \Illuminate\Support\Facades\Redis::connection()->ping();
+            $queueStatus = 'up';
+        } elseif (in_array($queueDriver, ['sync', 'null', 'array'], true)) {
+            $queueStatus = 'n/a';
+        } else {
+            $queueStatus = 'up';
+        }
+    } catch (\Throwable) {
+        $queueStatus = 'down';
+        $queueHealthy = false;
+    }
+
+    $isHealthy = $dbOnline && $storageWritable && $queueHealthy;
+    $payload = [
+        'status'    => $isHealthy ? 'ok' : 'degraded',
         'timestamp' => now()->toISOString(),
-        'version'   => config('app.version', '1.0.22'),
-        'checks'    => [
+    ];
+
+    $user = $request->user() ?? auth('sanctum')->user() ?? auth()->user();
+    $expectedHealthToken = (string) config('services.health.token', '');
+    $providedHealthToken = (string) ($request->header('X-Health-Token') ?? $request->bearerToken() ?? '');
+    $canViewDetails = ($user && method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin())
+        || ($expectedHealthToken !== '' && $providedHealthToken !== '' && hash_equals($expectedHealthToken, $providedHealthToken));
+
+    if ($canViewDetails) {
+        $payload['checks'] = [
             'database' => $dbOnline ? 'up' : 'down',
             'storage'  => $storageWritable ? 'writable' : 'readonly',
-            'queue'    => $queueDriver,
-        ],
-    ], $dbOnline ? 200 : 503);
+            'queue'    => $queueStatus,
+        ];
+    }
+
+    return response()->json($payload, $isHealthy ? 200 : 503);
 })->name('health');
 
 Route::get('/ping', function () {
