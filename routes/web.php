@@ -662,3 +662,9 @@ Route::get('/api/ping', function () {
 })->name('web.ping');
 
 require __DIR__ . '/auth.php';
+
+if (app()->environment('local', 'testing')) {
+    Route::get('/dev/ui', function () {
+        return view('dev.ui');
+    })->middleware(['auth'])->name('dev.ui');
+}
