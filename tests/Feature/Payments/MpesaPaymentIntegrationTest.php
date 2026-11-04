@@ -375,4 +375,34 @@ class MpesaPaymentIntegrationTest extends TestCase
         $this->assertEquals('past_due', $sub->fresh()->status);
         $this->assertEquals('trial', $this->tenant->fresh()->status);
     }
+
+    public function test_mpesa_c2b_simulation_runs_in_local_or_testing_and_fails_closed_in_production_without_api_key(): void
+    {
+        config(['services.mpesa.api_key' => null]);
+
+        // Caso 1: Em ambiente testing/local sem api_key -> simula com sucesso
+        $this->app['env'] = 'testing';
+        $simResult = $this->mpesa->initiateC2B(1500.00, '841234567', 'REF-SIM', 'TP-SIM');
+        $this->assertTrue($simResult['success']);
+        $this->assertEquals('INS-0', $simResult['status']);
+
+        // Caso 2: Em ambiente production sem api_key -> falha com success=false e regista Log::error
+        Log::spy();
+        $this->app['env'] = 'production';
+
+        try {
+            $prodResult = $this->mpesa->initiateC2B(1500.00, '841234567', 'REF-PROD', 'TP-PROD');
+        } finally {
+            $this->app['env'] = 'testing';
+        }
+
+        $this->assertFalse($prodResult['success']);
+        $this->assertStringContainsString('credenciais', $prodResult['message']);
+
+        Log::shouldHaveReceived('error')
+            ->withArgs(fn (string $msg, array $ctx) => str_contains($msg, 'Credenciais da API M-Pesa não configuradas')
+                && ($ctx['reference'] ?? null) === 'REF-PROD'
+                && ($ctx['masked_phone'] ?? null) === '25884****67')
+            ->once();
+    }
 }

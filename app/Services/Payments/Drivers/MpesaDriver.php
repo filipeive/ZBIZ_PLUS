@@ -65,20 +65,35 @@ class MpesaDriver
             'masked_phone'    => $maskedPhone,
         ]);
 
-        // Se estiver em ambiente de teste ou chaves não configuradas, simular sucesso
         $apiKey = config('services.mpesa.api_key');
-        $publicKey = config('services.mpesa.public_key');
 
-        if (empty($apiKey) || config('app.env') === 'testing') {
+        if (empty($apiKey)) {
+            if (app()->environment(['local', 'testing'])) {
+                return [
+                    'success'         => true,
+                    'status'          => 'INS-0',
+                    'description'     => 'Request processed successfully (Simulated)',
+                    'transaction_id'  => 'SIM-' . strtoupper(uniqid()),
+                    'conversation_id' => 'CONV-' . strtoupper(uniqid()),
+                    'third_party_ref' => $thirdPartyRef,
+                    'amount'          => $amount,
+                    'phone'           => $formattedPhone,
+                ];
+            }
+
+            Log::error('[MpesaDriver] Credenciais da API M-Pesa não configuradas fora de ambiente local/testing.', [
+                'reference'       => $reference,
+                'third_party_ref' => $thirdPartyRef,
+                'amount'          => $amount,
+                'masked_phone'    => $maskedPhone,
+                'environment'     => app()->environment(),
+            ]);
+
             return [
-                'success'             => true,
-                'status'              => 'INS-0',
-                'description'         => 'Request processed successfully (Simulated)',
-                'transaction_id'      => 'SIM-' . strtoupper(uniqid()),
-                'conversation_id'     => 'CONV-' . strtoupper(uniqid()),
-                'third_party_ref'     => $thirdPartyRef,
-                'amount'              => $amount,
-                'phone'               => $formattedPhone,
+                'success'     => false,
+                'status'      => 'INS-98',
+                'description' => 'Serviço M-Pesa indisponível: credenciais da operadora não configuradas no servidor.',
+                'message'     => 'Serviço M-Pesa indisponível: credenciais da operadora não configuradas no servidor.',
             ];
         }
 
