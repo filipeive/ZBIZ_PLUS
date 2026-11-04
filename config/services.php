@@ -45,4 +45,17 @@ return [
         'token'     => env('CLOUD_SYNC_TOKEN', env('SYNC_TOKEN', 'zbiz_sync_default_token')),
     ],
 
+    'mpesa' => [
+        'env'                   => env('MPESA_ENV', 'sandbox'),
+        'api_key'               => env('MPESA_API_KEY'),
+        'public_key'            => env('MPESA_PUBLIC_KEY'),
+        'service_provider_code' => env('MPESA_SERVICE_PROVIDER_CODE', '171717'),
+        'webhook_secret'        => env('MPESA_WEBHOOK_SECRET'),
+        'allowed_ips'           => array_values(array_filter(array_map('trim', explode(',', (string) env('MPESA_WEBHOOK_ALLOWED_IPS', ''))))),
+    ],
+
+    'health' => [
+        'token' => env('HEALTH_CHECK_TOKEN'),
+    ],
+
 ];

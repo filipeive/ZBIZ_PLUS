@@ -353,18 +353,18 @@ Route::get('/ping', function () {
 // ==========================================
 // M-PESA & MOBILE PAYMENTS (ZBIZ+)
 // ==========================================
-Route::prefix('webhooks')->group(function () {
+Route::prefix('webhooks')->middleware(['mpesa.webhook', 'throttle:60,1'])->group(function () {
     Route::post('/mpesa', [\App\Http\Controllers\API\PaymentWebhookController::class, 'handleMpesaWebhook'])->name('webhooks.mpesa');
 });
 
-Route::prefix('payments')->group(function () {
+Route::prefix('payments')->middleware(['auth:sanctum', 'tenant', 'throttle:10,1'])->group(function () {
     Route::post('/mpesa/c2b', [\App\Http\Controllers\API\PaymentWebhookController::class, 'initiateMpesa'])->name('payments.mpesa.c2b');
 });
 
 // ==========================================
 // LOCAL -> CLOUD ASYNC SYNC INGESTION
 // ==========================================
-Route::prefix('sync')->name('sync.')->group(function () {
+Route::prefix('sync')->name('sync.')->middleware('throttle:30,1')->group(function () {
     Route::post('/ingest', [\App\Http\Controllers\Api\SyncIngestController::class, 'ingest'])->name('ingest');
     Route::post('/verify-license', [\App\Http\Controllers\Api\SyncIngestController::class, 'verifyLicense'])->name('verify_license');
     Route::post('/backup-upload', [\App\Http\Controllers\Api\SyncIngestController::class, 'uploadBackup'])->name('backup_upload');

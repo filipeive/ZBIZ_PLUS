@@ -44,10 +44,20 @@ class PaymentWebhookController extends Controller
      */
     public function handleMpesaWebhook(Request $request): JsonResponse
     {
-        Log::info('M-Pesa Webhook recebido:', $request->all());
+        $payload = $request->all();
+        $rawPhone = $payload['input_CustomerMSISDN'] ?? $payload['phone'] ?? $payload['msisdn'] ?? null;
 
-        $result = $this->mpesaDriver->processWebhook($request->all());
+        Log::info('[MpesaWebhook] Callback M-Pesa recebido.', [
+            'reference'       => $payload['output_TransactionID'] ?? $payload['transaction_id'] ?? null,
+            'third_party_ref' => $payload['output_ThirdPartyReference'] ?? $payload['third_party_ref'] ?? $payload['reference'] ?? null,
+            'amount'          => isset($payload['output_Amount']) ? (float) $payload['output_Amount'] : (isset($payload['amount']) ? (float) $payload['amount'] : null),
+            'response_code'   => $payload['output_ResponseCode'] ?? $payload['status'] ?? null,
+            'masked_phone'    => $rawPhone ? $this->mpesaDriver->maskPhone((string) $rawPhone) : null,
+        ]);
 
-        return response()->json($result);
+        $result = $this->mpesaDriver->processWebhook($payload);
+        $statusCode = ($result['success'] ?? false) ? 200 : 422;
+
+        return response()->json($result, $statusCode);
     }
 }
