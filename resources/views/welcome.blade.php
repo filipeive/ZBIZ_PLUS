@@ -1,1631 +1,875 @@
 <!DOCTYPE html>
 <html lang="pt" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="ZBIZ+">
-    <title>ZBIZ+ | Sistema ERP, POS &amp; App Mobile (Android e iOS) para Moçambique</title>
-    
-    <meta name="description" content="Sistema de gestão empresarial completo para Moçambique. Frente de caixa POS, App Mobile Android e iOS, Lotes FEFO/ANARME, M-Pesa, Fecho Cego e IVA Modelo A.">
-    <link rel="manifest" href="{{ asset('manifest.json') }}">
-    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
-    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
-    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-
-    <style>
-        :root {
-            --color-primary: #15803D;
-            --color-secondary: #22C55E;
-            --color-accent: #0369A1;
-            --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ZBIZ+">
+<title>ZBIZ+ | Sistema de gestão para comércio, farmácias e serviços em Moçambique</title>
+<meta name="description" content="Frente de caixa, stock, fiados, M-Pesa e e-Mola, IVA Modelo A e lotes FEFO num só sistema. Funciona no computador e no telemóvel, com ou sem internet.">
+<link rel="manifest" href="{{ asset('manifest.json') }}">
+<link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+<link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+<link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace']
+      },
+      colors: {
+        ink: '#0F1A15',
+        muted: '#5A6B62',
+        line: '#E2E8E4',
+        surface: '#F7F8F6',
+        brand: {
+          DEFAULT: '#166534',
+          dark: '#124D2A',
+          soft: '#E8F5EE'
         }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: #060b14;
-            color: #f1f5f9;
-            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-        }
-        .font-heading {
-            font-family: 'Plus Jakarta Sans', 'Outfit', sans-serif;
-            letter-spacing: -0.025em;
-        }
-        .font-mono-num {
-            font-family: 'JetBrains Mono', monospace;
-            font-variant-numeric: tabular-nums;
-        }
-        .tabular-nums {
-            font-variant-numeric: tabular-nums;
-        }
-        [x-cloak] { display: none !important; }
-
-        /* Soft UI Evolution Surfaces */
-        .soft-card {
-            background: linear-gradient(180deg, rgba(15, 23, 42, 0.82) 0%, rgba(10, 17, 32, 0.92) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 18px 40px -15px rgba(2, 6, 23, 0.65), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
-            transition: transform 240ms var(--ease-out-expo), border-color 240ms var(--ease-out-expo), box-shadow 240ms var(--ease-out-expo);
-        }
-        .soft-card:hover {
-            transform: translateY(-2px);
-            border-color: rgba(34, 197, 94, 0.32);
-            box-shadow: 0 24px 48px -12px rgba(2, 6, 23, 0.85), 0 0 0 1px rgba(34, 197, 94, 0.14), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
-        }
-
-        /* Subtle Dot Grid Pattern */
-        .bg-grid-pattern {
-            background-size: 32px 32px;
-            background-image: radial-gradient(circle, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
-        }
-
-        /* Tactile Button Press */
-        .btn-tactile {
-            transition: all 200ms var(--ease-out-expo);
-        }
-        .btn-tactile:hover {
-            transform: translateY(-1.5px);
-        }
-        .btn-tactile:active {
-            transform: translateY(0) scale(0.98);
-        }
-
-        /* Store Badge Styling */
-        .store-badge {
-            background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(7, 12, 24, 0.98) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            transition: all 200ms var(--ease-out-expo);
-        }
-        .store-badge:hover {
-            border-color: rgba(34, 197, 94, 0.5);
-            background: linear-gradient(180deg, rgba(20, 30, 55, 0.98) 0%, rgba(10, 18, 34, 1) 100%);
-            transform: translateY(-1.5px);
-            box-shadow: 0 12px 24px -8px rgba(16, 185, 129, 0.25);
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            *, ::before, ::after {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-                scroll-behavior: auto !important;
-            }
-        }
-    </style>
+      },
+      boxShadow: {
+        'soft': '0 4px 24px -4px rgba(15, 26, 21, 0.07)',
+        'card': '0 14px 40px -16px rgba(15, 26, 21, 0.12)',
+        'receipt': '0 22px 50px -18px rgba(15, 26, 21, 0.16)'
+      }
+    }
+  }
+}
+</script>
+<style>
+  [x-cloak] { display: none !important; }
+  body { font-variant-numeric: tabular-nums; }
+  details > summary { list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  :focus-visible {
+    outline: 2px solid #166534;
+    outline-offset: 2px;
+  }
+</style>
 </head>
-<body class="antialiased overflow-x-hidden selection:bg-emerald-500 selection:text-slate-950 pb-20 md:pb-0"
-      x-data="{
-          sector: 'pharmacy',
-          previewTab: 'pos',
-          billingCycle: 'monthly',
-          showComparison: true,
-          mobileMenu: false,
-          appModalOpen: false,
-          appModalPlatform: 'android',
-          deferredPrompt: null,
-          init() {
-              window.addEventListener('beforeinstallprompt', (e) => {
-                  e.preventDefault();
-                  this.deferredPrompt = e;
-              });
-          },
-          openAppInstall(platform) {
-              this.appModalPlatform = platform;
-              if (platform === 'android' && this.deferredPrompt) {
-                  this.deferredPrompt.prompt();
-                  this.deferredPrompt.userChoice.then(() => {
-                      this.deferredPrompt = null;
-                  });
-              } else {
-                  this.appModalOpen = true;
-              }
-          }
-      }">
+<body class="font-sans text-ink bg-white antialiased"
+x-data="{
+  sector: 'retail',
+  receiptMode: 'retail',
+  cycle: 'monthly',
+  mobileMenu: false,
+  deferredPrompt: null,
+  init() {
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      this.deferredPrompt = e;
+    });
+  },
+  price(base) {
+    const f = this.cycle === 'annual' ? 0.8 : (this.cycle === 'semiannual' ? 0.9 : 1);
+    return String(Math.round(base * f)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+}">
 
-    <!-- Ambient Soft Lighting & Subtle Grid -->
-    <div class="fixed inset-0 bg-grid-pattern pointer-events-none z-0"></div>
-    <div class="fixed inset-0 bg-[radial-gradient(ellipse_75%_55%_at_50%_-10%,rgba(21,128,61,0.24),rgba(3,105,161,0.10)_45%,rgba(6,11,20,0))] pointer-events-none z-0"></div>
-
-    <!-- TOP ANNOUNCEMENT BAR: MULTI-PLATFORM & MOBILE APP -->
-    <div class="relative z-50 bg-gradient-to-r from-emerald-950/90 via-slate-900 to-sky-950/90 border-b border-white/[0.08] text-[11px] sm:text-xs">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2 text-slate-200">
-                <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 font-bold text-[10px] uppercase tracking-wider">Multiplataforma</span>
-                <span>Funciona no <strong>Computador (Web/Offline)</strong> e na <strong>App Mobile (Android &amp; Apple iOS)</strong></span>
-            </div>
-            <div class="flex items-center gap-3">
-                <button type="button" @click="openAppInstall('android')" class="inline-flex items-center gap-1.5 text-emerald-300 hover:text-white font-semibold transition cursor-pointer">
-                    <i class="fa-brands fa-android text-emerald-400"></i>
-                    <span>App Android</span>
-                </button>
-                <span class="text-slate-600">|</span>
-                <button type="button" @click="openAppInstall('ios')" class="inline-flex items-center gap-1.5 text-sky-300 hover:text-white font-semibold transition cursor-pointer">
-                    <i class="fa-brands fa-apple text-white"></i>
-                    <span>App iOS (Apple)</span>
-                </button>
-                <span class="hidden sm:inline text-slate-600">|</span>
-                <a href="https://wa.me/258862134230" target="_blank" rel="noopener noreferrer" class="hidden sm:inline-flex items-center gap-1.5 text-slate-300 hover:text-emerald-400 transition">
-                    <i class="fa-brands fa-whatsapp text-emerald-400"></i>
-                    <span>(+258) 86 213 4230</span>
-                </a>
-            </div>
-        </div>
+{{-- Barra de topo discreta: Multiplataforma (Computador + Android + iOS) --}}
+<div class="bg-surface border-b border-line text-xs text-muted">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2">
+    <div class="flex items-center gap-2">
+      <span class="inline-block h-2 w-2 rounded-full bg-brand"></span>
+      <span>Sistema de gestão em <strong class="text-ink font-semibold">Moçambique</strong> · Computador, Android e iPhone</span>
     </div>
+    <div class="flex items-center gap-4">
+      <a href="#aplicacao" class="inline-flex items-center gap-1.5 font-medium text-ink hover:text-brand transition-colors">
+        <svg class="w-3.5 h-3.5 text-brand" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4483-.9993.9993-.9993c.5511 0 .9993.4483.9993.9993.0001.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4483.9993.9993 0 .5511-.4483.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.2439 13.8533 7.8508 12 7.8508s-3.5902.3931-5.1367 1.0989L4.841 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3435-4.1021-2.6892-7.5743-6.1185-9.4396"/></svg>
+        <span>App Android (APK)</span>
+      </a>
+      <span class="text-line">|</span>
+      <a href="#aplicacao" class="inline-flex items-center gap-1.5 font-medium text-ink hover:text-brand transition-colors">
+        <svg class="w-3.5 h-3.5 text-ink" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.68-1.1 1.79-.96 2.84 1.04.08 2.08-.52 2.72-1.3"/></svg>
+        <span>iPhone &amp; iPad</span>
+      </a>
+      <span class="hidden sm:inline text-line">|</span>
+      <a href="https://wa.me/258862134230" target="_blank" rel="noopener noreferrer" class="hidden sm:inline font-medium hover:text-brand transition-colors">
+        WhatsApp: (+258) 86 213 4230
+      </a>
+    </div>
+  </div>
+</div>
 
-    <!-- MAIN NAVIGATION BAR (VHSYS PROFESSIONAL STRUCTURE) -->
-    <nav class="sticky top-0 z-50 bg-[#060b14]/90 backdrop-blur-xl border-b border-white/[0.08]">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between gap-3">
-            
-            <!-- Brand Logo -->
-            <div class="flex items-center gap-3">
-                <a href="/" class="flex items-center gap-3 group focus:outline-none">
-                    <div class="w-10 h-10 rounded-xl bg-slate-900 border border-emerald-500/30 flex items-center justify-center shadow-md shadow-emerald-950/50 overflow-hidden group-hover:border-emerald-400/60 transition">
-                        <img src="{{ asset('favicon.png') }}" alt="ZBIZ+" class="w-full h-full object-contain p-1">
-                    </div>
-                    <div class="flex flex-col">
-                        <div class="flex items-center gap-1.5">
-                            <span class="text-xl font-extrabold font-heading tracking-tight text-white leading-none">ZBIZ<span class="text-emerald-400">+</span></span>
-                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-mono-num font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">ERP &amp; App</span>
-                        </div>
-                        <span class="text-[10px] text-slate-400 font-medium tracking-wide mt-0.5">Gestão Empresarial · Moçambique</span>
-                    </div>
-                </a>
-            </div>
+{{-- Cabeçalho --}}
+<header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-line">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+    {{-- Logo oficial --}}
+    <a href="/" class="group flex items-center gap-2.5 shrink-0 rounded-lg focus-visible:outline-none">
+      <span class="relative flex h-9 w-9 items-center justify-center rounded-lg bg-ink shadow-sm ring-1 ring-ink/10 overflow-hidden transition group-hover:ring-brand/40">
+        <img src="{{ asset('favicon.png') }}" alt="ZBIZ+" class="h-7 w-7 object-contain">
+      </span>
+      <div class="flex flex-col">
+        <span class="text-[1.3rem] font-bold tracking-tight leading-none text-ink">
+          ZBIZ<span class="text-brand">+</span>
+        </span>
+        <span class="text-[10px] text-muted font-medium tracking-wide mt-0.5 hidden sm:block">Gestão &amp; POS</span>
+      </div>
+    </a>
 
-            <!-- Desktop Navigation Links -->
-            <div class="hidden lg:flex items-center gap-6 text-xs font-semibold text-slate-300">
-                <a href="#funcionalidades" class="hover:text-emerald-400 transition py-1">Funcionalidades</a>
-                <a href="#segmentos" class="hover:text-emerald-400 transition py-1">Segmentos</a>
-                <a href="#app-mobile" class="hover:text-emerald-400 transition py-1 flex items-center gap-1.5 text-emerald-300">
-                    <i class="fa-solid fa-mobile-screen-button text-emerald-400"></i>
-                    <span>App Android &amp; iOS</span>
-                </a>
-                <a href="#planos-e-precos" class="hover:text-emerald-400 transition py-1">Planos e Preços</a>
-                <a href="#experimente-gratis" class="hover:text-emerald-400 transition py-1">Experimente Grátis</a>
-            </div>
-
-            <!-- Action Buttons (Visible on Desktop & Mobile) -->
-            <div class="flex items-center gap-2">
-                @auth
-                    <a href="{{ route('dashboard.index') }}" class="btn-tactile bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-4 py-2 rounded-xl text-xs sm:text-sm shadow-lg shadow-emerald-600/25 flex items-center gap-2 cursor-pointer">
-                        <span>Abrir Painel</span>
-                        <i class="fa-solid fa-arrow-right text-xs"></i>
-                    </a>
-                @else
-                    <a href="{{ route('login') }}" class="btn-tactile text-slate-200 hover:text-white bg-slate-900/90 hover:bg-slate-800 border border-white/10 font-semibold text-xs sm:text-sm px-3.5 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5">
-                        <i class="fa-solid fa-right-to-bracket text-emerald-400 text-xs"></i>
-                        <span>Entrar</span>
-                    </a>
-                    <a href="{{ route('register') }}" class="btn-tactile bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm shadow-lg shadow-emerald-600/25 border border-emerald-400/25 flex items-center gap-1.5 cursor-pointer">
-                        <i class="fa-solid fa-rocket text-xs"></i>
-                        <span>Experimente Grátis</span>
-                    </a>
-                @endauth
-
-                <!-- Mobile Menu Toggle -->
-                <button type="button" @click="mobileMenu = !mobileMenu" aria-label="Abrir menu" class="lg:hidden w-10 h-10 flex items-center justify-center text-slate-200 hover:text-white rounded-xl bg-slate-900 border border-white/15 focus:outline-none cursor-pointer">
-                    <i class="fa-solid" :class="mobileMenu ? 'fa-xmark' : 'fa-bars'"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Mobile Menu Drawer (Includes App Android & Apple iOS Buttons) -->
-        <div x-cloak x-show="mobileMenu" @click.outside="mobileMenu = false"
-             x-transition:enter="transition ease-out duration-150"
-             x-transition:enter-start="opacity-0 -translate-y-2"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             class="lg:hidden bg-slate-900/98 backdrop-blur-2xl border-b border-white/10 px-5 py-5 space-y-3 text-sm font-medium">
-            <a href="#funcionalidades" @click="mobileMenu = false" class="flex items-center justify-between text-slate-200 hover:text-emerald-400 py-2 border-b border-white/5">
-                <span><i class="fa-solid fa-layer-group text-emerald-400 w-5"></i> Funcionalidades do ERP</span>
-                <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
-            </a>
-            <a href="#segmentos" @click="mobileMenu = false" class="flex items-center justify-between text-slate-200 hover:text-emerald-400 py-2 border-b border-white/5">
-                <span><i class="fa-solid fa-store text-sky-400 w-5"></i> Segmentos Atendidos</span>
-                <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
-            </a>
-            <a href="#app-mobile" @click="mobileMenu = false" class="flex items-center justify-between text-emerald-300 hover:text-emerald-400 py-2 border-b border-white/5 font-semibold">
-                <span><i class="fa-solid fa-mobile-screen-button text-emerald-400 w-5"></i> App Mobile (Android &amp; Apple iOS)</span>
-                <span class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300">Grátis</span>
-            </a>
-            <a href="#planos-e-precos" @click="mobileMenu = false" class="flex items-center justify-between text-slate-200 hover:text-emerald-400 py-2 border-b border-white/5">
-                <span><i class="fa-solid fa-tags text-amber-400 w-5"></i> Planos e Preços (MZN)</span>
-                <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
-            </a>
-            <a href="#experimente-gratis" @click="mobileMenu = false" class="flex items-center justify-between text-slate-200 hover:text-emerald-400 py-2 border-b border-white/5">
-                <span><i class="fa-solid fa-bolt text-teal-400 w-5"></i> Experimente Grátis</span>
-                <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
-            </a>
-
-            <!-- Mobile Drawer App Download Buttons -->
-            <div class="pt-2 grid grid-cols-2 gap-2.5">
-                <button type="button" @click="mobileMenu = false; openAppInstall('android')" class="store-badge rounded-xl p-2.5 flex items-center gap-2.5 text-left cursor-pointer">
-                    <i class="fa-brands fa-google-play text-xl text-emerald-400"></i>
-                    <div>
-                        <div class="text-[9px] uppercase tracking-wider text-slate-400 leading-none">Disponível para</div>
-                        <div class="text-xs font-bold text-white mt-0.5">Android App</div>
-                    </div>
-                </button>
-                <button type="button" @click="mobileMenu = false; openAppInstall('ios')" class="store-badge rounded-xl p-2.5 flex items-center gap-2.5 text-left cursor-pointer">
-                    <i class="fa-brands fa-apple text-2xl text-white"></i>
-                    <div>
-                        <div class="text-[9px] uppercase tracking-wider text-slate-400 leading-none">Disponível para</div>
-                        <div class="text-xs font-bold text-white mt-0.5">Apple iOS</div>
-                    </div>
-                </button>
-            </div>
-        </div>
+    <nav class="hidden lg:flex items-center gap-0.5 text-[13.5px] font-medium text-muted whitespace-nowrap" aria-label="Principal">
+      <a href="#funcionalidades" class="px-2.5 py-2 rounded-md hover:text-ink hover:bg-surface transition-colors">Funcionalidades</a>
+      <a href="#segmentos" class="px-2.5 py-2 rounded-md hover:text-ink hover:bg-surface transition-colors">Segmentos</a>
+      <a href="#aplicacao" class="px-2.5 py-2 rounded-md hover:text-ink hover:bg-surface transition-colors flex items-center gap-1.5">
+        <span>Aplicação</span>
+        <span class="rounded bg-brand-soft px-1.5 py-0.5 text-[10px] font-semibold text-brand">Android &amp; iOS</span>
+      </a>
+      <a href="#planos" class="px-2.5 py-2 rounded-md hover:text-ink hover:bg-surface transition-colors">Planos e Preços</a>
+      <a href="#experimente-gratis" class="px-2.5 py-2 rounded-md hover:text-ink hover:bg-surface transition-colors">Experimente Grátis</a>
+      <a href="#perguntas" class="px-2.5 py-2 rounded-md hover:text-ink hover:bg-surface transition-colors">Perguntas</a>
     </nav>
 
-    <!-- ======================================================================= -->
-    <!-- 1. HERO SECTION (VHSYS STYLE: ERP COMPLETO + APP MOBILE ANDROID & iOS)  -->
-    <!-- ======================================================================= -->
-    <header class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 lg:pt-16 pb-16">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-            
-            <!-- Left Column: Value Proposition, Trial CTA & Mobile Store Badges -->
-            <div class="lg:col-span-6 text-left">
-                
-                <!-- Trust Badge -->
-                <div class="inline-flex flex-wrap items-center gap-2 bg-slate-900/90 border border-emerald-500/25 rounded-full pl-3 pr-4 py-1.5 text-xs text-slate-200 mb-5 shadow-sm">
-                    <span class="flex h-2 w-2 relative">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    <span>ERP Cloud, Offline-First &amp; App Mobile para <strong class="text-emerald-400 font-semibold">Moçambique</strong></span>
-                </div>
-
-                <!-- Main Headline (VHSYS Inspired) -->
-                <h1 class="text-3xl sm:text-5xl lg:text-[3.15rem] font-extrabold font-heading tracking-tight leading-[1.12] text-white">
-                    O sistema de gestão completo para <span class="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400">simplificar a sua empresa.</span>
-                </h1>
-
-                <!-- Subtitle Adapted to ZBIZ+ Context -->
-                <p class="mt-4 text-base sm:text-lg text-slate-300/90 leading-relaxed font-normal">
-                    Controle vendas, frente de caixa <strong class="text-white font-semibold">POS</strong>, stock multi-filial, lotes <strong class="text-white font-semibold">FEFO / ANARME</strong>, pagamentos <strong class="text-white font-semibold">M-Pesa / e-Mola</strong>, fecho cego de turno e <strong class="text-white font-semibold">IVA Modelo A (AT)</strong> — no computador e na palma da mão com a nossa App para <strong class="text-emerald-400">Android</strong> e <strong class="text-sky-300">Apple iOS</strong>.
-                </p>
-
-                <!-- Primary Conversion Buttons -->
-                <div class="mt-7 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
-                    <a href="{{ route('register') }}" class="btn-tactile bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-7 py-3.5 rounded-2xl text-sm sm:text-base shadow-xl shadow-emerald-600/25 border border-emerald-400/30 flex items-center justify-center gap-2.5 cursor-pointer">
-                        <i class="fa-solid fa-rocket text-sm"></i>
-                        <span>Experimente Grátis Agora</span>
-                    </a>
-                    <a href="#planos-e-precos" class="btn-tactile bg-slate-900/90 hover:bg-slate-800 border border-white/15 text-slate-100 font-semibold px-6 py-3.5 rounded-2xl text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer">
-                        <i class="fa-solid fa-tags text-emerald-400 text-sm"></i>
-                        <span>Conhecer Planos e Preços</span>
-                    </a>
-                </div>
-
-                <!-- Friction-Zero Microcopy -->
-                <div class="mt-3.5 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-slate-400">
-                    <span class="flex items-center gap-1.5">
-                        <i class="fa-solid fa-circle-check text-emerald-400"></i>
-                        Sem cartão de crédito
-                    </span>
-                    <span class="flex items-center gap-1.5">
-                        <i class="fa-solid fa-comment-sms text-sky-400"></i>
-                        Credenciais imediatas via SMS (+258)
-                    </span>
-                    <span class="flex items-center gap-1.5">
-                        <i class="fa-solid fa-wifi text-teal-400"></i>
-                        Funciona com ou sem internet
-                    </span>
-                </div>
-
-                <!-- ALWAYS VISIBLE MOBILE APP BUTTONS (ANDROID & APPLE iOS) -->
-                <div class="mt-7 pt-6 border-t border-white/[0.08]">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                            <i class="fa-solid fa-mobile-screen-button text-emerald-400"></i>
-                            App Mobile ZBIZ+ Disponível para Telemóvel e Tablet:
-                        </span>
-                        <a href="#app-mobile" class="text-[11px] font-semibold text-emerald-400 hover:underline">Ver recursos da App →</a>
-                    </div>
-
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                        <!-- Botão Android / Google Play -->
-                        <button type="button" @click="openAppInstall('android')"
-                                class="store-badge rounded-2xl px-3.5 py-2.5 flex items-center gap-2.5 text-left cursor-pointer group">
-                            <div class="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-lg flex-shrink-0 group-hover:scale-105 transition">
-                                <i class="fa-brands fa-google-play"></i>
-                            </div>
-                            <div class="min-w-0">
-                                <span class="text-[9px] uppercase tracking-wider text-slate-400 block leading-none">Disponível para</span>
-                                <span class="text-xs sm:text-sm font-extrabold font-heading text-white flex items-center gap-1 mt-0.5">
-                                    <span>Android</span>
-                                    <i class="fa-brands fa-android text-emerald-400 text-[11px]"></i>
-                                </span>
-                                <span class="text-[10px] text-emerald-400 font-medium block truncate">Google Play / App</span>
-                            </div>
-                        </button>
-
-                        <!-- Botão Apple / App Store (iOS) -->
-                        <button type="button" @click="openAppInstall('ios')"
-                                class="store-badge rounded-2xl px-3.5 py-2.5 flex items-center gap-2.5 text-left cursor-pointer group">
-                            <div class="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white text-xl flex-shrink-0 group-hover:scale-105 transition">
-                                <i class="fa-brands fa-apple"></i>
-                            </div>
-                            <div class="min-w-0">
-                                <span class="text-[9px] uppercase tracking-wider text-slate-400 block leading-none">Disponível para</span>
-                                <span class="text-xs sm:text-sm font-extrabold font-heading text-white flex items-center gap-1 mt-0.5">
-                                    <span>Apple iOS</span>
-                                </span>
-                                <span class="text-[10px] text-sky-400 font-medium block truncate">iPhone &amp; iPad</span>
-                            </div>
-                        </button>
-
-                        <!-- Atalho Direto ao Login Mobile -->
-                        <a href="{{ route('login') }}"
-                           class="col-span-2 sm:col-span-1 store-badge rounded-2xl px-3.5 py-2.5 flex items-center justify-center sm:justify-start gap-2.5 text-left cursor-pointer group">
-                            <div class="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400 text-sm flex-shrink-0 group-hover:scale-105 transition">
-                                <i class="fa-solid fa-qrcode"></i>
-                            </div>
-                            <div class="min-w-0">
-                                <span class="text-[9px] uppercase tracking-wider text-slate-400 block leading-none">Acesso Web/App</span>
-                                <span class="text-xs sm:text-sm font-extrabold font-heading text-white block mt-0.5 truncate">Abrir Mobile</span>
-                                <span class="text-[10px] text-slate-400 font-medium block truncate">Entrar Agora</span>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Column: Interactive Desktop ERP + Mobile App Cockpit -->
-            <div class="lg:col-span-6">
-                <div class="rounded-3xl bg-slate-900/95 border border-white/10 shadow-2xl shadow-black/80 overflow-hidden backdrop-blur-xl">
-                    
-                    <!-- Window Titlebar & Interactive Switcher -->
-                    <div class="px-4 py-3 bg-slate-950/90 border-b border-white/[0.07] flex flex-wrap items-center justify-between gap-2">
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
-                            <span class="w-2.5 h-2.5 rounded-full bg-amber-400/80"></span>
-                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
-                            <span class="ml-2 text-[11px] font-mono-num text-slate-400 hidden sm:inline">zbiz-erp://sincronizado</span>
-                        </div>
-
-                        <!-- 4 Live Interactive Tabs (Including App Mobile) -->
-                        <div class="flex flex-wrap items-center gap-1 bg-slate-900 p-1 rounded-xl border border-white/5 text-[11px] font-semibold">
-                            <button type="button" @click="previewTab = 'pos'"
-                                    :class="previewTab === 'pos' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'"
-                                    class="px-2.5 py-1 rounded-lg transition cursor-pointer flex items-center gap-1">
-                                <i class="fa-solid fa-cash-register text-[10px]"></i>
-                                <span>PDV &amp; M-Pesa</span>
-                            </button>
-                            <button type="button" @click="previewTab = 'mobile'"
-                                    :class="previewTab === 'mobile' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'"
-                                    class="px-2.5 py-1 rounded-lg transition cursor-pointer flex items-center gap-1">
-                                <i class="fa-solid fa-mobile-screen-button text-[10px]"></i>
-                                <span>App Mobile</span>
-                            </button>
-                            <button type="button" @click="previewTab = 'fefo'"
-                                    :class="previewTab === 'fefo' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'"
-                                    class="px-2.5 py-1 rounded-lg transition cursor-pointer flex items-center gap-1">
-                                <i class="fa-solid fa-pills text-[10px]"></i>
-                                <span>FEFO &amp; ANARME</span>
-                            </button>
-                            <button type="button" @click="previewTab = 'shift'"
-                                    :class="previewTab === 'shift' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'"
-                                    class="px-2.5 py-1 rounded-lg transition cursor-pointer flex items-center gap-1">
-                                <i class="fa-solid fa-shield-halved text-[10px]"></i>
-                                <span>Fecho Cego Z</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Cockpit Content -->
-                    <div class="p-5 sm:p-6">
-                        
-                        <!-- TAB 1: POS 2.0 & M-PESA PREVIEW -->
-                        <div x-show="previewTab === 'pos'" class="space-y-4">
-                            <div class="flex items-center justify-between border-b border-white/[0.06] pb-3">
-                                <div>
-                                    <span class="text-[10px] font-semibold uppercase tracking-wider text-emerald-400">Balcão Principal · Turno #104</span>
-                                    <h3 class="text-sm font-bold text-white mt-0.5">Frente de Caixa POS &amp; Faturação</h3>
-                                </div>
-                                <span class="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-wifi text-[9px]"></i> Cloud + Offline Sync
-                                </span>
-                            </div>
-
-                            <div class="space-y-2">
-                                <div class="p-3 rounded-2xl bg-slate-950/75 border border-white/[0.06] flex items-center justify-between gap-3">
-                                    <div class="flex items-center gap-3 min-w-0">
-                                        <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 text-xs">
-                                            <i class="fa-solid fa-capsules"></i>
-                                        </div>
-                                        <div class="min-w-0">
-                                            <div class="text-xs font-semibold text-white truncate">Amoxicilina 500mg Cápsulas (Blister)</div>
-                                            <div class="flex items-center gap-2 mt-0.5">
-                                                <span class="text-[10px] font-mono-num text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded">Lote: MZ-0927 · FEFO</span>
-                                                <span class="text-[10px] text-slate-400">Isento IVA (Art. 9º)</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="text-right flex-shrink-0">
-                                        <div class="text-xs font-bold font-mono-num text-white">2 x 180,00 MT</div>
-                                        <div class="text-[11px] font-mono-num text-emerald-400 font-semibold">360,00 MT</div>
-                                    </div>
-                                </div>
-
-                                <div class="p-3 rounded-2xl bg-slate-950/75 border border-white/[0.06] flex items-center justify-between gap-3">
-                                    <div class="flex items-center gap-3 min-w-0">
-                                        <div class="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center flex-shrink-0 text-xs">
-                                            <i class="fa-solid fa-prescription-bottle-medical"></i>
-                                        </div>
-                                        <div class="min-w-0">
-                                            <div class="text-xs font-semibold text-white truncate">Paracetamol 500mg + Vitamina C</div>
-                                            <div class="flex items-center gap-2 mt-0.5">
-                                                <span class="text-[10px] font-mono-num text-sky-400 bg-sky-500/10 px-1.5 py-0.2 rounded">Lote: AN-1128</span>
-                                                <span class="text-[10px] text-slate-400">Isento IVA (Art. 9º)</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="text-right flex-shrink-0">
-                                        <div class="text-xs font-bold font-mono-num text-white">1 x 120,00 MT</div>
-                                        <div class="text-[11px] font-mono-num text-emerald-400 font-semibold">120,00 MT</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="p-4 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-950/40 border border-emerald-500/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                                <div class="flex items-center gap-3">
-                                    <div class="px-2.5 py-1.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-bold flex items-center gap-1.5">
-                                        <i class="fa-solid fa-mobile-screen-button"></i>
-                                        <span>M-Pesa / e-Mola</span>
-                                    </div>
-                                    <div class="text-xs text-slate-300">
-                                        <div class="font-semibold text-white">Talão Térmico 80mm / A4</div>
-                                        <div class="text-[10px] text-slate-400">Atalho F9 · Finalização em 1 clique</div>
-                                    </div>
-                                </div>
-                                <div class="text-left sm:text-right w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-white/10">
-                                    <span class="text-[10px] uppercase tracking-wider text-slate-400 block">Total a Pagar</span>
-                                    <span class="text-xl font-extrabold font-mono-num text-emerald-400">480,00 MT</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- TAB 2: APP MOBILE (ANDROID & APPLE iOS) PREVIEW -->
-                        <div x-cloak x-show="previewTab === 'mobile'" class="space-y-4">
-                            <div class="flex items-center justify-between border-b border-white/[0.06] pb-3">
-                                <div>
-                                    <span class="text-[10px] font-semibold uppercase tracking-wider text-sky-400">App Mobile Nativa PWA · Android &amp; iOS</span>
-                                    <h3 class="text-sm font-bold text-white mt-0.5">A Sua Empresa no Smartphone ou Tablet</h3>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <span class="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 text-[10px] font-bold"><i class="fa-brands fa-android mr-1"></i>Android</span>
-                                    <span class="px-2 py-0.5 rounded-md bg-white/10 text-white text-[10px] font-bold"><i class="fa-brands fa-apple mr-1"></i>iOS</span>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-white/[0.07] space-y-2">
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-[11px] font-bold text-emerald-400 flex items-center gap-1.5">
-                                            <i class="fa-solid fa-barcode"></i> Scanner pela Câmara
-                                        </span>
-                                        <span class="text-[10px] font-mono-num text-slate-400">EAN-13 / QR</span>
-                                    </div>
-                                    <p class="text-[11px] text-slate-300 leading-relaxed">
-                                        Use a câmara do telemóvel Android ou iPhone para ler códigos de barras de produtos e lançar vendas sem precisar de leitor USB.
-                                    </p>
-                                </div>
-
-                                <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-white/[0.07] space-y-2">
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-[11px] font-bold text-sky-400 flex items-center gap-1.5">
-                                            <i class="fa-solid fa-chart-pie"></i> Gestão em Tempo Real
-                                        </span>
-                                        <span class="text-[10px] font-mono-num text-emerald-400">Ao Vivo</span>
-                                    </div>
-                                    <p class="text-[11px] text-slate-300 leading-relaxed">
-                                        Acompanhe faturação diária, turnos abertos, stock mínimo e validades de qualquer lugar no seu telemóvel.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <!-- Simulated Mobile Bottom Navigation Bar Preview -->
-                            <div class="p-3 rounded-2xl bg-slate-950 border border-emerald-500/25">
-                                <div class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mb-2 text-center">Barra de Navegação Rápida da App Mobile (Android &amp; iOS)</div>
-                                <div class="bg-slate-900 rounded-xl px-3 py-2 flex items-center justify-around text-slate-400 border border-white/5">
-                                    <div class="flex flex-col items-center text-emerald-400 font-bold">
-                                        <i class="fa-solid fa-chart-pie text-xs"></i>
-                                        <span class="text-[9px] mt-0.5">Início</span>
-                                    </div>
-                                    <div class="flex flex-col items-center">
-                                        <i class="fa-solid fa-boxes-stacked text-xs"></i>
-                                        <span class="text-[9px] mt-0.5">Stock</span>
-                                    </div>
-                                    <div class="flex flex-col items-center justify-center bg-gradient-to-tr from-emerald-600 to-teal-500 text-white w-9 h-9 rounded-full shadow-md shadow-emerald-500/30">
-                                        <i class="fa-solid fa-cash-register text-xs"></i>
-                                    </div>
-                                    <div class="flex flex-col items-center">
-                                        <i class="fa-solid fa-file-invoice-dollar text-xs"></i>
-                                        <span class="text-[9px] mt-0.5">Vendas</span>
-                                    </div>
-                                    <div class="flex flex-col items-center">
-                                        <i class="fa-solid fa-bars-staggered text-xs"></i>
-                                        <span class="text-[9px] mt-0.5">Menu</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- TAB 3: FEFO & ANARME RADAR PREVIEW -->
-                        <div x-cloak x-show="previewTab === 'fefo'" class="space-y-4">
-                            <div class="flex items-center justify-between border-b border-white/[0.06] pb-3">
-                                <div>
-                                    <span class="text-[10px] font-semibold uppercase tracking-wider text-teal-400">Conformidade ANARME · Moçambique</span>
-                                    <h3 class="text-sm font-bold text-white mt-0.5">Radar Preventivo de Validades &amp; Lotes</h3>
-                                </div>
-                                <span class="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-teal-500/10 text-teal-300 border border-teal-500/20">
-                                    Saída Prioritária FEFO
-                                </span>
-                            </div>
-
-                            <div class="grid grid-cols-3 gap-2.5 text-center">
-                                <div class="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/25">
-                                    <div class="text-lg font-extrabold font-mono-num text-rose-400">30 Dias</div>
-                                    <div class="text-[10px] text-slate-300 mt-0.5">Alerta Crítico</div>
-                                </div>
-                                <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/25">
-                                    <div class="text-lg font-extrabold font-mono-num text-amber-400">60 Dias</div>
-                                    <div class="text-[10px] text-slate-300 mt-0.5">Escoamento Prioritário</div>
-                                </div>
-                                <div class="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25">
-                                    <div class="text-lg font-extrabold font-mono-num text-emerald-400">90+ Dias</div>
-                                    <div class="text-[10px] text-slate-300 mt-0.5">Stock Seguro</div>
-                                </div>
-                            </div>
-
-                            <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-white/[0.06] space-y-2 text-xs">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-slate-300 font-medium"><i class="fa-solid fa-shield-virus text-emerald-400 mr-1.5"></i>Catálogo Nacional Semeado</span>
-                                    <span class="font-mono-num text-emerald-400 font-bold">63 Medicamentos Essenciais</span>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="text-slate-300 font-medium"><i class="fa-solid fa-scale-balanced text-sky-400 mr-1.5"></i>Enquadramento Fiscal</span>
-                                    <span class="font-mono-num text-sky-300 font-semibold">Artigo 9º CIVA (0% IVA)</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- TAB 4: BLIND CASH SHIFT Z PREVIEW -->
-                        <div x-cloak x-show="previewTab === 'shift'" class="space-y-4">
-                            <div class="flex items-center justify-between border-b border-white/[0.06] pb-3">
-                                <div>
-                                    <span class="text-[10px] font-semibold uppercase tracking-wider text-amber-400">Auditoria Anti-Fraude</span>
-                                    <h3 class="text-sm font-bold text-white mt-0.5">Fecho Cego de Caixa (Talão Z)</h3>
-                                </div>
-                                <span class="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                                    Contagem Oculta
-                                </span>
-                            </div>
-
-                            <div class="space-y-2.5 text-xs">
-                                <div class="p-3 rounded-2xl bg-slate-950/75 border border-white/[0.06] flex items-center justify-between">
-                                    <span class="text-slate-300">1. Operador declara valores contados na gaveta</span>
-                                    <span class="font-mono-num font-bold text-white">24.850,00 MT</span>
-                                </div>
-                                <div class="p-3 rounded-2xl bg-slate-950/75 border border-white/[0.06] flex items-center justify-between">
-                                    <span class="text-slate-300">2. Conciliação automática M-Pesa &amp; e-Mola</span>
-                                    <span class="font-mono-num font-bold text-emerald-400">18.400,00 MT</span>
-                                </div>
-                                <div class="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between">
-                                    <span class="text-emerald-200 font-semibold"><i class="fa-solid fa-circle-check text-emerald-400 mr-1.5"></i>Diferença Apurada no Turno</span>
-                                    <span class="font-mono-num font-extrabold text-emerald-400">0,00 MT (Caixa Certo)</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Cockpit Footer Strip -->
-                        <div class="mt-4 pt-3 border-t border-white/[0.06] flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
-                            <span class="flex items-center gap-1.5">
-                                <i class="fa-solid fa-laptop text-emerald-400"></i> Desktop Windows/Mac/Linux
-                                <span class="text-slate-600">•</span>
-                                <i class="fa-brands fa-android text-emerald-400"></i> Android
-                                <span class="text-slate-600">•</span>
-                                <i class="fa-brands fa-apple text-white"></i> iOS
-                            </span>
-                            <span class="font-mono-num text-slate-500">Impressão 80mm / 58mm / A4</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </header>
-
-    <!-- ======================================================================= -->
-    <!-- 2. PILARES DE GESTÃO INTEGRADA (ESTILO VHSYS HOME)                      -->
-    <!-- ======================================================================= -->
-    <section id="funcionalidades" class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-white/[0.06]">
-        <div class="text-center max-w-3xl mx-auto mb-14">
-            <span class="text-[11px] font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-3.5 py-1 rounded-full">
-                Gestão Empresarial Integrada
-            </span>
-            <h2 class="text-2xl sm:text-4xl font-extrabold font-heading text-white mt-3">
-                Tudo o que a sua empresa precisa num único sistema
-            </h2>
-            <p class="mt-2.5 text-slate-400 text-sm sm:text-base">
-                As vendas alimentam o stock, atualizam o caixa e apuram o IVA automaticamente — sem planilhas manuais nem retrabalho.
-            </p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            <!-- Pilar 1: Vendas, PDV & Cotações -->
-            <div class="soft-card rounded-3xl p-7 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-5">
-                        <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-xl">
-                            <i class="fa-solid fa-cash-register"></i>
-                        </div>
-                        <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">Vendas &amp; Frente de Caixa</span>
-                    </div>
-                    <h3 class="text-xl font-bold font-heading text-white mb-2">PDV Ultrarrápido, Faturas &amp; Cotações</h3>
-                    <p class="text-slate-300/85 text-xs sm:text-sm leading-relaxed mb-5">
-                        Venda no balcão em menos de 1 segundo com leitor de código de barras ou pela câmara do telemóvel. Emita talões térmicos de 80mm/58mm ou faturas A4 e converta cotações em vendas com 1 clique.
-                    </p>
-                    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-300">
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-400"></i> Pagamentos M-Pesa, e-Mola e POS</li>
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-400"></i> Atalhos de teclado (F2, F4, F9)</li>
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-400"></i> Cotações em PDF com conversão direta</li>
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-400"></i> Operação 100% resiliente sem internet</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Pilar 2: Controlo de Stock, Compras & FEFO -->
-            <div class="soft-card rounded-3xl p-7 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-5">
-                        <div class="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center text-xl">
-                            <i class="fa-solid fa-boxes-stacked"></i>
-                        </div>
-                        <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-sky-500/10 text-sky-300 border border-sky-500/20">Stock &amp; Compras</span>
-                    </div>
-                    <h3 class="text-xl font-bold font-heading text-white mb-2">Inventário Multi-Filial, Fornecedores &amp; Lotes</h3>
-                    <p class="text-slate-300/85 text-xs sm:text-sm leading-relaxed mb-5">
-                        Saiba exatamente o que tem em cada loja ou armazém. Registe entradas de compras de fornecedores, transfira mercadorias entre filiais e receba alertas preventivos de stock baixo e validades.
-                    </p>
-                    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-300">
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-sky-400"></i> Algoritmo FEFO (lote a vencer sai primeiro)</li>
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-sky-400"></i> Radar de validades a 30, 60 e 90 dias</li>
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-sky-400"></i> Transferências rastreadas entre filiais</li>
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-sky-400"></i> Kardex completo de movimentações</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Pilar 3: Gestão Financeira & Fecho Cego -->
-            <div class="soft-card rounded-3xl p-7 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-5">
-                        <div class="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center text-xl">
-                            <i class="fa-solid fa-vault"></i>
-                        </div>
-                        <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-amber-500/10 text-amber-300 border border-amber-500/20">Financeiro &amp; Turnos</span>
-                    </div>
-                    <h3 class="text-xl font-bold font-heading text-white mb-2">Contas, Fiados, Despesas &amp; Fecho Cego Z</h3>
-                    <p class="text-slate-300/85 text-xs sm:text-sm leading-relaxed mb-5">
-                        Elimine quebras de caixa com a conferência cega por turno. Controle limites de crédito de clientes (fiados), emita recibos de amortização parcial ou total e acompanhe o lucro líquido real.
-                    </p>
-                    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-300">
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-amber-400"></i> Fecho Cego de Caixa (Talão Z 80mm)</li>
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-amber-400"></i> Gestão de Dívidas (Fiados) e Limites</li>
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-amber-400"></i> Despesas Operacionais &amp; Salários</li>
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-amber-400"></i> Contas Financeiras (Caixa, Bancos, M-Pesa)</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Pilar 4: Fiscal AT Moçambique & Backups -->
-            <div class="soft-card rounded-3xl p-7 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-5">
-                        <div class="w-12 h-12 rounded-2xl bg-teal-500/15 border border-teal-500/30 text-teal-400 flex items-center justify-center text-xl">
-                            <i class="fa-solid fa-scale-balanced"></i>
-                        </div>
-                        <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-teal-500/10 text-teal-300 border border-teal-500/20">Fiscal AT &amp; Segurança</span>
-                    </div>
-                    <h3 class="text-xl font-bold font-heading text-white mb-2">Apuramento de IVA (Modelo A) &amp; Cofre na Nuvem</h3>
-                    <p class="text-slate-300/85 text-xs sm:text-sm leading-relaxed mb-5">
-                        100% adaptado ao Código do IVA de Moçambique (16% e Isenções do Artigo 9º). Gere o mapa de apuramento periódico Modelo A em PDF e proteja os seus dados com backups locais e na nuvem.
-                    </p>
-                    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-300">
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-teal-400"></i> Mapa Fiscal Modelo A pronto para a AT</li>
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-teal-400"></i> Isenções Art. 9º CIVA (Saúde/Educação)</li>
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-teal-400"></i> Cofre de Backups SQL Local &amp; Cloud</li>
-                        <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-teal-400"></i> Auditoria completa por utilizador</li>
-                    </ul>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-    <!-- ======================================================================= -->
-    <!-- 3. SECÇÃO DEDICADA: APP MOBILE ANDROID & APPLE iOS (ESTILO VHSYS APP)   -->
-    <!-- ======================================================================= -->
-    <section id="app-mobile" class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-white/[0.06]">
-        <div class="rounded-[2rem] bg-gradient-to-br from-slate-900 via-[#081526] to-emerald-950/60 border border-emerald-500/25 p-6 sm:p-10 lg:p-12 shadow-2xl overflow-hidden relative">
-            
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-                
-                <!-- Left Column: App Mobile Features & Store Buttons -->
-                <div class="lg:col-span-7 space-y-6">
-                    <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs font-bold uppercase tracking-wider">
-                        <i class="fa-solid fa-mobile-screen-button"></i>
-                        <span>Aplicativo Mobile ZBIZ+ · Android &amp; Apple iOS</span>
-                    </div>
-
-                    <h2 class="text-2xl sm:text-4xl font-extrabold font-heading text-white leading-tight">
-                        Leve a gestão da sua empresa no bolso — no <span class="text-emerald-400">Android</span> e no <span class="text-sky-300">iPhone / iPad</span>.
-                    </h2>
-
-                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
-                        A aplicação móvel do <strong class="text-white">ZBIZ+</strong> funciona totalmente integrada à sua conta e também em <strong class="text-white">modo offline</strong>. Registe vendas, leia códigos de barras com a câmara do telemóvel, consulte o stock e acompanhe o fecho de caixa onde quer que esteja.
-                    </p>
-
-                    <!-- 4 Key Mobile Capabilities -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                        <div class="p-4 rounded-2xl bg-slate-950/60 border border-white/[0.07] flex items-start gap-3.5">
-                            <div class="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center flex-shrink-0 text-base">
-                                <i class="fa-solid fa-camera"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-sm font-bold text-white">Leitor de Barras na Câmara</h4>
-                                <p class="text-xs text-slate-400 mt-0.5">Transforme a câmara do seu Android ou iPhone num leitor rápido de códigos de barras para vendas e inventário.</p>
-                            </div>
-                        </div>
-
-                        <div class="p-4 rounded-2xl bg-slate-950/60 border border-white/[0.07] flex items-start gap-3.5">
-                            <div class="w-10 h-10 rounded-xl bg-sky-500/15 text-sky-400 flex items-center justify-center flex-shrink-0 text-base">
-                                <i class="fa-solid fa-receipt"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-sm font-bold text-white">PDV Móvel &amp; Cotações</h4>
-                                <p class="text-xs text-slate-400 mt-0.5">Emita vendas, recibos térmicos Bluetooth/Wi-Fi, faturas e cotações em PDF diretamente pelo smartphone.</p>
-                            </div>
-                        </div>
-
-                        <div class="p-4 rounded-2xl bg-slate-950/60 border border-white/[0.07] flex items-start gap-3.5">
-                            <div class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center flex-shrink-0 text-base">
-                                <i class="fa-solid fa-cloud-bolt"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-sm font-bold text-white">Modo Offline Sincronizado</h4>
-                                <p class="text-xs text-slate-400 mt-0.5">Continue a vender mesmo sem dados móveis e sincronize automaticamente assim que a ligação regressar.</p>
-                            </div>
-                        </div>
-
-                        <div class="p-4 rounded-2xl bg-slate-950/60 border border-white/[0.07] flex items-start gap-3.5">
-                            <div class="w-10 h-10 rounded-xl bg-teal-500/15 text-teal-400 flex items-center justify-center flex-shrink-0 text-base">
-                                <i class="fa-solid fa-chart-line"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-sm font-bold text-white">Dashboard do Dono Ao Vivo</h4>
-                                <p class="text-xs text-slate-400 mt-0.5">Veja quanto cada filial vendeu em Numerário, M-Pesa, e-Mola e POS sem precisar de ir até à loja.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Prominent Download / Install Buttons for Android & Apple -->
-                    <div class="pt-3 flex flex-wrap items-center gap-4">
-                        <button type="button" @click="openAppInstall('android')"
-                                class="btn-tactile bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3.5 rounded-2xl shadow-xl shadow-emerald-600/30 border border-emerald-400/30 flex items-center gap-3.5 cursor-pointer">
-                            <i class="fa-brands fa-google-play text-2xl"></i>
-                            <div class="text-left">
-                                <span class="text-[10px] uppercase tracking-wider text-emerald-100 block leading-none">Instalar no Telemóvel</span>
-                                <span class="text-sm sm:text-base font-extrabold font-heading block mt-0.5">App para Android</span>
-                            </div>
-                        </button>
-
-                        <button type="button" @click="openAppInstall('ios')"
-                                class="btn-tactile bg-white text-slate-950 hover:bg-slate-100 px-6 py-3.5 rounded-2xl shadow-xl flex items-center gap-3.5 cursor-pointer">
-                            <i class="fa-brands fa-apple text-2xl text-slate-950"></i>
-                            <div class="text-left">
-                                <span class="text-[10px] uppercase tracking-wider text-slate-600 block leading-none">Instalar no iPhone / iPad</span>
-                                <span class="text-sm sm:text-base font-extrabold font-heading block mt-0.5">App para Apple iOS</span>
-                            </div>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Right Column: Realistic Smartphone Mockup -->
-                <div class="lg:col-span-5 flex justify-center">
-                    <div class="w-full max-w-[320px] rounded-[2.5rem] bg-slate-950 border-[6px] border-slate-800 shadow-2xl overflow-hidden relative">
-                        <!-- Phone Notch / Status Bar -->
-                        <div class="px-5 py-2.5 bg-slate-950 flex items-center justify-between text-[10px] text-slate-400 border-b border-white/5">
-                            <span class="font-mono-num font-bold text-white">09:41</span>
-                            <div class="w-16 h-3.5 rounded-full bg-slate-900 border border-white/10"></div>
-                            <div class="flex items-center gap-1.5 text-emerald-400">
-                                <i class="fa-solid fa-signal text-[9px]"></i>
-                                <i class="fa-solid fa-battery-full text-xs"></i>
-                            </div>
-                        </div>
-
-                        <!-- Phone App Header -->
-                        <div class="p-4 bg-slate-900/90 border-b border-white/5 flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <img src="{{ asset('favicon.png') }}" alt="ZBIZ+" class="w-7 h-7 rounded-lg">
-                                <div>
-                                    <div class="text-xs font-extrabold text-white leading-none">ZBIZ<span class="text-emerald-400">+</span> Mobile</div>
-                                    <div class="text-[9px] text-emerald-400 mt-0.5">● Sincronizado (Android / iOS)</div>
-                                </div>
-                            </div>
-                            <span class="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 text-[9px] font-bold">Turno Aberto</span>
-                        </div>
-
-                        <!-- Phone Screen Content -->
-                        <div class="p-4 space-y-3 bg-[#070d19]">
-                            <div class="grid grid-cols-2 gap-2.5">
-                                <div class="p-3 rounded-2xl bg-slate-900 border border-white/5">
-                                    <span class="text-[9px] text-slate-400 uppercase block">Vendas Hoje</span>
-                                    <span class="text-sm font-extrabold font-mono-num text-emerald-400 mt-0.5 block">42.850 MT</span>
-                                </div>
-                                <div class="p-3 rounded-2xl bg-slate-900 border border-white/5">
-                                    <span class="text-[9px] text-slate-400 uppercase block">M-Pesa / e-Mola</span>
-                                    <span class="text-sm font-extrabold font-mono-num text-sky-400 mt-0.5 block">19.400 MT</span>
-                                </div>
-                            </div>
-
-                            <!-- Camera Barcode Action Inside Phone -->
-                            <div class="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
-                                <div class="flex items-center gap-2.5">
-                                    <div class="w-8 h-8 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center text-sm font-bold">
-                                        <i class="fa-solid fa-barcode"></i>
-                                    </div>
-                                    <div>
-                                        <div class="text-xs font-bold text-white">Ler Código de Barras</div>
-                                        <div class="text-[10px] text-emerald-300">Câmara Android / iPhone ativa</div>
-                                    </div>
-                                </div>
-                                <i class="fa-solid fa-chevron-right text-xs text-emerald-400"></i>
-                            </div>
-
-                            <!-- Recent Mobile Sale -->
-                            <div class="p-3 rounded-2xl bg-slate-900 border border-white/5 space-y-2 text-[11px]">
-                                <div class="flex items-center justify-between text-slate-400 text-[10px]">
-                                    <span>Última Venda #VD-1094</span>
-                                    <span class="text-emerald-400 font-semibold">Pago · M-Pesa</span>
-                                </div>
-                                <div class="flex items-center justify-between font-semibold text-white">
-                                    <span>3 Artigos · Balcão Móvel</span>
-                                    <span class="font-mono-num text-emerald-400">1.450,00 MT</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Phone Bottom Nav -->
-                        <div class="px-3 py-2.5 bg-slate-900 border-t border-white/10 flex items-center justify-around text-slate-400">
-                            <div class="flex flex-col items-center text-emerald-400 font-bold">
-                                <i class="fa-solid fa-chart-pie text-xs"></i>
-                                <span class="text-[8px] mt-0.5">Início</span>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <i class="fa-solid fa-boxes-stacked text-xs"></i>
-                                <span class="text-[8px] mt-0.5">Stock</span>
-                            </div>
-                            <div class="flex flex-col items-center justify-center -mt-4 bg-gradient-to-tr from-emerald-600 to-teal-500 text-white w-10 h-10 rounded-full shadow-lg border-2 border-slate-950">
-                                <i class="fa-solid fa-cash-register text-xs"></i>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <i class="fa-solid fa-file-invoice-dollar text-xs"></i>
-                                <span class="text-[8px] mt-0.5">Vendas</span>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <i class="fa-solid fa-bars text-xs"></i>
-                                <span class="text-[8px] mt-0.5">Menu</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- ======================================================================= -->
-    <!-- 4. SEGMENTOS ATENDIDOS (ESTILO https://www.vhsys.com.br/segmentos/)     -->
-    <!-- ======================================================================= -->
-    <section id="segmentos" class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-white/[0.06]">
-        <div class="text-center max-w-3xl mx-auto mb-10">
-            <span class="text-[11px] font-bold uppercase tracking-widest text-sky-400 bg-sky-500/10 border border-sky-500/25 px-3.5 py-1 rounded-full">
-                Especializado no Seu Ramo
-            </span>
-            <h2 class="text-2xl sm:text-4xl font-extrabold font-heading text-white mt-3">
-                Um sistema que se adapta ao seu segmento de negócio
-            </h2>
-            <p class="mt-2.5 text-slate-400 text-sm sm:text-base">
-                Selecione o seu ramo de atuação e veja como o ZBIZ+ resolve as necessidades específicas do seu dia a dia.
-            </p>
-        </div>
-
-        <!-- Interactive Segment Selector Pills -->
-        <div class="flex flex-wrap justify-center gap-2.5 mb-10">
-            <button type="button" @click="sector = 'pharmacy'"
-                    :class="sector === 'pharmacy' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/25 font-bold' : 'bg-slate-900/90 text-slate-300 hover:bg-slate-800 border border-white/10 font-medium'"
-                    class="btn-tactile px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 cursor-pointer">
-                <i class="fa-solid fa-prescription-bottle-medical"></i> Farmácias &amp; Drogarias
-            </button>
-            <button type="button" @click="sector = 'retail'"
-                    :class="sector === 'retail' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/25 font-bold' : 'bg-slate-900/90 text-slate-300 hover:bg-slate-800 border border-white/10 font-medium'"
-                    class="btn-tactile px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 cursor-pointer">
-                <i class="fa-solid fa-cart-shopping"></i> Comércio, Lojas &amp; Mercearias
-            </button>
-            <button type="button" @click="sector = 'restaurant'"
-                    :class="sector === 'restaurant' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/25 font-bold' : 'bg-slate-900/90 text-slate-300 hover:bg-slate-800 border border-white/10 font-medium'"
-                    class="btn-tactile px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 cursor-pointer">
-                <i class="fa-solid fa-utensils"></i> Restaurantes, Bares &amp; Cafés
-            </button>
-            <button type="button" @click="sector = 'reprography'"
-                    :class="sector === 'reprography' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/25 font-bold' : 'bg-slate-900/90 text-slate-300 hover:bg-slate-800 border border-white/10 font-medium'"
-                    class="btn-tactile px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 cursor-pointer">
-                <i class="fa-solid fa-print"></i> Gráficas &amp; Papelarias
-            </button>
-            <button type="button" @click="sector = 'services'"
-                    :class="sector === 'services' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/25 font-bold' : 'bg-slate-900/90 text-slate-300 hover:bg-slate-800 border border-white/10 font-medium'"
-                    class="btn-tactile px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 cursor-pointer">
-                <i class="fa-solid fa-briefcase"></i> Prestadores de Serviços &amp; Oficinas
-            </button>
-        </div>
-
-        <!-- Dynamic Segment Spotlight Panel (VHSYS Segment Page Pattern) -->
-        <div class="soft-card rounded-3xl p-6 sm:p-8 lg:p-10 mb-8">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                <div class="lg:col-span-7 space-y-4">
-                    <div class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400">
-                        <i class="fa-solid fa-circle-dot"></i>
-                        <span x-text="
-                            sector === 'pharmacy' ? 'Solução Vertical para Farmácias, Clínicas & Drogarias' :
-                            (sector === 'restaurant' ? 'Solução Vertical para Alimentação, Bares & Take-Away' :
-                            (sector === 'reprography' ? 'Solução Vertical para Gráficas, Reprografia & Serigrafia' :
-                            (sector === 'services' ? 'Solução Vertical para Prestadores de Serviços & Assistência' : 'Solução Vertical para Comércio a Retalho, Supermercados & Ferragens')))"></span>
-                    </div>
-
-                    <h3 class="text-2xl sm:text-3xl font-extrabold font-heading text-white" x-text="
-                        sector === 'pharmacy' ? 'Elimine perdas por medicamentos vencidos e cumpra 100% das normas ANARME.' :
-                        (sector === 'restaurant' ? 'Agilize o atendimento das mesas ao ecrã da cozinha sem erros de pedidos.' :
-                        (sector === 'reprography' ? 'Controle cada folha impressa, insumos gastos e ordens de produção gráfica.' :
-                        (sector === 'services' ? 'Envie cotações profissionais no WhatsApp e converta em fatura num clique.' : 'Venda rápido no balcão, controle o stock entre lojas e acabe com quebras de caixa.')))"></h3>
-
-                    <p class="text-slate-300 text-sm leading-relaxed" x-text="
-                        sector === 'pharmacy' ? 'O ZBIZ+ seleciona automaticamente o lote com validade mais próxima (FEFO) no momento da venda, bloqueia lotes expirados, gere receitas médicas e aplica a isenção do Artigo 9º do CIVA.' :
-                        (sector === 'restaurant' ? 'Acompanhe o mapa de mesas livres e ocupadas em tempo real, lance pedidos pelo telemóvel do empregado de mesa e envie comandas diretamente para a preparação.' :
-                        (sector === 'reprography' ? 'Dê baixa automática em papel, tintas, lonas e espirais ao faturar serviços de cópias, encadernação ou impressão digital.' :
-                        (sector === 'services' ? 'Acompanhe o histórico completo de cada cliente, controle pagamentos parciais, contas a receber e emita recibos em PDF ou talão térmico.' : 'Cadastre produtos com código de barras, controle limites de fiado de clientes, transfira stock entre armazém e loja e faça o fecho cego Z ao fim do dia.')))"></p>
-
-                    <div class="pt-2 flex flex-wrap items-center gap-3">
-                        <a :href="'{{ route('register') }}?sector=' + sector"
-                           class="btn-tactile bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl text-xs sm:text-sm shadow-lg shadow-emerald-600/25 flex items-center gap-2 cursor-pointer">
-                            <i class="fa-solid fa-rocket"></i>
-                            <span>Experimentar Grátis neste Segmento</span>
-                        </a>
-                        <a href="#planos-e-precos" class="btn-tactile bg-slate-800/90 hover:bg-slate-700 text-slate-200 font-semibold px-5 py-3 rounded-xl text-xs sm:text-sm border border-white/10">
-                            Ver planos recomendados
-                        </a>
-                    </div>
-                </div>
-
-                <!-- 3 Specific Benefits of Selected Segment -->
-                <div class="lg:col-span-5 space-y-3">
-                    <div class="p-4 rounded-2xl bg-slate-950/80 border border-white/[0.07] flex items-start gap-3">
-                        <i class="fa-solid fa-circle-check text-emerald-400 mt-1"></i>
-                        <div>
-                            <div class="text-xs font-bold text-white" x-text="
-                                sector === 'pharmacy' ? 'Catálogo Base com +60 Medicamentos ANARME' :
-                                (sector === 'restaurant' ? 'Mapa de Mesas & Comandas no Telemóvel' :
-                                (sector === 'reprography' ? 'Dedução Automática de Resmas e Consumíveis' :
-                                (sector === 'services' ? 'Orçamentos PDF com Conversão Automática' : 'Leitor de Código de Barras USB e Câmara Mobile')))"></div>
-                            <div class="text-[11px] text-slate-400 mt-0.5">Configurado automaticamente na abertura da sua conta.</div>
-                        </div>
-                    </div>
-
-                    <div class="p-4 rounded-2xl bg-slate-950/80 border border-white/[0.07] flex items-start gap-3">
-                        <i class="fa-solid fa-circle-check text-sky-400 mt-1"></i>
-                        <div>
-                            <div class="text-xs font-bold text-white" x-text="
-                                sector === 'pharmacy' ? 'Radar Preventivo 30 / 60 / 90 Dias & Psicotrópicos' :
-                                (sector === 'restaurant' ? 'Ecrã de Cozinha (KDS) & Fecho de Conta Flexível' :
-                                (sector === 'reprography' ? 'Preços Escalados por Quantidade de Cópias' :
-                                (sector === 'services' ? 'Gestão de Contas Correntes e Amortizações' : 'Controlo Rigoroso de Stock Mínimo e Fornecedores')))"></div>
-                            <div class="text-[11px] text-slate-400 mt-0.5">Totalmente integrado ao financeiro e ao apuramento de IVA.</div>
-                        </div>
-                    </div>
-
-                    <div class="p-4 rounded-2xl bg-slate-950/80 border border-white/[0.07] flex items-start gap-3">
-                        <i class="fa-solid fa-circle-check text-teal-400 mt-1"></i>
-                        <div>
-                            <div class="text-xs font-bold text-white">App Mobile Android &amp; iOS + Fecho Cego de Caixa</div>
-                            <div class="text-[11px] text-slate-400 mt-0.5">Auditoria de turnos anti-fraude e acompanhamento em tempo real.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Additional Segments Grid (VHSYS "+ Segmentos Atendidos" Strip) -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-center">
-            <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-white/[0.06] text-xs text-slate-300 flex flex-col items-center gap-1.5">
-                <i class="fa-solid fa-screwdriver-wrench text-amber-400 text-base"></i>
-                <span class="font-semibold">Ferragens &amp; Construção</span>
-            </div>
-            <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-white/[0.06] text-xs text-slate-300 flex flex-col items-center gap-1.5">
-                <i class="fa-solid fa-shirt text-pink-400 text-base"></i>
-                <span class="font-semibold">Moda &amp; Boutiques</span>
-            </div>
-            <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-white/[0.06] text-xs text-slate-300 flex flex-col items-center gap-1.5">
-                <i class="fa-solid fa-car-battery text-sky-400 text-base"></i>
-                <span class="font-semibold">Autopeças &amp; Oficinas</span>
-            </div>
-            <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-white/[0.06] text-xs text-slate-300 flex flex-col items-center gap-1.5">
-                <i class="fa-solid fa-laptop-code text-indigo-400 text-base"></i>
-                <span class="font-semibold">Informática &amp; Celulares</span>
-            </div>
-            <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-white/[0.06] text-xs text-slate-300 flex flex-col items-center gap-1.5">
-                <i class="fa-solid fa-scissors text-purple-400 text-base"></i>
-                <span class="font-semibold">Salões &amp; Estética</span>
-            </div>
-            <div class="p-3.5 rounded-2xl bg-slate-900/60 border border-white/[0.06] text-xs text-slate-300 flex flex-col items-center gap-1.5">
-                <i class="fa-solid fa-truck-ramp-box text-emerald-400 text-base"></i>
-                <span class="font-semibold">Grossistas &amp; Distribuidoras</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- ======================================================================= -->
-    <!-- 5. PLANOS E PREÇOS (ESTILO https://www.vhsys.com.br/planos-e-precos/)   -->
-    <!-- ======================================================================= -->
-    <section id="planos-e-precos" class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-white/[0.06]">
-        <div class="text-center max-w-3xl mx-auto mb-10">
-            <span class="text-[11px] font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-3.5 py-1 rounded-full">
-                Planos e Preços em Meticais (MZN)
-            </span>
-            <h2 class="text-3xl sm:text-5xl font-extrabold font-heading text-white mt-3">
-                O melhor custo-benefício para o seu negócio crescer
-            </h2>
-            <p class="mt-3 text-slate-400 text-sm sm:text-base">
-                Todos os planos incluem <strong class="text-white">App Mobile (Android e iOS)</strong>, atualizações automáticas e suporte técnico local.
-            </p>
-
-            <!-- Billing Periodicity Switcher (Mensal / Semestral / Anual - VHSYS Style) -->
-            <div class="mt-7 inline-flex items-center p-1.5 rounded-2xl bg-slate-900 border border-white/10 text-xs font-bold">
-                <button type="button" @click="billingCycle = 'monthly'"
-                        :class="billingCycle === 'monthly' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'"
-                        class="px-4 py-2 rounded-xl transition cursor-pointer">
-                    Mensal
-                </button>
-                <button type="button" @click="billingCycle = 'semiannual'"
-                        :class="billingCycle === 'semiannual' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'"
-                        class="px-4 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5">
-                    <span>Semestral</span>
-                    <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px]">-10%</span>
-                </button>
-                <button type="button" @click="billingCycle = 'annual'"
-                        :class="billingCycle === 'annual' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'"
-                        class="px-4 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5">
-                    <span>Anual</span>
-                    <span class="px-1.5 py-0.5 rounded bg-amber-400 text-slate-950 text-[10px] font-extrabold">-20% Económico</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- 4 Plan Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
-            
-            <!-- Starter (Static 1.250 preserved for tests + dynamic discount badge) -->
-            <div class="soft-card rounded-3xl p-6 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-bold font-heading text-white">ZBIZ Starter</h3>
-                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-800 text-slate-300">Essencial</span>
-                    </div>
-                    <p class="text-xs text-slate-400 mt-1">Ideal para pequenas bancas, mercearias e lojas individuais.</p>
-                    
-                    <div class="mt-5 mb-6 pb-5 border-b border-white/[0.07]">
-                        <div class="flex items-baseline gap-1">
-                            <span class="text-3xl font-extrabold font-mono-num text-white"
-                                  x-text="billingCycle === 'annual' ? '1.000' : (billingCycle === 'semiannual' ? '1.125' : '1.250')">1.250</span>
-                            <span class="text-xs text-slate-400 font-medium">MT/mês</span>
-                        </div>
-                        <div class="text-[11px] text-emerald-400 mt-1 font-medium">
-                            <span x-show="billingCycle === 'monthly'">Plano base mensal: 1.250 MT</span>
-                            <span x-cloak x-show="billingCycle !== 'monthly'">De 1.250 MT/mês com desconto ativo</span>
-                        </div>
-                    </div>
-
-                    <ul class="text-xs text-slate-300 space-y-3">
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> <strong>1 Loja</strong> / Ponto de Venda</li>
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> Até <strong>2 Utilizadores</strong></li>
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> Frente de Caixa POS &amp; Talão 80mm</li>
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> Fecho Cego de Caixa (Talão Z)</li>
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> Até 500 Produtos em Stock</li>
-                        <li class="flex items-center gap-2.5 text-emerald-300 font-semibold"><i class="fa-solid fa-mobile-screen-button text-emerald-400"></i> App Android &amp; iOS Incluída</li>
-                    </ul>
-                </div>
-                <a href="{{ route('register', ['plan' => 'starter']) }}" class="btn-tactile mt-8 block text-center bg-slate-800/90 hover:bg-slate-700 text-white font-semibold py-3 rounded-xl text-xs border border-white/10 cursor-pointer">
-                    Experimente Grátis (Starter)
-                </a>
-            </div>
-
-            <!-- Pro -->
-            <div class="soft-card rounded-3xl p-6 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-bold font-heading text-white">ZBIZ Pro</h3>
-                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-300 border border-sky-500/25">Crescimento</span>
-                    </div>
-                    <p class="text-xs text-slate-400 mt-1">Para comércios, gráficas, restaurantes e serviços em expansão.</p>
-                    
-                    <div class="mt-5 mb-6 pb-5 border-b border-white/[0.07]">
-                        <div class="flex items-baseline gap-1">
-                            <span class="text-3xl font-extrabold font-mono-num text-white"
-                                  x-text="billingCycle === 'annual' ? '2.360' : (billingCycle === 'semiannual' ? '2.655' : '2.950')">2.950</span>
-                            <span class="text-xs text-slate-400 font-medium">MT/mês</span>
-                        </div>
-                        <div class="text-[11px] text-sky-400 mt-1 font-medium">
-                            <span>Gestão financeira, fiscal e multi-loja</span>
-                        </div>
-                    </div>
-
-                    <ul class="text-xs text-slate-300 space-y-3">
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> Até <strong>2 Lojas / Filiais</strong></li>
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> Até <strong>5 Utilizadores</strong></li>
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> Gestão de Fiados, Cotações &amp; Clientes</li>
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> Fornecedores, Compras &amp; Despesas</li>
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> Mapa Fiscal de IVA (Modelo A - AT)</li>
-                        <li class="flex items-center gap-2.5 text-emerald-300 font-semibold"><i class="fa-solid fa-mobile-screen-button text-emerald-400"></i> App Android &amp; iOS Incluída</li>
-                    </ul>
-                </div>
-                <a href="{{ route('register', ['plan' => 'pro']) }}" class="btn-tactile mt-8 block text-center bg-slate-800/90 hover:bg-slate-700 text-white font-semibold py-3 rounded-xl text-xs border border-white/10 cursor-pointer">
-                    Experimente Grátis (Pro)
-                </a>
-            </div>
-
-            <!-- Pharmacy+ (Featured) -->
-            <div class="bg-gradient-to-b from-slate-900 via-slate-900 to-emerald-950/60 border-2 border-emerald-500/80 rounded-3xl p-6 flex flex-col justify-between shadow-2xl shadow-emerald-950/60 relative transform lg:-translate-y-2 transition">
-                <span class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-slate-950 font-extrabold text-[10px] tracking-wider uppercase px-3.5 py-1 rounded-full shadow-md whitespace-nowrap">
-                    Mais Escolhido · Farmácias
-                </span>
-                <div>
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-bold font-heading text-white">Pharmacy+</h3>
-                        <i class="fa-solid fa-prescription-bottle-medical text-emerald-400"></i>
-                    </div>
-                    <p class="text-xs text-emerald-300/90 mt-1">Completo para Farmácias, Clínicas e Drogarias (ANARME).</p>
-                    
-                    <div class="mt-5 mb-6 pb-5 border-b border-emerald-500/20">
-                        <div class="flex items-baseline gap-1">
-                            <span class="text-3xl font-extrabold font-mono-num text-emerald-400"
-                                  x-text="billingCycle === 'annual' ? '3.600' : (billingCycle === 'semiannual' ? '4.050' : '4.500')">4.500</span>
-                            <span class="text-xs text-slate-300 font-medium">MT/mês</span>
-                        </div>
-                        <div class="text-[11px] text-emerald-300 mt-1 font-medium">
-                            <span>Catálogo ANARME + FEFO + Isenção Art. 9º</span>
-                        </div>
-                    </div>
-
-                    <ul class="text-xs text-slate-200 space-y-3">
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> Até <strong>2 Filiais / Balcões</strong></li>
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> Controlo de Lotes &amp; Validades (FEFO)</li>
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> Radar ANARME 30 / 60 / 90 dias</li>
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> Receitas Médicas &amp; Psicotrópicos</li>
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> Isenções Artigo 9º CIVA &amp; Modelo A</li>
-                        <li class="flex items-center gap-2.5 text-emerald-300 font-semibold"><i class="fa-solid fa-mobile-screen-button text-emerald-400"></i> App Android &amp; iOS Incluída</li>
-                    </ul>
-                </div>
-                <a href="{{ route('register', ['plan' => 'pharmacy_plus', 'sector' => 'pharmacy']) }}" class="btn-tactile mt-8 block text-center bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs shadow-lg shadow-emerald-600/30 cursor-pointer">
-                    Experimente Grátis (Pharmacy+)
-                </a>
-            </div>
-
-            <!-- Business -->
-            <div class="soft-card rounded-3xl p-6 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-bold font-heading text-white">ZBIZ Business</h3>
-                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-purple-500/15 text-purple-300 border border-purple-500/25">Multi-Filiais</span>
-                    </div>
-                    <p class="text-xs text-slate-400 mt-1">Para redes comerciais, distribuidoras e grupos empresariais.</p>
-                    
-                    <div class="mt-5 mb-6 pb-5 border-b border-white/[0.07]">
-                        <div class="flex items-baseline gap-1">
-                            <span class="text-3xl font-extrabold font-mono-num text-white"
-                                  x-text="billingCycle === 'annual' ? '4.400' : (billingCycle === 'semiannual' ? '4.950' : '5.500')">5.500</span>
-                            <span class="text-xs text-slate-400 font-medium">MT/mês</span>
-                        </div>
-                        <div class="text-[11px] text-purple-300 mt-1 font-medium">
-                            <span>Multi-armazém e backups na nuvem</span>
-                        </div>
-                    </div>
-
-                    <ul class="text-xs text-slate-300 space-y-3">
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> Até <strong>5 Filiais / Armazéns</strong></li>
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> Até <strong>15 Utilizadores</strong></li>
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> Transferências de Stock Inter-Lojas</li>
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> Cofre de Backups Automáticos Nuvem</li>
-                        <li class="flex items-center gap-2.5"><i class="fa-solid fa-check text-emerald-400"></i> Artigos &amp; Faturação Ilimitados</li>
-                        <li class="flex items-center gap-2.5 text-emerald-300 font-semibold"><i class="fa-solid fa-mobile-screen-button text-emerald-400"></i> App Android &amp; iOS Incluída</li>
-                    </ul>
-                </div>
-                <a href="{{ route('register', ['plan' => 'business']) }}" class="btn-tactile mt-8 block text-center bg-slate-800/90 hover:bg-slate-700 text-white font-semibold py-3 rounded-xl text-xs border border-white/10 cursor-pointer">
-                    Experimente Grátis (Business)
-                </a>
-            </div>
-
-        </div>
-
-        <!-- Comparison Table Toggle & Matrix (VHSYS /planos-e-precos/ Pattern) -->
-        <div class="mt-12 soft-card rounded-3xl overflow-hidden">
-            <button type="button" @click="showComparison = !showComparison"
-                    class="w-full px-6 py-4 flex items-center justify-between text-left bg-slate-900/90 hover:bg-slate-800/80 transition cursor-pointer">
-                <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-table-list text-emerald-400"></i>
-                    <span class="text-sm sm:text-base font-bold font-heading text-white">Comparar todos os recursos incluídos em cada plano</span>
-                </div>
-                <span class="text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
-                    <span x-text="showComparison ? 'Ocultar tabela' : 'Expandir tabela'"></span>
-                    <i class="fa-solid fa-chevron-down transition" :class="showComparison ? 'rotate-180' : ''"></i>
-                </span>
-            </button>
-
-            <div x-show="showComparison" class="overflow-x-auto border-t border-white/[0.07]">
-                <table class="w-full text-left text-xs">
-                    <thead>
-                        <tr class="bg-slate-950/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-white/[0.06]">
-                            <th class="py-3.5 px-6">Recurso / Módulo</th>
-                            <th class="py-3.5 px-4 text-center">Starter</th>
-                            <th class="py-3.5 px-4 text-center">Pro</th>
-                            <th class="py-3.5 px-4 text-center text-emerald-400">Pharmacy+</th>
-                            <th class="py-3.5 px-4 text-center">Business</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-white/[0.05] text-slate-300">
-                        <tr>
-                            <td class="py-3 px-6 font-medium text-white">App Mobile Oficial (Android &amp; Apple iOS)</td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                        </tr>
-                        <tr>
-                            <td class="py-3 px-6 font-medium text-white">Frente de Caixa POS Offline-First &amp; Fecho Cego Z</td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                        </tr>
-                        <tr>
-                            <td class="py-3 px-6 font-medium text-white">Pagamentos M-Pesa, e-Mola, POS &amp; Numerário</td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                        </tr>
-                        <tr>
-                            <td class="py-3 px-6 font-medium text-white">Gestão de Dívidas (Fiados), Cotações PDF &amp; Fornecedores</td>
-                            <td class="py-3 px-4 text-center text-slate-600">—</td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                        </tr>
-                        <tr>
-                            <td class="py-3 px-6 font-medium text-white">Apuramento Fiscal de IVA Modelo A (AT Moçambique)</td>
-                            <td class="py-3 px-4 text-center text-slate-600">—</td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                        </tr>
-                        <tr>
-                            <td class="py-3 px-6 font-medium text-white">Lotes FEFO, Radar ANARME 30/60/90d &amp; Receitas Médicas</td>
-                            <td class="py-3 px-4 text-center text-slate-600">—</td>
-                            <td class="py-3 px-4 text-center text-slate-600">—</td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                        </tr>
-                        <tr>
-                            <td class="py-3 px-6 font-medium text-white">Transferências Inter-Filiais &amp; Cofre de Backups na Nuvem</td>
-                            <td class="py-3 px-4 text-center text-slate-600">—</td>
-                            <td class="py-3 px-4 text-center text-slate-600">—</td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                            <td class="py-3 px-4 text-center"><i class="fa-solid fa-circle-check text-emerald-400"></i></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </section>
-
-    <!-- ======================================================================= -->
-    <!-- 6. EXPERIMENTE GRÁTIS (ESTILO https://www.vhsys.com.br/experimente-gratis/) -->
-    <!-- ======================================================================= -->
-    <section id="experimente-gratis" class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-white/[0.06]">
-        <div class="rounded-[2rem] bg-gradient-to-r from-emerald-950/80 via-slate-900 to-sky-950/80 border border-emerald-500/30 p-6 sm:p-10 lg:p-12 shadow-2xl">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-                
-                <!-- Left Column: Why Try ZBIZ+ Free -->
-                <div class="lg:col-span-7 space-y-5">
-                    <span class="text-[11px] font-bold uppercase tracking-widest text-emerald-300 bg-emerald-500/15 border border-emerald-400/30 px-3.5 py-1 rounded-full">
-                        Experimente Grátis · Sem Compromisso
-                    </span>
-                    <h2 class="text-2xl sm:text-4xl font-extrabold font-heading text-white leading-tight">
-                        Teste todas as ferramentas do ZBIZ+ na prática na sua empresa.
-                    </h2>
-                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
-                        Faça o seu pré-registo gratuito em menos de 1 minuto. Não pedimos cartão de crédito e a nossa equipa envia as suas credenciais de acesso diretamente por <strong class="text-white">SMS (+258)</strong> e <strong class="text-white">E-mail</strong>.
-                    </p>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2 text-xs text-slate-200">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
-                                <i class="fa-solid fa-check"></i>
-                            </div>
-                            <span>Sem necessidade de cartão de crédito</span>
-                        </div>
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
-                                <i class="fa-solid fa-check"></i>
-                            </div>
-                            <span>Acesso completo Web + App Android &amp; iOS</span>
-                        </div>
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
-                                <i class="fa-solid fa-check"></i>
-                            </div>
-                            <span>Catálogo e categorias pré-configuradas</span>
-                        </div>
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
-                                <i class="fa-solid fa-check"></i>
-                            </div>
-                            <span>Apoio humano via WhatsApp (+258 86 213 4230)</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right Column: Fast-Track Onboarding Card -->
-                <div class="lg:col-span-5">
-                    <div class="rounded-3xl bg-slate-950/90 border border-white/10 p-6 sm:p-7 shadow-xl space-y-4">
-                        <div class="flex items-center justify-between border-b border-white/10 pb-3.5">
-                            <div>
-                                <h3 class="text-base font-bold font-heading text-white">Comece a sua avaliação gratuita</h3>
-                                <p class="text-[11px] text-slate-400">Escolha o setor da sua empresa para configurar o ambiente:</p>
-                            </div>
-                            <i class="fa-solid fa-bolt text-emerald-400 text-lg"></i>
-                        </div>
-
-                        <form method="GET" action="{{ route('register') }}" class="space-y-3.5">
-                            <div>
-                                <label class="block text-[11px] font-semibold text-slate-300 mb-1">Segmento da Empresa</label>
-                                <select name="sector" x-model="sector" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/15 text-xs text-white focus:outline-none focus:border-emerald-500">
-                                    <option value="pharmacy">Farmácia, Clínica ou Drogaria (ANARME)</option>
-                                    <option value="retail">Comércio Geral, Mercearia ou Supermercado</option>
-                                    <option value="restaurant">Restaurante, Bar, Café ou Take-Away</option>
-                                    <option value="reprography">Gráfica, Reprografia ou Papelaria</option>
-                                    <option value="services">Prestação de Serviços ou Oficina</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-[11px] font-semibold text-slate-300 mb-1">Plano Desejado para Teste</label>
-                                <select name="plan" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/15 text-xs text-white focus:outline-none focus:border-emerald-500">
-                                    <option value="pharmacy_plus" :selected="sector === 'pharmacy'">Pharmacy+ (Recomendado para Farmácias)</option>
-                                    <option value="pro" :selected="sector !== 'pharmacy'">ZBIZ Pro (Comércio, Restaurantes &amp; Serviços)</option>
-                                    <option value="starter">ZBIZ Starter (Pequenos Negócios)</option>
-                                    <option value="business">ZBIZ Business (Multi-Filiais)</option>
-                                </select>
-                            </div>
-
-                            <button type="submit" class="btn-tactile w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl text-sm shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer">
-                                <span>Criar Conta de Teste Grátis</span>
-                                <i class="fa-solid fa-arrow-right text-xs"></i>
-                            </button>
-                        </form>
-
-                        <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[11px] text-slate-400">
-                            <span>Prefere falar connosco?</span>
-                            <a href="https://wa.me/258862134230?text={{ rawurlencode('Olá Fdsmultiservices, quero experimentar o sistema ZBIZ+ e a App Mobile na minha empresa.') }}"
-                               target="_blank" rel="noopener noreferrer"
-                               class="text-emerald-400 hover:underline font-semibold flex items-center gap-1">
-                                <i class="fa-brands fa-whatsapp"></i> Chamar no WhatsApp
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- ======================================================================= -->
-    <!-- 7. FOOTER OFICIAL FDSMULTISERVICES COM BOTÕES MOBILE                    -->
-    <!-- ======================================================================= -->
-    <footer class="relative z-10 border-t border-white/[0.08] bg-[#040810] py-12 px-4 sm:px-6 text-xs text-slate-400">
-        <div class="max-w-7xl mx-auto space-y-8">
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-8 pb-8 border-b border-white/[0.06]">
-                
-                <!-- Brand & Description -->
-                <div class="md:col-span-5 space-y-3">
-                    <div class="flex items-center gap-2.5">
-                        <img src="{{ asset('favicon.png') }}" alt="ZBIZ+" class="w-7 h-7 rounded-lg">
-                        <span class="text-lg font-extrabold text-white tracking-wide">ZBIZ<span class="text-emerald-400">+</span></span>
-                    </div>
-                    <p class="text-slate-400 text-xs leading-relaxed max-w-sm">
-                        Plataforma ERP, Frente de Caixa POS e Aplicativo Mobile (Android e Apple iOS) desenvolvida à medida das empresas moçambicanas.
-                    </p>
-                </div>
-
-                <!-- Quick Links -->
-                <div class="md:col-span-3 space-y-2">
-                    <div class="text-white font-bold uppercase tracking-wider text-[11px] mb-2">Navegação</div>
-                    <ul class="space-y-1.5">
-                        <li><a href="#funcionalidades" class="hover:text-emerald-400 transition">Funcionalidades do ERP</a></li>
-                        <li><a href="#segmentos" class="hover:text-emerald-400 transition">Segmentos Atendidos</a></li>
-                        <li><a href="#app-mobile" class="hover:text-emerald-400 transition">App Mobile Android &amp; iOS</a></li>
-                        <li><a href="#planos-e-precos" class="hover:text-emerald-400 transition">Planos e Preços</a></li>
-                        <li><a href="#experimente-gratis" class="hover:text-emerald-400 transition">Experimente Grátis</a></li>
-                    </ul>
-                </div>
-
-                <!-- App Mobile Badges in Footer -->
-                <div class="md:col-span-4 space-y-2.5">
-                    <div class="text-white font-bold uppercase tracking-wider text-[11px] mb-2">Aplicativo Mobile (Android &amp; Apple)</div>
-                    <div class="flex flex-wrap gap-2.5">
-                        <button type="button" @click="openAppInstall('android')" class="store-badge rounded-xl px-3.5 py-2 flex items-center gap-2.5 cursor-pointer">
-                            <i class="fa-brands fa-google-play text-emerald-400 text-lg"></i>
-                            <div class="text-left">
-                                <span class="text-[9px] uppercase text-slate-400 block leading-none">Baixar para</span>
-                                <span class="text-xs font-bold text-white">Android</span>
-                            </div>
-                        </button>
-                        <button type="button" @click="openAppInstall('ios')" class="store-badge rounded-xl px-3.5 py-2 flex items-center gap-2.5 cursor-pointer">
-                            <i class="fa-brands fa-apple text-white text-xl"></i>
-                            <div class="text-left">
-                                <span class="text-[9px] uppercase text-slate-400 block leading-none">Baixar para</span>
-                                <span class="text-xs font-bold text-white">Apple iOS</span>
-                            </div>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-                <div>
-                    <span>&copy; {{ date('Y') }} <strong>ZBIZ+</strong>. Todos os direitos reservados.</span>
-                </div>
-                <div class="flex flex-wrap items-center justify-center gap-4 text-slate-400">
-                    <span>Desenvolvido por <strong class="text-emerald-400 font-semibold">Fdsmultiservices</strong></span>
-                    <span class="text-slate-800">•</span>
-                    <a href="https://wa.me/258862134230" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-400 transition flex items-center gap-1.5 text-slate-300">
-                        <i class="fa-brands fa-whatsapp text-emerald-400 text-sm"></i> (+258) 86 213 4230
-                    </a>
-                    <span class="text-slate-800">•</span>
-                    <a href="mailto:fdsmultiservices@gmail.com" class="hover:text-emerald-400 transition flex items-center gap-1.5 text-slate-300">
-                        <i class="fa-solid fa-envelope text-sky-400"></i> fdsmultiservices@gmail.com
-                    </a>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- ======================================================================= -->
-    <!-- STICKY MOBILE BOTTOM BAR (VISIBLE ON SMARTPHONES <= 768px)              -->
-    <!-- ======================================================================= -->
-    <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-xl border-t border-white/15 px-3 py-2.5 flex items-center justify-between gap-2 shadow-2xl">
-        <button type="button" @click="openAppInstall('android')"
-                class="flex-1 py-2 px-2.5 rounded-xl bg-slate-900 border border-emerald-500/30 text-white text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer">
-            <i class="fa-brands fa-android text-emerald-400 text-sm"></i>
-            <span>Android</span>
-        </button>
-        <button type="button" @click="openAppInstall('ios')"
-                class="flex-1 py-2 px-2.5 rounded-xl bg-slate-900 border border-white/20 text-white text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer">
-            <i class="fa-brands fa-apple text-white text-sm"></i>
-            <span>Apple iOS</span>
-        </button>
-        <a href="{{ route('register') }}"
-           class="flex-[1.3] py-2 px-3 rounded-xl bg-emerald-600 text-white text-[11px] font-extrabold flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/30">
-            <i class="fa-solid fa-rocket text-[10px]"></i>
-            <span>Testar Grátis</span>
+    <div class="flex items-center gap-2 text-sm whitespace-nowrap shrink-0">
+      @auth
+        <a href="{{ route('dashboard.index') }}"
+           class="inline-flex items-center justify-center bg-brand hover:bg-brand-dark text-white font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors">
+          Abrir painel
         </a>
+      @else
+        <a href="{{ route('login') }}"
+           class="inline-flex px-3 py-2 font-medium text-ink hover:text-brand rounded-lg hover:bg-surface transition-colors">
+          Entrar
+        </a>
+        <a href="{{ route('register') }}"
+           class="inline-flex items-center justify-center bg-brand hover:bg-brand-dark text-white font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors">
+          Experimente grátis
+        </a>
+      @endauth
+
+      {{-- Botão Menu Mobile --}}
+      <button type="button" @click="mobileMenu = !mobileMenu" aria-label="Abrir menu"
+              class="lg:hidden inline-flex h-9 w-9 items-center justify-center rounded-lg border border-line text-ink hover:bg-surface">
+        <svg x-show="!mobileMenu" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <svg x-cloak x-show="mobileMenu" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
     </div>
+  </div>
 
-    <!-- ======================================================================= -->
-    <!-- INTERACTIVE MODAL: INSTALL APP ON ANDROID OR APPLE iOS                  -->
-    <!-- ======================================================================= -->
-    <div x-cloak x-show="appModalOpen"
-         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
-         @keydown.escape.window="appModalOpen = false">
-        <div @click.outside="appModalOpen = false"
-             class="w-full max-w-md rounded-3xl bg-slate-900 border border-white/15 p-6 shadow-2xl space-y-5">
-            
-            <div class="flex items-center justify-between border-b border-white/10 pb-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-                         :class="appModalPlatform === 'android' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'bg-white/10 text-white border border-white/20'">
-                        <i class="fa-brands" :class="appModalPlatform === 'android' ? 'fa-android' : 'fa-apple'"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-base font-bold font-heading text-white"
-                            x-text="appModalPlatform === 'android' ? 'Instalar App ZBIZ+ no Android' : 'Instalar App ZBIZ+ no iPhone / iPad (iOS)'"></h3>
-                        <p class="text-[11px] text-slate-400">Aplicação Web Progressiva (PWA) Oficial · Leve e Offline-First</p>
-                    </div>
-                </div>
-                <button type="button" @click="appModalOpen = false" class="text-slate-400 hover:text-white p-1.5 cursor-pointer">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
+  {{-- Gaveta de Navegação Mobile --}}
+  <div x-cloak x-show="mobileMenu" @click.outside="mobileMenu = false"
+       class="lg:hidden border-t border-line bg-white px-4 py-4 space-y-1 text-sm">
+    <a href="#funcionalidades" @click="mobileMenu = false" class="block px-3 py-2 rounded-lg font-medium text-ink hover:bg-surface">Funcionalidades</a>
+    <a href="#segmentos" @click="mobileMenu = false" class="block px-3 py-2 rounded-lg font-medium text-ink hover:bg-surface">Segmentos de negócio</a>
+    <a href="#aplicacao" @click="mobileMenu = false" class="flex items-center justify-between px-3 py-2 rounded-lg font-medium text-brand bg-brand-soft/60">
+      <span>Aplicação Android (APK) e iPhone</span>
+      <span class="text-xs font-semibold">Instalar →</span>
+    </a>
+    <a href="#planos" @click="mobileMenu = false" class="block px-3 py-2 rounded-lg font-medium text-ink hover:bg-surface">Planos e preços</a>
+    <a href="#experimente-gratis" @click="mobileMenu = false" class="block px-3 py-2 rounded-lg font-medium text-ink hover:bg-surface">Experimente grátis</a>
+    <a href="#perguntas" @click="mobileMenu = false" class="block px-3 py-2 rounded-lg font-medium text-ink hover:bg-surface">Perguntas frequentes</a>
+  </div>
+</header>
 
-            <!-- Platform Switcher inside Modal -->
-            <div class="grid grid-cols-2 gap-2 bg-slate-950 p-1 rounded-xl border border-white/10 text-xs font-bold">
-                <button type="button" @click="appModalPlatform = 'android'"
-                        :class="appModalPlatform === 'android' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'"
-                        class="py-2 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer">
-                    <i class="fa-brands fa-android"></i> Android
-                </button>
-                <button type="button" @click="appModalPlatform = 'ios'"
-                        :class="appModalPlatform === 'ios' ? 'bg-white text-slate-950' : 'text-slate-400 hover:text-white'"
-                        class="py-2 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer">
-                    <i class="fa-brands fa-apple"></i> Apple iOS
-                </button>
-            </div>
+{{-- Hero --}}
+<section class="relative overflow-hidden border-b border-line bg-gradient-to-b from-surface/60 via-white to-white">
+  <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brand/5 via-transparent to-transparent pointer-events-none"></div>
+  <div class="relative max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20 lg:py-24 grid lg:grid-cols-12 gap-12 lg:gap-12 items-center">
+    <div class="lg:col-span-7">
+      <div class="inline-flex items-center gap-2 rounded-full border border-line bg-white px-3.5 py-1 text-xs font-medium text-muted mb-6 shadow-sm">
+        <span class="h-2 w-2 rounded-full bg-brand"></span>
+        Feito para Moçambique · M-Pesa · e-Mola · IVA Modelo A · ANARME
+      </div>
+      <h1 class="text-[2.25rem] sm:text-5xl font-bold tracking-tight leading-[1.12] text-ink">
+        O sistema de gestão simples para vender, controlar o stock e fechar a caixa.
+      </h1>
+      <p class="mt-5 text-lg text-muted max-w-xl leading-relaxed">
+        Controle vendas, stock multi-filial, fiados, lotes <strong class="text-ink font-semibold">FEFO</strong> e faturas num único lugar. Receba em <strong class="text-ink font-semibold">M-Pesa, e-Mola, POS e numerário</strong> e apure o IVA Modelo A — no computador e no telemóvel, mesmo sem internet.
+      </p>
 
-            <!-- Android Steps -->
-            <div x-show="appModalPlatform === 'android'" class="space-y-3 text-xs text-slate-300">
-                <div class="p-3.5 rounded-2xl bg-slate-950 border border-white/5 flex items-start gap-3">
-                    <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center flex-shrink-0">1</span>
-                    <span>Abra o <strong>ZBIZ+</strong> no navegador <strong>Google Chrome</strong> do seu telemóvel ou tablet Android.</span>
-                </div>
-                <div class="p-3.5 rounded-2xl bg-slate-950 border border-white/5 flex items-start gap-3">
-                    <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center flex-shrink-0">2</span>
-                    <span>Toque no menu <i class="fa-solid fa-ellipsis-vertical mx-1 text-white"></i> no canto superior direito e selecione <strong>"Instalar aplicação"</strong> ou <strong>"Adicionar ao ecrã principal"</strong>.</span>
-                </div>
-                <div class="p-3.5 rounded-2xl bg-slate-950 border border-white/5 flex items-start gap-3">
-                    <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center flex-shrink-0">3</span>
-                    <span>O ícone oficial <strong>ZBIZ+</strong> ficará instalado nas suas aplicações com ecrã inteiro e scanner de câmara!</span>
-                </div>
-            </div>
+      <div class="mt-8 flex flex-col sm:flex-row gap-3">
+        <a href="{{ route('register') }}"
+           class="inline-flex items-center justify-center bg-brand hover:bg-brand-dark text-white font-semibold px-6 py-3.5 rounded-xl shadow-sm transition-all hover:shadow-md">
+          Experimente grátis agora
+        </a>
+        <a href="#planos"
+           class="inline-flex items-center justify-center border border-line hover:border-ink/30 bg-white text-ink font-semibold px-6 py-3.5 rounded-xl transition-colors">
+          Ver planos e preços
+        </a>
+      </div>
 
-            <!-- Apple iOS Steps -->
-            <div x-show="appModalPlatform === 'ios'" class="space-y-3 text-xs text-slate-300">
-                <div class="p-3.5 rounded-2xl bg-slate-950 border border-white/5 flex items-start gap-3">
-                    <span class="w-6 h-6 rounded-full bg-sky-500/20 text-sky-400 font-bold flex items-center justify-center flex-shrink-0">1</span>
-                    <span>Abra o <strong>ZBIZ+</strong> no navegador <strong>Safari</strong> do seu iPhone ou iPad.</span>
-                </div>
-                <div class="p-3.5 rounded-2xl bg-slate-950 border border-white/5 flex items-start gap-3">
-                    <span class="w-6 h-6 rounded-full bg-sky-500/20 text-sky-400 font-bold flex items-center justify-center flex-shrink-0">2</span>
-                    <span>Toque no botão <strong>Partilhar</strong> (<i class="fa-solid fa-arrow-up-from-bracket text-sky-400"></i>) na barra inferior do Safari.</span>
-                </div>
-                <div class="p-3.5 rounded-2xl bg-slate-950 border border-white/5 flex items-start gap-3">
-                    <span class="w-6 h-6 rounded-full bg-sky-500/20 text-sky-400 font-bold flex items-center justify-center flex-shrink-0">3</span>
-                    <span>Escolha <strong>"Adicionar ao Ecrã Principal"</strong> (<i class="fa-regular fa-square-plus text-white"></i>) e confirme em <strong>Adicionar</strong>.</span>
-                </div>
-            </div>
+      <div class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs sm:text-sm text-muted">
+        <span class="inline-flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-brand shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          Sem cartão de crédito
+        </span>
+        <span class="inline-flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-brand shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          Credenciais por SMS (+258)
+        </span>
+        <span class="inline-flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-brand shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          Funciona offline
+        </span>
+      </div>
 
-            <div class="pt-2 flex items-center justify-between gap-3">
-                <a href="{{ route('login') }}" class="flex-1 text-center py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition">
-                    Entrar na Minha Conta Agora
-                </a>
-                <button type="button" @click="appModalOpen = false" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer">
-                    Fechar
-                </button>
-            </div>
+      {{-- Botões diretos da Aplicação Mobile (Android e iOS) sempre visíveis no Hero --}}
+      <div class="mt-8 pt-6 border-t border-line">
+        <div class="text-xs font-semibold uppercase tracking-wider text-muted mb-3">
+          Disponível também como aplicação para telemóvel e tablet:
         </div>
+        <div class="flex flex-wrap items-center gap-2.5">
+          <a href="{{ asset('downloads/zbiz-plus.apk') }}" download
+             class="inline-flex items-center gap-2.5 rounded-xl border border-line bg-white hover:border-brand/50 hover:bg-brand-soft/30 px-4 py-2.5 text-left shadow-sm transition-all">
+            <svg class="w-5 h-5 text-brand shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4483-.9993.9993-.9993c.5511 0 .9993.4483.9993.9993.0001.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4483.9993.9993 0 .5511-.4483.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.2439 13.8533 7.8508 12 7.8508s-3.5902.3931-5.1367 1.0989L4.841 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3435-4.1021-2.6892-7.5743-6.1185-9.4396"/></svg>
+            <div>
+              <span class="block text-[10px] leading-none text-muted">Descarregar APK</span>
+              <span class="block text-xs font-bold text-ink mt-0.5">App Android</span>
+            </div>
+          </a>
+
+          <a href="#aplicacao"
+             class="inline-flex items-center gap-2.5 rounded-xl border border-line bg-white hover:border-ink/40 hover:bg-surface px-4 py-2.5 text-left shadow-sm transition-all">
+            <svg class="w-5 h-5 text-ink shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.68-1.1 1.79-.96 2.84 1.04.08 2.08-.52 2.72-1.3"/></svg>
+            <div>
+              <span class="block text-[10px] leading-none text-muted">Instalar no Safari</span>
+              <span class="block text-xs font-bold text-ink mt-0.5">iPhone &amp; iPad</span>
+            </div>
+          </a>
+
+          <button type="button" x-cloak x-show="deferredPrompt"
+                  @click="deferredPrompt.prompt(); deferredPrompt = null"
+                  class="inline-flex items-center gap-2 rounded-xl border border-brand/30 bg-brand-soft px-4 py-2.5 text-xs font-semibold text-brand transition-colors">
+            Instalar no navegador
+          </button>
+        </div>
+      </div>
     </div>
 
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('{{ asset("sw.js") }}').catch(() => {});
-            });
-        }
-    </script>
+    {{-- Coluna Direita: Talão Interativo (Comércio / Farmácia FEFO / Fecho Cego Z) --}}
+    <div class="lg:col-span-5 flex flex-col items-center lg:items-end">
+      {{-- Seletor rápido de exemplo no topo do talão --}}
+      <div class="mb-3 inline-flex p-1 rounded-lg bg-surface border border-line text-xs font-medium">
+        <button type="button" @click="receiptMode = 'retail'"
+                :class="receiptMode === 'retail' ? 'bg-white text-ink shadow-sm font-semibold' : 'text-muted hover:text-ink'"
+                class="px-3 py-1.5 rounded-md transition-all">
+          Venda Loja
+        </button>
+        <button type="button" @click="receiptMode = 'pharmacy'"
+                :class="receiptMode === 'pharmacy' ? 'bg-white text-ink shadow-sm font-semibold' : 'text-muted hover:text-ink'"
+                class="px-3 py-1.5 rounded-md transition-all">
+          Farmácia FEFO
+        </button>
+        <button type="button" @click="receiptMode = 'shift'"
+                :class="receiptMode === 'shift' ? 'bg-white text-ink shadow-sm font-semibold' : 'text-muted hover:text-ink'"
+                class="px-3 py-1.5 rounded-md transition-all">
+          Fecho Cego Z
+        </button>
+      </div>
+
+      <div class="relative w-full max-w-[330px]">
+        <div class="absolute -inset-3 bg-brand/5 rounded-2xl blur-xl"></div>
+
+        {{-- Modo 1: Talão Loja / Ferragens --}}
+        <div x-show="receiptMode === 'retail'" class="relative bg-white border border-line rounded-xl shadow-receipt px-6 py-7 font-mono text-[13px] leading-6" aria-label="Exemplo de talão de venda">
+          <div class="text-center">
+            <div class="font-semibold tracking-wide text-ink">FERRAGENS ZAMBÉZIA</div>
+            <div class="text-muted text-[11px] mt-0.5">NUIT: 400987654 · Talão #1094</div>
+          </div>
+          <div class="my-4 border-t border-dashed border-line"></div>
+          <div class="space-y-1.5">
+            <div class="flex justify-between gap-4"><span class="truncate">2 × Cimento 50 kg</span><span class="shrink-0">1.240,00</span></div>
+            <div class="flex justify-between gap-4"><span class="truncate">1 × Pregos 3" 1 kg</span><span class="shrink-0">110,00</span></div>
+            <div class="flex justify-between gap-4"><span class="truncate">1 × Fita métrica 5 m</span><span class="shrink-0">150,00</span></div>
+          </div>
+          <div class="my-4 border-t border-dashed border-line"></div>
+          <div class="flex justify-between text-muted text-[12px]"><span>IVA Incluído (16%)</span><span>206,90 MT</span></div>
+          <div class="flex justify-between font-semibold text-[15px] mt-1"><span>Total</span><span>1.500,00 MT</span></div>
+          <div class="flex justify-between text-muted text-[12px] mt-1"><span>Pago em</span><span class="font-semibold text-brand">M-Pesa</span></div>
+          <div class="my-4 border-t border-dashed border-line"></div>
+          <div class="flex items-center justify-between text-[11px] text-muted">
+            <span>Stock abatido</span>
+            <span class="text-brand font-medium">● Sincronizado</span>
+          </div>
+        </div>
+
+        {{-- Modo 2: Talão Farmácia (FEFO & Art. 9º CIVA) --}}
+        <div x-cloak x-show="receiptMode === 'pharmacy'" class="relative bg-white border border-line rounded-xl shadow-receipt px-6 py-7 font-mono text-[13px] leading-6" aria-label="Exemplo de talão de farmácia">
+          <div class="text-center">
+            <div class="font-semibold tracking-wide text-ink">FARMÁCIA CENTRAL</div>
+            <div class="text-muted text-[11px] mt-0.5">ANARME · Dispensação FEFO #2041</div>
+          </div>
+          <div class="my-4 border-t border-dashed border-line"></div>
+          <div class="space-y-2">
+            <div>
+              <div class="flex justify-between gap-4"><span class="truncate">2 × Amoxicilina 500mg</span><span class="shrink-0">360,00</span></div>
+              <div class="text-[11px] text-brand">Lote: MZ-0927 · Val: 11/2027 (FEFO)</div>
+            </div>
+            <div>
+              <div class="flex justify-between gap-4"><span class="truncate">1 × Paracetamol 500mg</span><span class="shrink-0">120,00</span></div>
+              <div class="text-[11px] text-muted">Lote: AN-1128 · Isento Art. 9.º CIVA</div>
+            </div>
+          </div>
+          <div class="my-4 border-t border-dashed border-line"></div>
+          <div class="flex justify-between text-muted text-[12px]"><span>Enquadramento</span><span>Isento IVA (0%)</span></div>
+          <div class="flex justify-between font-semibold text-[15px] mt-1"><span>Total</span><span>480,00 MT</span></div>
+          <div class="flex justify-between text-muted text-[12px] mt-1"><span>Pago em</span><span class="font-semibold text-brand">e-Mola / POS</span></div>
+          <div class="my-4 border-t border-dashed border-line"></div>
+          <div class="flex items-center justify-between text-[11px] text-muted">
+            <span>Lotes verificados</span>
+            <span class="text-brand font-medium">● Sem expirados</span>
+          </div>
+        </div>
+
+        {{-- Modo 3: Talão Z de Fecho Cego de Caixa --}}
+        <div x-cloak x-show="receiptMode === 'shift'" class="relative bg-white border border-line rounded-xl shadow-receipt px-6 py-7 font-mono text-[13px] leading-6" aria-label="Exemplo de fecho cego de caixa">
+          <div class="text-center">
+            <div class="font-semibold tracking-wide text-ink">TALÃO Z · FECHO CEGO</div>
+            <div class="text-muted text-[11px] mt-0.5">Turno #104 · Operador: Caixa 01</div>
+          </div>
+          <div class="my-4 border-t border-dashed border-line"></div>
+          <div class="space-y-1.5 text-[12px]">
+            <div class="flex justify-between"><span>Numerário contado:</span><span>24.850,00</span></div>
+            <div class="flex justify-between"><span>M-Pesa conciliado:</span><span>18.400,00</span></div>
+            <div class="flex justify-between"><span>e-Mola / POS:</span><span>9.200,00</span></div>
+          </div>
+          <div class="my-4 border-t border-dashed border-line"></div>
+          <div class="flex justify-between font-semibold text-[14px]"><span>Total Turno</span><span>52.450,00 MT</span></div>
+          <div class="flex justify-between text-brand text-[12px] font-semibold mt-1"><span>Diferença de Caixa</span><span>0,00 MT (Certo)</span></div>
+          <div class="my-4 border-t border-dashed border-line"></div>
+          <div class="text-center text-muted text-[11px]">Conferência cega auditada</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{{-- Faixa de Indicadores Operacionais (Estilo VHSYS) --}}
+<section class="border-b border-line bg-surface/50 py-8">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center sm:text-left">
+    <div>
+      <div class="text-2xl font-bold text-ink font-mono">80mm &amp; A4</div>
+      <div class="text-xs text-muted mt-0.5">Talões térmicos, faturas e cotações em PDF</div>
+    </div>
+    <div>
+      <div class="text-2xl font-bold text-brand font-mono">100% Offline</div>
+      <div class="text-xs text-muted mt-0.5">Continua a vender mesmo quando a internet cai</div>
+    </div>
+    <div>
+      <div class="text-2xl font-bold text-ink font-mono">CIVA 16%</div>
+      <div class="text-xs text-muted mt-0.5">Isenções Art. 9.º e mapa Modelo A para a AT</div>
+    </div>
+    <div>
+      <div class="text-2xl font-bold text-ink font-mono">Web + Mobile</div>
+      <div class="text-xs text-muted mt-0.5">Computador, APK Android e iPhone/iPad</div>
+    </div>
+  </div>
+</section>
+
+{{-- Funcionalidades (Pilares estilo VHSYS) --}}
+<section id="funcionalidades" class="py-20 sm:py-24">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6">
+    <div class="max-w-2xl">
+      <span class="text-xs font-semibold uppercase tracking-wider text-brand">Gestão Integrada</span>
+      <h2 class="mt-2 text-3xl sm:text-[2rem] font-bold tracking-tight">Do balcão ao imposto, os dados ficam ligados</h2>
+      <p class="mt-3 text-muted leading-relaxed">Cada venda actualiza o stock, a caixa e o mapa de IVA automaticamente. Não há segunda digitação nem folhas de cálculo soltas.</p>
+    </div>
+
+    <dl class="mt-14 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="bg-surface/60 border border-line rounded-xl p-6 hover:border-brand/40 transition-colors">
+        <dt class="font-semibold text-lg flex items-center gap-2.5 text-ink">
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-soft text-brand text-sm font-bold font-mono">01</span>
+          Frente de caixa (POS)
+        </dt>
+        <dd class="mt-3 text-sm text-muted leading-relaxed">Venda com leitor de código de barras ou com a câmara do telemóvel. Imprima talões de 80 mm ou 58 mm e faturas A4, e converta cotações em vendas com um clique.</dd>
+      </div>
+
+      <div class="bg-surface/60 border border-line rounded-xl p-6 hover:border-brand/40 transition-colors">
+        <dt class="font-semibold text-lg flex items-center gap-2.5 text-ink">
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-soft text-brand text-sm font-bold font-mono">02</span>
+          Stock, compras e filiais
+        </dt>
+        <dd class="mt-3 text-sm text-muted leading-relaxed">Veja o stock de cada loja ou armazém, registe compras a fornecedores, transfira mercadoria entre filiais e receba avisos de stock mínimo. O Kardex guarda todas as movimentações.</dd>
+      </div>
+
+      <div class="bg-surface/60 border border-line rounded-xl p-6 hover:border-brand/40 transition-colors">
+        <dt class="font-semibold text-lg flex items-center gap-2.5 text-ink">
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-soft text-brand text-sm font-bold font-mono">03</span>
+          Caixa e fecho cego Z
+        </dt>
+        <dd class="mt-3 text-sm text-muted leading-relaxed">Numerário, M-Pesa, e-Mola e POS na mesma venda. No fecho cego, o operador conta a gaveta sem ver o valor esperado, e o sistema mostra a diferença no talão Z.</dd>
+      </div>
+
+      <div class="bg-surface/60 border border-line rounded-xl p-6 hover:border-brand/40 transition-colors">
+        <dt class="font-semibold text-lg flex items-center gap-2.5 text-ink">
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-soft text-brand text-sm font-bold font-mono">04</span>
+          Clientes, cotações e fiados
+        </dt>
+        <dd class="mt-3 text-sm text-muted leading-relaxed">Defina limite de crédito por cliente, registe pagamentos parciais ou totais com recibo de amortização e acompanhe a conta corrente de cada devedor.</dd>
+      </div>
+
+      <div class="bg-surface/60 border border-line rounded-xl p-6 hover:border-brand/40 transition-colors">
+        <dt class="font-semibold text-lg flex items-center gap-2.5 text-ink">
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-soft text-brand text-sm font-bold font-mono">05</span>
+          Lotes, validades e FEFO
+        </dt>
+        <dd class="mt-3 text-sm text-muted leading-relaxed">O lote que vence primeiro sai primeiro (FEFO). Alertas preventivos aos 30, 60 e 90 dias e bloqueio de lotes expirados para farmácias e produtos perecíveis.</dd>
+      </div>
+
+      <div class="bg-surface/60 border border-line rounded-xl p-6 hover:border-brand/40 transition-colors">
+        <dt class="font-semibold text-lg flex items-center gap-2.5 text-ink">
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-soft text-brand text-sm font-bold font-mono">06</span>
+          IVA Modelo A e Backups
+        </dt>
+        <dd class="mt-3 text-sm text-muted leading-relaxed">Taxa de 16% e isenções do artigo 9.º do CIVA, com o mapa Modelo A em PDF pronto para a AT. Cada ação fica registada por utilizador com cópias de segurança na nuvem.</dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+{{-- Segmentos (Estilo vhsys.com.br/segmentos/) --}}
+<section id="segmentos" class="py-20 sm:py-24 bg-surface border-y border-line">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6">
+    <div class="max-w-2xl">
+      <span class="text-xs font-semibold uppercase tracking-wider text-brand">Segmentos Atendidos</span>
+      <h2 class="mt-2 text-3xl sm:text-[2rem] font-bold tracking-tight">Feito para o seu tipo de negócio</h2>
+      <p class="mt-2 text-muted">Escolha o seu ramo para ver como o sistema se adapta à sua operação.</p>
+    </div>
+
+    <div class="mt-8 flex flex-wrap gap-2" role="tablist">
+      <button type="button" role="tab" @click="sector = 'retail'" :aria-selected="sector === 'retail'"
+        :class="sector === 'retail' ? 'bg-ink text-white shadow-sm' : 'bg-white text-ink border border-line hover:border-ink/40'"
+        class="px-4 py-2.5 rounded-lg text-sm font-medium transition-all">
+        Comércio, mercearias e ferragens
+      </button>
+      <button type="button" role="tab" @click="sector = 'pharmacy'" :aria-selected="sector === 'pharmacy'"
+        :class="sector === 'pharmacy' ? 'bg-ink text-white shadow-sm' : 'bg-white text-ink border border-line hover:border-ink/40'"
+        class="px-4 py-2.5 rounded-lg text-sm font-medium transition-all">
+        Farmácias e clínicas
+      </button>
+      <button type="button" role="tab" @click="sector = 'restaurant'" :aria-selected="sector === 'restaurant'"
+        :class="sector === 'restaurant' ? 'bg-ink text-white shadow-sm' : 'bg-white text-ink border border-line hover:border-ink/40'"
+        class="px-4 py-2.5 rounded-lg text-sm font-medium transition-all">
+        Restaurantes, bares e cafés
+      </button>
+      <button type="button" role="tab" @click="sector = 'services'" :aria-selected="sector === 'services'"
+        :class="sector === 'services' ? 'bg-ink text-white shadow-sm' : 'bg-white text-ink border border-line hover:border-ink/40'"
+        class="px-4 py-2.5 rounded-lg text-sm font-medium transition-all">
+        Serviços, gráficas e oficinas
+      </button>
+    </div>
+
+    <div class="mt-10 grid lg:grid-cols-12 gap-8 items-start">
+      <div class="lg:col-span-7 bg-white border border-line rounded-xl p-6 sm:p-8 shadow-soft">
+        <div x-show="sector === 'retail'">
+          <span class="inline-block text-xs font-semibold text-brand bg-brand-soft px-2.5 py-1 rounded-md mb-3">Retalho &amp; Grossistas</span>
+          <h3 class="text-xl font-bold text-ink">Lojas, supermercados, ferragens e distribuidoras</h3>
+          <p class="mt-3 text-muted leading-relaxed">Um produto com código de barras vende-se em segundos no balcão. Quem compra a crédito fica registado com limite, e a mercadoria passa do armazém para a loja com rasto de cada transferência.</p>
+          <ul class="mt-5 space-y-2.5 text-sm text-ink">
+            <li class="flex items-start gap-2.5"><span class="text-brand font-bold">✓</span>Fiados com limite de crédito e recibos de amortização</li>
+            <li class="flex items-start gap-2.5"><span class="text-brand font-bold">✓</span>Stock por loja, alertas de rutura e transferências entre filiais</li>
+            <li class="flex items-start gap-2.5"><span class="text-brand font-bold">✓</span>Fecho cego de caixa no fim do turno (Talão Z)</li>
+          </ul>
+        </div>
+
+        <div x-cloak x-show="sector === 'pharmacy'">
+          <span class="inline-block text-xs font-semibold text-brand bg-brand-soft px-2.5 py-1 rounded-md mb-3">Saúde &amp; ANARME</span>
+          <h3 class="text-xl font-bold text-ink">Farmácias, drogarias e clínicas</h3>
+          <p class="mt-3 text-muted leading-relaxed">O sistema escolhe na venda o lote com a validade mais próxima (FEFO) e impede a saída de lotes expirados. Vem com um catálogo inicial de 63 medicamentos essenciais e aplica a isenção de IVA do artigo 9.º.</p>
+          <ul class="mt-5 space-y-2.5 text-sm text-ink">
+            <li class="flex items-start gap-2.5"><span class="text-brand font-bold">✓</span>Lotes e validades com alertas aos 30, 60 e 90 dias</li>
+            <li class="flex items-start gap-2.5"><span class="text-brand font-bold">✓</span>Registo de receitas médicas e controlo de psicotrópicos</li>
+            <li class="flex items-start gap-2.5"><span class="text-brand font-bold">✓</span>Mapa de IVA Modelo A com isenções do artigo 9.º do CIVA</li>
+          </ul>
+        </div>
+
+        <div x-cloak x-show="sector === 'restaurant'">
+          <span class="inline-block text-xs font-semibold text-brand bg-brand-soft px-2.5 py-1 rounded-md mb-3">Restauração &amp; Lazer</span>
+          <h3 class="text-xl font-bold text-ink">Restaurantes, bares, pastelarias e take-away</h3>
+          <p class="mt-3 text-muted leading-relaxed">Controle o mapa de mesas livres e ocupadas em tempo real, registe pedidos pelo telemóvel e envie diretamente para o ecrã da cozinha (KDS), sem papel perdido entre o salão e o balcão.</p>
+          <ul class="mt-5 space-y-2.5 text-sm text-ink">
+            <li class="flex items-start gap-2.5"><span class="text-brand font-bold">✓</span>Mapa de mesas e comandas eletrónicas no telemóvel</li>
+            <li class="flex items-start gap-2.5"><span class="text-brand font-bold">✓</span>Monitor de preparação na cozinha (KDS) em tempo real</li>
+            <li class="flex items-start gap-2.5"><span class="text-brand font-bold">✓</span>Pagamento rápido em M-Pesa, e-Mola, POS e numerário</li>
+          </ul>
+        </div>
+
+        <div x-cloak x-show="sector === 'services'">
+          <span class="inline-block text-xs font-semibold text-brand bg-brand-soft px-2.5 py-1 rounded-md mb-3">Serviços &amp; Produção</span>
+          <h3 class="text-xl font-bold text-ink">Prestadores de serviços, gráficas, reprografias e oficinas</h3>
+          <p class="mt-3 text-muted leading-relaxed">Envie a cotação em PDF, converta-a em fatura quando o cliente aceita e acompanhe o que falta receber. Nas gráficas e reprografias, abate automaticamente papel, tintas e consumíveis.</p>
+          <ul class="mt-5 space-y-2.5 text-sm text-ink">
+            <li class="flex items-start gap-2.5"><span class="text-brand font-bold">✓</span>Cotações em PDF com conversão direta em venda</li>
+            <li class="flex items-start gap-2.5"><span class="text-brand font-bold">✓</span>Conta corrente por cliente e pagamentos parciais</li>
+            <li class="flex items-start gap-2.5"><span class="text-brand font-bold">✓</span>Despesas operacionais e folha de salários no mesmo sistema</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="lg:col-span-5">
+        <div class="bg-white border border-line rounded-xl p-6 sm:p-7 shadow-soft space-y-4">
+          <div class="text-xs font-semibold uppercase tracking-wider text-muted">Comece hoje</div>
+          <h4 class="text-lg font-bold text-ink">Ambiente pré-configurado para a sua área</h4>
+          <p class="text-sm text-muted leading-relaxed">
+            Ao criar a sua conta, o ZBIZ+ ativa automaticamente as categorias, unidades e relatórios recomendados para o seu segmento.
+          </p>
+          <a :href="'{{ route('register') }}?sector=' + sector"
+             class="inline-flex w-full items-center justify-center bg-brand hover:bg-brand-dark text-white font-semibold px-5 py-3.5 rounded-lg text-sm shadow-sm transition-colors">
+            Experimente grátis neste segmento
+          </a>
+          <p class="text-xs text-muted leading-relaxed pt-2 border-t border-line">
+            Também atendemos <strong class="text-ink">autopeças, informática, salões, papelarias e moda</strong>. Fale connosco pelo
+            <a class="font-semibold text-brand hover:underline" href="https://wa.me/258862134230" target="_blank" rel="noopener noreferrer">WhatsApp (+258 86 213 4230)</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{{-- Aplicação (Android APK, iPhone/iPad e Computador) --}}
+<section id="aplicacao" class="py-20 sm:py-24">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+    <div class="lg:col-span-5">
+      <span class="text-xs font-semibold uppercase tracking-wider text-brand">Mobilidade Total</span>
+      <h2 class="mt-2 text-3xl sm:text-[2rem] font-bold tracking-tight">No computador e no telemóvel (Android e iOS)</h2>
+      <p class="mt-4 text-muted leading-relaxed">
+        No <strong class="text-ink">Android</strong>, descarregue o instalador APK e abra a aplicação como qualquer outra. No <strong class="text-ink">iPhone / iPad</strong> e no computador, instala-se diretamente a partir do navegador.
+      </p>
+      <p class="mt-3 text-muted leading-relaxed">
+        No telemóvel, a câmara lê códigos de barras e o dono acompanha as vendas de cada filial em tempo real. Se a internet falhar, as vendas continuam e sincronizam quando ela voltar.
+      </p>
+
+      <div class="mt-7 flex flex-wrap gap-3">
+        <a href="{{ asset('downloads/zbiz-plus.apk') }}" download
+           class="inline-flex items-center justify-center gap-2 bg-brand hover:bg-brand-dark text-white font-semibold px-5 py-3 rounded-xl text-sm shadow-sm transition-colors">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4483-.9993.9993-.9993c.5511 0 .9993.4483.9993.9993.0001.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4483.9993.9993 0 .5511-.4483.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.2439 13.8533 7.8508 12 7.8508s-3.5902.3931-5.1367 1.0989L4.841 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3435-4.1021-2.6892-7.5743-6.1185-9.4396"/></svg>
+          <span>Descarregar para Android (APK)</span>
+        </a>
+        <button type="button" x-cloak x-show="deferredPrompt"
+          @click="deferredPrompt.prompt(); deferredPrompt = null"
+          class="inline-flex items-center justify-center border border-line hover:border-ink/30 font-semibold px-5 py-3 rounded-xl text-sm transition-colors">
+          Instalar pelo navegador
+        </button>
+      </div>
+    </div>
+
+    <div class="lg:col-span-7 grid sm:grid-cols-2 gap-6">
+      <div class="bg-surface border border-line rounded-xl p-6 shadow-soft">
+        <div class="flex items-center justify-between">
+          <h3 class="font-bold text-ink">Android (Telemóvel e Tablet)</h3>
+          <span class="text-xs font-semibold text-brand bg-brand-soft px-2.5 py-0.5 rounded-md">APK Oficial</span>
+        </div>
+        <ol class="mt-4 space-y-3 text-sm text-muted leading-relaxed">
+          <li class="flex gap-3"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand text-xs font-bold">1</span>Descarregue o ficheiro APK no botão ao lado.</li>
+          <li class="flex gap-3"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand text-xs font-bold">2</span>Abra o ficheiro e, se o Android pedir, permita a instalação desta origem.</li>
+          <li class="flex gap-3"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand text-xs font-bold">3</span>Toque em Instalar e abra o ZBIZ+ no seu ecrã principal.</li>
+        </ol>
+      </div>
+
+      <div class="bg-surface border border-line rounded-xl p-6 shadow-soft">
+        <div class="flex items-center justify-between">
+          <h3 class="font-bold text-ink">iPhone e iPad (Apple iOS)</h3>
+          <span class="text-xs font-semibold text-ink bg-white border border-line px-2.5 py-0.5 rounded-md">WebApp iOS</span>
+        </div>
+        <ol class="mt-4 space-y-3 text-sm text-muted leading-relaxed">
+          <li class="flex gap-3"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand text-xs font-bold">1</span>Abra o ZBIZ+ no navegador Safari do seu iPhone ou iPad.</li>
+          <li class="flex gap-3"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand text-xs font-bold">2</span>Toque no ícone Partilhar na barra inferior.</li>
+          <li class="flex gap-3"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand text-xs font-bold">3</span>Escolha “Adicionar ao ecrã principal” para usar em ecrã inteiro.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+{{-- Planos (Estilo vhsys.com.br/planos-e-precos/) --}}
+<section id="planos" class="py-20 sm:py-24 bg-surface border-y border-line">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6">
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+      <div>
+        <span class="text-xs font-semibold uppercase tracking-wider text-brand">Transparência Total</span>
+        <h2 class="mt-2 text-3xl sm:text-[2rem] font-bold tracking-tight">Planos e preços em Meticais</h2>
+        <p class="mt-2 text-muted max-w-md">Todos os planos incluem a aplicação Android e iOS, actualizações automáticas e suporte técnico local.</p>
+      </div>
+      <div class="inline-flex p-1 bg-white border border-line rounded-lg text-sm font-medium self-start shadow-sm" role="group" aria-label="Período de pagamento">
+        <button type="button" @click="cycle = 'monthly'"
+          :class="cycle === 'monthly' ? 'bg-ink text-white shadow-sm' : 'text-muted hover:text-ink'"
+          class="px-4 py-2 rounded-md transition-all">Mensal</button>
+        <button type="button" @click="cycle = 'semiannual'"
+          :class="cycle === 'semiannual' ? 'bg-ink text-white shadow-sm' : 'text-muted hover:text-ink'"
+          class="px-4 py-2 rounded-md transition-all">Semestral · −10%</button>
+        <button type="button" @click="cycle = 'annual'"
+          :class="cycle === 'annual' ? 'bg-ink text-white shadow-sm' : 'text-muted hover:text-ink'"
+          class="px-4 py-2 rounded-md transition-all">Anual · −20%</button>
+      </div>
+    </div>
+
+    <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
+      {{-- Starter --}}
+      <div class="bg-white border border-line rounded-xl p-6 flex flex-col shadow-soft hover:shadow-card transition-shadow">
+        <h3 class="font-bold text-lg text-ink">ZBIZ Starter</h3>
+        <p class="mt-1 text-sm text-muted">Bancas, mercearias e lojas individuais.</p>
+        <p class="mt-5">
+          <span class="text-3xl font-bold tracking-tight text-ink" x-text="price(1250)">1.250</span>
+          <span class="text-sm text-muted">MT/mês</span>
+        </p>
+        <ul class="mt-5 mb-6 space-y-2.5 text-sm text-muted flex-1">
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> 1 loja e até 2 utilizadores</li>
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> Frente de caixa e talão 80 mm</li>
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> Fecho cego de caixa</li>
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> Até 500 produtos</li>
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> App Android e iOS incluída</li>
+        </ul>
+        <a href="{{ route('register', ['plan' => 'starter']) }}"
+           class="block text-center border border-line hover:border-ink/40 font-semibold py-2.5 rounded-lg text-sm transition-colors">
+          Experimente grátis
+        </a>
+      </div>
+
+      {{-- Pro --}}
+      <div class="bg-white border border-line rounded-xl p-6 flex flex-col shadow-soft hover:shadow-card transition-shadow">
+        <h3 class="font-bold text-lg text-ink">ZBIZ Pro</h3>
+        <p class="mt-1 text-sm text-muted">Comércio, gráficas e serviços em crescimento.</p>
+        <p class="mt-5">
+          <span class="text-3xl font-bold tracking-tight text-ink" x-text="price(2950)">2.950</span>
+          <span class="text-sm text-muted">MT/mês</span>
+        </p>
+        <ul class="mt-5 mb-6 space-y-2.5 text-sm text-muted flex-1">
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> Até 2 lojas e 5 utilizadores</li>
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> Fiados, cotações e clientes</li>
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> Fornecedores, compras e despesas</li>
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> Mapa de IVA Modelo A</li>
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> App Android e iOS incluída</li>
+        </ul>
+        <a href="{{ route('register', ['plan' => 'pro']) }}"
+           class="block text-center border border-line hover:border-ink/40 font-semibold py-2.5 rounded-lg text-sm transition-colors">
+          Experimente grátis
+        </a>
+      </div>
+
+      {{-- Pharmacy+ (destaque) --}}
+      <div class="relative bg-white border-2 border-brand rounded-xl p-6 flex flex-col shadow-card">
+        <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+          <span class="inline-flex items-center rounded-full bg-brand px-3 py-0.5 text-[11px] font-semibold text-white tracking-wide">
+            RECOMENDADO
+          </span>
+        </div>
+        <h3 class="font-bold text-lg text-ink">Pharmacy+</h3>
+        <p class="mt-1 text-sm text-muted">Farmácias, clínicas e drogarias.</p>
+        <p class="mt-5">
+          <span class="text-3xl font-bold tracking-tight text-brand" x-text="price(4500)">4.500</span>
+          <span class="text-sm text-muted">MT/mês</span>
+        </p>
+        <ul class="mt-5 mb-6 space-y-2.5 text-sm text-muted flex-1">
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> Até 2 filiais</li>
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> Lotes, validades e FEFO</li>
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> Receitas e psicotrópicos</li>
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> Isenções do artigo 9.º e Modelo A</li>
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> App Android e iOS incluída</li>
+        </ul>
+        <a href="{{ route('register', ['plan' => 'pharmacy_plus', 'sector' => 'pharmacy']) }}"
+           class="block text-center bg-brand hover:bg-brand-dark text-white font-semibold py-2.5 rounded-lg text-sm transition-colors">
+          Experimente grátis
+        </a>
+      </div>
+
+      {{-- Business --}}
+      <div class="bg-white border border-line rounded-xl p-6 flex flex-col shadow-soft hover:shadow-card transition-shadow">
+        <h3 class="font-bold text-lg text-ink">ZBIZ Business</h3>
+        <p class="mt-1 text-sm text-muted">Redes comerciais e distribuidoras.</p>
+        <p class="mt-5">
+          <span class="text-3xl font-bold tracking-tight text-ink" x-text="price(5500)">5.500</span>
+          <span class="text-sm text-muted">MT/mês</span>
+        </p>
+        <ul class="mt-5 mb-6 space-y-2.5 text-sm text-muted flex-1">
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> Até 5 filiais e 15 utilizadores</li>
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> Transferências entre filiais</li>
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> Cópias de segurança na nuvem</li>
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> Artigos e faturação sem limite</li>
+          <li class="flex gap-2"><span class="text-brand font-bold">✓</span> App Android e iOS incluída</li>
+        </ul>
+        <a href="{{ route('register', ['plan' => 'business']) }}"
+           class="block text-center border border-line hover:border-ink/40 font-semibold py-2.5 rounded-lg text-sm transition-colors">
+          Experimente grátis
+        </a>
+      </div>
+    </div>
+
+    {{-- Tabela comparativa --}}
+    <div class="mt-12 overflow-x-auto bg-white border border-line rounded-xl shadow-soft">
+      <table class="w-full text-sm text-left">
+        <thead>
+          <tr class="border-b border-line bg-surface/60">
+            <th class="py-3.5 px-5 font-semibold text-ink">Comparação de recursos incluídos</th>
+            <th class="py-3.5 px-4 font-semibold text-center text-ink">Starter</th>
+            <th class="py-3.5 px-4 font-semibold text-center text-ink">Pro</th>
+            <th class="py-3.5 px-4 font-semibold text-center text-brand">Pharmacy+</th>
+            <th class="py-3.5 px-4 font-semibold text-center text-ink">Business</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-line">
+          <tr class="hover:bg-surface/40 transition-colors">
+            <td class="py-3.5 px-5">Aplicação Android (APK), iPhone/iPad e Computador</td>
+            <td class="text-center text-brand font-medium">Sim</td>
+            <td class="text-center text-brand font-medium">Sim</td>
+            <td class="text-center text-brand font-medium">Sim</td>
+            <td class="text-center text-brand font-medium">Sim</td>
+          </tr>
+          <tr class="hover:bg-surface/40 transition-colors">
+            <td class="py-3.5 px-5">Frente de caixa POS offline, fecho cego e pagamentos móveis</td>
+            <td class="text-center text-brand font-medium">Sim</td>
+            <td class="text-center text-brand font-medium">Sim</td>
+            <td class="text-center text-brand font-medium">Sim</td>
+            <td class="text-center text-brand font-medium">Sim</td>
+          </tr>
+          <tr class="hover:bg-surface/40 transition-colors">
+            <td class="py-3.5 px-5">Fiados, cotações em PDF, compras e fornecedores</td>
+            <td class="text-center text-muted">—</td>
+            <td class="text-center text-brand font-medium">Sim</td>
+            <td class="text-center text-brand font-medium">Sim</td>
+            <td class="text-center text-brand font-medium">Sim</td>
+          </tr>
+          <tr class="hover:bg-surface/40 transition-colors">
+            <td class="py-3.5 px-5">Mapa de IVA Modelo A (AT Moçambique)</td>
+            <td class="text-center text-muted">—</td>
+            <td class="text-center text-brand font-medium">Sim</td>
+            <td class="text-center text-brand font-medium">Sim</td>
+            <td class="text-center text-brand font-medium">Sim</td>
+          </tr>
+          <tr class="hover:bg-surface/40 transition-colors">
+            <td class="py-3.5 px-5">Lotes, FEFO, catálogo ANARME e alertas de validade</td>
+            <td class="text-center text-muted">—</td>
+            <td class="text-center text-muted">—</td>
+            <td class="text-center text-brand font-medium">Sim</td>
+            <td class="text-center text-brand font-medium">Sim</td>
+          </tr>
+          <tr class="hover:bg-surface/40 transition-colors">
+            <td class="py-3.5 px-5">Transferências entre filiais e cópias de segurança na nuvem</td>
+            <td class="text-center text-muted">—</td>
+            <td class="text-center text-muted">—</td>
+            <td class="text-center text-brand font-medium">Sim</td>
+            <td class="text-center text-brand font-medium">Sim</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+{{-- Experimente grátis (Estilo vhsys.com.br/experimente-gratis/) --}}
+<section id="experimente-gratis" class="py-20 sm:py-24">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 grid lg:grid-cols-12 gap-12 items-start">
+    <div class="lg:col-span-5">
+      <span class="text-xs font-semibold uppercase tracking-wider text-brand">Experimente Grátis</span>
+      <h2 class="mt-2 text-3xl sm:text-[2rem] font-bold tracking-tight">Teste com os dados da sua empresa</h2>
+      <p class="mt-4 text-muted leading-relaxed max-w-md">
+        Crie a conta de teste em um minuto. Enviamos as credenciais por SMS e e-mail, com categorias já configuradas para o seu segmento. Se preferir ajuda na instalação, a nossa equipa responde no WhatsApp.
+      </p>
+      <a href="https://wa.me/258862134230?text={{ rawurlencode('Olá Fdsmultiservices, quero experimentar o sistema ZBIZ+ na minha empresa.') }}"
+         target="_blank" rel="noopener noreferrer"
+         class="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand hover:underline">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.526 5.85L.057 23.5a.75.75 0 00.92.92l5.65-1.47A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.72 9.72 0 01-4.95-1.35l-.35-.21-3.68.96.98-3.58-.23-.37A9.72 9.72 0 012.25 12 9.75 9.75 0 0112 2.25 9.75 9.75 0 0121.75 12 9.75 9.75 0 0112 21.75z"/></svg>
+        Falar no WhatsApp: (+258) 86 213 4230
+      </a>
+    </div>
+    <form method="GET" action="{{ route('register') }}"
+          class="lg:col-span-7 bg-surface border border-line rounded-xl p-6 sm:p-8 space-y-5 shadow-soft">
+      <div>
+        <label for="f-sector" class="block text-sm font-medium mb-1.5">Segmento da empresa</label>
+        <select id="f-sector" name="sector" x-model="sector"
+                class="w-full px-3.5 py-2.5 rounded-lg bg-white border border-line text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition">
+          <option value="retail">Comércio, mercearia ou ferragens</option>
+          <option value="pharmacy">Farmácia, clínica ou drogaria</option>
+          <option value="restaurant">Restaurante, bar ou pastelaria</option>
+          <option value="services">Serviços, gráfica ou oficina</option>
+        </select>
+      </div>
+      <div>
+        <label for="f-plan" class="block text-sm font-medium mb-1.5">Plano a testar</label>
+        <select id="f-plan" name="plan"
+                class="w-full px-3.5 py-2.5 rounded-lg bg-white border border-line text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition">
+          <option value="pro" :selected="sector !== 'pharmacy'">ZBIZ Pro</option>
+          <option value="pharmacy_plus" :selected="sector === 'pharmacy'">Pharmacy+</option>
+          <option value="starter">ZBIZ Starter</option>
+          <option value="business">ZBIZ Business</option>
+        </select>
+      </div>
+      <button type="submit"
+              class="w-full bg-brand hover:bg-brand-dark text-white font-semibold py-3.5 rounded-lg text-sm shadow-sm transition-colors">
+        Criar conta de teste grátis
+      </button>
+    </form>
+  </div>
+</section>
+
+{{-- Perguntas --}}
+<section id="perguntas" class="py-20 sm:py-24 bg-surface border-t border-line">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6">
+    <h2 class="text-3xl sm:text-[2rem] font-bold tracking-tight">Perguntas frequentes</h2>
+    <div class="mt-10 divide-y divide-line border-y border-line">
+      <details class="group py-5">
+        <summary class="flex justify-between gap-4 cursor-pointer font-medium text-ink hover:text-brand transition-colors">
+          Funciona sem internet?
+          <span class="text-muted group-open:rotate-45 transition-transform text-xl leading-none">+</span>
+        </summary>
+        <p class="mt-3 text-muted leading-relaxed pr-8">Sim. A frente de caixa continua a vender e os dados sincronizam quando a ligação regressa.</p>
+      </details>
+      <details class="group py-5">
+        <summary class="flex justify-between gap-4 cursor-pointer font-medium text-ink hover:text-brand transition-colors">
+          Como funciona a aplicação no telemóvel Android e no iPhone?
+          <span class="text-muted group-open:rotate-45 transition-transform text-xl leading-none">+</span>
+        </summary>
+        <p class="mt-3 text-muted leading-relaxed pr-8">No Android pode descarregar diretamente o instalador APK nesta página. No iPhone ou iPad, basta abrir no Safari e escolher "Adicionar ao ecrã principal".</p>
+      </details>
+      <details class="group py-5">
+        <summary class="flex justify-between gap-4 cursor-pointer font-medium text-ink hover:text-brand transition-colors">
+          Preciso de comprar um leitor de código de barras?
+          <span class="text-muted group-open:rotate-45 transition-transform text-xl leading-none">+</span>
+        </summary>
+        <p class="mt-3 text-muted leading-relaxed pr-8">Não é obrigatório. Pode usar a câmara do telemóvel. Se vender muito, um leitor USB acelera o balcão e funciona com o sistema.</p>
+      </details>
+      <details class="group py-5">
+        <summary class="flex justify-between gap-4 cursor-pointer font-medium text-ink hover:text-brand transition-colors">
+          Posso mudar de plano mais tarde?
+          <span class="text-muted group-open:rotate-45 transition-transform text-xl leading-none">+</span>
+        </summary>
+        <p class="mt-3 text-muted leading-relaxed pr-8">Sim. Os dados e o histórico mantêm-se quando passa para um plano com mais filiais ou módulos.</p>
+      </details>
+      <details class="group py-5">
+        <summary class="flex justify-between gap-4 cursor-pointer font-medium text-ink hover:text-brand transition-colors">
+          Quem presta o suporte?
+          <span class="text-muted group-open:rotate-45 transition-transform text-xl leading-none">+</span>
+        </summary>
+        <p class="mt-3 text-muted leading-relaxed pr-8">A Fdsmultiservices, a equipa que desenvolve o sistema, por WhatsApp e e-mail.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+{{-- Rodapé --}}
+<footer class="border-t border-line py-12 text-sm text-muted bg-white">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+    <div class="flex items-center gap-3">
+      <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-ink overflow-hidden">
+        <img src="{{ asset('favicon.png') }}" alt="ZBIZ+" class="h-6 w-6 object-contain">
+      </span>
+      <div>
+        <span class="font-bold text-ink">ZBIZ<span class="text-brand">+</span></span>
+        <span class="ml-2 text-muted">· Desenvolvido por Fdsmultiservices</span>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-x-6 gap-y-2">
+      <a href="{{ asset('downloads/zbiz-plus.apk') }}" download class="font-medium text-brand hover:underline">App Android (APK)</a>
+      <a href="https://wa.me/258862134230" target="_blank" rel="noopener noreferrer" class="hover:text-ink transition-colors">(+258) 86 213 4230</a>
+      <a href="mailto:fdsmultiservices@gmail.com" class="hover:text-ink transition-colors">fdsmultiservices@gmail.com</a>
+    </div>
+    <div class="text-muted">&copy; {{ date('Y') }} ZBIZ+</div>
+  </div>
+</footer>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('{{ asset("sw.js") }}').catch(() => {});
+    });
+  }
+</script>
 </body>
 </html>
