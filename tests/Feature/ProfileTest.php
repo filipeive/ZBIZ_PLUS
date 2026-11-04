@@ -83,3 +83,25 @@ test('correct password must be provided to delete account', function () {
 
     $this->assertNotNull($user->fresh());
 });
+
+test('non admin user cannot escalate role_id when updating profile', function () {
+    $cashierRole = \App\Models\Role::firstOrCreate(['name' => 'cashier', 'guard_name' => 'web']);
+    $adminRole = \App\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+
+    $user = User::factory()->create([
+        'role_id' => $cashierRole->id,
+    ]);
+
+    $response = $this
+        ->actingAs($user)
+        ->patch('/profile', [
+            'name'    => 'Operador Sem Escalada',
+            'email'   => $user->email,
+            'role_id' => $adminRole->id,
+        ]);
+
+    $response->assertRedirect('/profile');
+    $response->assertSessionHas('toast_type', 'error');
+    $this->assertSame($cashierRole->id, $user->fresh()->role_id);
+});
+

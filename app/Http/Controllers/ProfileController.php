@@ -38,15 +38,19 @@ class ProfileController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:users,email,' . $user->id,
-            'role_id' => 'required|exists:roles,id',
+            'name'      => 'required|string|max:255',
+            'email'     => 'required|string|lowercase|email|max:255|unique:users,email,' . $user->id,
+            'role_id'   => 'nullable|exists:roles,id',
             'is_active' => 'boolean',
         ]);
 
-        // Verificar se o usuário pode alterar a própria função
-        if (!$user->isAdmin() && $validated['role_id'] != $user->role_id) {
-            return $this->error('profile.edit', 'Você não tem permissão para alterar sua função.');
+        // Verificar se o utilizador tentou alterar a própria função sem ser administrador
+        if (array_key_exists('role_id', $validated) && $validated['role_id'] !== null && (int) $validated['role_id'] !== (int) $user->role_id) {
+            if (!$user->isAdmin()) {
+                return $this->error('profile.edit', 'Não tem permissão para alterar a sua função.');
+            }
+        } else {
+            unset($validated['role_id']);
         }
 
         $user->fill($validated);
@@ -105,8 +109,8 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        $request->validate([
-            'password' => 'required|current_password',
+        $request->validateWithBag('userDeletion', [
+            'password' => ['required', 'current_password'],
         ]);
 
         $user = $request->user();

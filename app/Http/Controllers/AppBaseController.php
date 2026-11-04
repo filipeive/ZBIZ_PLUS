@@ -23,7 +23,11 @@ class AppBaseController extends LaravelBaseController
      */
     protected function redirectWithToast(string $route, string $message, string $type = 'success', array $parameters = []): RedirectResponse
     {
-        return redirect()->route($route, $parameters)->with([
+        $redirect = str_starts_with($route, '/')
+            ? redirect()->to($route)
+            : redirect()->route($route, $parameters);
+
+        return $redirect->with([
             'toast_message' => $message,
             'toast_type' => $type
         ]);
