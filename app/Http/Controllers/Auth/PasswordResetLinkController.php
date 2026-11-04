@@ -65,7 +65,12 @@ class PasswordResetLinkController extends Controller
             preg_replace('/^258/', '', $digitsOnly),
         ];
 
+        // Nota de segurança: withoutGlobalScopes() é utilizado na recuperação de palavra-passe pré-login;
+        // filtra por tenant_id quando o contexto de subdomínio/sessão já estiver identificado.
+        $contextTenantId = function_exists('current_tenant_id') ? current_tenant_id() : null;
+
         $user = User::withoutGlobalScopes()
+            ->when($contextTenantId, fn ($q) => $q->where('tenant_id', $contextTenantId))
             ->where(function ($q) use ($phoneCandidates) {
                 $q->whereIn('phone', $phoneCandidates);
             })
@@ -138,7 +143,10 @@ class PasswordResetLinkController extends Controller
             return back()->withErrors(['otp' => 'Código OTP incorreto. Verifique o SMS recebido e tente novamente.']);
         }
 
-        $user = User::withoutGlobalScopes()->find($userId);
+        // Nota de segurança: consulta por chave primária validada contra o user_id gravado no cache do OTP.
+        $user = User::withoutGlobalScopes()
+            ->whereKey((int) ($cachedData['user_id'] ?? $userId))
+            ->first();
         if (!$user) {
             return redirect()->route('password.request')
                 ->withErrors(['email' => 'Utilizador não encontrado.']);

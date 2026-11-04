@@ -21,6 +21,8 @@ class AuthenticatedSessionController extends Controller
     public function create(): View
     {
         $tenant = function_exists('current_tenant') ? current_tenant() : null;
+        // Nota de segurança: utilizado exclusivamente em instalações locais monomáquina (INSTALLATION_MODE=offline)
+        // para apresentar o branding (nome/logótipo) do estabelecimento local no ecrã de login.
         if (!$tenant && (config('app.installation_mode') === 'offline' || env('INSTALLATION_MODE') === 'offline')) {
             $tenant = \App\Models\Tenant::withoutGlobalScopes()->first();
         }

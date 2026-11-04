@@ -58,6 +58,11 @@ class LoginRequest extends FormRequest
             }
         }
 
+        // Nota de segurança: withoutGlobalScopes() é necessário no pré-login porque a sessão de tenant
+        // ainda não foi estabelecida para o utilizador. Se houver tenant identificado por subdomínio,
+        // prioriza-se o utilizador desse tenant.
+        $contextTenantId = function_exists('current_tenant_id') ? current_tenant_id() : null;
+
         $user = \App\Models\User::withoutGlobalScopes()
             ->where(function ($q) use ($login, $phoneCandidates) {
                 $q->where('email', $login)
@@ -67,6 +72,7 @@ class LoginRequest extends FormRequest
                     $q->orWhereIn('phone', $phoneCandidates);
                 }
             })
+            ->when($contextTenantId, fn ($q) => $q->orderByRaw('CASE WHEN tenant_id = ? THEN 0 ELSE 1 END', [$contextTenantId]))
             ->first();
 
         if ($user && \Illuminate\Support\Facades\Hash::check($password, $user->password)) {
