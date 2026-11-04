@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" fill="none">
+  <!-- Option 2: Geometric Crest (Hexágono de precisão fiscal com monograma Z+ sólido) -->
+  <g id="icon" transform="translate(6, 6)">
+    <!-- Fundo Esmeralda Escuro Deep Enterprise -->
+    <rect width="48" height="48" rx="12" fill="#064e3b"/>
+    <!-- Hexágono / Escudo interior -->
+    <path d="M24 10L36 17V31L24 38L12 31V17L24 10Z" stroke="#34d399" stroke-width="2" stroke-linejoin="round" fill="#065f46" fill-opacity="0.5"/>
+    <!-- Símbolo Z estilizado -->
+    <path d="M17 18H31L17 30H31" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Ponto Plus de destaque -->
+    <circle cx="31" cy="18" r="2" fill="#34d399"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="68" y="37" font-family="'Outfit', 'Plus Jakarta Sans', sans-serif" font-size="25" font-weight="800" letter-spacing="-0.2" fill="#0f172a">
+    ZBIZ<tspan fill="#059669">+</tspan>
+  </text>
+  <text x="69" y="49" font-family="'Inter', sans-serif" font-size="8.5" font-weight="600" letter-spacing="1.5" fill="#64748b">
+    ENTERPRISE CLOUD
+  </text>
+</svg>

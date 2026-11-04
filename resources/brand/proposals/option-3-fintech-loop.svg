@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" fill="none">
+  <!-- Option 3: Fintech Loop (Fluxo contínuo de caixa e vendas com Z em fita) -->
+  <g id="icon" transform="translate(6, 6)">
+    <rect width="48" height="48" rx="14" fill="#0f172a"/>
+    <!-- Gradiente de fita Z -->
+    <defs>
+      <linearGradient id="opt3Grad" x1="12" y1="12" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#10b981"/>
+        <stop offset="1" stop-color="#059669"/>
+      </linearGradient>
+    </defs>
+    <!-- Trilha superior -->
+    <rect x="13" y="15" width="22" height="5" rx="2.5" fill="url(#opt3Grad)"/>
+    <!-- Diagonal com chanfro dinâmico -->
+    <path d="M31 18L17 31" stroke="url(#opt3Grad)" stroke-width="5" stroke-linecap="round"/>
+    <!-- Trilha inferior -->
+    <rect x="13" y="28" width="22" height="5" rx="2.5" fill="url(#opt3Grad)"/>
+    <!-- Cruz / Plus positivo no canto superior direito -->
+    <path d="M34 11V17M31 14H37" stroke="#34d399" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="68" y="38" font-family="'Plus Jakarta Sans', 'Inter', sans-serif" font-size="26" font-weight="800" letter-spacing="-0.8" fill="#0f172a">
+    ZBIZ<tspan fill="#10b981" font-weight="900">+</tspan>
+  </text>
+  <text x="69" y="49" font-family="'Inter', sans-serif" font-size="8" font-weight="700" letter-spacing="2" fill="#10b981" text-transform="uppercase">
+    MOÇAMBIQUE
+  </text>
+</svg>
