@@ -52,62 +52,62 @@
     </div>
     @endif
 
-    <!-- Top Executive KPI Grid -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3.5">
-        <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl flex flex-col justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Empresas</span>
+    <!-- Top Executive KPI Grid (7 balanced columns on desktop) -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3.5">
+        <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800/80 shadow-sm hover:border-slate-700 transition flex flex-col justify-between">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Total Empresas</span>
             <div class="mt-2 flex items-baseline justify-between">
-                <span class="text-2xl font-black font-heading text-white">{{ $stats['total'] }}</span>
-                <span class="text-[11px] font-bold text-emerald-400">{{ $stats['active'] }} ativas</span>
+                <span class="text-2xl font-extrabold font-heading tabular-nums text-white">{{ $stats['total'] }}</span>
+                <span class="text-[11px] font-semibold tabular-nums text-emerald-400">{{ $stats['active'] }} ativas</span>
             </div>
         </div>
 
-        <div class="p-4 rounded-2xl bg-slate-900/90 border {{ ($stats['pending'] ?? 0) > 0 ? 'border-amber-500/50 bg-amber-500/5' : 'border-slate-800' }} shadow-xl flex flex-col justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pré-Registos</span>
+        <div class="p-4 rounded-2xl bg-slate-900/90 border {{ ($stats['pending'] ?? 0) > 0 ? 'border-amber-500/50 bg-amber-500/5' : 'border-slate-800/80' }} shadow-sm hover:border-slate-700 transition flex flex-col justify-between">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Pré-Registos</span>
             <div class="mt-2 flex items-baseline justify-between">
-                <span class="text-2xl font-black font-heading {{ ($stats['pending'] ?? 0) > 0 ? 'text-amber-400' : 'text-white' }}">{{ $stats['pending'] ?? 0 }}</span>
-                <span class="text-[11px] font-bold {{ ($stats['pending'] ?? 0) > 0 ? 'text-amber-400' : 'text-slate-500' }}">pendentes</span>
+                <span class="text-2xl font-extrabold font-heading tabular-nums {{ ($stats['pending'] ?? 0) > 0 ? 'text-amber-400' : 'text-white' }}">{{ $stats['pending'] ?? 0 }}</span>
+                <span class="text-[11px] font-semibold {{ ($stats['pending'] ?? 0) > 0 ? 'text-amber-400' : 'text-slate-500' }}">pendentes</span>
             </div>
         </div>
 
-        <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl flex flex-col justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">MRR (Recorrente)</span>
+        <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800/80 shadow-sm hover:border-slate-700 transition flex flex-col justify-between">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">MRR (Recorrente)</span>
             <div class="mt-2 flex items-baseline justify-between">
-                <span class="text-xl font-black font-heading text-emerald-400 font-mono">{{ number_format($stats['mrr'], 0, ',', '.') }} <span class="text-xs">MT</span></span>
+                <span class="text-xl font-extrabold font-heading text-emerald-400 font-mono tabular-nums">{{ number_format($stats['mrr'], 0, ',', '.') }} <span class="text-xs">MT</span></span>
             </div>
-            <span class="text-[9px] text-slate-500 font-mono mt-0.5">ARR: {{ number_format($stats['arr'], 0, ',', '.') }} MT</span>
+            <span class="text-[10px] text-slate-500 font-mono tabular-nums mt-0.5">ARR: {{ number_format($stats['arr'], 0, ',', '.') }} MT</span>
         </div>
 
-        <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl flex flex-col justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Chaves Emitidas</span>
+        <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800/80 shadow-sm hover:border-slate-700 transition flex flex-col justify-between">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Chaves Emitidas</span>
             <div class="mt-2 flex items-baseline justify-between">
-                <span class="text-2xl font-black font-heading text-sky-400">{{ $stats['total_licenses'] }}</span>
-                <span class="text-[11px] font-bold text-emerald-400">{{ $stats['active_licenses'] }} ativas</span>
+                <span class="text-2xl font-extrabold font-heading tabular-nums text-sky-400">{{ $stats['total_licenses'] }}</span>
+                <span class="text-[11px] font-semibold tabular-nums text-emerald-400">{{ $stats['active_licenses'] }} ativas</span>
             </div>
         </div>
 
-        <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl flex flex-col justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Modo Offline</span>
+        <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800/80 shadow-sm hover:border-slate-700 transition flex flex-col justify-between">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Modo Offline</span>
             <div class="mt-2 flex items-baseline justify-between">
-                <span class="text-2xl font-black font-heading text-amber-400">{{ $stats['offline'] }}</span>
+                <span class="text-2xl font-extrabold font-heading tabular-nums text-amber-400">{{ $stats['offline'] }}</span>
                 <span class="text-[11px] text-slate-500">Locais</span>
             </div>
         </div>
 
-        <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl flex flex-col justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">A Expirar (30d)</span>
+        <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800/80 shadow-sm hover:border-slate-700 transition flex flex-col justify-between">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">A Expirar (30d)</span>
             <div class="mt-2 flex items-baseline justify-between">
-                <span class="text-2xl font-black font-heading {{ $stats['expiring'] > 0 ? 'text-rose-400' : 'text-slate-400' }}">{{ $stats['expiring'] }}</span>
+                <span class="text-2xl font-extrabold font-heading tabular-nums {{ $stats['expiring'] > 0 ? 'text-rose-400' : 'text-slate-400' }}">{{ $stats['expiring'] }}</span>
                 <span class="text-[11px] text-slate-500">Renovações</span>
             </div>
         </div>
 
-        <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl flex flex-col justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Ecossistema</span>
+        <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800/80 shadow-sm hover:border-slate-700 transition flex flex-col justify-between col-span-2 sm:col-span-1">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Ecossistema</span>
             <div class="mt-2 flex items-baseline justify-between">
-                <span class="text-lg font-black font-heading text-white">{{ $stats['total_branches'] }} <span class="text-xs text-slate-400 font-normal">filiais</span></span>
+                <span class="text-xl font-extrabold font-heading tabular-nums text-white">{{ $stats['total_branches'] }} <span class="text-xs text-slate-400 font-normal">filiais</span></span>
             </div>
-            <span class="text-[9px] text-slate-500 font-mono mt-0.5">{{ $stats['total_users'] }} utilizadores</span>
+            <span class="text-[10px] text-slate-500 font-mono tabular-nums mt-0.5">{{ $stats['total_users'] }} utilizadores</span>
         </div>
     </div>
 
@@ -304,7 +304,7 @@
                                         <i class="fa-solid {{ $sectorIcon }} text-sm"></i>
                                     </div>
                                     <div>
-                                        <a href="{{ route('owner.tenants.show', $tenant) }}" class="font-bold text-white hover:text-emerald-400 transition text-sm">
+                                        <a href="{{ route('owner.tenants.show', $tenant) }}" class="font-bold text-slate-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400 transition text-sm">
                                             {{ $tenant->name }}
                                         </a>
                                         <div class="text-[11px] text-slate-400 font-mono">{{ $tenant->slug }} · {{ $tenant->email ?? 'sem email' }}</div>

@@ -7,27 +7,33 @@
     $theme = tenant_theme();
     $isCashier = auth()->user()?->isCashier() && !auth()->user()?->isManager() && !auth()->user()?->isAdmin();
     $canViewFinancialDashboard = !$isCashier;
+    $hour = (int) now()->format('H');
+    $greeting = $hour < 12 ? 'Bom dia' : ($hour < 18 ? 'Boa tarde' : 'Boa noite');
+    $firstName = explode(' ', trim(auth()->user()?->name ?? 'Operador'))[0];
 @endphp
 
 @section('content')
 <div class="space-y-6" x-data="{ timeRange: 'today' }">
     
-    <!-- Clean Executive Header Bar -->
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <!-- Clean Executive Header Bar with Human Greeting -->
+    <div class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 sm:p-7 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-            <div class="flex items-center gap-2 mb-1.5">
-                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                     <i class="fa-solid {{ $theme['icon'] }} mr-1 text-emerald-600 dark:text-emerald-400"></i> {{ current_tenant()?->name ?? 'ZBIZ+' }}
                 </span>
-                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30">
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30">
                     <i class="fa-solid fa-store mr-1"></i> {{ current_branch()?->name ?? 'Filial Ativa' }}
                 </span>
+                <span class="text-[11px] text-slate-400 dark:text-slate-500 font-medium hidden sm:inline">
+                    · {{ now()->locale('pt')->translatedFormat('d \d\e F, Y') }}
+                </span>
             </div>
-            <h1 class="text-xl sm:text-2xl font-black font-heading text-slate-900 dark:text-white">
-                Painel de Controlo
+            <h1 class="text-xl sm:text-2xl font-extrabold font-heading text-slate-900 dark:text-white tracking-tight">
+                {{ $greeting }}, {{ $firstName }}
             </h1>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Acompanhe vendas, stock e saúde financeira da filial ativa.
+                Resumo operacional de vendas, stock e liquidez em tempo real.
             </p>
         </div>
 
@@ -58,15 +64,15 @@
         
         @if($canViewFinancialDashboard)
         <!-- Card 1: Valor Real do Negócio -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
+        <div class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Valor Real do Negócio</span>
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Valor Real do Negócio</span>
                 <div class="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-base">
                     <i class="fa-solid fa-building-columns"></i>
                 </div>
             </div>
             <div class="mt-4">
-                <div class="text-2xl sm:text-3xl font-black font-heading text-blue-600 dark:text-blue-400">
+                <div class="text-2xl sm:text-3xl font-extrabold font-heading tabular-nums text-blue-600 dark:text-blue-400">
                     {{ number_format($totalRealValue ?? 0, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
                 </div>
                 <div class="flex items-center gap-2 mt-2 text-xs text-slate-500 dark:text-slate-400">
@@ -77,19 +83,19 @@
         @endif
 
         <!-- Card 2: Vendas de Hoje -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
+        <div class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Vendas de Hoje</span>
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Vendas de Hoje</span>
                 <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-base">
                     <i class="fa-solid fa-sack-dollar"></i>
                 </div>
             </div>
             <div class="mt-4">
-                <div class="text-2xl sm:text-3xl font-black font-heading text-slate-900 dark:text-white">
+                <div class="text-2xl sm:text-3xl font-extrabold font-heading tabular-nums text-slate-900 dark:text-white">
                     {{ number_format($todaySales ?? 0, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
                 </div>
                 <div class="flex items-center gap-2 mt-2 text-xs">
-                    <span class="font-bold text-emerald-600 dark:text-emerald-400 flex items-center">
+                    <span class="font-bold tabular-nums text-emerald-600 dark:text-emerald-400 flex items-center">
                         <i class="fa-solid {{ $salesChangeIcon ?? 'fa-arrow-trend-up' }} mr-1"></i> {{ $salesChangePercent ?? 0 }}%
                     </span>
                     <span class="text-slate-400">vs ontem</span>
@@ -99,19 +105,19 @@
 
         @if($canViewFinancialDashboard)
         <!-- Card 3: Faturação Mensal -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
+        <div class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total do Mês</span>
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total do Mês</span>
                 <div class="w-10 h-10 rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center text-base">
                     <i class="fa-solid fa-chart-line"></i>
                 </div>
             </div>
             <div class="mt-4">
-                <div class="text-2xl sm:text-3xl font-black font-heading text-slate-900 dark:text-white">
+                <div class="text-2xl sm:text-3xl font-extrabold font-heading tabular-nums text-slate-900 dark:text-white">
                     {{ number_format($monthSales ?? 0, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
                 </div>
                 <div class="flex items-center gap-2 mt-2 text-xs">
-                    <span class="font-bold text-sky-600 dark:text-sky-400">
+                    <span class="font-semibold tabular-nums text-sky-600 dark:text-sky-400">
                         {{ number_format($monthReceived ?? 0, 2, ',', '.') }} MT recebidos
                     </span>
                 </div>
@@ -119,15 +125,15 @@
         </div>
         @else
         <!-- Card 3: Artigos Vendidos Hoje -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
+        <div class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Artigos Vendidos Hoje</span>
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Artigos Vendidos Hoje</span>
                 <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base">
                     <i class="fa-solid fa-boxes-stacked"></i>
                 </div>
             </div>
             <div class="mt-4">
-                <div class="text-2xl sm:text-3xl font-black font-heading text-slate-900 dark:text-white">
+                <div class="text-2xl sm:text-3xl font-extrabold font-heading tabular-nums text-slate-900 dark:text-white">
                     {{ number_format($todayProductsSold ?? 0, 0, ',', '.') }} <span class="text-xs text-slate-400 font-normal">itens</span>
                 </div>
                 <div class="flex items-center gap-2 mt-2 text-xs text-slate-500 dark:text-slate-400">
@@ -139,20 +145,20 @@
 
         <!-- Card 4: Lucro Real (Visível apenas para Administrador/Gerente da Tenant) -->
         @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin() || auth()->user()->isManager())
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
+        <div class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Lucro Real</span>
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Lucro Real</span>
                 <div class="w-10 h-10 rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center text-base">
                     <i class="fa-solid fa-scale-balanced"></i>
                 </div>
             </div>
             <div class="mt-4">
-                <div class="text-2xl sm:text-3xl font-black font-heading text-slate-900 dark:text-white">
+                <div class="text-2xl sm:text-3xl font-extrabold font-heading tabular-nums text-slate-900 dark:text-white">
                     {{ number_format($monthRealProfit ?? 0, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
                 </div>
                 <div class="flex items-center gap-2 mt-2 text-xs">
                     <span class="text-slate-400">Margem Líquida:</span>
-                    <span class="font-bold text-teal-600 dark:text-teal-400">{{ number_format($monthNetMargin ?? 0, 2, ',', '.') }}%</span>
+                    <span class="font-bold tabular-nums text-teal-600 dark:text-teal-400">{{ number_format($monthNetMargin ?? 0, 2, ',', '.') }}%</span>
                 </div>
             </div>
         </div>
@@ -160,15 +166,15 @@
 
         @if($canViewFinancialDashboard)
         <!-- Card 5: Contas a Receber (Fiados) -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md transition">
+        <div class="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">A Receber (Fiado)</span>
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">A Receber (Fiado)</span>
                 <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-base">
                     <i class="fa-solid fa-hand-holding-dollar"></i>
                 </div>
             </div>
             <div class="mt-4">
-                <div class="text-2xl sm:text-3xl font-black font-heading text-slate-900 dark:text-white">
+                <div class="text-2xl sm:text-3xl font-extrabold font-heading tabular-nums text-slate-900 dark:text-white">
                     {{ number_format($accountsReceivable ?? 0, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
                 </div>
                 <div class="flex items-center gap-2 mt-2 text-xs text-slate-500 dark:text-slate-400">

@@ -2,8 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="light">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -46,7 +45,7 @@
 
     <!-- Font Awesome & Google Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
@@ -93,12 +92,38 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--app-bg);
             color: var(--app-text);
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
         }
-        .font-heading { font-family: 'Outfit', sans-serif; }
+        .font-heading {
+            font-family: 'Plus Jakarta Sans', 'Outfit', sans-serif;
+            letter-spacing: -0.02em;
+        }
+        .font-mono, .tabular-nums {
+            font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+            font-variant-numeric: tabular-nums;
+        }
         [x-cloak] { display: none !important; }
+
+        /* Soft UI Evolution & Human Micro-interactions */
+        a, button {
+            transition: all 180ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        button:active:not(:disabled),
+        a.btn:active,
+        .tenant-button:active {
+            transform: scale(0.98);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, ::before, ::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
 
         .app-shell {
             display: flex;
@@ -663,8 +688,13 @@
         html.light .bg-slate-800\/30 .text-white:not(button):not(a):not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge),
         html.light table td.text-white,
         html.light table tbody td.text-white,
-        html.light table th.text-white {
+        html.light table th.text-white,
+        html.light a.text-white:not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge) {
             color: #0f172a !important;
+        }
+
+        html.light a.text-white:not([class*="bg-"]):not(.btn):not(.tenant-button):not(.badge):hover {
+            color: var(--tenant-primary, #16a34a) !important;
         }
 
         html.light .text-slate-100,
@@ -940,7 +970,6 @@
                             @if(!empty($theme['logo_url']))
                                 <img src="{{ $theme['logo_url'] }}" alt="Logo" class="w-full h-full object-contain p-0.5">
                             @else
-                                <i class="fa-solid fa-bolt text-white text-sm"></i>
                                 <img src="{{ asset('favicon.png') }}" alt="Z+" class="w-full h-full object-cover">
                             @endif
                         </div>
@@ -1440,13 +1469,19 @@
                                    @input="onSearchInput($event.target.value)"
                                    @keydown.escape="searchOpen = false; searchQuery = ''; searchResults = []"
                                    @keydown.slash.window.prevent="$el.focus()"
-                                   placeholder="Pesquisar produtos, vendas, clientes… (Tecla /)"
+                                   placeholder="Pesquisar produtos, vendas, clientes…"
                                    autocomplete="off"
-                                   class="w-full pl-9 pr-4 py-2 text-sm bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/50 rounded-xl text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 dark:focus:border-emerald-500 transition-all duration-150">
+                                   class="w-full pl-9 pr-12 py-2 text-sm bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/50 rounded-xl text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 dark:focus:border-emerald-500 transition-all duration-150">
+
+                            <!-- Keyboard shortcut hint (/) -->
+                            <kbd x-show="searchQuery.length === 0 && !focused"
+                                 class="hidden sm:inline-flex items-center justify-center absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-mono font-semibold text-slate-400 dark:text-slate-400 bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 rounded-md pointer-events-none shadow-2xs">
+                                /
+                            </kbd>
 
                             <!-- Clear button -->
                             <button x-show="searchQuery.length > 0"
-                                    @click="searchQuery = ''; searchResults = []; searchOpen = false; $el.previousElementSibling.focus()"
+                                    @click="searchQuery = ''; searchResults = []; searchOpen = false; $el.previousElementSibling.previousElementSibling.focus()"
                                     class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
                                 <i class="fa-solid fa-xmark text-xs"></i>
                             </button>
@@ -1806,8 +1841,7 @@
             </header>
 
             <!-- Main Content Scroll Area -->
-            <main class="app-main flex-1 overflow-y-auto p-4 sm:p-8">
-            <main class="app-main flex-1 overflow-y-auto p-4 sm:p-8 pb-28 lg:pb-8">
+            <main class="app-main flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-28 lg:pb-8">
                 
                 <!-- Alerta Global de Expiração / Suspensão & Semáforo Preventivo -->
                 @php
@@ -1897,7 +1931,7 @@
                     <div class="flex items-center gap-2">
                         <span class="font-bold text-slate-700 dark:text-slate-300">ZBIZ+</span>
                         <span class="hidden sm:inline">· Enterprise Cloud & POS Suite</span>
-                        <span class="px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono text-[10px] font-bold">v1.0.18</span>
+                        <span class="px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono text-[10px] font-bold">v1.0.22</span>
                     </div>
 
                     <div class="flex flex-wrap items-center justify-center gap-3 text-slate-500 dark:text-slate-400">
