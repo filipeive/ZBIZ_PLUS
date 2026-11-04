@@ -1,11 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
-  <!-- Fundo sólido preenchendo 100% da área para suporte maskable -->
   <rect width="512" height="512" fill="#0f172a"/>
-  <!-- Ícone contido na zona segura central (60% do tamanho = 300px centralizados) -->
-  <g transform="translate(106, 106) scale(6.25)">
-    <rect width="48" height="48" rx="14" fill="#090d16"/>
-    <path d="M14 16H34L20 32H34" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M32 20V28M28 24H36" stroke="#34d399" stroke-width="3" stroke-linecap="round"/>
-    <circle cx="15" cy="32" r="2.5" fill="#10b981"/>
+  <g transform="translate(88, 88) scale(7.0)">
+    <path d="M12 18H27L12 33H33" stroke="#10b981" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M36 10.5V19.5M31.5 15H40.5" stroke="#34d399" stroke-width="3.5" stroke-linecap="round"/>
   </g>
 </svg>
