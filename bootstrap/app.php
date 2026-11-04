@@ -12,6 +12,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $trustedProxiesEnv = trim((string) env('TRUSTED_PROXIES', ''));
+        $trustedProxies = $trustedProxiesEnv !== ''
+            ? array_values(array_filter(array_map('trim', explode(',', $trustedProxiesEnv))))
+            : [];
+
+        $middleware->trustProxies(at: $trustedProxies);
+
         $middleware->web(append: [
             \App\Http\Middleware\IdentifyTenant::class,
         ]);
