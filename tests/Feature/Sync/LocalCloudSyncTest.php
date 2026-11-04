@@ -474,4 +474,99 @@ class LocalCloudSyncTest extends TestCase
                 'success' => false,
             ]);
     }
+
+    public function test_same_offline_id_is_allowed_across_different_tenants_and_unique_within_same_tenant(): void
+    {
+        $tenantB = Tenant::create([
+            'name'          => 'Farmácia B Isolada',
+            'slug'          => 'farmacia-b-isolada',
+            'business_type' => 'pharmacy',
+            'status'        => 'active',
+        ]);
+
+        Branch::create([
+            'tenant_id' => $tenantB->id,
+            'name'      => 'Balcão B1',
+            'code'      => 'BB1',
+            'is_main'   => true,
+            'is_active' => true,
+        ]);
+
+        $sharedOfflineSaleId = 'OFF-SALE-SHARED-999';
+        $sharedOfflineMovId = 'OFF-MOV-SHARED-999';
+
+        // 1. Ingerir para Tenant A (duas vezes no mesmo lote para testar idempotência em lote)
+        $resA = $this->withHeaders([
+            'X-Sync-Token' => $this->syncToken,
+        ])->postJson(route('sync.ingest'), [
+            'tenant_id'       => $this->tenant->id,
+            'sales'           => [
+                [
+                    'offline_id'     => $sharedOfflineSaleId,
+                    'customer_name'  => 'Cliente A',
+                    'total_amount'   => 100.00,
+                    'payment_method' => 'cash',
+                    'items'          => [],
+                ],
+                [
+                    'offline_id'     => $sharedOfflineSaleId,
+                    'customer_name'  => 'Cliente A Duplicado',
+                    'total_amount'   => 100.00,
+                    'payment_method' => 'cash',
+                    'items'          => [],
+                ],
+            ],
+            'stock_movements' => [
+                [
+                    'offline_id'    => $sharedOfflineMovId,
+                    'product_id'    => $this->product->id,
+                    'movement_type' => 'in',
+                    'quantity'      => 10,
+                ],
+                [
+                    'offline_id'    => $sharedOfflineMovId,
+                    'product_id'    => $this->product->id,
+                    'movement_type' => 'in',
+                    'quantity'      => 10,
+                ],
+            ],
+        ])->assertOk();
+
+        $resA->assertJsonPath('summary.sales.created', 1);
+        $resA->assertJsonPath('summary.sales.skipped', 1);
+        $resA->assertJsonPath('summary.stock_movements.created', 1);
+        $resA->assertJsonPath('summary.stock_movements.skipped', 1);
+
+        // 2. Ingerir o MESMO offline_id para Tenant B -> deve ser permitido (isolado por tenant_id)
+        $resB = $this->withHeaders([
+            'X-Sync-Token' => $this->syncToken,
+        ])->postJson(route('sync.ingest'), [
+            'tenant_id'       => $tenantB->id,
+            'sales'           => [
+                [
+                    'offline_id'     => $sharedOfflineSaleId,
+                    'customer_name'  => 'Cliente B',
+                    'total_amount'   => 250.00,
+                    'payment_method' => 'cash',
+                    'items'          => [],
+                ],
+            ],
+            'stock_movements' => [
+                [
+                    'offline_id'    => $sharedOfflineMovId,
+                    'product_name'  => 'Paracetamol B',
+                    'movement_type' => 'in',
+                    'quantity'      => 20,
+                ],
+            ],
+        ])->assertOk();
+
+        $resB->assertJsonPath('summary.sales.created', 1);
+        $resB->assertJsonPath('summary.stock_movements.created', 1);
+
+        $this->assertEquals(1, Sale::withoutGlobalScopes()->where('tenant_id', $this->tenant->id)->where('offline_id', $sharedOfflineSaleId)->count());
+        $this->assertEquals(1, Sale::withoutGlobalScopes()->where('tenant_id', $tenantB->id)->where('offline_id', $sharedOfflineSaleId)->count());
+        $this->assertEquals(1, StockMovement::withoutGlobalScopes()->where('tenant_id', $this->tenant->id)->where('offline_id', $sharedOfflineMovId)->count());
+        $this->assertEquals(1, StockMovement::withoutGlobalScopes()->where('tenant_id', $tenantB->id)->where('offline_id', $sharedOfflineMovId)->count());
+    }
 }

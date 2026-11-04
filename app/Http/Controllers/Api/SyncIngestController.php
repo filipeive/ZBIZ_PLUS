@@ -478,6 +478,34 @@ class SyncIngestController extends Controller
                         'sale_id'    => $sale->id,
                     ];
                 });
+            } catch (\Illuminate\Database\UniqueConstraintViolationException|\Illuminate\Database\QueryException $e) {
+                if ($offlineId) {
+                    $existingSale = Sale::withoutGlobalScopes()
+                        ->where('tenant_id', $resolvedTenantId)
+                        ->where('offline_id', $offlineId)
+                        ->first();
+
+                    if ($existingSale) {
+                        $skippedSalesCount++;
+                        $salesResults[] = [
+                            'offline_id' => $offlineId,
+                            'status'     => 'already_exists',
+                            'sale_id'    => $existingSale->id,
+                        ];
+                        continue;
+                    }
+                }
+
+                Log::error("[SyncIngest] Erro ao ingerir venda: " . $e->getMessage(), [
+                    'tenant_id'  => $resolvedTenantId,
+                    'offline_id' => $offlineId,
+                ]);
+
+                $salesResults[] = [
+                    'offline_id' => $offlineId,
+                    'status'     => 'error',
+                    'error'      => $e->getMessage(),
+                ];
             } catch (\Exception $e) {
                 Log::error("[SyncIngest] Erro ao ingerir venda: " . $e->getMessage(), [
                     'tenant_id'  => $resolvedTenantId,
@@ -538,6 +566,34 @@ class SyncIngestController extends Controller
                     'offline_id' => $offlineId,
                     'status'     => 'created',
                     'id'         => $sm->id,
+                ];
+            } catch (\Illuminate\Database\UniqueConstraintViolationException|\Illuminate\Database\QueryException $e) {
+                if ($offlineId) {
+                    $existingSm = StockMovement::withoutGlobalScopes()
+                        ->where('tenant_id', $resolvedTenantId)
+                        ->where('offline_id', $offlineId)
+                        ->first();
+
+                    if ($existingSm) {
+                        $skippedMovementsCount++;
+                        $movementsResults[] = [
+                            'offline_id' => $offlineId,
+                            'status'     => 'already_exists',
+                            'id'         => $existingSm->id,
+                        ];
+                        continue;
+                    }
+                }
+
+                Log::error("[SyncIngest] Erro ao ingerir movimento de stock: " . $e->getMessage(), [
+                    'tenant_id'  => $resolvedTenantId,
+                    'offline_id' => $offlineId,
+                ]);
+
+                $movementsResults[] = [
+                    'offline_id' => $offlineId,
+                    'status'     => 'error',
+                    'error'      => $e->getMessage(),
                 ];
             } catch (\Exception $e) {
                 Log::error("[SyncIngest] Erro ao ingerir movimento de stock: " . $e->getMessage(), [

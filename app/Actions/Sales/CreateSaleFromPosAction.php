@@ -35,18 +35,19 @@ class CreateSaleFromPosAction
         ?int $userId,
         bool $pricesIncludeTax = true
     ): Sale {
-        return DB::transaction(function () use ($validated, $tenantId, $branchId, $userId, $pricesIncludeTax): Sale {
-            // Idempotência por offline_id dentro do mesmo tenant
-            if (!empty($validated['offline_id'])) {
-                $existingSale = Sale::withoutGlobalScopes()
-                    ->where('tenant_id', $tenantId)
-                    ->where('offline_id', $validated['offline_id'])
-                    ->first();
+        try {
+            return DB::transaction(function () use ($validated, $tenantId, $branchId, $userId, $pricesIncludeTax): Sale {
+                // Idempotência por offline_id dentro do mesmo tenant
+                if (!empty($validated['offline_id'])) {
+                    $existingSale = Sale::withoutGlobalScopes()
+                        ->where('tenant_id', $tenantId)
+                        ->where('offline_id', $validated['offline_id'])
+                        ->first();
 
-                if ($existingSale) {
-                    return $existingSale;
+                    if ($existingSale) {
+                        return $existingSale;
+                    }
                 }
-            }
 
             // 1. Carregar produtos com lock pessimista e calcular totais
             $subtotal = 0.0;
@@ -270,6 +271,20 @@ class CreateSaleFromPosAction
             }
 
             return $sale;
-        });
+            });
+        } catch (\Illuminate\Database\UniqueConstraintViolationException|\Illuminate\Database\QueryException $e) {
+            if (!empty($validated['offline_id'])) {
+                $existingSale = Sale::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->where('offline_id', $validated['offline_id'])
+                    ->first();
+
+                if ($existingSale) {
+                    return $existingSale;
+                }
+            }
+
+            throw $e;
+        }
     }
 }
