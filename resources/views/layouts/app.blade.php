@@ -931,17 +931,19 @@
 
     <!-- Support Mode Banner for Super Admin -->
     @if(session('is_support_mode'))
-    <div class="bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 px-5 py-2 flex items-center justify-between shadow-xl relative z-50 text-xs font-bold border-b border-amber-300">
-        <div class="flex items-center gap-2.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-slate-950 animate-ping"></span>
-            <i class="fa-solid fa-headset text-slate-950 text-sm"></i>
-            <span><strong>MODO SUPORTE TÉCNICO ATIVO:</strong> A operar na empresa <span class="underline font-black">{{ $tenant?->name ?? 'Cliente' }}</span> (Filial: {{ $branch?->name ?? 'Sede' }}).</span>
+    <div class="bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 px-4 sm:px-5 py-2 flex flex-wrap items-center justify-between gap-2 shadow-xl relative z-50 text-xs font-bold border-b border-amber-600/30" style="color: #0f172a !important;">
+        <div class="flex items-center gap-2.5" style="color: #0f172a !important;">
+            <span class="w-2.5 h-2.5 rounded-full animate-ping flex-shrink-0" style="background-color: #0f172a !important;"></span>
+            <i class="fa-solid fa-headset text-sm" style="color: #0f172a !important;"></i>
+            <span style="color: #0f172a !important;"><strong style="color: #0f172a !important;">MODO SUPORTE TÉCNICO ATIVO:</strong> A operar na empresa <span class="underline font-black" style="color: #0f172a !important;">{{ $tenant?->name ?? 'Cliente' }}</span> (Filial: {{ $branch?->name ?? 'Sede' }}).</span>
         </div>
         <form method="POST" action="{{ route('owner.tenants.leave-impersonate') }}" class="inline">
             @csrf
-            <button type="submit" class="px-3.5 py-1 bg-slate-950 text-amber-300 hover:bg-slate-900 rounded-xl text-xs font-black transition flex items-center gap-1.5 shadow-md">
-                <i class="fa-solid fa-right-from-bracket"></i>
-                <span>Sair do Suporte & Voltar ao Owner</span>
+            <button type="submit"
+                    style="background-color: #0f172a !important; color: #fde047 !important; border: 1px solid rgba(15, 23, 42, 0.4) !important;"
+                    class="px-3.5 py-1.5 rounded-xl text-xs font-black hover:opacity-90 active:scale-95 transition flex items-center gap-1.5 shadow-md cursor-pointer">
+                <i class="fa-solid fa-right-from-bracket" style="color: #fde047 !important;"></i>
+                <span style="color: #fde047 !important;">Sair do Suporte &amp; Voltar ao Owner</span>
             </button>
         </form>
     </div>
