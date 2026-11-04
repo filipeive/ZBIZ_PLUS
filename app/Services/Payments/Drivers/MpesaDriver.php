@@ -7,6 +7,7 @@ use App\Models\Sale;
 use App\Models\SubscriptionPayment;
 use App\Services\Billing\SubscriptionService;
 use App\Services\Financial\FinancialLedgerService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -178,30 +179,15 @@ class MpesaDriver
             ];
         }
 
-        $existingPayment = SubscriptionPayment::withoutGlobalScopes()
-            ->when($txId, fn ($q) => $q->where('mpesa_transaction_id', (string) $txId))
-            ->when(!$txId && $thirdPartyRef, fn ($q) => $q->where('receipt_number', (string) $thirdPartyRef))
-            ->first();
+        return DB::transaction(function () use ($txId, $thirdPartyRef, $responseCode, $amount): array {
+            $existingPayment = SubscriptionPayment::withoutGlobalScopes()
+                ->when($txId, fn ($q) => $q->where('mpesa_transaction_id', (string) $txId))
+                ->when(!$txId && $thirdPartyRef, fn ($q) => $q->where('receipt_number', (string) $thirdPartyRef))
+                ->lockForUpdate()
+                ->first();
 
-        if (!$existingPayment) {
-            Log::warning('[MpesaDriver] Webhook M-Pesa rejeitado: nenhum pagamento de subscrição correspondente.', [
-                'reference'       => $txId,
-                'third_party_ref' => $thirdPartyRef,
-                'response_code'   => $responseCode,
-                'amount'          => $amount,
-            ]);
-
-            return [
-                'success' => false,
-                'message' => 'Pagamento M-Pesa não reconhecido ou inexistente.',
-            ];
-        }
-
-        // Validar correspondência de third_party_ref quando fornecido
-        if ($thirdPartyRef !== null && $thirdPartyRef !== '') {
-            $expectedRef = $existingPayment->receipt_number ?? $existingPayment->mpesa_transaction_id;
-            if ($expectedRef === null || !hash_equals((string) $expectedRef, (string) $thirdPartyRef)) {
-                Log::warning('[MpesaDriver] Webhook M-Pesa rejeitado: third_party_ref divergente do pagamento pendente.', [
+            if (!$existingPayment) {
+                Log::warning('[MpesaDriver] Webhook M-Pesa rejeitado: nenhum pagamento de subscrição correspondente.', [
                     'reference'       => $txId,
                     'third_party_ref' => $thirdPartyRef,
                     'response_code'   => $responseCode,
@@ -210,69 +196,87 @@ class MpesaDriver
 
                 return [
                     'success' => false,
-                    'message' => 'A referência informada no callback não corresponde ao pagamento iniciado.',
+                    'message' => 'Pagamento M-Pesa não reconhecido ou inexistente.',
                 ];
             }
-        }
 
-        // Validar se o montante pago corresponde exatamente ao esperado
-        $expectedAmount = (float) $existingPayment->amount;
-        if ($amount <= 0 || abs($expectedAmount - $amount) >= 0.01) {
-            Log::warning('[MpesaDriver] Webhook M-Pesa rejeitado: montante divergente do esperado.', [
-                'reference'       => $txId,
-                'third_party_ref' => $thirdPartyRef,
-                'expected_amount' => $expectedAmount,
-                'amount'          => $amount,
-                'response_code'   => $responseCode,
+            // Validar correspondência de third_party_ref quando fornecido
+            if ($thirdPartyRef !== null && $thirdPartyRef !== '') {
+                $expectedRef = $existingPayment->receipt_number ?? $existingPayment->mpesa_transaction_id;
+                if ($expectedRef === null || !hash_equals((string) $expectedRef, (string) $thirdPartyRef)) {
+                    Log::warning('[MpesaDriver] Webhook M-Pesa rejeitado: third_party_ref divergente do pagamento pendente.', [
+                        'reference'       => $txId,
+                        'third_party_ref' => $thirdPartyRef,
+                        'response_code'   => $responseCode,
+                        'amount'          => $amount,
+                    ]);
+
+                    return [
+                        'success' => false,
+                        'message' => 'A referência informada no callback não corresponde ao pagamento iniciado.',
+                    ];
+                }
+            }
+
+            // Validar se o montante pago corresponde exatamente ao esperado
+            $expectedAmount = (float) $existingPayment->amount;
+            if ($amount <= 0 || abs($expectedAmount - $amount) >= 0.01) {
+                Log::warning('[MpesaDriver] Webhook M-Pesa rejeitado: montante divergente do esperado.', [
+                    'reference'       => $txId,
+                    'third_party_ref' => $thirdPartyRef,
+                    'expected_amount' => $expectedAmount,
+                    'amount'          => $amount,
+                    'response_code'   => $responseCode,
+                ]);
+
+                return [
+                    'success' => false,
+                    'message' => 'O valor confirmado pela M-Pesa não corresponde ao valor esperado do pagamento.',
+                ];
+            }
+
+            // Revalidar estado sob lock pessimista: se já concluído, retornar idempotente sem reprocessar
+            if ($existingPayment->status === 'completed') {
+                return [
+                    'success' => true,
+                    'message' => 'Transação já processada anteriormente (Idempotente).',
+                    'payment' => $existingPayment,
+                ];
+            }
+
+            if ($existingPayment->status !== 'pending') {
+                Log::warning('[MpesaDriver] Webhook M-Pesa rejeitado: pagamento não se encontra pendente.', [
+                    'reference'       => $txId,
+                    'third_party_ref' => $thirdPartyRef,
+                    'current_status'  => $existingPayment->status,
+                    'amount'          => $amount,
+                ]);
+
+                return [
+                    'success' => false,
+                    'message' => 'Este pagamento não se encontra em estado pendente para ativação.',
+                ];
+            }
+
+            $existingPayment->update([
+                'status'  => 'completed',
+                'paid_at' => now(),
             ]);
 
-            return [
-                'success' => false,
-                'message' => 'O valor confirmado pela M-Pesa não corresponde ao valor esperado do pagamento.',
-            ];
-        }
+            $sub = $existingPayment->subscription;
+            if ($sub) {
+                $sub->update([
+                    'status'                 => 'active',
+                    'last_payment_reference' => $txId ?? $thirdPartyRef,
+                ]);
+                $sub->tenant?->update(['status' => 'active']);
+            }
 
-        // Idempotência: se já foi concluído anteriormente, retornar sucesso sem reprocessar
-        if ($existingPayment->status === 'completed') {
             return [
                 'success' => true,
-                'message' => 'Transação já processada anteriormente (Idempotente).',
+                'message' => 'Subscrição ativada com sucesso via M-Pesa!',
                 'payment' => $existingPayment,
             ];
-        }
-
-        if ($existingPayment->status !== 'pending') {
-            Log::warning('[MpesaDriver] Webhook M-Pesa rejeitado: pagamento não se encontra pendente.', [
-                'reference'       => $txId,
-                'third_party_ref' => $thirdPartyRef,
-                'current_status'  => $existingPayment->status,
-                'amount'          => $amount,
-            ]);
-
-            return [
-                'success' => false,
-                'message' => 'Este pagamento não se encontra em estado pendente para ativação.',
-            ];
-        }
-
-        $existingPayment->update([
-            'status'  => 'completed',
-            'paid_at' => now(),
-        ]);
-
-        $sub = $existingPayment->subscription;
-        if ($sub) {
-            $sub->update([
-                'status'                 => 'active',
-                'last_payment_reference' => $txId ?? $thirdPartyRef,
-            ]);
-            $sub->tenant?->update(['status' => 'active']);
-        }
-
-        return [
-            'success' => true,
-            'message' => 'Subscrição ativada com sucesso via M-Pesa!',
-            'payment' => $existingPayment,
-        ];
+        });
     }
 }

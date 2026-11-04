@@ -405,4 +405,55 @@ class MpesaPaymentIntegrationTest extends TestCase
                 && ($ctx['masked_phone'] ?? null) === '25884****67')
             ->once();
     }
+
+    public function test_two_consecutive_webhook_calls_activate_pending_subscription_only_once(): void
+    {
+        $plan = Plan::where('slug', 'pro')->first();
+
+        $sub = Subscription::create([
+            'tenant_id' => $this->tenant->id,
+            'plan_id'   => $plan->id,
+            'status'    => 'past_due',
+        ]);
+
+        $payment = SubscriptionPayment::create([
+            'tenant_id'            => $this->tenant->id,
+            'subscription_id'      => $sub->id,
+            'amount'               => 2950.00,
+            'currency'             => 'MZN',
+            'payment_method'       => 'mpesa',
+            'mpesa_phone'          => '258841234567',
+            'mpesa_transaction_id' => 'TX-LOCK-ONCE-01',
+            'receipt_number'       => 'SUB-LOCK-01',
+            'status'               => 'pending',
+        ]);
+
+        $payload = [
+            'output_ResponseCode'  => 'INS-0',
+            'output_TransactionID' => 'TX-LOCK-ONCE-01',
+            'output_Amount'        => '2950.00',
+            'third_party_ref'      => 'SUB-LOCK-01',
+        ];
+
+        // 1ª chamada: ativa o pagamento pendente
+        $first = $this->withHeaders([
+            'X-Mpesa-Webhook-Secret' => $this->webhookSecret,
+        ])->postJson('/api/webhooks/mpesa', $payload)->assertOk();
+
+        $first->assertJsonPath('success', true);
+        $this->assertStringContainsString('Subscrição ativada', $first->json('message'));
+        $firstPaidAt = $payment->fresh()->paid_at?->toIso8601String();
+
+        // 2ª chamada seguida: revalida sob lockForUpdate e retorna idempotente sem reprocessar
+        $this->travel(10)->seconds();
+
+        $second = $this->withHeaders([
+            'X-Mpesa-Webhook-Secret' => $this->webhookSecret,
+        ])->postJson('/api/webhooks/mpesa', $payload)->assertOk();
+
+        $second->assertJsonPath('success', true);
+        $this->assertStringContainsString('Idempotente', $second->json('message'));
+        $this->assertSame($firstPaidAt, $payment->fresh()->paid_at?->toIso8601String());
+        $this->assertEquals(1, SubscriptionPayment::where('mpesa_transaction_id', 'TX-LOCK-ONCE-01')->count());
+    }
 }
