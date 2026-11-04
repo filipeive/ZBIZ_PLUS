@@ -16,7 +16,7 @@
             font-feature-settings: "cv02", "cv03", "cv04", "cv11";
         }
         .font-heading {
-            font-family: 'Plus Jakarta Sans', 'Outfit', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             letter-spacing: -0.02em;
         }
         .font-mono, .tabular-nums {
@@ -376,7 +376,7 @@
         .text-white { color: #ffffff !important; }
         .fw-bold { font-weight: 700 !important; }
         .fw-semibold { font-weight: 600 !important; }
-        .h1, .h2, .h3, .h4, .h5, .h6 { font-family: 'Outfit', sans-serif !important; color: #f8fafc !important; }
+        .h1, .h2, .h3, .h4, .h5, .h6 { font-family: 'Plus Jakarta Sans', sans-serif !important; color: #f8fafc !important; }
         .h3 { font-size: 1.5rem !important; }
         .h5 { font-size: 1.15rem !important; }
         .h6 { font-size: 0.875rem !important; }

@@ -15,11 +15,9 @@ export default {
         extend: {
             fontFamily: {
                 sans: ['"Plus Jakarta Sans"', 'Inter', ...defaultTheme.fontFamily.sans],
+                heading: ['"Plus Jakarta Sans"', 'sans-serif'],
                 body: ['Inter', ...defaultTheme.fontFamily.sans],
                 mono: ['"JetBrains Mono"', ...defaultTheme.fontFamily.mono],
-                'ibm-sans': ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
-                'ibm-mono': ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
-                outfit: ['Outfit', 'sans-serif'],
             },
             colors: {
                 brand: {

@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .font-heading { font-family: 'Outfit', sans-serif; }
+        .font-heading { font-family: 'Plus Jakarta Sans', sans-serif; }
         [x-cloak] { display: none !important; }
         .aura-bg {
             background-color: #1e3a4c;

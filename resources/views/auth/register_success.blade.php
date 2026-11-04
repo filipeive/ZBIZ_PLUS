@@ -9,7 +9,7 @@
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .font-heading { font-family: 'Outfit', sans-serif; }
+        .font-heading { font-family: 'Plus Jakarta Sans', sans-serif; }
         .aura-bg {
             background-color: #1e3a4c;
             background-image:
