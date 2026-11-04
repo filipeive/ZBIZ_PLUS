@@ -403,8 +403,10 @@ class UserController extends Controller
         // Se o usuário passou um ID via rota ou query param
         $selectedUserId = $user?->id ?? $request->query('user_id');
 
+        $isGlobalOwner = $currentUser->isSuperAdmin() && !$tenantId;
+
         $query = UserActivity::with(['user.role'])
-            ->where('tenant_id', $tenantId);
+            ->when(!$isGlobalOwner, fn($q) => $q->where('tenant_id', $tenantId));
 
         // Se for um usuário comum sem permissão de auditoria/gestão, restringe estritamente às suas próprias atividades
         $canAuditAll = $currentUser->isAdmin() || $currentUser->isSuperAdmin() || $currentUser->isManager() || $currentUser->hasPermission('manage_users');
@@ -414,7 +416,7 @@ class UserController extends Controller
         }
 
         if ($selectedUserId) {
-            $targetUser = User::where('tenant_id', $tenantId)->find($selectedUserId);
+            $targetUser = User::when(!$isGlobalOwner, fn($q) => $q->where('tenant_id', $tenantId))->find($selectedUserId);
             if ($targetUser) {
                 if ($targetUser->id !== $currentUser->id && !$currentUser->canView($targetUser)) {
                     return redirect()->route('users.index')->with('error', 'Você não tem permissão para visualizar a atividade deste usuário.');
@@ -441,13 +443,13 @@ class UserController extends Controller
 
         $activities = $query->latest()->paginate(25)->withQueryString();
 
-        // Lista de usuários para o dropdown de filtro (apenas da empresa)
+        // Lista de usuários para o dropdown de filtro
         $usersList = $canAuditAll
-            ? User::where('tenant_id', $tenantId)->orderBy('name')->get()
+            ? User::when(!$isGlobalOwner, fn($q) => $q->where('tenant_id', $tenantId))->orderBy('name')->get()
             : collect([$currentUser]);
 
         // Lista de ações distintas registradas
-        $actionsList = UserActivity::where('tenant_id', $tenantId)
+        $actionsList = UserActivity::when(!$isGlobalOwner, fn($q) => $q->where('tenant_id', $tenantId))
             ->select('action')
             ->distinct()
             ->pluck('action');

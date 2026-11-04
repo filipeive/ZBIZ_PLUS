@@ -111,6 +111,15 @@ test('super admin can access owner routes', function () {
         ->get(route('owner.tenants.show', $tenant))
         ->assertOk()
         ->assertSeeText($tenant->name);
+
+    $this->actingAs($owner)
+        ->get(route('users.activity'))
+        ->assertOk()
+        ->assertSeeText('Auditoria Geral de Utilizadores');
+
+    $this->actingAs($owner)
+        ->get(route('users.index'))
+        ->assertOk();
 });
 
 test('super admin can impersonate and leave impersonation', function () {
