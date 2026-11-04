@@ -132,13 +132,13 @@ class MpesaDriver
     {
         $txId = $payload['output_TransactionID'] ?? $payload['transaction_id'] ?? null;
         $thirdPartyRef = $payload['output_ThirdPartyReference'] ?? $payload['third_party_ref'] ?? $payload['reference'] ?? null;
-        $responseCode = $payload['output_ResponseCode'] ?? $payload['status'] ?? 'INS-0';
+        $responseCode = $payload['output_ResponseCode'] ?? $payload['status'] ?? null;
         $amount = isset($payload['output_Amount'])
             ? (float) $payload['output_Amount']
             : (isset($payload['amount']) ? (float) $payload['amount'] : 0.0);
 
         if ($responseCode !== 'INS-0') {
-            Log::warning('[MpesaDriver] Webhook M-Pesa rejeitado pela operadora.', [
+            Log::warning('[MpesaDriver] Webhook M-Pesa rejeitado (fail-closed): código de resposta inválido ou ausente.', [
                 'reference'       => $txId,
                 'third_party_ref' => $thirdPartyRef,
                 'response_code'   => $responseCode,
@@ -147,7 +147,7 @@ class MpesaDriver
 
             return [
                 'success' => false,
-                'message' => 'Transação rejeitada pela M-Pesa: ' . ($payload['output_ResponseDesc'] ?? 'Erro desconhecido'),
+                'message' => 'Transação rejeitada pela M-Pesa: ' . ($payload['output_ResponseDesc'] ?? 'Código de resposta ausente ou inválido.'),
             ];
         }
 

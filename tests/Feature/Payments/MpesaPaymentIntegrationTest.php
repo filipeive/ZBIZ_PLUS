@@ -336,4 +336,43 @@ class MpesaPaymentIntegrationTest extends TestCase
             })
             ->once();
     }
+
+    public function test_mpesa_webhook_without_response_code_is_rejected_fail_closed(): void
+    {
+        $plan = Plan::where('slug', 'pro')->first();
+
+        $sub = Subscription::create([
+            'tenant_id' => $this->tenant->id,
+            'plan_id'   => $plan->id,
+            'status'    => 'past_due',
+        ]);
+
+        $payment = SubscriptionPayment::create([
+            'tenant_id'            => $this->tenant->id,
+            'subscription_id'      => $sub->id,
+            'amount'               => 2950.00,
+            'currency'             => 'MZN',
+            'payment_method'       => 'mpesa',
+            'mpesa_phone'          => '258841234567',
+            'mpesa_transaction_id' => 'TX-MISSING-CODE-01',
+            'receipt_number'       => 'SUB-MISSING-CODE',
+            'status'               => 'pending',
+        ]);
+
+        // Payload sem output_ResponseCode nem status -> deve falhar (fail-closed)
+        $response = $this->withHeaders([
+            'X-Mpesa-Webhook-Secret' => $this->webhookSecret,
+        ])->postJson('/api/webhooks/mpesa', [
+            'output_TransactionID' => 'TX-MISSING-CODE-01',
+            'output_Amount'        => '2950.00',
+            'third_party_ref'      => 'SUB-MISSING-CODE',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('success', false);
+
+        $this->assertEquals('pending', $payment->fresh()->status);
+        $this->assertEquals('past_due', $sub->fresh()->status);
+        $this->assertEquals('trial', $this->tenant->fresh()->status);
+    }
 }
