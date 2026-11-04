@@ -48,10 +48,13 @@ class DashboardController extends Controller
 
         $todayOutflows = $this->financialService->sumTransactions($todayStr, $todayStr, 'out', true, $userIdFilter, $branchId);
         
-        $todayProductsSoldQuery = Sale::where('tenant_id', $tenantId)->whereDate('sale_date', $today);
-        if ($branchId) $todayProductsSoldQuery->where('branch_id', $branchId);
-        if ($userIdFilter) $todayProductsSoldQuery->where('user_id', $userIdFilter);
-        $todayProductsSold = $todayProductsSoldQuery->withCount('items')->get()->sum('items_count');
+        $todayProductsSold = DB::table('sale_items')
+            ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
+            ->where('sales.tenant_id', $tenantId)
+            ->whereDate('sales.sale_date', $today)
+            ->when($branchId, fn ($q) => $q->where('sales.branch_id', $branchId))
+            ->when($userIdFilter, fn ($q) => $q->where('sales.user_id', $userIdFilter))
+            ->count();
 
         // --- CÁLCULOS DE COMPARAÇÃO (HOJE vs ONTEM) ---
         $yesterday = Carbon::yesterday();

@@ -29,7 +29,8 @@ class DebtController extends Controller
 
     public function show(Request $request, Debt $debt): JsonResponse
     {
-        return response()->json(['data' => $debt->load(['customer', 'debtItems', 'payments'])]);
+        abort_unless((int) $debt->tenant_id === (int) $this->tenantId($request), 404);
+        return response()->json(['data' => $debt->load(['customer', 'items', 'payments'])]);
     }
 
     public function overdueDebts(Request $request): JsonResponse

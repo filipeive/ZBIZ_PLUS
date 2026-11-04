@@ -13,6 +13,8 @@ use App\Models\Product;
 use App\Models\SaleItem;
 use App\Models\StockMovement;
 use App\Services\FinancialService;
+use App\Services\Reports\BuildIvaModeloAReport;
+use App\Services\Reports\SalesAnalyticsReportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Branch;
@@ -22,8 +24,11 @@ use Carbon\Carbon;
 
 class ReportController extends Controller
 {
-    public function __construct(private FinancialService $financialService)
-    {
+    public function __construct(
+        private FinancialService $financialService,
+        private BuildIvaModeloAReport $ivaModeloAReport,
+        private SalesAnalyticsReportService $salesAnalyticsService
+    ) {
     }
 
     private function getUserIdFilter()
@@ -193,169 +198,27 @@ class ReportController extends Controller
         return view('reports.sales_by_product', compact('sales', 'dateFrom', 'dateTo'));
     }
     /**
-     * Métricas principais — usa FinancialService centralizado para dados de transações.
+     * Métricas principais — delega ao SalesAnalyticsReportService centralizado.
      */
     private function calcularMetricasPrincipais($dateFrom, $dateTo, $userId = null, ?int $branchId = null)
     {
-        // Resumo centralizado via FinancialService
-        $metrics = $this->financialService->getGlobalMetrics($dateFrom, $dateTo, $userId, $branchId);
-        
-        $salesQuery = Sale::whereBetween('sale_date', [$dateFrom, $dateTo]);
-        if ($branchId) $salesQuery->where('branch_id', $branchId);
-        if ($userId) $salesQuery->where('user_id', $userId);
-        
-        $totalSales = (clone $salesQuery)->count();
-        $totalRevenue = (clone $salesQuery)->sum('total_amount');
-        
-        $expensesQuery = Expense::whereBetween('expense_date', [$dateFrom, $dateTo]);
-        if ($branchId) $expensesQuery->where('branch_id', $branchId);
-        if ($userId) $expensesQuery->where('user_id', $userId);
-        $totalExpenses = $expensesQuery->sum('amount');
-        
-        // Use centralized FinancialService — consistent with Dashboard and FinanceController
-        $totalReceived = $metrics['inflows'];
-        $totalOutflows = $metrics['outflows'];
-        
-        // Custo dos produtos vendidos (COGS)
-        $costOfGoodsSold = DB::table('sale_items')
-            ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
-            ->join('products', 'sale_items.product_id', '=', 'products.id')
-            ->whereBetween('sales.sale_date', [$dateFrom, $dateTo])
-            ->when($branchId, fn ($q) => $q->where('sales.branch_id', $branchId))
-            ->sum(DB::raw('sale_items.quantity * COALESCE(products.purchase_price, 0)'));
-        
-        // Cálculos de margem e lucro
-        $grossProfit = $totalRevenue - $costOfGoodsSold;
-        $netProfit = $grossProfit - $totalExpenses;
-        
-        $grossMargin = $totalRevenue > 0 ? (($grossProfit / $totalRevenue) * 100) : 0;
-        $netMargin = $totalRevenue > 0 ? (($netProfit / $totalRevenue) * 100) : 0;
-        
-        // Ticket médio
-        $averageTicket = $totalSales > 0 ? ($totalRevenue / $totalSales) : 0;
-        
-        // Análise de crescimento
-        $previousRevenue = Sale::whereBetween('sale_date', [
-            Carbon::parse($dateFrom)->subDays(Carbon::parse($dateFrom)->diffInDays(Carbon::parse($dateTo)) + 1)->format('Y-m-d'),
-            Carbon::parse($dateFrom)->subDay()->format('Y-m-d')
-        ])
-            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
-            ->when($userId, fn ($q) => $q->where('user_id', $userId))
-            ->sum('total_amount');
-        $revenueGrowth = $previousRevenue > 0 ? ((($totalRevenue - $previousRevenue) / $previousRevenue) * 100) : 0;
-
-        // Use centralized FinancialService for capital and receivables
-        $accountsReceivable = $metrics['accounts_receivable'];
-        $currentCapital = $metrics['current_liquidity'];
-        $totalRealValue = $metrics['total_real_value'];
-
-        // ROI (Return on Investment)
-        $totalInvestment = $costOfGoodsSold + $totalExpenses;
-        $roi = $totalInvestment > 0 ? (($netProfit / $totalInvestment) * 100) : 0;
-        $cogsRoi = $costOfGoodsSold > 0 ? (($netProfit / $costOfGoodsSold) * 100) : 0;
-        
-        return [
-            'totalSales' => $totalSales,
-            'totalRevenue' => $totalRevenue,
-            'totalReceived' => $totalReceived,
-            'totalOutflows' => $totalOutflows,
-            'netCashFlow' => $totalReceived - $totalOutflows,
-            'costOfGoodsSold' => $costOfGoodsSold,
-            'totalExpenses' => $totalExpenses,
-            'totalInvestment' => $totalInvestment,
-            'grossProfit' => $grossProfit,
-            'netProfit' => $netProfit,
-            'grossMargin' => $grossMargin,
-            'netMargin' => $netMargin,
-            'roi' => $roi,
-            'cogsRoi' => $cogsRoi,
-            'averageTicket' => $averageTicket,
-            'revenueGrowth' => $revenueGrowth,
-            'accountsReceivable' => $accountsReceivable,
-            'currentCapital' => $currentCapital,
-            'totalRealValue' => $totalRealValue,
-        ];
+        return $this->salesAnalyticsService->calculateMainMetrics(
+            dateFrom: (string) $dateFrom,
+            dateTo: (string) $dateTo,
+            userId: $userId !== null ? (int) $userId : null,
+            branchId: $branchId
+        );
     }
 
     private function getDadosDetalhados($reportType, $dateFrom, $dateTo, $userId = null, ?int $branchId = null)
     {
-        $dados = [
-            'sales' => collect(),
-            'expenses' => collect(),
-            'products' => collect()
-        ];
-
-        if ($reportType === 'sales' || $reportType === 'all') {
-            $salesQuery = Sale::with(['user', 'items.product'])
-                ->whereBetween('sale_date', [$dateFrom, $dateTo]);
-            
-            if ($branchId) $salesQuery->where('branch_id', $branchId);
-            if ($userId) $salesQuery->where('user_id', $userId);
-
-            $dados['sales'] = $salesQuery->select([
-                    'id', 'sale_date', 'customer_name', 'customer_phone', 
-                    'total_amount', 'payment_method', 'user_id'
-                ])
-                ->latest()
-                ->get()
-                ->map(function ($sale) {
-                    // Calcular margem por venda
-                    $cost = $sale->items->sum(function ($item) {
-                        return $item->quantity * ($item->product->purchase_price ?? 0);
-                    });
-                    $sale->cost = $cost;
-                    $sale->profit = $sale->total_amount - $cost;
-                    $sale->margin = $sale->total_amount > 0 ? (($sale->profit / $sale->total_amount) * 100) : 0;
-                    return $sale;
-                });
-        }
-
-        if ($reportType === 'expenses' || $reportType === 'all') {
-            $expensesQuery = Expense::with(['user', 'category'])
-                ->whereBetween('expense_date', [$dateFrom, $dateTo]);
-
-            if ($branchId) $expensesQuery->where('branch_id', $branchId);
-            if ($userId) $expensesQuery->where('user_id', $userId);
-
-            $dados['expenses'] = $expensesQuery->select([
-                    'id', 'expense_date', 'description', 'amount', 
-                    'receipt_number', 'user_id', 'expense_category_id'
-                ])
-                ->latest()
-                ->get();
-        }
-
-        if ($reportType === 'products' || $reportType === 'all') {
-            $dados['products'] = Product::with(['category'])
-                ->where('is_active', true)
-                ->select([
-                    'id', 'name', 'type', 'category_id', 'purchase_price', 
-                    'selling_price', 'stock_quantity', 'min_stock_level'
-                ])
-                ->get()
-                ->map(function ($product) use ($branchId, $dateFrom, $dateTo) {
-                    // Calcular quantidade vendida no período
-                    $salesData = DB::table('sale_items')
-                        ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
-                        ->where('sale_items.product_id', $product->id)
-                        ->when($branchId, fn ($q) => $q->where('sales.branch_id', $branchId))
-                        ->whereBetween('sales.sale_date', [$dateFrom, $dateTo])
-                        ->select([
-                            DB::raw('SUM(sale_items.quantity) as quantity_sold'),
-                            DB::raw('SUM(sale_items.total_price) as revenue_generated')
-                        ])
-                        ->first();
-                    
-                    $product->quantity_sold = $salesData->quantity_sold ?? 0;
-                    $product->revenue_generated = $salesData->revenue_generated ?? 0;
-                    $product->markup = $product->purchase_price > 0 ? 
-                        ((($product->selling_price - $product->purchase_price) / $product->purchase_price) * 100) : 0;
-                    
-                    return $product;
-                });
-        }
-
-        return $dados;
+        return $this->salesAnalyticsService->getDetailedReportData(
+            reportType: (string) $reportType,
+            dateFrom: (string) $dateFrom,
+            dateTo: (string) $dateTo,
+            userId: $userId !== null ? (int) $userId : null,
+            branchId: $branchId
+        );
     }
 
     public function profitLoss(Request $request)
@@ -1611,26 +1474,17 @@ class ReportController extends Controller
     {
         $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
         $branchId = $request->input('branch_id', $this->getBranchIdFilter());
+        $period = $this->ivaModeloAReport->resolvePeriod($request);
 
-        $month = (int) $request->input('month', now()->month);
-        $year = (int) $request->input('year', now()->year);
+        $data = $this->ivaModeloAReport->build(
+            tenantId: $tenantId !== null ? (int) $tenantId : null,
+            branchId: $branchId !== null ? (int) $branchId : null,
+            startDate: $period['startDate'],
+            endDate: $period['endDate']
+        );
 
-        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
-        $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
-
-        if ($request->filled('date_from') && $request->filled('date_to')) {
-            $startDate = Carbon::parse($request->input('date_from'))->startOfDay();
-            $endDate = Carbon::parse($request->input('date_to'))->endOfDay();
-        }
-
-        $data = $this->calculateTaxIvaData($tenantId, $branchId, $startDate, $endDate);
-
-        return view('reports.tax-iva', array_merge($data, [
-            'month'     => $month,
-            'year'      => $year,
-            'startDate' => $startDate,
-            'endDate'   => $endDate,
-            'branchId'  => $branchId,
+        return view('reports.tax-iva', array_merge($data, $period, [
+            'branchId' => $branchId,
         ]));
     }
 
@@ -1641,117 +1495,21 @@ class ReportController extends Controller
     {
         $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
         $branchId = $request->input('branch_id', $this->getBranchIdFilter());
+        $period = $this->ivaModeloAReport->resolvePeriod($request);
 
-        $month = (int) $request->input('month', now()->month);
-        $year = (int) $request->input('year', now()->year);
-
-        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
-        $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
-
-        if ($request->filled('date_from') && $request->filled('date_to')) {
-            $startDate = Carbon::parse($request->input('date_from'))->startOfDay();
-            $endDate = Carbon::parse($request->input('date_to'))->endOfDay();
-        }
-
-        $data = $this->calculateTaxIvaData($tenantId, $branchId, $startDate, $endDate);
+        $data = $this->ivaModeloAReport->build(
+            tenantId: $tenantId !== null ? (int) $tenantId : null,
+            branchId: $branchId !== null ? (int) $branchId : null,
+            startDate: $period['startDate'],
+            endDate: $period['endDate']
+        );
         $tenant = auth()->user()?->tenant ?? Tenant::find($tenantId);
 
-        $pdf = Pdf::loadView('reports.tax-iva-pdf', array_merge($data, [
-            'tenant'    => $tenant,
-            'month'     => $month,
-            'year'      => $year,
-            'startDate' => $startDate,
-            'endDate'   => $endDate,
+        $pdf = Pdf::loadView('reports.tax-iva-pdf', array_merge($data, $period, [
+            'tenant' => $tenant,
         ]))->setPaper('a4', 'portrait');
 
-        $filename = 'Apuramento_IVA_' . $tenant->nuit . '_' . $startDate->format('Y_m') . '.pdf';
+        $filename = 'Apuramento_IVA_' . ($tenant?->nuit ?? 'SN') . '_' . $period['startDate']->format('Y_m') . '.pdf';
         return $pdf->download($filename);
-    }
-
-    /**
-     * Motor de cálculo fiscal para apuramento do IVA
-     */
-    private function calculateTaxIvaData($tenantId, $branchId, Carbon $startDate, Carbon $endDate): array
-    {
-        // 1. Vendas no período (exclui canceladas)
-        $sales = Sale::with(['customer', 'branch', 'user'])
-            ->where('tenant_id', $tenantId)
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
-            ->latest()
-            ->get();
-
-        $totalSalesCount = $sales->count();
-        $totalGrossRevenue = (float)$sales->sum('total_amount');
-
-        // Operações Isentas (Art. 9º CIVA - ex: medicamentos essenciais, produtos da cesta básica)
-        $exemptSales = $sales->filter(function ($s) {
-            return ($s->tax_regime === 'exempt' || (float)$s->tax_rate == 0 || (float)$s->tax_amount == 0);
-        });
-        $exemptSalesTotal = (float)$exemptSales->sum('total_amount');
-
-        // Operações Sujeitas e Tributadas à Taxa Geral (16%)
-        $taxableSales = $sales->filter(function ($s) {
-            return ($s->tax_regime === 'normal' && (float)$s->tax_rate > 0 && (float)$s->tax_amount > 0);
-        });
-
-        $taxableBase = 0;
-        $ivaLiquidado = 0;
-
-        foreach ($taxableSales as $sale) {
-            $tax = (float)$sale->tax_amount;
-            $ivaLiquidado += $tax;
-            if ($sale->prices_include_tax) {
-                $base = max(0, (float)$sale->total_amount - $tax);
-            } else {
-                $base = max(0, ((float)$sale->subtotal - (float)$sale->discount_amount));
-            }
-            $taxableBase += $base;
-        }
-
-        // 2. Despesas / Compras no período
-        $expenses = Expense::with(['category', 'financialAccount'])
-            ->where('tenant_id', $tenantId)
-            ->whereBetween('expense_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
-            ->latest()
-            ->get();
-
-        $totalExpenses = (float)$expenses->sum('amount');
-
-        // Despesas elegíveis para dedução de IVA (com recibo / fatura-recibo documentada)
-        $deductibleExpenses = $expenses->filter(function ($e) {
-            return !empty($e->receipt_number) || !empty($e->receipt_file_path);
-        });
-        $deductibleExpenseTotal = (float)$deductibleExpenses->sum('amount');
-        // IVA dedutível a 16% sobre despesas documentadas: Base = total / 1.16, IVA = total - Base
-        $ivaDedutivel = round($deductibleExpenseTotal - ($deductibleExpenseTotal / 1.16), 2);
-
-        // 3. Saldo Líquido do Imposto
-        $saldoIva = round($ivaLiquidado - $ivaDedutivel, 2);
-        $impostoAPagar = max(0, $saldoIva);
-        $creditoAReportar = $saldoIva < 0 ? abs($saldoIva) : 0;
-
-        // Filiais para filtro
-        $branches = Branch::where('tenant_id', $tenantId)->get();
-
-        return [
-            'sales'                  => $sales,
-            'expenses'               => $expenses,
-            'totalSalesCount'        => $totalSalesCount,
-            'totalGrossRevenue'      => $totalGrossRevenue,
-            'exemptSalesTotal'       => $exemptSalesTotal,
-            'exemptSalesCount'       => $exemptSales->count(),
-            'taxableBase'            => round($taxableBase, 2),
-            'taxableSalesCount'      => $taxableSales->count(),
-            'ivaLiquidado'           => round($ivaLiquidado, 2),
-            'totalExpenses'          => $totalExpenses,
-            'deductibleExpenseTotal' => $deductibleExpenseTotal,
-            'ivaDedutivel'           => $ivaDedutivel,
-            'saldoIva'               => $saldoIva,
-            'impostoAPagar'          => $impostoAPagar,
-            'creditoAReportar'       => $creditoAReportar,
-            'branches'               => $branches,
-        ];
     }
 }

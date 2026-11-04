@@ -195,4 +195,69 @@ class CashShiftAndLedgerTest extends TestCase
         $this->assertEquals(1000.00, $metrics['net_flow']);
         $this->assertEquals(2000.00, $metrics['current_liquidity']); // initial 1000 - 500 + 1500
     }
+
+    public function test_current_shift_status_does_not_expose_expected_cash_before_blind_close(): void
+    {
+        $shift = CashShift::create([
+            'tenant_id'            => $this->tenant->id,
+            'branch_id'            => $this->branch->id,
+            'user_id'              => $this->user->id,
+            'financial_account_id' => $this->account->id,
+            'opened_at'            => now(),
+            'opening_balance'      => 1000.00,
+            'status'               => 'open',
+        ]);
+
+        Sale::create([
+            'tenant_id'      => $this->tenant->id,
+            'branch_id'      => $this->branch->id,
+            'cash_shift_id'  => $shift->id,
+            'user_id'        => $this->user->id,
+            'subtotal'       => 850.00,
+            'total_amount'   => 850.00,
+            'payment_method' => 'cash',
+            'sale_date'      => now(),
+        ]);
+
+        $this->actingAs($this->user);
+
+        $response = $this->getJson(route('cash-shifts.status'))->assertOk();
+        $response->assertJsonPath('is_open', true);
+        $response->assertJsonPath('shift.opening_balance', 1000);
+        $this->assertArrayNotHasKey('expected_cash', $response->json('shift'));
+        $this->assertArrayNotHasKey('closing_balance_system', $response->json('shift'));
+    }
+
+    public function test_closing_a_cash_shift_is_idempotent(): void
+    {
+        $shift = CashShift::create([
+            'tenant_id'            => $this->tenant->id,
+            'branch_id'            => $this->branch->id,
+            'user_id'              => $this->user->id,
+            'financial_account_id' => $this->account->id,
+            'opened_at'            => now(),
+            'opening_balance'      => 1000.00,
+            'status'               => 'open',
+        ]);
+
+        $this->actingAs($this->user);
+
+        $firstClose = $this->postJson(route('cash-shifts.close', $shift), [
+            'closing_balance_actual' => 980.00,
+            'notes'                  => 'Primeiro fecho',
+        ])->assertOk();
+
+        $firstClose->assertJsonPath('success', true);
+        $firstClose->assertJsonPath('difference', -20);
+
+        // Segunda tentativa de fecho não altera os valores originais
+        $secondClose = $this->postJson(route('cash-shifts.close', $shift), [
+            'closing_balance_actual' => 5000.00,
+            'notes'                  => 'Tentativa duplicada',
+        ])->assertOk();
+
+        $secondClose->assertJsonPath('success', false);
+        $this->assertEquals(980.00, (float) $shift->fresh()->closing_balance_actual);
+        $this->assertEquals(-20.00, (float) $shift->fresh()->difference);
+    }
 }

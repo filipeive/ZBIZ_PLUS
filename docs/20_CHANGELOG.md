@@ -7,7 +7,21 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 ---
 
 ## [Unreleased]
-### Added
+
+---
+
+## [1.0.22] - 2026-09-17 - Catálogo Nacional Farmacêutico MZ, Cofre de Backup em Nuvem e PWA Mobile
+### Added & Improved
+- **Catálogo Nacional Farmacêutico de Moçambique (`zbiz:seed-pharma-catalog`):** pré-população oficial com mais de 60 medicamentos de alta rotatividade, substância ativa (DCI), dosagem, isenção Art. 9º CIVA e rastreabilidade FEFO/ANARME.
+- **Cofre de Backup em Nuvem Central (`/api/sync/backup-upload`, `zbiz:backup-cloud-push`):** envio seguro de dumps SQL para o servidor central com autenticação por chave de licença e isolamento por tenant.
+- **PWA & Navegação Mobile (`resources/views/layouts/app.blade.php`, `public/manifest.json`):** Bottom Navigation Bar responsiva com acesso rápido a Dashboard, Stock, Caixa PDV, Vendas e Menu, além de refinamentos visuais Soft UI Evolution.
+- **Multitenancy nas Definições:** correção do índice único de `settings` para suportar chaves isoladas por tenant (`tenant_id + key`).
+
+---
+
+## [1.0.21] - 2026-09-16 - Login Flexível, SMS OTP, Fecho A4, Turno Diário Obrigatório e Isolamento do Ledger
+### Added & Improved
+- **Autenticação Flexível & Recuperação por SMS OTP:** login unificado por E-mail, Nome de Utilizador, Telemóvel (Vodacom/Tmcel/Movitel) ou Código de Colaborador, e recuperação de palavra-passe via SMS OTP.
 - **Racionalização financeira:** removida a duplicação do saldo no Dashboard, substituída por Fluxo Líquido do Mês; Finanças passou a apresentar Liquidez Atual com descrição de caixa, carteiras e contas operacionais.
 - **Isolamento do ledger por tenant/filial:** a sincronização de recebimentos de vendas passou a resolver contas financeiras dentro da empresa e filial corretas, evitando associação por slug global.
 - **Controlo diário de turnos no POS:** operadores não administradores precisam abrir o caixa do dia antes de finalizar vendas; a regra é aplicada na interface, no endpoint de venda e na sincronização offline.
@@ -16,11 +30,9 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - **Alertas automáticos de validade por filial:** o dashboard consulta lotes vencidos e próximos do vencimento (90 dias) da filial ativa, atualiza a cada 30 segundos, exibe estados de carregamento/erro e oferece som configurável com Web Audio API.
 - **Consultas de produto entre filiais:** adicionado fluxo protegido por tenant para solicitar disponibilidade de produto a outra filial, responder, cancelar e acompanhar o estado da consulta.
 - **Proteção reforçada do Owner:** rotas `/owner` e `/owner/tenants` passam a exigir explicitamente o middleware de Super Admin, preservando o fluxo de suporte/impersonation.
+- **Módulo Restaurante — Mesas & Sala:** página Tailwind disponível para tenants restaurante com estados livre, ocupada, reservada e limpeza, e vínculo opcional entre encomendas e mesas (`docs/07_VERTICAL_MODULES.md`).
 
-- Adicionada a página Tailwind **Mesas & Sala**, disponível apenas para tenants restaurante.
-- Implementados os estados operacionais livre, ocupada, reservada e limpeza.
-- Adicionado vínculo opcional entre encomendas e mesas; a mesa é marcada como ocupada ao abrir uma comanda.
-- Documentada a operação restaurante em `docs/07_VERTICAL_MODULES.md`.
+---
 
 ## [1.0.20] - 2026-09-14 - Clientes, Fornecedores, Fecho Cego de Caixa, IVA Modelo A, Backups e Identidade Visual Dinâmica
 ### Added & Improved

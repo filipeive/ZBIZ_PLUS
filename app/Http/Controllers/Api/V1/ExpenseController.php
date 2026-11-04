@@ -33,6 +33,7 @@ class ExpenseController extends Controller
 
     public function show(Request $request, Expense $expense): JsonResponse
     {
+        abort_unless((int) $expense->tenant_id === (int) $this->tenantId($request), 404);
         return response()->json(['data' => $expense->load(['category', 'user'])]);
     }
 

@@ -50,14 +50,19 @@ class ProductController extends Controller
 
     public function show(Request $request, Product $product): JsonResponse
     {
+        abort_unless((int) $product->tenant_id === (int) $this->tenantId($request), 404);
         return response()->json(['data' => $product->load(['category', 'batches'])]);
     }
 
     public function store(Request $request): JsonResponse
     {
+        $tenantId = $this->tenantId($request);
         $data = $request->validate([
             'name'          => 'required|string|max:150',
-            'category_id'   => 'required|exists:categories,id',
+            'category_id'   => [
+                'required',
+                \Illuminate\Validation\Rule::exists('categories', 'id')->where('tenant_id', $tenantId),
+            ],
             'type'          => 'required|in:product,physical,service',
             'selling_price' => 'required|numeric|min:0',
             'purchase_price'=> 'nullable|numeric|min:0',
@@ -69,7 +74,7 @@ class ProductController extends Controller
             'is_active'     => 'boolean',
         ]);
 
-        $data['tenant_id'] = $this->tenantId($request);
+        $data['tenant_id'] = $tenantId;
         $product = Product::create($data);
 
         return response()->json(['message' => 'Produto criado.', 'data' => $product], 201);
@@ -77,9 +82,15 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product): JsonResponse
     {
+        $tenantId = $this->tenantId($request);
+        abort_unless((int) $product->tenant_id === (int) $tenantId, 404);
+
         $data = $request->validate([
             'name'          => 'sometimes|string|max:150',
-            'category_id'   => 'sometimes|exists:categories,id',
+            'category_id'   => [
+                'sometimes',
+                \Illuminate\Validation\Rule::exists('categories', 'id')->where('tenant_id', $tenantId),
+            ],
             'selling_price' => 'sometimes|numeric|min:0',
             'purchase_price'=> 'nullable|numeric|min:0',
             'stock_quantity'=> 'nullable|integer|min:0',
@@ -93,6 +104,7 @@ class ProductController extends Controller
 
     public function destroy(Product $product): JsonResponse
     {
+        abort_unless((int) $product->tenant_id === (int) auth()->user()?->tenant_id, 404);
         $product->delete();
         return response()->json(['message' => 'Produto eliminado.']);
     }

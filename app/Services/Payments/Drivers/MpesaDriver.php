@@ -78,7 +78,19 @@ class MpesaDriver
 
             return $response->json();
         } catch (\Exception $e) {
-            Log::error('Erro ao conectar à API M-Pesa:', ['error' => $e->getMessage()]);
+            $maskedPhone = strlen($formattedPhone) >= 7
+                ? substr($formattedPhone, 0, 5) . '****' . substr($formattedPhone, -2)
+                : '***';
+
+            Log::error('[MpesaDriver] Falha na comunicação C2B com a OpenAPI Vodacom.', [
+                'reference'       => $reference,
+                'third_party_ref' => $thirdPartyRef,
+                'amount'          => $amount,
+                'masked_phone'    => $maskedPhone,
+                'env'             => config('services.mpesa.env', 'sandbox'),
+                'error'           => $e->getMessage(),
+            ]);
+
             return [
                 'success'     => false,
                 'status'      => 'INS-99',
@@ -98,6 +110,13 @@ class MpesaDriver
         $amount = (float)($payload['output_Amount'] ?? $payload['amount'] ?? 0);
 
         if ($responseCode !== 'INS-0') {
+            Log::warning('[MpesaDriver] Webhook M-Pesa rejeitado pela operadora.', [
+                'transaction_id'  => $txId,
+                'third_party_ref' => $thirdPartyRef,
+                'response_code'   => $responseCode,
+                'amount'          => $amount,
+            ]);
+
             return [
                 'success' => false,
                 'message' => 'Transação rejeitada pela M-Pesa: ' . ($payload['output_ResponseDesc'] ?? 'Erro desconhecido'),

@@ -1,28 +1,51 @@
 <?php
+
 namespace App\Models;
 
 use App\Traits\BelongsToTenant;
-
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class Sale extends Model
 {
     use BelongsToTenant;
+
     protected $fillable = [
+        'tenant_id',
+        'branch_id',
+        'cash_shift_id',
+        'user_id',
         'customer_id',
-        'tenant_id', 'branch_id',
-        'tenant_id', 'branch_id', 'cash_shift_id',
-        'user_id', 'customer_name', 'customer_phone', 'customer_nuit', 'customer_address',
-        'subtotal', 'discount_amount', 'discount_percentage', 
-        'discount_type', 'discount_reason', 'total_amount', 
-        'amount_paid', 'change_amount',
-        'tax_regime', 'tax_rate', 'tax_amount', 'tax_exemption_reason', 'prices_include_tax',
-        'invoice_type', 'invoice_number', 'due_date', 'quotation_id',
-        'payment_method', 'notes', 'sale_date',
-        'offline_id', 'synced_at'
+        'customer_name',
+        'customer_phone',
+        'customer_nuit',
+        'customer_address',
+        'subtotal',
+        'discount_amount',
+        'discount_percentage',
+        'discount_type',
+        'discount_reason',
+        'total_amount',
+        'amount_paid',
+        'change_amount',
+        'tax_regime',
+        'tax_rate',
+        'tax_amount',
+        'tax_exemption_reason',
+        'prices_include_tax',
+        'invoice_type',
+        'invoice_number',
+        'due_date',
+        'quotation_id',
+        'payment_method',
+        'notes',
+        'sale_date',
+        'offline_id',
+        'synced_at',
     ];
 
     protected $casts = [
@@ -42,7 +65,6 @@ class Sale extends Model
         'updated_at'          => 'datetime',
     ];
 
-    
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
@@ -63,9 +85,19 @@ class Sale extends Model
         return $this->belongsTo(Quotation::class);
     }
 
-    public function debt(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function debt(): HasOne
     {
         return $this->hasOne(Debt::class, 'sale_id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(SaleItem::class);
     }
 
     public function getCustomerDisplayNameAttribute(): string
@@ -118,15 +150,6 @@ class Sale extends Model
         }
 
         return 0.00;
-    }
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function items(): HasMany
-    {
-        return $this->hasMany(SaleItem::class);
     }
 
     /**
@@ -304,9 +327,13 @@ class Sale extends Model
 
         $prefix = "{$seriesCode}-{$year}/";
 
+        // Lock pessimista por tenant para serializar emissões concorrentes na mesma transação
+        DB::table('tenants')->where('id', $tenantId)->lockForUpdate()->value('id');
+
         $lastSale = self::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('invoice_number', 'like', "{$prefix}%")
+            ->lockForUpdate()
             ->orderBy('id', 'desc')
             ->first();
 

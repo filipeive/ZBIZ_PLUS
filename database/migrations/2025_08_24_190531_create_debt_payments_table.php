@@ -13,7 +13,7 @@ return new class extends Migration
         $table->foreignId('debt_id')->constrained('debts')->onDelete('cascade');
         $table->unsignedBigInteger('user_id')->nullable(); // usuário que registrou o pagamento
         $table->decimal('amount', 10, 2);
-        $table->enum('payment_method', ['cash', 'card', 'transfer', 'pix'])->default('cash');
+        $table->enum('payment_method', ['cash', 'card', 'transfer', 'mpesa', 'emola', 'pix'])->default('cash');
         $table->date('payment_date');
         $table->text('notes')->nullable();
 

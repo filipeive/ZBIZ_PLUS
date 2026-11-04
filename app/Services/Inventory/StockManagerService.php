@@ -53,7 +53,8 @@ class StockManagerService
         $userId ??= auth()->id();
 
         DB::transaction(function () use ($productId, $quantity, $type, $branchId, $userId, $reason, $referenceId) {
-            $product = Product::findOrFail($productId);
+            $product = Product::whereKey($productId)->lockForUpdate()->firstOrFail();
+            $tenantId = $product->tenant_id ?: current_tenant_id();
 
             // Se for serviço, não movimenta stock físico
             if ($product->type === 'service') {
@@ -75,10 +76,21 @@ class StockManagerService
 
             // Atualizar stock específico da filial se branchId existir
             if ($branchId) {
-                $pb = ProductBranch::firstOrCreate(
-                    ['tenant_id' => current_tenant_id(), 'product_id' => $productId, 'branch_id' => $branchId],
-                    ['stock_quantity' => $product->stock_quantity, 'min_stock_level' => $product->min_stock_level ?? 5]
-                );
+                $pb = ProductBranch::where('tenant_id', $tenantId)
+                    ->where('product_id', $productId)
+                    ->where('branch_id', $branchId)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$pb) {
+                    $pb = ProductBranch::create([
+                        'tenant_id'       => $tenantId,
+                        'product_id'      => $productId,
+                        'branch_id'       => $branchId,
+                        'stock_quantity'  => $product->stock_quantity,
+                        'min_stock_level' => $product->min_stock_level ?? 5,
+                    ]);
+                }
 
                 if ($type === 'out') {
                     $pb->decrement('stock_quantity', $quantity);
@@ -89,7 +101,7 @@ class StockManagerService
 
             // Registar movimentação no log
             StockMovement::create([
-                'tenant_id'     => current_tenant_id(),
+                'tenant_id'     => $tenantId,
                 'branch_id'     => $branchId,
                 'product_id'    => $productId,
                 'user_id'       => $userId,
@@ -107,38 +119,13 @@ class StockManagerService
      */
     public function transferStock(int $productId, int $fromBranchId, int $toBranchId, int $quantity, ?string $notes = null, ?int $userId = null): StockTransfer
     {
-        return DB::transaction(function () use ($productId, $fromBranchId, $toBranchId, $quantity, $notes, $userId) {
-            $userId ??= auth()->id();
-
-            // 1. Reduzir da filial de origem
-            $source = ProductBranch::where('product_id', $productId)->where('branch_id', $fromBranchId)->first();
-            if (!$source || $source->stock_quantity < $quantity) {
-                throw new \Exception("Stock insuficiente na filial de origem. Disponível: " . ($source?->stock_quantity ?? 0));
-            }
-
-            $source->decrement('stock_quantity', $quantity);
-
-            // 2. Aumentar na filial de destino
-            $dest = ProductBranch::firstOrCreate(
-                ['tenant_id' => current_tenant_id(), 'product_id' => $productId, 'branch_id' => $toBranchId],
-                ['stock_quantity' => 0, 'min_stock_level' => 5]
-            );
-            $dest->increment('stock_quantity', $quantity);
-
-            // 3. Registar a transferência
-            $transfer = StockTransfer::create([
-                'tenant_id'      => current_tenant_id(),
-                'from_branch_id' => $fromBranchId,
-                'to_branch_id'   => $toBranchId,
-                'user_id'        => $userId,
-                'product_id'     => $productId,
-                'quantity'       => $quantity,
-                'status'         => 'completed',
-                'transfer_date'  => now()->toDateString(),
-                'notes'          => $notes,
-            ]);
-
-            return $transfer;
-        });
+        return app(\App\Actions\Inventory\TransferStockBetweenBranchesAction::class)->execute(
+            productId: $productId,
+            fromBranchId: $fromBranchId,
+            toBranchId: $toBranchId,
+            quantity: $quantity,
+            notes: $notes,
+            userId: $userId
+        );
     }
 }

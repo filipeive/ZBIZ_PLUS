@@ -134,7 +134,16 @@ class FinancialLedgerService
      */
     public function syncExpense(Expense $expense, bool $validateBalance = false): FinancialTransaction
     {
-        $account = $expense->financialAccount ?: FinancialAccount::first();
+        $account = $expense->financialAccount;
+        if (!$account) {
+            $account = FinancialAccount::where('tenant_id', $expense->tenant_id)
+                ->where('is_active', true)
+                ->when($expense->branch_id, fn ($q) => $q->where(function ($sub) use ($expense) {
+                    $sub->where('branch_id', $expense->branch_id)->orWhereNull('branch_id');
+                }))
+                ->first();
+        }
+
         if (!$account) {
             throw new \Exception("Nenhuma conta financeira ativa disponível para registrar a despesa.");
         }
@@ -170,9 +179,24 @@ class FinancialLedgerService
             default          => 'caixa-principal',
         };
 
-        $account = FinancialAccount::where('slug', $accountSlug)->where('is_active', true)->first();
+        $accountQuery = FinancialAccount::where('tenant_id', $tenantId)
+            ->where('slug', $accountSlug)
+            ->where('is_active', true);
+
+        $account = $branchId
+            ? (clone $accountQuery)->where('branch_id', $branchId)->first()
+            : null;
+
+        $account ??= (clone $accountQuery)->whereNull('branch_id')->first();
+        $account ??= (clone $accountQuery)->first();
+
         if (!$account) {
-            $account = FinancialAccount::where('is_active', true)->first();
+            $account = FinancialAccount::where('tenant_id', $tenantId)
+                ->where('is_active', true)
+                ->when($branchId, fn ($q) => $q->where(function ($sub) use ($branchId) {
+                    $sub->where('branch_id', $branchId)->orWhereNull('branch_id');
+                }))
+                ->first();
         }
 
         if (!$account) {

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Debts\RegisterDebtPaymentAction;
+use App\Http\Requests\Debts\StoreDebtPaymentRequest;
 use App\Models\Debt;
 use App\Models\DebtItem;
 use App\Models\DebtPayment;
@@ -18,7 +20,10 @@ use Illuminate\Support\Facades\Log;
 
 class DebtController extends Controller
 {
-    public function __construct(private FinancialService $financialService) {}
+    public function __construct(
+        private FinancialService $financialService,
+        private RegisterDebtPaymentAction $registerDebtPaymentAction
+    ) {}
 
     /**
      * Lista de dívidas
@@ -320,33 +325,18 @@ class DebtController extends Controller
     /**
      * Processar pagamento inicial
      */
-    private function processInitialPayment(Debt $debt, float $amount, string $date)
+    private function processInitialPayment(Debt $debt, float $amount, string $date): void
     {
-        $amount = min($amount, $debt->original_amount);
-
-        $payment = DebtPayment::create([
-            'debt_id' => $debt->id,
-            'user_id' => auth()->id(),
-            'amount' => $amount,
-            'payment_method' => 'cash',
-            'payment_date' => $date,
-            'notes' => 'Pagamento inicial',
-        ]);
-
-        $this->financialService->syncDebtPaymentTransaction($payment);
-
-        $debt->remaining_amount -= $amount;
-        if ($debt->remaining_amount <= 0.01) {
-            $debt->status = 'paid';
-            $debt->remaining_amount = 0;
-        } else {
-            $debt->status = 'partially_paid';
-        }
-        $debt->save();
-
-        if ($debt->customer) {
-            $debt->customer->recalculateDebt();
-        }
+        $this->registerDebtPaymentAction->execute(
+            debt: $debt,
+            data: [
+                'amount'         => min($amount, (float) $debt->original_amount),
+                'payment_method' => 'cash',
+                'payment_date'   => $date,
+                'notes'          => 'Pagamento inicial',
+            ],
+            userId: auth()->id()
+        );
     }
 
     /**
@@ -375,103 +365,25 @@ class DebtController extends Controller
     /**
      * Registrar pagamento
      */
-    public function addPayment(Request $request, Debt $debt)
+    public function addPayment(StoreDebtPaymentRequest $request, Debt $debt)
     {
-        $request->validate([
-            'amount' => 'required|numeric|min:0.01|max:'.$debt->remaining_amount,
-            'payment_method' => 'required|in:cash,card,transfer,mpesa,emola',
-            'payment_date' => 'required|date|before_or_equal:today',
-            'notes' => 'nullable|string',
-            'create_sale' => 'sometimes|boolean',
-        ]);
-
         try {
-            DB::beginTransaction();
-
-            $payment = DebtPayment::create([
-                'debt_id' => $debt->id,
-                'user_id' => auth()->id(),
-                'amount' => $request->amount,
-                'payment_method' => $request->payment_method,
-                'payment_date' => $request->payment_date,
-                'notes' => $request->notes,
-            ]);
-
-            $this->financialService->syncDebtPaymentTransaction($payment);
-
-            $debt->remaining_amount -= $request->amount;
-
-            if ($debt->remaining_amount <= 0.01) {
-                $debt->status = 'paid';
-                $debt->remaining_amount = 0;
-
-                if ($debt->isProductDebt() && ! $debt->generated_sale_id && $request->has('create_sale')) {
-                    $this->createSaleFromDebt($debt);
-                }
-            } else {
-                $debt->status = 'partially_paid';
-            }
-
-            $debt->save();
-
-            if ($debt->customer) {
-                $debt->customer->recalculateDebt();
-            }
-
-            // Garantir que a transação financeira seja criada se houver pagamento
-            if (isset($payment)) {
-                $this->financialService->syncDebtPaymentTransaction($payment);
-            }
-
-            DB::commit();
+            $this->registerDebtPaymentAction->execute(
+                debt: $debt,
+                data: $request->validated(),
+                userId: auth()->id(),
+                createSaleWhenPaid: $request->boolean('create_sale')
+            );
 
             return redirect()->route('debts.show', $debt)
                 ->with('success', 'Pagamento registrado com sucesso!');
-
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
         } catch (\Exception $e) {
-            DB::rollBack();
             Log::error('Erro ao registrar pagamento: '.$e->getMessage());
 
             return back()->withErrors(['error' => 'Erro ao processar pagamento']);
         }
-    }
-
-    /**
-     * Criar venda a partir da dívida
-     */
-    private function createSaleFromDebt(Debt $debt)
-    {
-        $items = DebtItem::where('debt_id', $debt->id)->with('product')->get();
-
-        if ($items->isEmpty()) {
-            return null;
-        }
-
-        $sale = Sale::create([
-            'user_id' => auth()->id(),
-            'customer_name' => $debt->customer_name,
-            'customer_phone' => $debt->customer_phone,
-            'subtotal' => $debt->original_amount,
-            'total_amount' => $debt->original_amount,
-            'payment_method' => 'debt_settlement',
-            'sale_date' => now(),
-            'notes' => "Venda da dívida #{$debt->id}",
-        ]);
-
-        foreach ($items as $item) {
-            SaleItem::create([
-                'sale_id' => $sale->id,
-                'product_id' => $item->product_id,
-                'quantity' => $item->quantity,
-                'original_unit_price' => $item->unit_price,
-                'unit_price' => $item->unit_price,
-                'total_price' => $item->total_price,
-            ]);
-        }
-
-        $debt->update(['generated_sale_id' => $sale->id]);
-
-        return $sale;
     }
 
     /**

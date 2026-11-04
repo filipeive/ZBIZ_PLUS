@@ -127,4 +127,27 @@ class PharmacyBatchFEFOTest extends TestCase
         $this->assertCount(1, $expiring);
         $this->assertEquals('EXP-SOON', $expiring->first()->batch_number);
     }
+
+    public function test_fefo_dispensing_prevents_oversell_and_quarantines_expired_batches(): void
+    {
+        // Lote vencido ontem (20 unidades) -> deve entrar em quarentena (status = expired) e não ser vendido
+        $expiredBatch = $this->batchService->addBatch($this->medicine, [
+            'batch_number' => 'LOTE-VENCIDO',
+            'expiry_date'  => now()->subDay()->toDateString(),
+            'quantity'     => 20,
+        ]);
+
+        // Lote válido (10 unidades)
+        $validBatch = $this->batchService->addBatch($this->medicine, [
+            'batch_number' => 'LOTE-VALIDO',
+            'expiry_date'  => now()->addMonths(6)->toDateString(),
+            'quantity'     => 10,
+        ]);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Stock insuficiente em lotes válidos');
+
+        // Tentar dispensar 15 unidades quando só há 10 válidas deve falhar e fazer rollback
+        $this->batchService->dispenseFEFO($this->medicine, 15, $this->branch->id);
+    }
 }

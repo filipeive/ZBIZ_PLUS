@@ -439,4 +439,39 @@ class LocalCloudSyncTest extends TestCase
             'name'      => 'Suco de Manga 1L',
         ]);
     }
+
+    public function test_sync_ingest_with_tenant_license_rejects_payload_for_another_tenant(): void
+    {
+        $otherTenant = Tenant::create([
+            'name'          => 'Outra Empresa Alvo',
+            'slug'          => 'outra-empresa-alvo',
+            'business_type' => 'retail',
+            'status'        => 'active',
+        ]);
+
+        $licenseKey = 'ZBIZ-TENANT-A-ONLY-0001';
+        LicenseKey::create([
+            'tenant_id'  => $this->tenant->id,
+            'plan_id'    => $this->tenant->plan_id ?? 1,
+            'key_code'   => $licenseKey,
+            'mode'       => 'local_online',
+            'status'     => 'active',
+            'starts_at'  => now()->subDay(),
+            'expires_at' => now()->addYear(),
+        ]);
+
+        // Tentar sincronizar usando a chave de licença do Tenant A mas informando tenant_id / tenant_slug do Tenant B
+        $response = $this->withHeaders([
+            'X-Sync-Token' => $licenseKey,
+        ])->postJson(route('sync.ingest'), [
+            'tenant_id'   => $otherTenant->id,
+            'tenant_slug' => $otherTenant->slug,
+            'sales'       => [],
+        ]);
+
+        $response->assertStatus(403)
+            ->assertJson([
+                'success' => false,
+            ]);
+    }
 }

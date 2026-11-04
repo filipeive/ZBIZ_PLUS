@@ -150,6 +150,40 @@ class SyncIngestController extends Controller
         $tenantSlug = $request->input('tenant_slug');
         $tenantId = (int)$request->input('tenant_id');
 
+        // Rejeitar tentativas de sincronizar payload de outro tenant quando autenticado por Chave de Licença de Tenant
+        if ($licenseTenantId !== null && !$isMasterToken) {
+            if ($tenantId > 0 && $tenantId !== (int) $licenseTenantId) {
+                Log::warning('[SyncIngest] Rejeitado payload com tenant_id divergente da licença.', [
+                    'license_tenant_id' => $licenseTenantId,
+                    'payload_tenant_id' => $tenantId,
+                    'source_instance'   => $request->input('source_instance'),
+                    'ip'                => $request->ip(),
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Violação de isolamento Multi-Tenant: A chave de licença não pertence ao tenant informado na carga útil.',
+                ], 403);
+            }
+
+            if ($tenantSlug) {
+                $slugTenant = Tenant::withoutGlobalScopes()->where('slug', $tenantSlug)->first();
+                if ($slugTenant && (int) $slugTenant->id !== (int) $licenseTenantId) {
+                    Log::warning('[SyncIngest] Rejeitado payload com tenant_slug divergente da licença.', [
+                        'license_tenant_id'   => $licenseTenantId,
+                        'payload_tenant_slug' => $tenantSlug,
+                        'source_instance'     => $request->input('source_instance'),
+                        'ip'                  => $request->ip(),
+                    ]);
+
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Violação de isolamento Multi-Tenant: A chave de licença não pertence ao tenant informado na carga útil.',
+                    ], 403);
+                }
+            }
+        }
+
         $tenant = null;
         if ($licenseTenantId) {
             $tenant = Tenant::withoutGlobalScopes()->find($licenseTenantId);

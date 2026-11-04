@@ -4,7 +4,6 @@
 
 ![ZBIZ+ Banner](public/favicon.png)
 
-[![Versão](https://img.shields.io/badge/versão-v1.0.20-emerald.svg)](./docs/20_CHANGELOG.md)
 [![Versão](https://img.shields.io/badge/versão-v1.0.22-emerald.svg)](./docs/20_CHANGELOG.md)
 [![PHP](https://img.shields.io/badge/PHP-8.3-blue.svg)](https://www.php.net)
 [![Laravel](https://img.shields.io/badge/Laravel-12.x-red.svg)](https://laravel.com)
@@ -19,7 +18,6 @@
 O **ZBIZ+** é uma evolução de nível empresarial do ReproSys, arquitetado como um Monólito Modular Multi-Tenant com isolamento estrito de dados por empresa e filial. Desenvolvido para resolver os desafios reais do comércio e serviços em Moçambique: conectividade instável, necessidade de conformidade regulatória (ANARME / AT Moçambique), gestão de múltiplos balcões/filiais e reconciliação financeira (M-Pesa e e-Mola).
 
 ### 🧩 Módulos e Recursos Principais:
-* **💊 ZBIZ Farmácia & Saúde:** Rastreabilidade estrita de Lotes, Validades (alertas dinâmicos de 30/60/90 dias), algoritmo FEFO (*First Expire, First Out*), enquadramento de isenção de IVA (Art. 9º CIVA), dosagem, substância ativa e relatórios de psicotrópicos em conformidade com a **ANARME**.
 * **💊 ZBIZ Farmácia & Saúde:** Catálogo Nacional Moçambicano oficial pré-populado com mais de 60 medicamentos de alta rotatividade, rastreabilidade estrita de Lotes, Validades (alertas dinâmicos de 30/60/90 dias), algoritmo FEFO (*First Expire, First Out*), enquadramento de isenção de IVA (Art. 9º CIVA), dosagem, substância ativa e relatórios de psicotrópicos em conformidade com a **ANARME**. Comando Artisan: `php artisan zbiz:seed-pharma-catalog`.
 * **📱 PWA & Mobile UI/UX:** Instalação como App nativo em smartphones Android e iOS (PWA), Service Worker para cache inteligente e Bottom Navigation Bar inferior com acesso rápido em 1 toque a Dashboard, Stock, Caixa PDV, Vendas e Menu.
 * **☁️ Backup em Nuvem Central:** Envio seguro com 1 clique (ou via cron/CLI) de dumps SQL criptografados diretamente para o cofre centralizado na Nuvem ZBIZ+ (`php artisan zbiz:backup-cloud-push`).
@@ -172,9 +170,11 @@ O `deploy.sh` realiza no servidor:
 
 ---
 
-## 🔑 Credenciais Padrão do Sistema (Ambiente de Testes)
+## 🔑 Credenciais Padrão de Demonstração (Apenas Ambiente de Testes)
 
-| Papel / Perfil | E-mail de Acesso | Palavra-passe | Empresa / Âmbito |
+> ⚠️ **AVISO DE SEGURANÇA:** As credenciais abaixo são criadas pelos *seeders* de demonstração e destinam-se **exclusivamente a ambientes locais de desenvolvimento e testes**. **Nunca devem ser utilizadas em produção** — altere imediatamente todas as palavras-passe e remova contas de demonstração antes de expor o sistema.
+
+| Papel / Perfil | E-mail de Acesso | Palavra-passe (Demo) | Empresa / Âmbito |
 | :--- | :--- | :--- | :--- |
 | **Super Administrador SaaS** | `superadmin@zbizpos.com` | `password123` | Plataforma Global / Centro de Controlo |
 | **Farmácia Central (Admin)** | `admin@farmaciacentral.co.mz` | `password123` | Farmácia Muzinga (ANARME / Lotes) |
@@ -188,7 +188,7 @@ O `deploy.sh` realiza no servidor:
 
 A documentação detalhada de governança e regras de negócio está na pasta [`docs/`](./docs):
 
-* [`MANUAL_DO_USUARIO.md`](./MANUAL_DO_USUARIO.md) — Manual Oficial do Usuário e Operador de Caixa (v1.0.20)
+* [`MANUAL_DO_USUARIO.md`](./MANUAL_DO_USUARIO.md) — Manual Oficial do Usuário e Operador de Caixa (v1.0.22)
 * [`00_SYSTEM_STATUS_AND_ARCHITECTURE_2026.md`](./docs/00_SYSTEM_STATUS_AND_ARCHITECTURE_2026.md) — Relatório de Estado do Sistema e Arquitetura Completa
 * [`03_ROADMAP.md`](./docs/03_ROADMAP.md) — Cronograma de Desenvolvimento
 * [`06_DATABASE_SCHEMA.md`](./docs/06_DATABASE_SCHEMA.md) — Dicionário Oficial de Base de Dados (35+ Tabelas e Relacionamentos)
@@ -212,4 +212,4 @@ O **ZBIZ+** é desenvolvido e mantido com rigor de engenharia por:
 
 ---
 
-*ZBIZ+ · Enterprise Cloud & POS Suite v1.0.20 · Desenvolvido por Fdsmultiservices*
+*ZBIZ+ · Enterprise Cloud & POS Suite v1.0.22 · Desenvolvido por Fdsmultiservices*

@@ -20,7 +20,7 @@ class SaleController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Sale::where('tenant_id', $this->tenantId($request))
-            ->with(['user', 'saleItems.product']);
+            ->with(['user', 'items.product']);
 
         if ($request->filled('from')) {
             $query->where('sale_date', '>=', $request->from);
@@ -39,24 +39,33 @@ class SaleController extends Controller
 
     public function show(Request $request, Sale $sale): JsonResponse
     {
-        return response()->json(['data' => $sale->load(['user', 'saleItems.product', 'customer'])]);
+        abort_unless((int) $sale->tenant_id === (int) $this->tenantId($request), 404);
+        return response()->json(['data' => $sale->load(['user', 'items.product', 'customer'])]);
     }
 
     public function items(Request $request, Sale $sale): JsonResponse
     {
-        return response()->json(['data' => $sale->saleItems()->with('product')->get()]);
+        abort_unless((int) $sale->tenant_id === (int) $this->tenantId($request), 404);
+        return response()->json(['data' => $sale->items()->with('product')->get()]);
     }
 
     public function store(Request $request): JsonResponse
     {
+        $tenantId = $this->tenantId($request);
         $data = $request->validate([
             'customer_name'   => 'nullable|string|max:255',
             'customer_phone'  => 'nullable|string|max:20',
-            'customer_id'     => 'nullable|exists:customers,id',
+            'customer_id'     => [
+                'nullable',
+                \Illuminate\Validation\Rule::exists('customers', 'id')->where('tenant_id', $tenantId),
+            ],
             'payment_method'  => 'required|in:cash,mpesa,emola,visa,transfer,credit',
             'notes'           => 'nullable|string',
             'items'           => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.product_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('products', 'id')->where('tenant_id', $tenantId),
+            ],
             'items.*.quantity'   => 'required|integer|min:1',
             'items.*.unit_price' => 'nullable|numeric|min:0',
         ]);
@@ -82,7 +91,7 @@ class SaleController extends Controller
             ]);
 
             foreach ($data['items'] as $itemData) {
-                $product = Product::findOrFail($itemData['product_id']);
+                $product = Product::where('tenant_id', $tenantId)->findOrFail($itemData['product_id']);
                 $unitPrice = $itemData['unit_price'] ?? $product->effective_price;
                 $total = $unitPrice * $itemData['quantity'];
                 $subtotal += $total;
@@ -112,7 +121,7 @@ class SaleController extends Controller
 
             $sale->update(['subtotal' => $subtotal, 'total_amount' => $subtotal]);
 
-            return response()->json(['message' => 'Venda registada.', 'data' => $sale->load('saleItems.product')], 201);
+            return response()->json(['message' => 'Venda registada.', 'data' => $sale->load('items.product')], 201);
         });
     }
 

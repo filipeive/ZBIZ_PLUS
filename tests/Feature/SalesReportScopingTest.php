@@ -173,4 +173,53 @@ class SalesReportScopingTest extends TestCase
         $response->assertSeeText('Cliente do João');
         $response->assertDontSeeText('Cliente da Maria');
     }
+
+    public function test_iva_modelo_a_report_separates_normal_16_percent_and_exempt_art9_sales(): void
+    {
+        // Venda tributada a 16% (IVA incluso: total 1160 MT -> Base 1000 MT + IVA 160 MT)
+        Sale::create([
+            'tenant_id'          => $this->tenant->id,
+            'branch_id'          => $this->branch->id,
+            'user_id'            => $this->adminUser->id,
+            'customer_name'      => 'Cliente Tributado 16%',
+            'subtotal'           => 1160.00,
+            'total_amount'       => 1160.00,
+            'tax_regime'         => 'normal',
+            'tax_rate'           => 16.00,
+            'tax_amount'         => 160.00,
+            'prices_include_tax' => true,
+            'payment_method'     => 'cash',
+            'sale_date'          => now(),
+        ]);
+
+        // Venda isenta nos termos do Art. 9º do CIVA (ex: medicamento 500 MT)
+        Sale::create([
+            'tenant_id'            => $this->tenant->id,
+            'branch_id'            => $this->branch->id,
+            'user_id'              => $this->adminUser->id,
+            'customer_name'        => 'Cliente Isento Art 9',
+            'subtotal'             => 500.00,
+            'total_amount'         => 500.00,
+            'tax_regime'           => 'exempt',
+            'tax_rate'             => 0.00,
+            'tax_amount'           => 0.00,
+            'tax_exemption_reason' => 'Isento nos termos do artigo 9 do CIVA',
+            'prices_include_tax'   => true,
+            'payment_method'       => 'cash',
+            'sale_date'            => now(),
+        ]);
+
+        $reportService = app(\App\Services\Reports\BuildIvaModeloAReport::class);
+        $data = $reportService->build(
+            tenantId: $this->tenant->id,
+            branchId: $this->branch->id,
+            startDate: now()->startOfMonth(),
+            endDate: now()->endOfMonth()
+        );
+
+        $this->assertEquals(1, $data['taxableSalesCount']);
+        $this->assertEquals(1000.00, $data['taxableBase']);
+        $this->assertEquals(160.00, $data['ivaLiquidado']);
+        $this->assertEquals(950.00, $data['exemptSalesTotal']); // 150 + 300 + 500
+    }
 }

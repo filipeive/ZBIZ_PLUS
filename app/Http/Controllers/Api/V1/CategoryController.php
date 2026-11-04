@@ -39,11 +39,13 @@ class CategoryController extends Controller
 
     public function show(Request $request, Category $category): JsonResponse
     {
+        abort_unless((int) $category->tenant_id === (int) $this->tenantId($request), 404);
         return response()->json(['data' => $category]);
     }
 
     public function update(Request $request, Category $category): JsonResponse
     {
+        abort_unless((int) $category->tenant_id === (int) $this->tenantId($request), 404);
         $data = $request->validate([
             'name'        => 'sometimes|string|max:255',
             'description' => 'nullable|string',
@@ -57,12 +59,14 @@ class CategoryController extends Controller
 
     public function destroy(Category $category): JsonResponse
     {
+        abort_unless((int) $category->tenant_id === (int) auth()->user()?->tenant_id, 404);
         $category->delete();
         return response()->json(['message' => 'Categoria eliminada.']);
     }
 
     public function toggleStatus(Category $category): JsonResponse
     {
+        abort_unless((int) $category->tenant_id === (int) auth()->user()?->tenant_id, 404);
         $category->update(['is_active' => !$category->is_active]);
         return response()->json(['message' => 'Estado alterado.', 'is_active' => $category->is_active]);
     }

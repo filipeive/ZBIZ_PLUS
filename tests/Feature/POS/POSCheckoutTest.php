@@ -450,7 +450,124 @@ class POSCheckoutTest extends TestCase
         $response->assertSee(route('pos.index'));
         $response->assertSee('Frente de Caixa (POS)');
     }
+
+    public function test_pos_checkout_dispenses_batches_using_fefo(): void
+    {
+        $batchService = app(\App\Services\Pharmacy\PharmacyBatchService::class);
+
+        $earlyBatch = $batchService->addBatch($this->product1, [
+            'branch_id'    => $this->branch->id,
+            'batch_number' => 'LOTE-CEDO',
+            'expiry_date'  => now()->addMonths(2)->toDateString(),
+            'quantity'     => 4,
+        ]);
+
+        $laterBatch = $batchService->addBatch($this->product1, [
+            'branch_id'    => $this->branch->id,
+            'batch_number' => 'LOTE-TARDE',
+            'expiry_date'  => now()->addMonths(10)->toDateString(),
+            'quantity'     => 10,
+        ]);
+
+        $this->actingAs($this->cashier);
+
+        $response = $this->postJson('/pos/sale', [
+            'customer_name'   => 'Cliente Farmácia',
+            'items'           => [[
+                'product_id' => $this->product1->id,
+                'quantity'   => 6,
+                'unit_price' => 100.00,
+                'discount'   => 0,
+            ]],
+            'discount_amount' => 0,
+            'payment_method'  => 'cash',
+            'amount_paid'     => 600.00,
+        ]);
+
+        $response->assertOk();
+        $this->assertEquals(0, $earlyBatch->fresh()->quantity);
+        $this->assertEquals(8, $laterBatch->fresh()->quantity);
+    }
+
+    public function test_pos_checkout_generates_sequential_invoices_and_is_idempotent_by_offline_id(): void
+    {
+        $this->actingAs($this->cashier);
+
+        $payload1 = [
+            'customer_name'   => 'Cliente 1',
+            'offline_id'      => 'POS-OFFLINE-001',
+            'items'           => [[
+                'product_id' => $this->product1->id,
+                'quantity'   => 1,
+                'unit_price' => 100.00,
+                'discount'   => 0,
+            ]],
+            'discount_amount' => 0,
+            'payment_method'  => 'cash',
+            'amount_paid'     => 100.00,
+        ];
+
+        $res1 = $this->postJson('/pos/sale', $payload1)->assertOk();
+        $resDuplicate = $this->postJson('/pos/sale', $payload1)->assertOk();
+
+        // Idempotência: o mesmo offline_id não duplica venda nem deduz stock duas vezes
+        $this->assertSame($res1->json('sale_id'), $resDuplicate->json('sale_id'));
+        $this->assertEquals(49, app(StockManagerService::class)->getStock($this->product1->id, $this->branch->id));
+
+        $payload2 = [
+            'customer_name'   => 'Cliente 2',
+            'offline_id'      => 'POS-OFFLINE-002',
+            'items'           => [[
+                'product_id' => $this->product1->id,
+                'quantity'   => 1,
+                'unit_price' => 100.00,
+                'discount'   => 0,
+            ]],
+            'discount_amount' => 0,
+            'payment_method'  => 'cash',
+            'amount_paid'     => 100.00,
+        ];
+
+        $res2 = $this->postJson('/pos/sale', $payload2)->assertOk();
+        $sale1 = Sale::findOrFail($res1->json('sale_id'));
+        $sale2 = Sale::findOrFail($res2->json('sale_id'));
+
+        $year = date('Y');
+        $this->assertEquals("FR-{$year}/0001", $sale1->invoice_number);
+        $this->assertEquals("FR-{$year}/0002", $sale2->invoice_number);
+    }
+
+    public function test_pos_checkout_ignores_spoofed_tenant_id_in_payload(): void
+    {
+        $otherTenant = Tenant::create([
+            'name'          => 'Outro Tenant',
+            'slug'          => 'outro-tenant',
+            'business_type' => 'retail',
+            'status'        => 'active',
+        ]);
+
+        $this->actingAs($this->cashier);
+
+        $response = $this->postJson('/pos/sale', [
+            'tenant_id'       => $otherTenant->id,
+            'customer_name'   => 'Cliente Seguro',
+            'items'           => [[
+                'product_id' => $this->product1->id,
+                'quantity'   => 1,
+                'unit_price' => 100.00,
+                'discount'   => 0,
+            ]],
+            'discount_amount' => 0,
+            'payment_method'  => 'cash',
+            'amount_paid'     => 100.00,
+        ]);
+
+        $response->assertOk();
+        $sale = Sale::withoutGlobalScopes()->findOrFail($response->json('sale_id'));
+        $this->assertEquals($this->tenant->id, $sale->tenant_id);
+    }
 }
+
 
 
 

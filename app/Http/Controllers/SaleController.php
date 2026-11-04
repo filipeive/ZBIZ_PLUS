@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Sales\ApplySaleDiscountAction;
 use App\Models\Sale;
 use App\Models\Debt;
 use App\Models\DebtItem;
@@ -15,17 +16,23 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 
 class SaleController extends Controller
 {
     protected $discountService;
     protected $financialService;
+    protected ApplySaleDiscountAction $applySaleDiscountAction;
 
-    public function __construct(DiscountService $discountService, FinancialService $financialService)
-    {
+    public function __construct(
+        DiscountService $discountService,
+        FinancialService $financialService,
+        ApplySaleDiscountAction $applySaleDiscountAction
+    ) {
         $this->discountService = $discountService;
         $this->financialService = $financialService;
+        $this->applySaleDiscountAction = $applySaleDiscountAction;
     }
 
     public function index(Request $request)
@@ -360,36 +367,23 @@ class SaleController extends Controller
     public function applyDiscount(Request $request, Sale $sale)
     {
         $validated = $request->validate([
-            'discount_value' => 'required|numeric|min:0',
-            'discount_type' => 'required|in:fixed,percentage',
+            'discount_value'  => 'required|numeric|min:0',
+            'discount_type'   => 'required|in:fixed,percentage',
             'discount_reason' => 'nullable|string|max:255',
-            'item_id' => 'nullable|exists:sale_items,id',
+            'item_id'         => [
+                'nullable',
+                Rule::exists('sale_items', 'id')->where('sale_id', $sale->id),
+            ],
         ]);
 
         try {
-            if ($request->item_id) {
-                // Aplicar desconto a item específico
-                $item = SaleItem::findOrFail($request->item_id);
-                $this->discountService->applyItemDiscount(
-                    $item,
-                    $validated['discount_value'],
-                    $validated['discount_type'],
-                    $validated['discount_reason']
-                );
-                $message = 'Desconto aplicado ao item com sucesso.';
-            } else {
-                // Aplicar desconto geral à venda
-                $this->discountService->applyGeneralDiscount(
-                    $sale,
-                    $validated['discount_value'],
-                    $validated['discount_type'],
-                    $validated['discount_reason']
-                );
-                $message = 'Desconto geral aplicado à venda com sucesso.';
-            }
-
-            // Sincronizar transação financeira
-            $this->financialService->syncSaleTransaction($sale->fresh());
+            $message = $this->applySaleDiscountAction->execute(
+                sale: $sale,
+                discountValue: (float) $validated['discount_value'],
+                discountType: $validated['discount_type'],
+                discountReason: $validated['discount_reason'] ?? null,
+                itemId: !empty($validated['item_id']) ? (int) $validated['item_id'] : null
+            );
 
             return redirect()->back()->with('success', $message);
         } catch (\Exception $e) {
@@ -404,29 +398,17 @@ class SaleController extends Controller
     public function removeDiscount(Request $request, Sale $sale)
     {
         $validated = $request->validate([
-            'item_id' => 'nullable|exists:sale_items,id',
+            'item_id' => [
+                'nullable',
+                Rule::exists('sale_items', 'id')->where('sale_id', $sale->id),
+            ],
         ]);
 
         try {
-            if ($request->item_id) {
-                // Remover desconto de item específico
-                $item = SaleItem::findOrFail($request->item_id);
-                $this->discountService->removeItemDiscount($item);
-                $message = 'Desconto removido do item com sucesso.';
-            } else {
-                // Remover desconto geral da venda
-                $sale->update([
-                    'discount_amount' => $sale->items->sum('discount_amount'),
-                    'discount_percentage' => null,
-                    'discount_type' => null,
-                    'discount_reason' => null,
-                ]);
-                $sale->calculateTotals();
-                $message = 'Desconto geral removido da venda com sucesso.';
-            }
-
-            // Sincronizar transação financeira
-            $this->financialService->syncSaleTransaction($sale->fresh());
+            $message = $this->applySaleDiscountAction->remove(
+                sale: $sale,
+                itemId: !empty($validated['item_id']) ? (int) $validated['item_id'] : null
+            );
 
             return redirect()->back()->with('success', $message);
         } catch (\Exception $e) {

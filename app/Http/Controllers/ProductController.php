@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Products\StoreProductRequest;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Supplier;
@@ -85,53 +86,23 @@ class ProductController extends Controller
         $categories = Category::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('is_active', true)->orderBy('name')->get();
         // Produtos físicos que podem ser vinculados a serviços (ex: Papel A4)
         $physicalProducts = Product::withoutGlobalScopes()->where('tenant_id', $tenantId)->whereIn('type', ['product', 'physical'])->where('is_active', true)->orderBy('name')->get();
-        return view('products.create', compact('categories', 'physicalProducts'));
         $suppliers = Supplier::where('tenant_id', $tenantId)->where('is_active', true)->orderBy('name')->get();
+
         return view('products.create', compact('categories', 'physicalProducts', 'suppliers'));
     }
 
     /**
      * Store a newly created product in storage.
      */
-    public function store(Request $request)
+    public function store(StoreProductRequest $request)
     {
         try {
-            $tenantId = auth()->user()?->tenant_id ?? current_tenant_id();
-
-            $validationRules = [
-                'name' => 'required|string|max:150',
-                'category_id' => 'required|exists:categories,id',
-                'supplier_id' => 'nullable|exists:suppliers,id',
-                'linked_product_id' => 'nullable|exists:products,id',
-                'type' => 'required|in:product,physical,service',
-                'selling_price' => 'required|numeric|min:0',
-                'purchase_price' => 'nullable|numeric|min:0',
-                'promotional_price' => 'nullable|numeric|min:0',
-                'is_on_promotion' => 'nullable|boolean',
-                'promotion_discount_percent' => 'nullable|numeric|min:0|max:100',
-                'promotion_ends_at' => 'nullable|date',
-                'barcode' => 'nullable|string|max:60',
-                'sku' => 'nullable|string|max:60',
-                'batch_number' => 'nullable|string|max:60',
-                'expiry_date' => 'nullable|date',
-                'manufacture_date' => 'nullable|date',
-                'unit' => 'nullable|string|max:20',
-                'description' => 'nullable|string|max:500',
-                'is_active' => 'boolean'
-            ];
-
-            // Validações adicionais se for produto físico
-            if (in_array($request->type, ['product', 'physical'])) {
-                $validationRules['stock_quantity'] = 'nullable|integer|min:0';
-                $validationRules['min_stock_level'] = 'nullable|integer|min:0';
-            }
-
-            $validated = $request->validate($validationRules);
+            $tenantId = $request->tenantId();
+            $validated = $request->validated();
 
             DB::beginTransaction();
 
             $data = collect($validated)->only([
-                'name', 'category_id', 'linked_product_id', 'type', 'selling_price',
                 'name', 'category_id', 'supplier_id', 'linked_product_id', 'type', 'selling_price',
                 'purchase_price', 'promotional_price', 'promotion_discount_percent',
                 'promotion_ends_at', 'barcode', 'sku', 'unit', 'description'
@@ -161,7 +132,7 @@ class ProductController extends Controller
                 $expDate = !empty($expiryDate) ? $expiryDate : now()->addYear()->toDateString();
                 
                 \App\Models\ProductBatch::create([
-                    'tenant_id'        => current_tenant_id(),
+                    'tenant_id'        => $tenantId,
                     'branch_id'        => current_branch_id(),
                     'product_id'       => $product->id,
                     'batch_number'     => $batchNum,
@@ -176,6 +147,8 @@ class ProductController extends Controller
             // Criar movimento inicial de estoque se necessário
             if ($product->type === 'product' && $product->stock_quantity > 0) {
                 StockMovement::create([
+                    'tenant_id'      => $tenantId,
+                    'branch_id'      => current_branch_id(),
                     'product_id'     => $product->id,
                     'user_id'        => auth()->id(),
                     'movement_type'  => 'in',
@@ -227,7 +200,6 @@ class ProductController extends Controller
         $latestBatch = $product->batches()->latest()->first();
         $suppliers = Supplier::where('tenant_id', $tenantId)->where('is_active', true)->orderBy('name')->get();
 
-        return view('products.edit', compact('product', 'categories', 'physicalProducts', 'latestBatch'));
         return view('products.edit', compact('product', 'categories', 'physicalProducts', 'latestBatch', 'suppliers'));
     }
 
@@ -277,7 +249,6 @@ class ProductController extends Controller
             $validated = $request->validate($validationRules);
 
             $data = collect($validated)->only([
-                'name', 'category_id', 'linked_product_id', 'type', 'selling_price',
                 'name', 'category_id', 'supplier_id', 'linked_product_id', 'type', 'selling_price',
                 'purchase_price', 'promotional_price', 'promotion_discount_percent',
                 'promotion_ends_at', 'barcode', 'sku', 'unit', 'description'

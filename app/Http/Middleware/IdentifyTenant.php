@@ -16,15 +16,16 @@ class IdentifyTenant
         $context = app(TenantContext::class);
 
         $tenant = null;
+        $user = $request->user() ?? auth('sanctum')->user() ?? auth()->user();
 
         // Support mode must resolve the selected tenant before the owner's tenant.
         if (session('is_support_mode') && session()->has('current_tenant_id')) {
             $tenant = Tenant::find(session()->get('current_tenant_id'));
         }
 
-        // 1. Resolve from Authenticated User
-        if (!$tenant && auth()->check() && auth()->user()->tenant_id) {
-            $tenant = Tenant::find(auth()->user()->tenant_id);
+        // 1. Resolve from Authenticated User (Web or Sanctum API)
+        if (!$tenant && $user && $user->tenant_id) {
+            $tenant = Tenant::find($user->tenant_id);
         }
 
         // 2. Resolve from Session (for switches or impersonation)
@@ -32,11 +33,13 @@ class IdentifyTenant
             $tenant = Tenant::find(session()->get('current_tenant_id'));
         }
 
-        // 3. Resolve from Header (API calls: X-Tenant-ID / X-Tenant-Slug)
-        if (!$tenant && $request->hasHeader('X-Tenant-ID')) {
-            $tenant = Tenant::find($request->header('X-Tenant-ID'));
-        } elseif (!$tenant && $request->hasHeader('X-Tenant-Slug')) {
-            $tenant = Tenant::where('slug', $request->header('X-Tenant-Slug'))->first();
+        // 3. Resolve from Header (API calls: X-Tenant-ID / X-Tenant-Slug) — only when not bound to a regular tenant user
+        if (!$tenant && (!$user || $user->isSuperAdmin())) {
+            if ($request->hasHeader('X-Tenant-ID')) {
+                $tenant = Tenant::find($request->header('X-Tenant-ID'));
+            } elseif ($request->hasHeader('X-Tenant-Slug')) {
+                $tenant = Tenant::where('slug', $request->header('X-Tenant-Slug'))->first();
+            }
         }
 
         // 4. Resolve from Subdomain (e.g. farmacia.zbizplus.co.mz)
@@ -67,10 +70,10 @@ class IdentifyTenant
             }
 
             // 2. User assigned branch (default for the user if not switched via session)
-            if (!$branch && auth()->check() && auth()->user()->branch_id) {
+            if (!$branch && $user && $user->branch_id) {
                 $branch = Branch::where('tenant_id', $tenant->id)
                     ->where('is_active', true)
-                    ->find(auth()->user()->branch_id);
+                    ->find($user->branch_id);
             }
 
             // 3. Fallback to main branch or first active branch

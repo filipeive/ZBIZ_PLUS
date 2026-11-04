@@ -43,6 +43,17 @@
             <a href="{{ route('pos.index') }}" class="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white light:text-white font-bold text-xs shadow-sm transition flex items-center gap-2">
                 <i class="fa-solid fa-cash-register"></i> Terminal POS
             </a>
+            <a href="{{ route('sales.manual-create') }}" class="px-4 py-2.5 rounded-2xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-2">
+                <i class="fa-solid fa-file-invoice-dollar"></i> Registar Venda Manual
+            </a>
+            @if(isset($openCashSession) && $openCashSession)
+            <form method="POST" action="{{ route('cash.close', $openCashSession->id) }}" class="inline">
+                @csrf
+                <button type="submit" class="px-4 py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-2">
+                    <i class="fa-solid fa-lock"></i> Fechar Caixa
+                </button>
+            </form>
+            @endif
             @endif
 
             @if(auth()->user()->isStockManager() || auth()->user()->isManager() || auth()->user()->isAdmin())

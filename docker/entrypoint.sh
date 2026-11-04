@@ -34,9 +34,9 @@ if [ "${DB_CONNECTION:-mysql}" != "sqlite" ] && [ -n "${DB_HOST}" ]; then
     echo "✅ Conexão com banco de dados estabelecida!"
 fi
 
-# Executar migrações
+# Executar migrações (falha visível se quebrar)
 echo "🗃️ Executando migrations do banco de dados..."
-php artisan migrate --force || echo "⚠️ Atenção: Falha na migração automática ou banco já atualizado."
+php artisan migrate --force
 
 # Criar link simbólico do storage se necessário
 if [ ! -L /var/www/html/public/storage ]; then
@@ -48,9 +48,11 @@ fi
 if [ "${APP_ENV:-production}" = "production" ]; then
     echo "⚡ Otimizando caches da aplicação..."
     php artisan optimize:clear
-    php artisan config:cache || true
-    php artisan route:cache || true
-    php artisan view:cache || true
+    php artisan config:cache
+    php artisan route:cache
+    php artisan view:cache
+fi
+
 # Iniciar daemon de sincronização híbrida em background (a cada 5 min)
 if [ -n "${CLOUD_SYNC_URL}" ]; then
     echo "🔄 Ativando daemon de sincronização híbrida com a nuvem central..."

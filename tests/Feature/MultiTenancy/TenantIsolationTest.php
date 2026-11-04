@@ -200,4 +200,64 @@ class TenantIsolationTest extends TestCase
 
         $this->assertCount(2, $allProducts);
     }
+
+    public function test_api_v1_endpoints_enforce_tenant_isolation_and_ignore_spoofed_headers(): void
+    {
+        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+
+        // Criar produto no Tenant A
+        app(TenantContext::class)->setTenant($this->tenantA)->setBranch($this->branchA);
+        $catA = Category::create(['name' => 'Cat A', 'is_active' => true]);
+        $prodA = Product::create([
+            'category_id'    => $catA->id,
+            'name'           => 'Artigo Secreto Tenant A',
+            'type'           => 'product',
+            'purchase_price' => 50,
+            'selling_price'  => 100,
+            'stock_quantity' => 10,
+            'is_active'      => true,
+        ]);
+
+        // Criar utilizador e produto no Tenant B
+        app(TenantContext::class)->setTenant($this->tenantB)->setBranch($this->branchB);
+        $catB = Category::create(['name' => 'Cat B', 'is_active' => true]);
+        $prodB = Product::create([
+            'category_id'    => $catB->id,
+            'name'           => 'Artigo Público Tenant B',
+            'type'           => 'product',
+            'purchase_price' => 25,
+            'selling_price'  => 60,
+            'stock_quantity' => 20,
+            'is_active'      => true,
+        ]);
+
+        $userB = \App\Models\User::create([
+            'tenant_id' => $this->tenantB->id,
+            'branch_id' => $this->branchB->id,
+            'role_id'   => $adminRole->id,
+            'name'      => 'Admin B',
+            'email'     => 'adminb@grafica.co.mz',
+            'password'  => bcrypt('password'),
+            'is_active' => true,
+        ]);
+
+        \Laravel\Sanctum\Sanctum::actingAs($userB);
+
+        // Mesmo enviando X-Tenant-ID forjado apontando para Tenant A, a API V1 deve retornar apenas dados do Tenant B
+        $listResponse = $this->withHeaders([
+            'X-Tenant-ID' => (string) $this->tenantA->id,
+        ])->getJson('/api/v1/products');
+
+        $listResponse->assertOk();
+        $names = collect($listResponse->json('data'))->pluck('name');
+        $this->assertTrue($names->contains('Artigo Público Tenant B'));
+        $this->assertFalse($names->contains('Artigo Secreto Tenant A'));
+
+        // Tentativa de aceder diretamente ao produto do Tenant A retorna 404
+        $showResponse = $this->withHeaders([
+            'X-Tenant-ID' => (string) $this->tenantA->id,
+        ])->getJson("/api/v1/products/{$prodA->id}");
+
+        $showResponse->assertNotFound();
+    }
 }

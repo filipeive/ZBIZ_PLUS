@@ -119,4 +119,52 @@ class CustomerAndCreditTest extends TestCase
         $this->assertEquals(600.00, $customer->fresh()->current_debt);
         $this->assertEquals(4400.00, $customer->fresh()->available_credit);
     }
+
+    public function test_register_debt_payment_action_handles_partial_and_full_amortization(): void
+    {
+        $customer = Customer::create([
+            'name'         => 'Cliente Amortização',
+            'phone'        => '841112233',
+            'credit_limit' => 5000.00,
+            'current_debt' => 1000.00,
+        ]);
+
+        $debt = Debt::create([
+            'tenant_id'        => $this->tenant->id,
+            'branch_id'        => $this->branch->id,
+            'customer_id'      => $customer->id,
+            'customer_name'    => $customer->name,
+            'original_amount'  => 1000.00,
+            'remaining_amount' => 1000.00,
+            'debt_date'        => now()->toDateString(),
+            'status'           => 'active',
+        ]);
+
+        $action = app(\App\Actions\Debts\RegisterDebtPaymentAction::class);
+
+        // 1. Amortização parcial de 400 MT via M-Pesa
+        $payment1 = $action->execute($debt, [
+            'amount'         => 400.00,
+            'payment_method' => 'mpesa',
+            'payment_date'   => now()->toDateString(),
+            'notes'          => 'Primeira prestação',
+        ]);
+
+        $this->assertEquals(400.00, (float) $payment1->amount);
+        $this->assertEquals(600.00, (float) $debt->fresh()->remaining_amount);
+        $this->assertEquals('partially_paid', $debt->fresh()->status);
+        $this->assertEquals(600.00, (float) $customer->fresh()->current_debt);
+
+        // 2. Liquidação restante de 600 MT em Numerário
+        $action->execute($debt->fresh(), [
+            'amount'         => 600.00,
+            'payment_method' => 'cash',
+            'payment_date'   => now()->toDateString(),
+            'notes'          => 'Liquidação final',
+        ]);
+
+        $this->assertEquals(0.00, (float) $debt->fresh()->remaining_amount);
+        $this->assertEquals('paid', $debt->fresh()->status);
+        $this->assertEquals(0.00, (float) $customer->fresh()->current_debt);
+    }
 }

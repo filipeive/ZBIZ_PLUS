@@ -101,13 +101,12 @@ class CashShift extends Model
 
     public function closeShift(float $actualCash, ?string $notes = null): void
     {
-        $systemBalance = (float)($this->account?->current_balance ?? 0);
         $systemBalance = $this->expected_cash;
         if ($this->account && $this->account->current_balance > 0) {
-            $systemBalance = (float)$this->account->current_balance;
+            $systemBalance = (float) $this->account->current_balance;
         }
 
-        $diff = $actualCash - $systemBalance;
+        $diff = round($actualCash - $systemBalance, 2);
 
         $this->update([
             'closed_at'              => now(),

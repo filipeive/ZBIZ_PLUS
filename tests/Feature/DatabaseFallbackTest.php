@@ -41,5 +41,15 @@ class DatabaseFallbackTest extends TestCase
             'retry_after' => 10,
         ]);
     }
+
+    public function test_health_endpoint_returns_database_storage_and_queue_checks(): void
+    {
+        $response = $this->getJson('/api/health');
+
+        $response->assertOk()
+            ->assertJsonPath('status', 'ok')
+            ->assertJsonPath('checks.database', 'up')
+            ->assertJsonPath('checks.storage', 'writable');
+    }
 }
 

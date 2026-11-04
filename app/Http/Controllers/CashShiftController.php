@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\CashShifts\CloseBlindShiftAction;
+use App\Http\Requests\CashShifts\CloseCashShiftRequest;
+use App\Http\Requests\CashShifts\OpenCashShiftRequest;
 use App\Models\CashShift;
 use App\Models\CashShiftAudit;
 use App\Models\FinancialAccount;
-use App\Models\Sale;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +15,9 @@ use Illuminate\View\View;
 
 class CashShiftController extends Controller
 {
+    public function __construct(
+        protected CloseBlindShiftAction $closeBlindShiftAction
+    ) {}
     public function index(Request $request)
     {
         $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
@@ -79,10 +84,10 @@ class CashShiftController extends Controller
         ));
     }
 
-    public function open(Request $request)
+    public function open(OpenCashShiftRequest $request)
     {
-        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
-        $branchId = current_branch_id() ?? auth()->user()?->branch_id;
+        $tenantId = $request->tenantId();
+        $branchId = $request->branchId();
         $userId = auth()->id();
 
         // Verificar se o operador já possui turno aberto nesta filial
@@ -104,11 +109,7 @@ class CashShiftController extends Controller
             return redirect()->route('pos.index')->with('info', 'Já possui um turno aberto.');
         }
 
-        $validated = $request->validate([
-            'opening_balance'      => 'required|numeric|min:0',
-            'financial_account_id' => 'nullable|exists:financial_accounts,id',
-            'notes'                => 'nullable|string|max:500',
-        ]);
+        $validated = $request->validated();
 
         // Resolver conta financeira de dinheiro se não informada
         $accountId = $validated['financial_account_id'] ?? null;
@@ -143,62 +144,46 @@ class CashShiftController extends Controller
         return redirect()->route('pos.index')->with('success', 'Turno de caixa aberto com sucesso!');
     }
 
-    public function close(Request $request, CashShift $shift)
+    public function close(CloseCashShiftRequest $request, CashShift $shift)
     {
-        $tenantId = current_tenant_id() ?? auth()->user()?->tenant_id;
-        abort_unless($shift->tenant_id === $tenantId, 403);
-        $this->authorizeShiftAccess($shift);
+        $validated = $request->validated();
 
-        if ($shift->status === 'closed') {
+        $result = $this->closeBlindShiftAction->execute(
+            shift: $shift,
+            actualCash: (float) $validated['closing_balance_actual'],
+            notes: $validated['notes'] ?? null
+        );
+
+        $closedShift = $result['shift'];
+        $receiptUrl = route('cash-shifts.receipt', $closedShift->id);
+        $receiptA4Url = route('cash-shifts.receipt-a4', $closedShift->id);
+
+        if ($result['already_closed']) {
             if ($request->wantsJson()) {
                 return response()->json([
-                    'success'     => false,
-                    'message'     => 'Este turno já se encontra fechado.',
-                    'receipt_url' => route('cash-shifts.receipt', $shift->id),
-                    'receipt_a4_url' => route('cash-shifts.receipt-a4', $shift->id),
+                    'success'        => false,
+                    'message'        => 'Este turno já se encontra fechado.',
+                    'receipt_url'    => $receiptUrl,
+                    'receipt_a4_url' => $receiptA4Url,
                 ]);
             }
             return back()->with('error', 'Este turno já está fechado.');
         }
 
-        $validated = $request->validate([
-            'closing_balance_actual' => 'required|numeric|min:0',
-            'notes'                  => 'nullable|string|max:500',
-        ]);
-
-        // Fecho Cego: O sistema calcula o saldo esperado a partir do fundo inicial + vendas em dinheiro
-        $expectedCash = $shift->expected_cash;
-        $actualCash = (float)$validated['closing_balance_actual'];
-        $diff = round($actualCash - $expectedCash, 2);
-
-        $shift->update([
-            'closed_at'              => now(),
-            'closing_balance_system' => $expectedCash,
-            'closing_balance_actual' => $actualCash,
-            'difference'             => $diff,
-            'status'                 => 'closed',
-            'notes'                  => !empty($validated['notes'])
-                ? ($shift->notes ? $shift->notes . " | Fecho: " . $validated['notes'] : $validated['notes'])
-                : $shift->notes,
-        ]);
-
-        $receiptUrl = route('cash-shifts.receipt', $shift->id);
-        $receiptA4Url = route('cash-shifts.receipt-a4', $shift->id);
-
         if ($request->wantsJson()) {
             return response()->json([
-                'success'         => true,
-                'message'         => 'Turno de caixa fechado com sucesso!',
-                'shift_id'        => $shift->id,
-                'expected_cash'   => $expectedCash,
-                'actual_cash'     => $actualCash,
-                'difference'      => $diff,
-                'receipt_url'     => $receiptUrl,
-                'receipt_a4_url'  => $receiptA4Url,
+                'success'        => true,
+                'message'        => 'Turno de caixa fechado com sucesso!',
+                'shift_id'       => $closedShift->id,
+                'expected_cash'  => (float) $closedShift->closing_balance_system,
+                'actual_cash'    => (float) $closedShift->closing_balance_actual,
+                'difference'     => (float) $closedShift->difference,
+                'receipt_url'    => $receiptUrl,
+                'receipt_a4_url' => $receiptA4Url,
             ]);
         }
 
-        return redirect()->route('cash-shifts.receipt', $shift->id)
+        return redirect()->route('cash-shifts.receipt', $closedShift->id)
             ->with('success', 'Turno fechado com sucesso! Imprima o talão de fecho Z.');
     }
 

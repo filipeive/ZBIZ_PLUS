@@ -46,7 +46,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     // ==========================================
     // PROTECTED API ROUTES
     // ==========================================
-    Route::middleware(['auth:sanctum'])->group(function () {
+    Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
         
         // ==========================================
         // AUTH USER INFO
@@ -321,11 +321,27 @@ Route::prefix('webhooks')->name('webhooks.')->group(function () {
 // HEALTH CHECK & CONNECTIVITY (PUBLIC)
 // ==========================================
 Route::get('/health', function () {
+    $dbOnline = false;
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        $dbOnline = true;
+    } catch (\Throwable) {
+        $dbOnline = false;
+    }
+
+    $storageWritable = is_writable(storage_path('logs'));
+    $queueDriver = (string) config('queue.default', 'sync');
+
     return response()->json([
-        'status' => 'ok',
+        'status'    => ($dbOnline && $storageWritable) ? 'ok' : 'degraded',
         'timestamp' => now()->toISOString(),
-        'version' => config('app.version', '1.0.0')
-    ]);
+        'version'   => config('app.version', '1.0.22'),
+        'checks'    => [
+            'database' => $dbOnline ? 'up' : 'down',
+            'storage'  => $storageWritable ? 'writable' : 'readonly',
+            'queue'    => $queueDriver,
+        ],
+    ], $dbOnline ? 200 : 503);
 })->name('health');
 
 Route::get('/ping', function () {
