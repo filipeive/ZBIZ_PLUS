@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\Expense;
 use App\Models\UserActivity;
 use App\Models\ProductBatch;
+use App\Models\CashShift;
 use App\Services\FinancialService;
 use App\Services\ExpiryAlertService;
 use Carbon\Carbon;
@@ -191,12 +192,20 @@ class DashboardController extends Controller
         }
         $expiringProducts = $expiringProducts->orderBy('expiry_date', 'asc')->take(10)->get();
 
+        $openShift = CashShift::where('tenant_id', $tenantId)
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+            ->where('status', 'open')
+            ->where('user_id', $user?->id)
+            ->when(!$user?->isAdmin(), fn ($q) => $q->whereDate('opened_at', today()))
+            ->latest('opened_at')
+            ->first();
+
         return view('dashboard.index', compact(
             'todaySales', 'todayOutflows', 'lowStockProducts', 'expiringProducts', 'recentSales', 
             'monthSales', 'monthReceived', 'monthOutflows', 'monthExpenses', 'monthProfit', 'todayProductsSold',
             'prevMonthExpenses', 'prevMonthSales', 'prevMonthProfit',
             'monthActiveCustomers', 'salesChartData', 'cashFlowChartData',
-            'chartScopeLabel', 'isCashier',
+            'chartScopeLabel', 'isCashier', 'openShift',
             'monthCostOfGoods', 'monthGrossProfit', 'monthRealProfit', 'monthRoi',
             'monthGrossMargin', 'monthNetMargin',
             'currentCapital', 'accountsReceivable', 'totalRealValue', 'monthNetCashFlow',

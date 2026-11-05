@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Branch;
+use App\Models\CashShift;
 use App\Models\Role;
 use App\Models\Sale;
 use App\Models\Tenant;
@@ -125,5 +126,69 @@ class DashboardMetricsAndSettingsTest extends TestCase
         $dashboard = $this->actingAs($this->admin)->get(route('dashboard.index'));
         $dashboard->assertOk();
         $dashboard->assertSee('--tenant-primary: #ff3366', false);
+    }
+
+    public function test_dashboard_shows_open_shift_button_when_user_has_no_active_shift(): void
+    {
+        $response = $this->actingAs($this->cashier)->get(route('dashboard.index'));
+
+        $response->assertOk();
+        $response->assertSee('Abrir Caixa');
+        $response->assertSee(route('pos.index', ['action' => 'open-shift']), false);
+        $response->assertDontSee('Fechar Caixa');
+    }
+
+    public function test_dashboard_shows_close_shift_button_when_user_has_active_shift(): void
+    {
+        CashShift::create([
+            'tenant_id'       => $this->tenant->id,
+            'branch_id'       => $this->branch->id,
+            'user_id'         => $this->cashier->id,
+            'opening_balance' => 500.00,
+            'opened_at'       => Carbon::parse('2026-09-02 08:30:00'),
+            'status'          => 'open',
+        ]);
+
+        $response = $this->actingAs($this->cashier)->get(route('dashboard.index'));
+
+        $response->assertOk();
+        $response->assertSee('Fechar Caixa');
+        $response->assertSee(route('pos.index', ['action' => 'close-shift']), false);
+        $response->assertSee('Caixa aberto desde 08:30');
+        $response->assertDontSee('Abrir Caixa');
+    }
+
+    public function test_dashboard_shift_status_does_not_leak_across_tenants(): void
+    {
+        $otherTenant = Tenant::create([
+            'name'          => 'Outro Tenant Dashboard',
+            'slug'          => 'outro-tenant-dashboard',
+            'business_type' => 'retail',
+            'status'        => 'active',
+        ]);
+
+        $otherBranch = Branch::create([
+            'tenant_id' => $otherTenant->id,
+            'name'      => 'Outra Filial',
+            'code'      => 'OUT01',
+            'is_main'   => true,
+            'is_active' => true,
+        ]);
+
+        CashShift::create([
+            'tenant_id'       => $otherTenant->id,
+            'branch_id'       => $otherBranch->id,
+            'user_id'         => $this->cashier->id,
+            'opening_balance' => 2000.00,
+            'opened_at'       => Carbon::parse('2026-09-02 08:00:00'),
+            'status'          => 'open',
+        ]);
+
+        // Current tenant context is still $this->tenant
+        $response = $this->actingAs($this->cashier)->get(route('dashboard.index'));
+
+        $response->assertOk();
+        $response->assertSee('Abrir Caixa');
+        $response->assertDontSee('Fechar Caixa');
     }
 }

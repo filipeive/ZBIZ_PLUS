@@ -38,21 +38,26 @@
         </div>
 
         <!-- Quick Action Buttons -->
-        <div class="flex items-center gap-2.5">
+        <div class="flex items-center gap-2.5 flex-wrap">
             @if(auth()->user()->isCashier() || auth()->user()->isManager() || auth()->user()->isAdmin())
-            <a href="{{ route('pos.index') }}" class="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white light:text-white font-bold text-xs shadow-sm transition flex items-center gap-2">
+            <a href="{{ route('pos.index') }}" class="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-2">
                 <i class="fa-solid fa-cash-register"></i> Terminal POS
             </a>
             <a href="{{ route('sales.manual-create') }}" class="px-4 py-2.5 rounded-2xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-2">
                 <i class="fa-solid fa-file-invoice-dollar"></i> Registar Venda Manual
             </a>
-            @if(isset($openCashSession) && $openCashSession)
-            <form method="POST" action="{{ route('cash.close', $openCashSession->id) }}" class="inline">
-                @csrf
-                <button type="submit" class="px-4 py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-2">
+            @if(isset($openShift) && $openShift)
+                <div class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-bold">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Caixa aberto desde {{ \Carbon\Carbon::parse($openShift->opened_at)->format('H:i') }}</span>
+                </div>
+                <a href="{{ route('pos.index', ['action' => 'close-shift']) }}" class="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-sm transition flex items-center gap-2">
                     <i class="fa-solid fa-lock"></i> Fechar Caixa
-                </button>
-            </form>
+                </a>
+            @else
+                <a href="{{ route('pos.index', ['action' => 'open-shift']) }}" class="px-4 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-2">
+                    <i class="fa-solid fa-door-open"></i> Abrir Caixa
+                </a>
             @endif
             @endif
 
