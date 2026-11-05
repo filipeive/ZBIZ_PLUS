@@ -647,6 +647,9 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         Route::get('/search', [\App\Http\Controllers\POS\POSController::class, 'searchProducts'])->name('search');
         Route::post('/sale', [\App\Http\Controllers\POS\POSController::class, 'storeSale'])->name('sale');
         Route::get('/receipt/{sale}', [\App\Http\Controllers\POS\POSController::class, 'printReceipt'])->name('receipt');
+        Route::get('/tables', [\App\Http\Controllers\POS\POSController::class, 'getTables'])->name('tables');
+        Route::get('/table-order/{table}', [\App\Http\Controllers\POS\POSController::class, 'getTableOrder'])->name('table-order');
+        Route::post('/hold-table', [\App\Http\Controllers\POS\POSController::class, 'holdTableOrder'])->name('hold-table');
         Route::post('/sync-offline', [\App\Http\Controllers\POS\POSController::class, 'syncOfflineSales'])->name('sync-offline');
         Route::post('/log-offline-fallback', [\App\Http\Controllers\POS\POSController::class, 'logOfflineFallback'])->name('log-offline-fallback');
     });

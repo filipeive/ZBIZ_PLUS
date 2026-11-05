@@ -25,6 +25,19 @@
             </button>
         </div>
 
+        {{-- Selected Table Info Banner if Restaurant --}}
+        <template x-if="selectedTable">
+            <div class="px-3.5 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl flex items-center justify-between text-xs">
+                <span class="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
+                    <i class="fa-solid fa-chair text-amber-500"></i>
+                    <span>Fecho de Conta: <strong x-text="selectedTable.name"></strong></span>
+                </span>
+                <span class="text-[10px] font-bold text-amber-700 dark:text-amber-400 bg-amber-200/50 dark:bg-amber-900/50 px-2 py-0.5 rounded-full">
+                    A mesa será libertada após liquidação
+                </span>
+            </div>
+        </template>
+
         {{-- Total to Pay Hero Box --}}
         <div class="text-center py-3 px-4 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800/60 shadow-sm">
             <div class="text-[10px] text-emerald-800 dark:text-emerald-300 font-bold uppercase tracking-widest">Montante Total a Cobrar</div>

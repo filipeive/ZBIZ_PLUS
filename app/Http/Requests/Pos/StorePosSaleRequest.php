@@ -68,6 +68,14 @@ class StorePosSaleRequest extends FormRequest
             'prices_include_tax' => ['nullable', 'boolean'],
             'payment_method'     => ['required', 'string', 'in:cash,mpesa,emola,card,credit,split'],
             'amount_paid'        => ['required', 'numeric', 'min:0'],
+            'restaurant_table_id' => [
+                'nullable',
+                Rule::exists('restaurant_tables', 'id')->where('tenant_id', $tenantId),
+            ],
+            'order_id' => [
+                'nullable',
+                Rule::exists('orders', 'id')->where('tenant_id', $tenantId),
+            ],
             'notes'              => ['nullable', 'string', 'max:500'],
             'offline_id'         => ['nullable', 'string', 'max:120'],
         ];
@@ -118,6 +126,8 @@ class StorePosSaleRequest extends FormRequest
             'amount_paid.numeric'         => 'O valor entregue deve ser numérico (em Meticais).',
             'amount_paid.min'             => 'O valor entregue não pode ser negativo.',
             'tax_regime.in'               => 'Regime de IVA inválido. Utilize regime normal (16%) ou isento (Art. 9º CIVA).',
+            'restaurant_table_id.exists'  => 'A mesa seleccionada não existe ou não pertence a este estabelecimento.',
+            'order_id.exists'             => 'O pedido de mesa seleccionado não existe.',
         ];
     }
 }

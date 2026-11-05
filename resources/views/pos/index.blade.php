@@ -55,6 +55,9 @@
     @include('pos.partials.checkout-modal')
     @include('pos.partials.customer-modal')
     @include('pos.partials.shift-modals')
+    @if(!empty($isRestaurant))
+        @include('pos.partials.table-modal')
+    @endif
 
     {{-- Alpine Reactive Logic & Offline Engine --}}
     @include('pos.partials.scripts')

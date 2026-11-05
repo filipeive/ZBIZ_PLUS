@@ -43,6 +43,35 @@
             isSavingCustomer: false,
             newCustomer: { name: '', phone: '', nuit: '', credit_limit: 0 },
 
+            // Restaurante & Mesas
+            isRestaurant: @json(!empty($isRestaurant)),
+            tablesList: @json($restaurantTablesData ?? []),
+            selectedTable: null,
+            activeTableOrderId: null,
+            isTableOrderLoaded: false,
+            showTableModal: false,
+            isLoadingTables: false,
+            tableFilter: 'all',
+            tableSearchQuery: '',
+
+            get occupiedTablesCount() {
+                return (this.tablesList || []).filter(t => t.status === 'occupied').length;
+            },
+
+            get filteredTables() {
+                let list = this.tablesList || [];
+                if (this.tableFilter === 'occupied') {
+                    list = list.filter(t => t.status === 'occupied');
+                } else if (this.tableFilter === 'free') {
+                    list = list.filter(t => t.status === 'free');
+                }
+                if (this.tableSearchQuery) {
+                    const q = this.tableSearchQuery.toLowerCase();
+                    list = list.filter(t => (t.name && t.name.toLowerCase().includes(q)) || (t.notes && t.notes.toLowerCase().includes(q)));
+                }
+                return list;
+            },
+
             get filteredCustomers() {
                 if (!this.customerFilterQuery) return this.customersList;
                 const q = this.customerFilterQuery.toLowerCase();
@@ -327,6 +356,8 @@
                 this.discountAmount = 0;
                 this.customer = null;
                 this.amountPaid = 0;
+                this.activeTableOrderId = null;
+                this.isTableOrderLoaded = false;
             },
 
             openCheckoutModal() {
@@ -353,6 +384,9 @@
                 } else if (e.key === 'F4') {
                     e.preventDefault();
                     this.showCustomerModal = true;
+                } else if (e.key === 'F7' && this.isRestaurant) {
+                    e.preventDefault();
+                    this.openTableModal();
                 } else if (e.key === 'F9' && this.cart.length > 0) {
                     e.preventDefault();
                     this.openCheckoutModal();
@@ -361,6 +395,7 @@
                     this.showCustomerModal = false;
                     this.showOpenShiftModal = false;
                     this.showCloseShiftModal = false;
+                    this.showTableModal = false;
                 }
             },
 
@@ -376,7 +411,7 @@
 
                 const payload = {
                     customer_id: this.customer?.id || null,
-                    customer_name: this.customer?.name || 'Cliente Avulso',
+                    customer_name: this.customer?.name || (this.selectedTable ? this.selectedTable.name : 'Cliente Avulso'),
                     customer_nuit: this.customer?.nuit || null,
                     items: this.cart,
                     discount_amount: this.discountAmount,
@@ -385,6 +420,8 @@
                     prices_include_tax: this.pricesIncludeTax,
                     payment_method: this.paymentMethod,
                     amount_paid: this.amountPaid,
+                    restaurant_table_id: this.selectedTable?.id || null,
+                    order_id: this.activeTableOrderId || null,
                     offline_id: 'OFF-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7),
                 };
 
@@ -413,6 +450,10 @@
                             window.open(data.receipt_url + '?autoprint=1', '_blank', 'width=400,height=600');
                             this.notifySuccess('Venda Concluída!', 'Venda #' + data.sale_id + ' processada com sucesso.');
                             this.clearCart();
+                            this.clearSelectedTable();
+                            if (this.isRestaurant) {
+                                this.fetchTables();
+                            }
                             this.showCheckoutModal = false;
                             this.isOnline = true;
                         } else {
@@ -695,6 +736,136 @@
                     this.notifyError('Erro de Rede', 'Falha ao comunicar com o servidor.');
                 } finally {
                     this.isSubmittingShift = false;
+                }
+            },
+
+            // ===== RESTAURANTE & GESTÃO DE MESAS =====
+            openTableModal() {
+                if (!this.isRestaurant) return;
+                this.showTableModal = true;
+                this.fetchTables();
+            },
+
+            selectTable(table) {
+                this.selectedTable = table;
+                this.activeTableOrderId = table.active_order?.id || null;
+                this.isTableOrderLoaded = false;
+                this.showTableModal = false;
+                this.notifyInfo('Mesa Selecionada', table.name + ' vinculada ao carrinho.');
+            },
+
+            clearSelectedTable() {
+                this.selectedTable = null;
+                this.activeTableOrderId = null;
+                this.isTableOrderLoaded = false;
+            },
+
+            async fetchTables() {
+                if (!this.isRestaurant) return;
+                this.isLoadingTables = true;
+                try {
+                    const res = await fetch('{{ route("pos.tables") }}');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.success && data.tables) {
+                            this.tablesList = data.tables;
+                            if (this.selectedTable) {
+                                const current = this.tablesList.find(t => t.id === this.selectedTable.id);
+                                if (current) {
+                                    this.selectedTable = current;
+                                }
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Erro ao atualizar mesas:', e);
+                } finally {
+                    this.isLoadingTables = false;
+                }
+            },
+
+            async pullTableOrder(table) {
+                this.selectTable(table);
+                await this.loadTableOrder(table.id);
+            },
+
+            async loadTableOrder(tableId) {
+                this.isLoading = true;
+                try {
+                    const res = await fetch('{{ url("pos/table-order") }}/' + tableId);
+                    if (!res.ok) throw new Error('Não foi possível carregar a comanda.');
+                    const data = await res.json();
+                    if (data.success && data.order) {
+                        this.activeTableOrderId = data.order.id;
+                        this.cart = data.items.map(item => ({
+                            product_id: item.product_id,
+                            name: item.name,
+                            barcode: item.barcode,
+                            sku: item.sku,
+                            category_name: item.category_name,
+                            selling_price: item.selling_price,
+                            unit_price: item.unit_price,
+                            quantity: item.quantity,
+                            stock_quantity: item.stock_quantity,
+                        }));
+                        this.isTableOrderLoaded = true;
+                        this.showTableModal = false;
+                        this.notifySuccess('Consumo Carregado!', 'Conta da ' + (data.order.table_name || 'mesa') + ' pronta para fecho ou acréscimo.');
+                    } else {
+                        this.notifyInfo('Mesa Vazia', 'Esta mesa não possui nenhum pedido aberto.');
+                    }
+                } catch (e) {
+                    this.notifyError('Erro ao Carregar', e.message);
+                } finally {
+                    this.isLoading = false;
+                }
+            },
+
+            async holdTableOrder() {
+                if (!this.selectedTable) {
+                    this.openTableModal();
+                    return;
+                }
+                if (this.cart.length === 0) {
+                    this.notifyWarning('Carrinho Vazio', 'Adicione artigos antes de enviar para a cozinha.');
+                    return;
+                }
+
+                this.isSubmitting = true;
+                const payload = {
+                    table_id: this.selectedTable.id,
+                    items: this.cart.map(item => ({
+                        product_id: item.product_id,
+                        quantity: item.quantity,
+                        unit_price: item.unit_price,
+                    })),
+                    customer_name: this.customer?.name || null,
+                };
+
+                try {
+                    const res = await fetch('{{ route("pos.hold-table") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await res.json();
+                    if (res.ok && data.success) {
+                        this.notifySuccess('Pedido Enviado!', data.message);
+                        this.clearCart();
+                        this.clearSelectedTable();
+                        await this.fetchTables();
+                    } else {
+                        this.notifyError('Erro ao Enviar Pedido', data.message || 'Verifique os dados da mesa.');
+                    }
+                } catch (e) {
+                    this.notifyError('Falha na Comunicação', 'Não foi possível contactar o servidor.');
+                } finally {
+                    this.isSubmitting = false;
                 }
             },
 

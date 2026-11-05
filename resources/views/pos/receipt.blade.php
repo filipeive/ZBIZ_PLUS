@@ -71,6 +71,9 @@
     @if($sale->customer?->nuit || $sale->customer_nuit)
         <div><strong>NUIT Cliente:</strong> {{ $sale->customer?->nuit ?? $sale->customer_nuit }}</div>
     @endif
+    @if($sale->order?->restaurantTable)
+        <div><strong>Mesa:</strong> {{ $sale->order->restaurantTable->name }}</div>
+    @endif
 
     <div class="divider"></div>
 

@@ -19,6 +19,64 @@
         </button>
     </div>
 
+    {{-- Restaurant Table Indicator & Selector (Only for Restaurant Tenants) --}}
+    @if(!empty($isRestaurant))
+    <div class="px-3 py-2 bg-slate-100/90 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2 shrink-0">
+        <div class="flex items-center gap-2 min-w-0">
+            <span class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border text-xs"
+                  :class="selectedTable ? 'bg-amber-500/10 text-amber-500 border-amber-500/30' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-300 dark:border-slate-700'">
+                <i class="fa-solid fa-chair"></i>
+            </span>
+            <div class="min-w-0">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                    <span>Atendimento:</span>
+                    <template x-if="selectedTable">
+                        <span class="text-[9px] px-1.5 py-0.2 rounded font-black uppercase"
+                              :class="selectedTable.status === 'occupied' ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400' : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'"
+                              x-text="selectedTable.status === 'occupied' ? 'Ocupada' : 'Livre'"></span>
+                    </template>
+                </div>
+                <div class="text-xs font-black text-slate-900 dark:text-white truncate"
+                     x-text="selectedTable ? selectedTable.name + ' (' + selectedTable.capacity + ' lug.)' : 'Venda Balcão (Sem Mesa)'"></div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-1.5 shrink-0">
+            <template x-if="selectedTable">
+                <button type="button"
+                        @click="clearSelectedTable()"
+                        class="text-xs text-slate-400 hover:text-rose-500 p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition cursor-pointer"
+                        title="Desvincular mesa e voltar para Balcão">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </template>
+            <button type="button"
+                    @click="openTableModal()"
+                    class="text-xs bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 px-2.5 py-1.5 rounded-xl font-bold border border-amber-500/30 transition flex items-center gap-1 cursor-pointer">
+                <i class="fa-solid fa-chair text-[10px]"></i>
+                <span x-text="selectedTable ? 'Trocar Mesa' : 'Mesas (F7)'"></span>
+            </button>
+        </div>
+    </div>
+
+    {{-- Banner de Mesa com Pedido Ativo --}}
+    <div x-show="selectedTable && selectedTable.has_active_order && !isTableOrderLoaded"
+         x-cloak
+         class="px-3 py-2 bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800/60 flex items-center justify-between text-xs shrink-0">
+        <div class="text-amber-800 dark:text-amber-300 min-w-0">
+            <span class="font-bold flex items-center gap-1">
+                <i class="fa-solid fa-receipt"></i> Conta em aberto: <span x-text="formatCurrency(selectedTable.active_order.estimated_amount)"></span>
+            </span>
+            <span class="text-[10px] text-amber-700/80 dark:text-amber-400 block" x-text="selectedTable.active_order.items_count + ' artigo(s) lançado(s)'"></span>
+        </div>
+        <button type="button"
+                @click="loadTableOrder(selectedTable.id)"
+                class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-sm transition shrink-0 cursor-pointer">
+            Puxar Consumo
+        </button>
+    </div>
+    @endif
+
     {{-- Cart Items List Scroll Area --}}
     <div class="flex-1 overflow-y-auto p-2.5 sm:p-3 space-y-2">
         {{-- Empty Cart Message --}}
@@ -157,22 +215,70 @@
         </div>
 
         {{-- Main Checkout & Cancel Actions --}}
-        <div class="grid grid-cols-2 gap-2 pt-1">
-            <button type="button"
-                    @click="clearCart()"
-                    :disabled="cart.length === 0"
-                    aria-label="Cancelar venda atual e esvaziar carrinho (ESC)"
-                    class="py-3 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl font-bold text-xs transition active:scale-95 cursor-pointer min-h-[44px]">
-                [ESC] Cancelar
-            </button>
-            <button type="button"
-                    @click="openCheckoutModal()"
-                    :disabled="cart.length === 0"
-                    aria-label="Abrir modal para finalizar a venda (F9)"
-                    class="py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-500 disabled:shadow-none disabled:cursor-not-allowed text-white rounded-xl font-black text-xs sm:text-sm tracking-wide shadow-lg shadow-emerald-950/20 transition active:scale-95 cursor-pointer min-h-[44px] flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-cash-register text-xs"></i>
-                <span>[F9] FINALIZAR</span>
-            </button>
-        </div>
+        @if(!empty($isRestaurant))
+            <template x-if="selectedTable">
+                <div class="space-y-2 pt-1">
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button"
+                                @click="clearCart()"
+                                :disabled="cart.length === 0"
+                                class="py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 disabled:opacity-40 rounded-xl font-bold text-xs transition cursor-pointer">
+                            [ESC] Limpar
+                        </button>
+                        <button type="button"
+                                @click="holdTableOrder()"
+                                :disabled="cart.length === 0 || isSubmitting"
+                                class="py-2.5 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 text-slate-950 rounded-xl font-black text-xs shadow-md shadow-amber-950/20 transition cursor-pointer flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-utensils text-[11px]"></i>
+                            <span>Lançar na Cozinha</span>
+                        </button>
+                    </div>
+                    <button type="button"
+                            @click="openCheckoutModal()"
+                            :disabled="cart.length === 0"
+                            class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 text-white rounded-xl font-black text-xs sm:text-sm tracking-wide shadow-lg shadow-emerald-950/20 transition cursor-pointer flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-cash-register text-xs"></i>
+                        <span>[F9] FECHAR CONTA DA MESA</span>
+                    </button>
+                </div>
+            </template>
+            <template x-if="!selectedTable">
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button type="button"
+                            @click="clearCart()"
+                            :disabled="cart.length === 0"
+                            aria-label="Cancelar venda atual e esvaziar carrinho (ESC)"
+                            class="py-3 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl font-bold text-xs transition active:scale-95 cursor-pointer min-h-[44px]">
+                        [ESC] Cancelar
+                    </button>
+                    <button type="button"
+                            @click="openCheckoutModal()"
+                            :disabled="cart.length === 0"
+                            aria-label="Abrir modal para finalizar a venda (F9)"
+                            class="py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-500 disabled:shadow-none disabled:cursor-not-allowed text-white rounded-xl font-black text-xs sm:text-sm tracking-wide shadow-lg shadow-emerald-950/20 transition active:scale-95 cursor-pointer min-h-[44px] flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-cash-register text-xs"></i>
+                        <span>[F9] FINALIZAR</span>
+                    </button>
+                </div>
+            </template>
+        @else
+            <div class="grid grid-cols-2 gap-2 pt-1">
+                <button type="button"
+                        @click="clearCart()"
+                        :disabled="cart.length === 0"
+                        aria-label="Cancelar venda atual e esvaziar carrinho (ESC)"
+                        class="py-3 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl font-bold text-xs transition active:scale-95 cursor-pointer min-h-[44px]">
+                    [ESC] Cancelar
+                </button>
+                <button type="button"
+                        @click="openCheckoutModal()"
+                        :disabled="cart.length === 0"
+                        aria-label="Abrir modal para finalizar a venda (F9)"
+                        class="py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-500 disabled:shadow-none disabled:cursor-not-allowed text-white rounded-xl font-black text-xs sm:text-sm tracking-wide shadow-lg shadow-emerald-950/20 transition active:scale-95 cursor-pointer min-h-[44px] flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-cash-register text-xs"></i>
+                    <span>[F9] FINALIZAR</span>
+                </button>
+            </div>
+        @endif
     </div>
 </div>

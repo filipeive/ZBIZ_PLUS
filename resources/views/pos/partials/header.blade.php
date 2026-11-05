@@ -47,6 +47,20 @@
                 <span>Abrir Caixa</span>
             </button>
         </template>
+
+        {{-- Mesas / Sala (Restaurante) --}}
+        @if(!empty($isRestaurant))
+            <button @click.stop="openTableModal()"
+                    type="button"
+                    aria-label="Abrir mapa de mesas do restaurante (F7)"
+                    class="bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 text-xs font-bold px-2.5 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer min-h-[32px] shrink-0"
+                    title="Mapa de Mesas (F7)">
+                <i class="fa-solid fa-chair text-amber-400"></i>
+                <span class="hidden sm:inline">Mesas:</span>
+                <span class="bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded text-[10px] font-black"
+                      x-text="occupiedTablesCount + ' ocupada(s)'"></span>
+            </button>
+        @endif
     </div>
 
     {{-- Right: Status Indicators & Sair do POS --}}

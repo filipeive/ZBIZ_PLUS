@@ -100,6 +100,11 @@ class Sale extends Model
         return $this->hasMany(SaleItem::class);
     }
 
+    public function order(): HasOne
+    {
+        return $this->hasOne(Order::class);
+    }
+
     public function getCustomerDisplayNameAttribute(): string
     {
         return $this->customer?->name ?? $this->customer_name ?? 'Cliente Avulso';
