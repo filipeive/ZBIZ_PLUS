@@ -157,15 +157,14 @@
     <main id="main-content" class="auth-shell my-auto" style="--auth-card-width: @yield('cardWidth', '420px')">
         <div class="bg-white/95 backdrop-blur-xl rounded-[2.5rem] shadow-2xl shadow-slate-950/30 p-8 sm:p-10 border border-white/60 transition-all">
             <div class="text-center mb-8">
-                @if($brandLogo)
-                    <div class="flex justify-center mb-3">
-                        <img src="{{ $brandLogo }}" alt="{{ $brandName }}" class="h-12 w-auto object-contain max-w-[180px]">
-                    </div>
-                @else
-                    <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-500 to-sky-600 text-white shadow-lg shadow-sky-500/25 mb-3">
-                        <i class="fa-solid fa-layer-group text-2xl"></i>
-                    </div>
-                @endif
+                <div class="flex justify-center mb-3">
+                    <x-brand.tenant-logo
+                        :src="$brandLogo"
+                        :name="$brandName"
+                        size="lg"
+                        :show-name="false"
+                    />
+                </div>
                 <h1 class="text-2xl font-black text-slate-800 tracking-tight">{{ $brandName }}</h1>
                 <p class="text-xs font-medium text-slate-400 mt-0.5">@yield('subtitle', 'Plataforma de Gestão & Faturação')</p>
             </div>

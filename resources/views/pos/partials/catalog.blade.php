@@ -12,7 +12,7 @@
                        x-model="searchQuery"
                        @input.debounce.250ms="searchProducts()"
                        @keydown.enter="handleBarcodeScan()"
-                       placeholder="[F2] Ler Código de Barras, SKU ou Nome do Artigo..."
+                       placeholder="[F2] Ler Código de Barras, SKU ou Nome..."
                        aria-label="Pesquisar produto por código de barras, SKU ou nome"
                        class="w-full pl-11 pr-10 py-2.5 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none shadow-sm transition placeholder:text-slate-400 dark:placeholder:text-slate-500">
                 <button x-show="searchQuery.length > 0"

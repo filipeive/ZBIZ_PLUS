@@ -1,4 +1,4 @@
-<div class="flex flex-col bg-slate-50 dark:bg-slate-950/70 border-l border-slate-200 dark:border-slate-800 justify-between h-full overflow-hidden select-none">
+<div class="w-full h-full flex flex-col bg-slate-50 dark:bg-slate-950/70 border-l border-slate-200 dark:border-slate-800 justify-between overflow-hidden select-none">
     {{-- Cart Header: Customer Selector --}}
     <div class="p-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm shrink-0">
         <div class="flex items-center gap-2.5 min-w-0">
@@ -7,15 +7,15 @@
             </span>
             <div class="min-w-0">
                 <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Cliente da Venda</div>
-                <div class="text-xs font-black text-slate-800 dark:text-slate-100 truncate" x-text="customer ? customer.name : 'Cliente Avulso (Consumidor Final)'"></div>
+                <div class="text-xs font-black text-slate-800 dark:text-slate-100 truncate max-w-[130px] sm:max-w-[180px]" x-text="customer ? customer.name : 'Cliente Avulso (Consumidor Final)'"></div>
             </div>
         </div>
         <button type="button"
                 @click="showCustomerModal = true"
                 aria-label="Alterar cliente da venda atual (F4)"
-                class="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-xl font-bold border border-slate-300 dark:border-slate-700 transition flex items-center gap-1.5 shadow-sm cursor-pointer min-h-[36px]">
+                class="shrink-0 text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-xl font-bold border border-slate-300 dark:border-slate-700 transition flex items-center gap-1.5 shadow-sm cursor-pointer min-h-[36px]">
             <i class="fa-solid fa-user-pen text-[11px] text-emerald-500"></i>
-            <span>[F4] Cliente</span>
+            <span class="whitespace-nowrap">[F4] Cliente</span>
         </button>
     </div>
 
@@ -162,14 +162,14 @@
                     @click="clearCart()"
                     :disabled="cart.length === 0"
                     aria-label="Cancelar venda atual e esvaziar carrinho (ESC)"
-                    class="py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 disabled:opacity-40 rounded-xl font-bold text-xs transition active:scale-95 cursor-pointer min-h-[44px]">
+                    class="py-3 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl font-bold text-xs transition active:scale-95 cursor-pointer min-h-[44px]">
                 [ESC] Cancelar
             </button>
             <button type="button"
                     @click="openCheckoutModal()"
                     :disabled="cart.length === 0"
                     aria-label="Abrir modal para finalizar a venda (F9)"
-                    class="py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white rounded-xl font-black text-xs sm:text-sm tracking-wide shadow-lg shadow-emerald-950/20 transition active:scale-95 cursor-pointer min-h-[44px] flex items-center justify-center gap-1.5">
+                    class="py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-500 disabled:shadow-none disabled:cursor-not-allowed text-white rounded-xl font-black text-xs sm:text-sm tracking-wide shadow-lg shadow-emerald-950/20 transition active:scale-95 cursor-pointer min-h-[44px] flex items-center justify-center gap-1.5">
                 <i class="fa-solid fa-cash-register text-xs"></i>
                 <span>[F9] FINALIZAR</span>
             </button>

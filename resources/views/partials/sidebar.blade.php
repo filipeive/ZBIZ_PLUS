@@ -12,22 +12,13 @@
             <div class="flex flex-col flex-1 min-h-0 overflow-y-auto">
                 <div class="p-5 border-b border-slate-800/60 flex items-center justify-between">
                     <a href="{{ $isOwnerConsole ? route('owner.tenants.index') : route('dashboard.index') }}" class="flex items-center space-x-3 group min-w-0">
-                        <!-- Brand logo/avatar -->
-                        <div class="w-9 h-9 rounded-xl bg-transparent flex-shrink-0 flex items-center justify-center shadow-md group-hover:scale-105 transition overflow-hidden border border-slate-800/60">
-                            @if(!empty($theme['logo_url']))
-                                <img src="{{ $theme['logo_url'] }}" alt="Logo" class="w-full h-full object-contain p-0.5">
-                            @else
-                                <img src="{{ asset('favicon.png') }}" alt="Z+" class="w-full h-full object-cover">
-                            @endif
-                        </div>
-                        <div class="min-w-0">
-                            <div class="text-sm font-black font-heading tracking-tight text-white leading-none flex items-baseline gap-0.5">
-                                ZBIZ<span class="{{ $theme['text_accent'] }}">+</span>
-                            </div>
-                            <div class="text-[10px] text-slate-400 font-medium truncate max-w-[120px] leading-tight mt-0.5" title="{{ $isOwnerConsole ? 'Owner Console' : ($tenant?->name ?? 'ZBIZ ERP') }}">
-                                {{ $isOwnerConsole ? 'Owner Console' : ($tenant?->name ?? 'SaaS Moçambique') }}
-                            </div>
-                        </div>
+                        <x-brand.tenant-logo
+                            :src="$theme['logo_url'] ?? $tenant?->logo_url"
+                            :name="$isOwnerConsole ? 'Owner Console' : ($tenant?->name ?? 'ZBIZ ERP')"
+                            size="sm"
+                            :show-name="true"
+                            :subtitle="$isOwnerConsole ? 'Owner Console' : ($tenant?->name ?? 'SaaS Moçambique')"
+                        />
                     </a>
 
                     <!-- Sector / Role Pill -->

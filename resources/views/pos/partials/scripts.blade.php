@@ -26,7 +26,6 @@
             isLoading: false,
             isSyncing: false,
             offlineQueue: [],
-            isFullscreen: false,
 
             // Turno de Caixa
             shift: @json($activeShift ? ['id' => $activeShift->id, 'opened_at' => ($activeShift->opened_at ? \Carbon\Carbon::parse($activeShift->opened_at)->format('H:i') : now()->format('H:i')), 'opening_balance' => (float)$activeShift->opening_balance] : null),
@@ -52,19 +51,6 @@
                     (c.phone && c.phone.includes(q)) ||
                     (c.nuit && c.nuit.includes(q))
                 );
-            },
-
-            toggleTheme() {
-                this.isDarkMode = !this.isDarkMode;
-                if (this.isDarkMode) {
-                    document.documentElement.classList.add('dark');
-                    document.documentElement.classList.remove('light');
-                    localStorage.setItem('zb_theme', 'dark');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                    document.documentElement.classList.add('light');
-                    localStorage.setItem('zb_theme', 'light');
-                }
             },
 
             async checkServerReachability(timeoutMs = 2500) {
@@ -109,11 +95,16 @@
                     }
                 });
 
-                // Monitor de estado de ecrã inteiro (Kiosk helper)
-                this.isFullscreen = !!document.fullscreenElement;
-                document.addEventListener('fullscreenchange', () => {
-                    this.isFullscreen = !!document.fullscreenElement;
-                });
+                // Acções externas via URL (ex.: Fechar/Abrir Caixa a partir do Dashboard)
+                const urlParams = new URLSearchParams(window.location.search);
+                const action = urlParams.get('action');
+                if (action === 'close-shift') {
+                    this.$nextTick(() => this.openCloseShiftModal());
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                } else if (action === 'open-shift') {
+                    this.$nextTick(() => this.openOpenShiftModal());
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
 
                 window.addEventListener('online', async () => {
                     const reachable = await this.checkServerReachability();
@@ -146,20 +137,6 @@
 
             offlineQueueKey() {
                 return `zbiz_pos_offline_queue_${this.storageScope}`;
-            },
-
-            toggleFullscreen() {
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen().then(() => {
-                        this.isFullscreen = true;
-                    }).catch(() => {});
-                } else {
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen().then(() => {
-                            this.isFullscreen = false;
-                        }).catch(() => {});
-                    }
-                }
             },
 
             get subtotal() {

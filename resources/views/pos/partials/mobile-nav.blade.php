@@ -1,5 +1,5 @@
 {{-- Mobile View Switcher & Floating Checkout Bar (< lg) --}}
-<div class="lg:hidden shrink-0 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2 z-20 shadow-lg">
+<div class="lg:hidden shrink-0 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2 z-20 shadow-lg" style="padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0.5rem));">
     <div class="grid grid-cols-2 gap-2">
         <button type="button" 
                 @click="mobileTab = 'catalog'"
