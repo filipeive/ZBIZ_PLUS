@@ -27,6 +27,17 @@
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
+            @if($order->sale_id)
+                <a href="{{ route('pos.receipt', $order->sale_id) }}?autoprint=1" target="_blank" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-sm transition">
+                    <i class="fa-solid fa-receipt text-xs"></i>
+                    <span>Talão Térmico POS (80mm)</span>
+                </a>
+                <a href="{{ route('sales.show', $order->sale_id) }}" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 transition shadow-sm">
+                    <i class="fa-solid fa-file-invoice text-xs text-emerald-500"></i>
+                    <span>Ver Fatura</span>
+                </a>
+            @endif
+
             <button type="button" onclick="window.print()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 transition shadow-sm cursor-pointer">
                 <i class="fa-solid fa-print text-xs"></i>
                 <span>Imprimir</span>
@@ -60,7 +71,7 @@
                             'in_progress' => 'bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/30',
                             'ready'       => 'bg-teal-500/10 text-teal-700 dark:text-teal-400 border-teal-500/30',
                             'completed'   => 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30',
-                            'delivered'   => 'bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/30',
+                            'delivered'   => 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30',
                             'cancelled'   => 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30',
                         ];
                         $statusBadgeClass = $statusColors[$order->status] ?? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700';
@@ -111,6 +122,20 @@
                         </span>
                     @endif
                 </div>
+
+                @if($order->sale)
+                    <div class="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs">
+                        <i class="fa-solid fa-file-circle-check text-emerald-600 dark:text-emerald-400"></i>
+                        <span class="text-slate-600 dark:text-slate-300 font-medium">Fatura Registada:</span>
+                        <a href="{{ route('sales.show', $order->sale_id) }}" class="font-bold font-mono text-emerald-700 dark:text-emerald-400 hover:underline">
+                            {{ $order->sale->invoice_number ?? ('#' . str_pad($order->sale_id, 6, '0', STR_PAD_LEFT)) }}
+                        </a>
+                        <span class="text-slate-300 dark:text-slate-700">|</span>
+                        <a href="{{ route('pos.receipt', $order->sale_id) }}?autoprint=1" target="_blank" class="font-bold text-emerald-700 dark:text-emerald-400 hover:underline inline-flex items-center gap-1">
+                            <i class="fa-solid fa-print text-[10px]"></i> Talão POS
+                        </a>
+                    </div>
+                @endif
             </div>
 
             <div class="sm:text-right bg-slate-50 dark:bg-slate-950/80 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 min-w-[200px]">
@@ -118,9 +143,13 @@
                 <div class="text-2xl sm:text-3xl font-black font-heading text-emerald-600 dark:text-emerald-400 font-mono mt-0.5">
                     {{ number_format($total, 2, ',', '.') }} <span class="text-xs font-bold text-slate-500 dark:text-slate-400">MT</span>
                 </div>
-                @if($advance > 0)
+                @if($remaining > 0)
                     <div class="text-[11px] font-bold text-amber-600 dark:text-amber-400 mt-1">
                         Restante: {{ number_format($remaining, 2, ',', '.') }} MT
+                    </div>
+                @else
+                    <div class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mt-1 flex items-center justify-start sm:justify-end gap-1">
+                        <i class="fa-solid fa-circle-check text-[10px]"></i> Liquidado
                     </div>
                 @endif
             </div>
@@ -285,12 +314,23 @@
                                 - {{ number_format($advance, 2, ',', '.') }} MT
                             </td>
                         </tr>
+                    @endif
+                    @if($remaining > 0)
                         <tr class="text-amber-700 dark:text-amber-400 bg-amber-500/5">
                             <td colspan="3" class="p-3 text-right font-bold uppercase">
                                 Saldo Restante a Cobrar:
                             </td>
                             <td class="p-3 text-right font-mono font-black text-sm">
                                 {{ number_format($remaining, 2, ',', '.') }} MT
+                            </td>
+                        </tr>
+                    @else
+                        <tr class="text-emerald-700 dark:text-emerald-400 bg-emerald-500/5">
+                            <td colspan="3" class="p-3 text-right font-bold uppercase">
+                                Estado de Liquidação:
+                            </td>
+                            <td class="p-3 text-right font-mono font-bold text-xs uppercase flex items-center justify-end gap-1">
+                                <i class="fa-solid fa-circle-check text-xs"></i> Liquidado na Totalidade
                             </td>
                         </tr>
                     @endif
@@ -300,4 +340,12 @@
     </div>
 
 </div>
+
+@if(request('autoprint') && $order->sale_id)
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        window.open("{{ route('pos.receipt', $order->sale_id) }}?autoprint=1", '_blank', 'width=450,height=650');
+    });
+</script>
+@endif
 @endsection

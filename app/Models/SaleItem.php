@@ -35,6 +35,11 @@ class SaleItem extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function getProductNameAttribute(): string
+    {
+        return $this->product?->name ?? 'Artigo';
+    }
+
     /**
      * Aplicar desconto ao item
      */

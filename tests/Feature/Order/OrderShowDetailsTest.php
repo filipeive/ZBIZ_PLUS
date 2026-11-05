@@ -178,4 +178,49 @@ class OrderShowDetailsTest extends TestCase
 
         $response->assertNotFound();
     }
+
+    public function test_process_completion_creates_sale_and_updates_order_to_paid_and_delivered(): void
+    {
+        $order = Order::create([
+            'tenant_id'        => $this->tenant->id,
+            'branch_id'        => $this->branch->id,
+            'user_id'          => $this->user->id,
+            'customer_name'    => 'Life Child Mozambique',
+            'customer_phone'   => '+258 84 123 4567',
+            'description'      => 'Pedido pronto a faturar',
+            'estimated_amount' => 215.00,
+            'advance_payment'  => 0.00,
+            'priority'         => 'medium',
+            'status'           => 'pending',
+            'payment_status'   => 'pending',
+        ]);
+
+        $response = $this->actingAs($this->user)->post(route('orders.process-completion', $order), [
+            'action'         => 'create_sale',
+            'payment_method' => 'emola',
+        ]);
+
+        $order->refresh();
+
+        $this->assertEquals('delivered', $order->status);
+        $this->assertEquals('paid', $order->payment_status);
+        $this->assertNotNull($order->sale_id);
+
+        $response->assertRedirect(route('orders.show', ['order' => $order, 'autoprint' => 1]));
+        $response->assertSessionHas('success');
+
+        $sale = $order->sale;
+        $this->assertNotNull($sale);
+        $this->assertEquals($this->tenant->id, $sale->tenant_id);
+        $this->assertEquals(215.00, (float) $sale->total_amount);
+        $this->assertEquals(215.00, (float) $sale->amount_paid);
+        $this->assertNotNull($sale->invoice_number);
+
+        // Access the show view now
+        $viewResponse = $this->actingAs($this->user)->get(route('orders.show', $order));
+        $viewResponse->assertOk();
+        $viewResponse->assertSee('Liquidado');
+        $viewResponse->assertSee('Talão Térmico POS');
+        $viewResponse->assertSee($sale->invoice_number);
+    }
 }

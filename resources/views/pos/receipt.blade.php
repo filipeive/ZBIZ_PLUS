@@ -85,7 +85,7 @@
         <tbody>
             @foreach($sale->items as $item)
                 <tr>
-                    <td colspan="3" style="font-weight: bold;">{{ $item->product_name }}</td>
+                    <td colspan="3" style="font-weight: bold;">{{ $item->product_name ?? $item->product?->name ?? 'Artigo' }}</td>
                 </tr>
                 <tr>
                     <td>{{ number_format($item->unit_price, 2, ',', '.') }} MT</td>

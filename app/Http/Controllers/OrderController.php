@@ -12,7 +12,8 @@ use App\Models\DebtItem;
 use App\Models\StockMovement;
 use App\Http\Requests\StoreOrderRequest;
 use App\Services\OrderService;
-use App\Models\Sale; // Adicionado
+use App\Models\Sale;
+use App\Models\CashShift;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -378,18 +379,36 @@ class OrderController extends Controller
             $sale = null;
 
             DB::transaction(function () use ($request, $order, &$sale) {
+                $orderTotal = (float) ($order->total_amount ?: $order->estimated_amount);
+
+                $activeShift = CashShift::where('tenant_id', $order->tenant_id)
+                    ->where('user_id', auth()->id())
+                    ->where('status', 'open')
+                    ->when($order->branch_id, fn($q) => $q->where('branch_id', $order->branch_id))
+                    ->latest('opened_at')
+                    ->first();
+
+                $invoiceNumber = Sale::generateNextInvoiceNumber($order->tenant_id, 'cash_invoice');
+
                 // Criar a venda
                 $sale = Sale::create([
+                    'tenant_id' => $order->tenant_id,
+                    'branch_id' => $order->branch_id,
                     'user_id' => auth()->id(),
+                    'cash_shift_id' => $activeShift?->id,
+                    'customer_id' => $order->customer_id,
                     'customer_name' => $order->customer_name,
                     'customer_phone' => $order->customer_phone,
                     'customer_email' => $order->customer_email,
-                    'subtotal' => $order->estimated_amount,
-                    'total_amount' => $order->estimated_amount,
+                    'subtotal' => $orderTotal,
+                    'total_amount' => $orderTotal,
+                    'amount_paid' => $orderTotal,
+                    'change_amount' => 0.00,
                     'payment_method' => $request->payment_method,
+                    'invoice_type' => 'cash_invoice',
+                    'invoice_number' => $invoiceNumber,
                     'sale_date' => now(),
-                    'notes' => "Venda gerada a partir do Pedido #{$order->id} - {$order->description}",
-                    'order_id' => $order->id,
+                    'notes' => "Venda gerada a partir do Pedido #{$order->id}" . ($order->description ? " - {$order->description}" : ''),
                 ]);
 
                 // Criar itens da venda
@@ -398,6 +417,7 @@ class OrderController extends Controller
                         'product_id' => $item->product_id,
                         'product_name' => $item->item_name,
                         'quantity' => $item->quantity,
+                        'original_unit_price' => $item->unit_price,
                         'unit_price' => $item->unit_price,
                         'total_price' => $item->total_price,
                         'description' => $item->description,
@@ -409,11 +429,23 @@ class OrderController extends Controller
                     }
                 }
 
+                // Sincronizar movimentação financeira no livro de caixa
+                app(\App\Services\FinancialService::class)->syncSaleTransaction($sale);
+
                 // Atualizar status do pedido
                 $order->update([
                     'status' => 'delivered',
-                    'sale_id' => $sale->id
+                    'payment_status' => 'paid',
+                    'sale_id' => $sale->id,
+                    'advance_payment' => $orderTotal,
                 ]);
+
+                if ($order->restaurantTable) {
+                    $order->restaurantTable->update([
+                        'status' => 'free',
+                        'current_order_id' => null,
+                    ]);
+                }
             });
 
             if ($request->expectsJson()) {
@@ -600,55 +632,125 @@ class OrderController extends Controller
         ]);
 
         try {
-            DB::transaction(function () use ($request, $order) {
+            $createdSale = null;
+
+            DB::transaction(function () use ($request, $order, &$createdSale) {
+                $orderTotal = (float) ($order->total_amount ?: $order->estimated_amount);
+
                 if ($request->action === 'create_sale') {
-                    // Lógica para criar a venda
-                    $sale = Sale::create([
+                    // Resolver caixa aberto do operador se existir
+                    $activeShift = CashShift::where('tenant_id', $order->tenant_id)
+                        ->where('user_id', auth()->id())
+                        ->where('status', 'open')
+                        ->when($order->branch_id, fn($q) => $q->where('branch_id', $order->branch_id))
+                        ->latest('opened_at')
+                        ->first();
+
+                    $invoiceNumber = Sale::generateNextInvoiceNumber($order->tenant_id, 'cash_invoice');
+
+                    // Criar a venda oficial completa
+                    $createdSale = Sale::create([
+                        'tenant_id' => $order->tenant_id,
+                        'branch_id' => $order->branch_id,
                         'user_id' => auth()->id(),
+                        'cash_shift_id' => $activeShift?->id,
+                        'customer_id' => $order->customer_id,
                         'customer_name' => $order->customer_name,
                         'customer_phone' => $order->customer_phone,
-                        'subtotal' => $order->estimated_amount,
-                        'total_amount' => $order->estimated_amount,
+                        'customer_email' => $order->customer_email,
+                        'subtotal' => $orderTotal,
+                        'total_amount' => $orderTotal,
+                        'amount_paid' => $orderTotal,
+                        'change_amount' => 0.00,
                         'payment_method' => $request->payment_method,
+                        'invoice_type' => 'cash_invoice',
+                        'invoice_number' => $invoiceNumber,
                         'sale_date' => now(),
-                        'notes' => "Venda gerada a partir do Pedido #{$order->id}",
+                        'notes' => "Venda gerada a partir do Pedido #{$order->id}" . ($order->description ? " - {$order->description}" : ''),
                     ]);
 
                     foreach ($order->items as $item) {
-                        $sale->items()->create([
+                        $createdSale->items()->create([
                             'product_id' => $item->product_id,
+                            'product_name' => $item->item_name,
                             'quantity' => $item->quantity,
                             'original_unit_price' => $item->unit_price,
                             'unit_price' => $item->unit_price,
                             'total_price' => $item->total_price,
+                            'description' => $item->description,
                         ]);
-                        // Aqui você pode adicionar a lógica de baixar stock se ainda não foi feito
+
+                        if ($item->product) {
+                            $item->product->updateStock($item->quantity, 'out', auth()->id(), "Venda gerada do Pedido #{$order->id}", $createdSale->id);
+                        }
                     }
 
-                    $order->update(['status' => 'delivered', 'sale_id' => $sale->id]);
+                    // Sincronizar transação financeira no fluxo de caixa
+                    app(\App\Services\FinancialService::class)->syncSaleTransaction($createdSale);
+
+                    // Atualizar pedido como entregue e liquidado
+                    $order->update([
+                        'status' => 'delivered',
+                        'payment_status' => 'paid',
+                        'sale_id' => $createdSale->id,
+                        'advance_payment' => $orderTotal,
+                    ]);
+
+                    if ($order->restaurantTable) {
+                        $order->restaurantTable->update([
+                            'status' => 'free',
+                            'current_order_id' => null,
+                        ]);
+                    }
                 } elseif ($request->action === 'create_debt') {
-                    // Lógica para criar a dívida
-                    $remaining = $order->estimated_amount - $order->advance_payment;
+                    $advance = (float) $order->advance_payment;
+                    $remaining = max(0, $orderTotal - $advance);
+
                     if ($remaining > 0) {
                         $debt = Debt::create([
+                            'tenant_id' => $order->tenant_id,
+                            'branch_id' => $order->branch_id,
+                            'debt_type' => 'customer',
                             'user_id' => auth()->id(),
+                            'customer_id' => $order->customer_id,
                             'customer_name' => $order->customer_name,
                             'customer_phone' => $order->customer_phone,
                             'original_amount' => $remaining,
                             'remaining_amount' => $remaining,
+                            'paid_amount' => 0.00,
                             'debt_date' => now()->toDateString(),
                             'due_date' => $request->debt_due_date ?: now()->addDays(30)->toDateString(),
                             'description' => "Valor restante do Pedido #{$order->id}",
                             'status' => 'active',
                             'order_id' => $order->id,
                         ]);
-                        $order->update(['status' => 'completed', 'debt_id' => $debt->id]);
+
+                        $order->update([
+                            'status' => 'delivered',
+                            'payment_status' => $advance > 0 ? 'partial' : 'pending',
+                            'debt_id' => $debt->id,
+                        ]);
                     } else {
-                        // Se não há valor restante, apenas marca como concluído
-                        $order->update(['status' => 'completed']);
+                        $order->update([
+                            'status' => 'delivered',
+                            'payment_status' => 'paid',
+                        ]);
+                    }
+
+                    if ($order->restaurantTable) {
+                        $order->restaurantTable->update([
+                            'status' => 'free',
+                            'current_order_id' => null,
+                        ]);
                     }
                 }
             });
+
+            if ($createdSale) {
+                return redirect()->route('orders.show', ['order' => $order, 'autoprint' => 1])
+                    ->with('success', 'Pedido concluído com sucesso e fatura registada!')
+                    ->with('print_sale_id', $createdSale->id);
+            }
 
             return redirect()->route('orders.show', $order)->with('success', 'Pedido concluído com sucesso!');
         } catch (\Exception $e) {
