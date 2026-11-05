@@ -164,6 +164,44 @@ class POSViewRenderTest extends TestCase
         foreach ($cdns as $cdn) {
             $response->assertDontSee($cdn, false);
         }
+
+        // Header must NOT contain theme switcher or fullscreen toggle
+        $response->assertDontSee('toggleTheme()', false);
+        $response->assertDontSee('toggleFullscreen()', false);
+        $response->assertDontSee('Alternar Tema Claro / Escuro', false);
+        $response->assertDontSee('Ecrã Inteiro', false);
+
+        // Canonical ZBIZ+ brand is rendered when tenant has no custom logo
+        $response->assertSee('data-brand="zbiz"', false);
+        $response->assertSee('data-brand-fallback', false);
+    }
+
+    public function test_pos_view_renders_tenant_custom_logo_when_present(): void
+    {
+        $settings = $this->tenant->settings ?? [];
+        $settings['logo_path'] = 'logos/tenant.png';
+        $this->tenant->update(['settings' => $settings]);
+        app(TenantContext::class)->setTenant($this->tenant->fresh());
+
+        $response = $this->actingAs($this->cashier)->get(route('pos.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('data-brand="tenant"', false);
+        $response->assertSee('storage/logos/tenant.png', false);
+        $response->assertSee('data-brand-img', false);
+    }
+
+    public function test_pos_view_supports_action_query_params(): void
+    {
+        $closeResponse = $this->actingAs($this->cashier)->get(route('pos.index', ['action' => 'close-shift']));
+        $closeResponse->assertStatus(200);
+        $closeResponse->assertSee("action === 'close-shift'", false);
+        $closeResponse->assertSee('openCloseShiftModal()', false);
+
+        $openResponse = $this->actingAs($this->admin)->get(route('pos.index', ['action' => 'open-shift']));
+        $openResponse->assertStatus(200);
+        $openResponse->assertSee("action === 'open-shift'", false);
+        $openResponse->assertSee('openOpenShiftModal()', false);
     }
 
     public function test_pos_view_renders_open_shift_button_when_no_active_shift(): void
