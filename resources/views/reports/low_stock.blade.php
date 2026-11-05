@@ -262,9 +262,11 @@
                             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                                 @foreach($expiringBatches as $batch)
                                 @php
-                                    $expiry = \Carbon\Carbon::parse($batch->expiry_date);
-                                    $daysLeft = now()->diffInDays($expiry, false);
+                                    $expiry = \Carbon\Carbon::parse($batch->expiry_date)->startOfDay();
+                                    $today = now()->startOfDay();
+                                    $daysLeft = (int) $today->diffInDays($expiry, false);
                                     $isExpired = $daysLeft < 0;
+                                    $isToday = $daysLeft === 0;
                                     $isUrgent  = !$isExpired && $daysLeft <= 30;
                                     $isSoon    = !$isExpired && !$isUrgent && $daysLeft <= 90;
                                     $rowClass  = $isExpired ? 'bg-rose-50/50 dark:bg-rose-500/5' : ($isUrgent ? 'bg-orange-50/50 dark:bg-orange-500/5' : '');
@@ -281,7 +283,7 @@
                                         <span class="text-xs font-bold text-slate-700 dark:text-slate-200">{{ $batch->quantity }} un</span>
                                     </td>
                                     <td class="px-4 py-3.5 text-center">
-                                        <span class="text-xs font-mono {{ $isExpired ? 'text-rose-600 dark:text-rose-400 font-black' : 'text-slate-600 dark:text-slate-300' }}">
+                                        <span class="text-xs font-mono {{ $isExpired ? 'text-rose-600 dark:text-rose-400 font-black' : ($isToday ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-600 dark:text-slate-300') }}">
                                             {{ $expiry->format('d/m/Y') }}
                                         </span>
                                     </td>
@@ -290,13 +292,17 @@
                                             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-black bg-rose-600 text-white">
                                                 <i class="fa-solid fa-skull-crossbones text-[9px]"></i> Vencido
                                             </span>
+                                        @elseif($isToday)
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-black bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-500/30">
+                                                <i class="fa-solid fa-triangle-exclamation text-[9px]"></i> Vence Hoje
+                                            </span>
                                         @elseif($isUrgent)
                                             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-black bg-orange-100 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400">
                                                 <i class="fa-solid fa-fire text-[9px]"></i> {{ $daysLeft }}d restantes
                                             </span>
                                         @else
                                             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400">
-                                                <i class="fa-solid fa-hourglass-half text-[9px]"></i> {{ round($daysLeft) }}d
+                                                <i class="fa-solid fa-hourglass-half text-[9px]"></i> {{ $daysLeft }}d restantes
                                             </span>
                                         @endif
                                     </td>

@@ -242,8 +242,11 @@
                 <tbody class="divide-y divide-slate-800/60 bg-slate-900/40">
                     @foreach($batches as $batch)
                         @php
-                            $isExpired = $batch->expiry_date ? $batch->expiry_date->isPast() : false;
-                            $daysLeft = $batch->expiry_date ? now()->diffInDays($batch->expiry_date, false) : 999;
+                            $expiry = $batch->expiry_date ? \Carbon\Carbon::parse($batch->expiry_date)->startOfDay() : null;
+                            $today = now()->startOfDay();
+                            $daysLeft = $expiry ? (int) $today->diffInDays($expiry, false) : 999;
+                            $isExpired = $expiry ? $daysLeft < 0 : false;
+                            $isToday = $expiry ? $daysLeft === 0 : false;
                         @endphp
                         <tr class="hover:bg-slate-800/30 transition">
                             <td class="p-3.5 font-mono font-bold text-white">
@@ -255,13 +258,17 @@
                             <td class="p-3.5 text-slate-400 font-mono">
                                 {{ $batch->manufacture_date ? $batch->manufacture_date->format('d/m/Y') : 'N/D' }}
                             </td>
-                            <td class="p-3.5 font-mono font-bold {{ $isExpired ? 'text-rose-400' : ($daysLeft <= 30 ? 'text-amber-400' : 'text-slate-200') }}">
+                            <td class="p-3.5 font-mono font-bold {{ $isExpired ? 'text-rose-400' : ($isToday ? 'text-rose-400' : ($daysLeft <= 30 ? 'text-amber-400' : 'text-slate-200')) }}">
                                 {{ $batch->expiry_date ? $batch->expiry_date->format('d/m/Y') : 'N/D' }}
                             </td>
                             <td class="p-3.5 text-center">
                                 @if($isExpired)
                                     <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30">
                                         <i class="fa-solid fa-triangle-exclamation mr-1"></i> Vencido
+                                    </span>
+                                @elseif($isToday)
+                                    <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                                        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Vence Hoje
                                     </span>
                                 @elseif($daysLeft <= 30)
                                     <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">

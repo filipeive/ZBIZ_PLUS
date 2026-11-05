@@ -51,12 +51,12 @@ class ProductBatch extends Model
 
     public function isExpired(): bool
     {
-        return $this->expiry_date->isPast();
+        return $this->expiry_date->endOfDay()->isPast();
     }
 
     public function isExpiringWithin(int $days): bool
     {
-        return !$this->isExpired() && $this->expiry_date->diffInDays(now()) <= $days;
+        return !$this->isExpired() && (int) now()->startOfDay()->diffInDays($this->expiry_date->startOfDay(), false) <= $days;
     }
 
     public function getDaysUntilExpiryAttribute(): int
@@ -65,6 +65,6 @@ class ProductBatch extends Model
             return 0;
         }
 
-        return (int)now()->diffInDays($this->expiry_date, false);
+        return max(0, (int) now()->startOfDay()->diffInDays($this->expiry_date->startOfDay(), false));
     }
 }

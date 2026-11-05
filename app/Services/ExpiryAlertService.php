@@ -93,9 +93,10 @@ class ExpiryAlertService
             'expired_count' => $expired->count(),
             'expiring_soon_count' => $expiringSoon->count(),
             'batches' => $batches->map(function ($batch) {
-                $expDate = Carbon::parse($batch->expiry_date);
-                $isExpired = $expDate->isPast();
-                $daysLeft = (int) now()->diffInDays($expDate, false);
+                $expDate = Carbon::parse($batch->expiry_date)->startOfDay();
+                $today = now()->startOfDay();
+                $daysLeft = (int) $today->diffInDays($expDate, false);
+                $isExpired = $daysLeft < 0;
                 
                 return [
                     'id' => $batch->id,
@@ -106,7 +107,7 @@ class ExpiryAlertService
                     'expiry_date_formatted' => $expDate->format('d/m/Y'),
                     'quantity' => $batch->quantity,
                     'is_expired' => $isExpired,
-                    'days_left' => $daysLeft,
+                    'days_left' => max(0, $daysLeft),
                     'status_label' => $isExpired 
                         ? 'Vencido' 
                         : ($daysLeft === 0 ? 'Vence Hoje' : "Vence em {$daysLeft} dias"),
