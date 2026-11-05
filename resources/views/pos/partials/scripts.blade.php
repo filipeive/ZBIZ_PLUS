@@ -667,26 +667,26 @@
                             html: `
                                 <div class="text-left space-y-3">
                                     <div class="rounded-2xl border ${diff < 0 ? 'border-rose-400/30 bg-rose-500/10' : (diff > 0 ? 'border-emerald-400/30 bg-emerald-500/10' : 'border-sky-400/30 bg-sky-500/10')} p-3 text-center">
-                                        <div class="text-[10px] font-black uppercase tracking-widest ${diff < 0 ? 'text-rose-300' : (diff > 0 ? 'text-emerald-300' : 'text-sky-300')}">
+                                        <div class="text-[10px] font-black uppercase tracking-widest ${diff < 0 ? 'text-rose-600 dark:text-rose-300' : (diff > 0 ? 'text-emerald-600 dark:text-emerald-300' : 'text-sky-600 dark:text-sky-300')}">
                                             ${diff < 0 ? 'Quebra de Caixa' : (diff > 0 ? 'Sobra de Caixa' : 'Caixa Certo')}
                                         </div>
-                                        <div class="mt-1 text-sm font-bold text-white">${diffMessage}</div>
+                                        <div class="mt-1 text-sm font-bold text-slate-900 dark:text-white">${diffMessage}</div>
                                     </div>
 
                                     <div class="grid grid-cols-2 gap-2">
-                                        <div class="rounded-xl border border-slate-700 bg-slate-950/70 p-3">
-                                            <div class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Esperado pelo sistema</div>
-                                            <div class="mt-1 text-base font-black text-white">${this.formatCurrency(data.expected_cash)}</div>
+                                        <div class="swal-card">
+                                            <div class="swal-card-label">Esperado pelo sistema</div>
+                                            <div class="swal-card-value">${this.formatCurrency(data.expected_cash)}</div>
                                         </div>
-                                        <div class="rounded-xl border border-slate-700 bg-slate-950/70 p-3">
-                                            <div class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Contagem física</div>
-                                            <div class="mt-1 text-base font-black text-white">${this.formatCurrency(data.actual_cash)}</div>
+                                        <div class="swal-card">
+                                            <div class="swal-card-label">Contagem física</div>
+                                            <div class="swal-card-value">${this.formatCurrency(data.actual_cash)}</div>
                                         </div>
                                     </div>
 
-                                    <div class="flex items-center justify-between rounded-xl bg-slate-950 px-3 py-2.5">
-                                        <span class="text-xs font-bold text-slate-300">Diferença apurada</span>
-                                        <strong class="text-base font-black ${diff < 0 ? 'text-rose-400' : (diff > 0 ? 'text-emerald-400' : 'text-sky-400')}">
+                                    <div class="flex items-center justify-between rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-2.5">
+                                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Diferença apurada</span>
+                                        <strong class="text-base font-black ${diff < 0 ? 'text-rose-600 dark:text-rose-400' : (diff > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-sky-600 dark:text-sky-400')}">
                                             ${diff > 0 ? '+' : ''}${this.formatCurrency(diff)}
                                         </strong>
                                     </div>

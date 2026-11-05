@@ -1,0 +1,170 @@
+/* ==========================================================================
+   SweetAlert2 — Tema único ZBIZ+ (claro / escuro)
+   --------------------------------------------------------------------------
+   Os tokens são definidos em :root (claro, padrão da app) e redefinidos em
+   html.dark. Todas as regras usam .swal2-container como prefixo para vencer
+   o CSS injectado pela própria biblioteca sem recorrer a !important.
+   A classe antiga `dark-swal` continua aceite mas já não força cores.
+   ========================================================================== */
+
+:root {
+    --swal-bg: #ffffff;
+    --swal-fg: #0f172a;
+    --swal-muted: #475569;
+    --swal-border: #e2e8f0;
+    --swal-surface: #f8fafc;
+    --swal-input-bg: #ffffff;
+    --swal-input-border: #cbd5e1;
+    --swal-focus: rgba(16, 185, 129, 0.35);
+    --swal-backdrop: rgba(15, 23, 42, 0.45);
+    --swal-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+    --swal-confirm: #059669;
+    --swal-deny: #0f766e;
+    --swal-cancel-bg: #f1f5f9;
+    --swal-cancel-fg: #334155;
+    --swal-validation-bg: #fff1f2;
+    --swal-validation-fg: #be123c;
+}
+
+html.dark {
+    --swal-bg: #0f172a;
+    --swal-fg: #f8fafc;
+    --swal-muted: #cbd5e1;
+    --swal-border: #334155;
+    --swal-surface: #020617;
+    --swal-input-bg: #020617;
+    --swal-input-border: #475569;
+    --swal-focus: rgba(52, 211, 153, 0.4);
+    --swal-backdrop: rgba(2, 6, 23, 0.78);
+    --swal-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    --swal-confirm: #059669;
+    --swal-deny: #0d9488;
+    --swal-cancel-bg: #1e293b;
+    --swal-cancel-fg: #e2e8f0;
+    --swal-validation-bg: rgba(225, 29, 72, 0.15);
+    --swal-validation-fg: #fda4af;
+}
+
+.swal2-container.swal2-backdrop-show,
+.swal2-container.swal2-noanimation {
+    background: var(--swal-backdrop);
+}
+
+.swal2-container .swal2-popup {
+    background: var(--swal-bg);
+    color: var(--swal-fg);
+    border: 1px solid var(--swal-border);
+    border-radius: 1.25rem;
+    box-shadow: var(--swal-shadow);
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+.swal2-container .swal2-title {
+    color: var(--swal-fg);
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    font-weight: 800;
+    font-size: 1.15rem;
+}
+
+.swal2-container .swal2-html-container,
+.swal2-container .swal2-footer {
+    color: var(--swal-muted);
+    font-size: 0.875rem;
+}
+
+.swal2-container .swal2-footer {
+    border-top-color: var(--swal-border);
+}
+
+.swal2-container .swal2-close {
+    color: var(--swal-muted);
+}
+.swal2-container .swal2-close:hover {
+    color: var(--swal-fg);
+}
+
+/* Botões */
+.swal2-container .swal2-actions .swal2-styled {
+    border-radius: 0.75rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+    min-height: 44px;
+    padding: 0.6rem 1.15rem;
+}
+.swal2-container .swal2-actions .swal2-styled:focus-visible {
+    box-shadow: 0 0 0 3px var(--swal-focus);
+}
+.swal2-container .swal2-styled.swal2-confirm {
+    background-color: var(--swal-confirm);
+    color: #ffffff;
+}
+.swal2-container .swal2-styled.swal2-deny {
+    background-color: var(--swal-deny);
+    color: #ffffff;
+}
+.swal2-container .swal2-styled.swal2-cancel {
+    background-color: var(--swal-cancel-bg);
+    color: var(--swal-cancel-fg);
+    border: 1px solid var(--swal-border);
+}
+
+/* Inputs */
+.swal2-container .swal2-input,
+.swal2-container .swal2-textarea,
+.swal2-container .swal2-select,
+.swal2-container .swal2-file {
+    background: var(--swal-input-bg);
+    color: var(--swal-fg);
+    border: 1px solid var(--swal-input-border);
+    border-radius: 0.75rem;
+    box-shadow: none;
+}
+.swal2-container .swal2-input:focus,
+.swal2-container .swal2-textarea:focus,
+.swal2-container .swal2-select:focus {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px var(--swal-focus);
+}
+.swal2-container .swal2-input-label {
+    color: var(--swal-fg);
+}
+
+/* Mensagem de validação */
+.swal2-container .swal2-validation-message {
+    background: var(--swal-validation-bg);
+    color: var(--swal-validation-fg);
+}
+
+/* Barra de progresso do timer */
+.swal2-container .swal2-timer-progress-bar {
+    background: rgba(16, 185, 129, 0.6);
+}
+
+/* Ícone "success": a biblioteca pinta máscaras com a cor do fundo */
+.swal2-container .swal2-icon.swal2-success [class^='swal2-success-circular-line'],
+.swal2-container .swal2-icon.swal2-success .swal2-success-fix {
+    background-color: var(--swal-bg);
+}
+
+/* Cartões internos usados em conteúdos HTML (ex.: resumo de fecho de caixa) */
+.swal-card {
+    background: var(--swal-surface);
+    border: 1px solid var(--swal-border);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+}
+.swal-card-label {
+    color: var(--swal-muted);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.swal-card-value {
+    color: var(--swal-fg);
+    font-size: 1rem;
+    font-weight: 900;
+    margin-top: 0.25rem;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+

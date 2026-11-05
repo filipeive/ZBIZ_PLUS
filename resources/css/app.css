@@ -13,27 +13,10 @@
 @import '@fortawesome/fontawesome-free/css/all.min.css';
 
 @import './legacy-app.css';
+@import './swal-theme.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* SweetAlert2 dark theme popup styling */
-.swal2-popup.dark-swal {
-    background: rgba(15, 23, 42, 0.96) !important;
-    border: 1px solid rgba(51, 65, 85, 0.8) !important;
-    border-radius: 1.5rem !important;
-    color: #f8fafc !important;
-    backdrop-filter: blur(16px) !important;
-}
-.swal2-popup.dark-swal .swal2-title {
-    color: #f8fafc !important;
-    font-weight: 800 !important;
-    font-size: 1.15rem !important;
-}
-.swal2-popup.dark-swal .swal2-html-container {
-    color: #cbd5e1 !important;
-    font-size: 0.85rem !important;
-}
 
 

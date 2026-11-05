@@ -798,21 +798,6 @@
             border-color: var(--app-border) !important;
         }
 
-        html.light .swal2-popup.dark-swal {
-            background: #ffffff !important;
-            border: 1px solid #e2e8f0 !important;
-            color: #0f172a !important;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
-        }
-
-        html.light .swal2-title {
-            color: #0f172a !important;
-        }
-
-        html.light .swal2-html-container {
-            color: #475569 !important;
-        }
-
         html.light ::-webkit-scrollbar-track {
             background: #f1f5f9;
         }
