@@ -42,7 +42,7 @@ class RegisterController extends Controller
         }
 
         if ($isOffline) {
-            abort(404);
+            abort(404, 'O pré-registo online de novas empresas não está disponível em modo offline/local. Para ativar este terminal, utilize a sua conta existente ou contacte o suporte técnico.');
         }
     }
 

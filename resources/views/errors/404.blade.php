@@ -16,7 +16,7 @@
             <span class="text-xs font-black font-mono uppercase tracking-widest text-amber-400">Erro 404</span>
             <h1 class="text-2xl font-black font-heading text-white mt-1">Página Não Encontrada</h1>
             <p class="text-xs text-slate-400 mt-2 leading-relaxed">
-                O endereço ou rota solicitada não existe, foi desativada ou movida permanentemente.
+                {{ $exception?->getMessage() ?: 'O endereço ou rota solicitada não existe, foi desativada ou movida permanentemente.' }}
             </p>
         </div>
         <div class="pt-2 flex flex-col gap-2">
