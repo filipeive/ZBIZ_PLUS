@@ -1,0 +1,263 @@
+/* ==========================================================================
+   ZBIZ+ Authentication & Guest Layout Styling
+   Supports Light & Dark themes, 360/768/1280px viewports, 0 CDNs.
+   ========================================================================== */
+
+/* Soft Aurora Mesh Background */
+.aura-bg {
+    background-color: #0f172a;
+    background-image:
+        radial-gradient(at 10% 20%, rgba(17, 94, 89, 0.45) 0px, transparent 50%),
+        radial-gradient(at 90% 15%, rgba(3, 105, 161, 0.45) 0px, transparent 50%),
+        radial-gradient(at 80% 80%, rgba(56, 189, 248, 0.35) 0px, transparent 50%),
+        radial-gradient(at 20% 85%, rgba(71, 85, 105, 0.45) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, rgba(15, 118, 110, 0.45) 0px, transparent 50%);
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+html.light .aura-bg {
+    background-color: #1e3a4c;
+    background-image:
+        radial-gradient(at 10% 20%, #115e59 0px, transparent 50%),
+        radial-gradient(at 90% 15%, #0369a1 0px, transparent 50%),
+        radial-gradient(at 80% 80%, #38bdf8 0px, transparent 50%),
+        radial-gradient(at 20% 85%, #475569 0px, transparent 50%),
+        radial-gradient(at 50% 50%, #0f766e 0px, transparent 50%);
+}
+
+/* Card Shell */
+.auth-shell {
+    width: min(100%, var(--auth-card-width, 420px));
+}
+
+.auth-card {
+    background-color: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 2.25rem;
+    padding: 2rem;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.35);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    transition: all 0.2s ease-in-out;
+}
+
+html.dark .auth-card {
+    background-color: rgba(15, 23, 42, 0.94);
+    border-color: rgba(51, 65, 85, 0.6);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}
+
+@media (min-width: 640px) {
+    .auth-card {
+        padding: 2.5rem;
+        border-radius: 2.5rem;
+    }
+}
+
+/* Typography */
+.auth-title {
+    color: #0f172a;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+html.dark .auth-title {
+    color: #f8fafc;
+}
+
+.auth-copy {
+    color: #64748b;
+    font-size: 0.75rem;
+    line-height: 1.35rem;
+}
+
+html.dark .auth-copy {
+    color: #94a3b8;
+}
+
+.auth-label {
+    display: block;
+    margin-bottom: 0.375rem;
+    color: #334155;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+html.dark .auth-label {
+    color: #cbd5e1;
+}
+
+/* Inputs */
+.auth-input,
+.minimal-input {
+    width: 100%;
+    border: 0 !important;
+    border-bottom: 1.5px solid #cbd5e1 !important;
+    border-radius: 0 !important;
+    padding-left: 2.25rem !important;
+    padding-right: 2.25rem !important;
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+    background: transparent !important;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    color: #0f172a;
+    font-size: 0.95rem;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+html.dark .auth-input,
+html.dark .minimal-input {
+    border-bottom-color: #334155 !important;
+    color: #f8fafc;
+}
+
+.auth-input:focus,
+.minimal-input:focus {
+    outline: none !important;
+    border-bottom-color: #0284c7 !important;
+    box-shadow: 0 1px 0 0 #0284c7 !important;
+}
+
+html.dark .auth-input:focus,
+html.dark .minimal-input:focus {
+    border-bottom-color: #38bdf8 !important;
+    box-shadow: 0 1px 0 0 #38bdf8 !important;
+}
+
+.auth-input::placeholder,
+.minimal-input::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+html.dark .auth-input::placeholder,
+html.dark .minimal-input::placeholder {
+    color: #64748b;
+}
+
+.auth-icon {
+    color: rgba(14, 165, 233, 0.85);
+}
+
+html.dark .auth-icon {
+    color: #38bdf8;
+}
+
+/* Primary Pill Button */
+.auth-button {
+    width: 100%;
+    border-radius: 9999px;
+    background: #071529;
+    color: #ffffff;
+    padding: 0.875rem 1.5rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    box-shadow: 0 18px 35px rgba(7, 21, 41, 0.24);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.auth-button:hover {
+    background: #0f2744;
+    transform: translateY(-1.5px);
+    box-shadow: 0 22px 42px rgba(7, 21, 41, 0.35);
+}
+
+.auth-button:active {
+    transform: translateY(0) scale(0.98);
+}
+
+html.dark .auth-button {
+    background: #0284c7;
+    box-shadow: 0 14px 28px rgba(2, 132, 199, 0.3);
+}
+
+html.dark .auth-button:hover {
+    background: #0369a1;
+    box-shadow: 0 18px 35px rgba(2, 132, 199, 0.45);
+}
+
+.auth-secondary-button {
+    width: 100%;
+    border-radius: 9999px;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #334155;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    cursor: pointer;
+}
+
+html.dark .auth-secondary-button {
+    background: #1e293b;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+
+.auth-secondary-button:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+html.dark .auth-secondary-button:hover {
+    background: #334155;
+    color: #ffffff;
+}
+
+/* Links & Notes */
+.auth-link {
+    color: #0284c7;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+html.dark .auth-link {
+    color: #38bdf8;
+}
+
+.auth-link:hover {
+    color: #075985;
+    text-decoration: underline;
+}
+
+html.dark .auth-link:hover {
+    color: #7dd3fc;
+}
+
+.auth-note {
+    border: 1px solid #bae6fd;
+    background: #f0f9ff;
+    color: #075985;
+    border-radius: 1rem;
+    padding: 0.875rem;
+    font-size: 0.75rem;
+}
+
+html.dark .auth-note {
+    border-color: rgba(14, 165, 233, 0.3);
+    background: rgba(14, 165, 233, 0.1);
+    color: #bae6fd;
+}
+
+.auth-card-soft {
+    border: 1px solid #e2e8f0;
+    background: rgba(248, 250, 252, 0.8);
+    border-radius: 1rem;
+}
+
+html.dark .auth-card-soft {
+    border-color: #334155;
+    background: rgba(30, 41, 59, 0.8);
+}
