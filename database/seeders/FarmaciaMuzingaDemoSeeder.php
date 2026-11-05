@@ -312,7 +312,7 @@ class FarmaciaMuzingaDemoSeeder extends Seeder
         $products = [
             [
                 'sku' => 'DEMO-EXP-001',
-                'name' => 'Paracetamol 500mg (Lote Vencido)',
+                'name' => 'Paracetamol 500mg',
                 'category' => 'Analgesicos e Anti-inflamatorios',
                 'stock' => 24,
                 'minimum' => 5,
@@ -321,7 +321,7 @@ class FarmaciaMuzingaDemoSeeder extends Seeder
             ],
             [
                 'sku' => 'DEMO-EXP-002',
-                'name' => 'Amoxicilina 500mg (Vence Hoje)',
+                'name' => 'Amoxicilina 500mg',
                 'category' => 'Antibioticos e Antimicrobianos',
                 'stock' => 18,
                 'minimum' => 5,
@@ -330,7 +330,7 @@ class FarmaciaMuzingaDemoSeeder extends Seeder
             ],
             [
                 'sku' => 'DEMO-EXP-003',
-                'name' => 'Ibuprofeno 400mg (Vence em 30 Dias)',
+                'name' => 'Ibuprofeno 400mg',
                 'category' => 'Analgesicos e Anti-inflamatorios',
                 'stock' => 36,
                 'minimum' => 10,
@@ -339,7 +339,7 @@ class FarmaciaMuzingaDemoSeeder extends Seeder
             ],
             [
                 'sku' => 'DEMO-EXP-004',
-                'name' => 'Soro Oral (Vence em 60 Dias)',
+                'name' => 'Soro Oral',
                 'category' => 'Pediatria',
                 'stock' => 42,
                 'minimum' => 10,

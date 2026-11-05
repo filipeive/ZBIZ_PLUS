@@ -35,6 +35,11 @@ class OrderItem extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function getCleanItemNameAttribute(): string
+    {
+        return trim(preg_replace('/\s*\((?:vence|lote)[^)]*\)/i', '', (string) $this->item_name));
+    }
+
     // Mutators
     public function setTotalPriceAttribute($value)
     {

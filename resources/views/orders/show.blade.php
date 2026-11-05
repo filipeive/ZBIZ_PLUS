@@ -260,7 +260,7 @@
                     @forelse($order->items as $item)
                         <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition">
                             <td class="p-4">
-                                <div class="font-bold text-slate-900 dark:text-white text-sm">{{ $item->item_name }}</div>
+                                <div class="font-bold text-slate-900 dark:text-white text-sm">{{ $item->clean_item_name ?? $item->item_name }}</div>
                                 @if($item->product)
                                     <div class="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 mt-0.5">
                                         <i class="fa-solid fa-tag text-[10px]"></i>

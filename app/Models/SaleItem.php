@@ -37,7 +37,8 @@ class SaleItem extends Model
 
     public function getProductNameAttribute(): string
     {
-        return $this->product?->name ?? 'Artigo';
+        $name = $this->product?->name ?? 'Artigo';
+        return trim(preg_replace('/\s*\((?:vence|lote)[^)]*\)/i', '', $name));
     }
 
     /**
