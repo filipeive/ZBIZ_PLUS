@@ -438,10 +438,10 @@ class OrderController extends Controller
             return back()->with('error', 'Erro ao converter pedido: ' . $e->getMessage());
         }
     }
-    // Mostra os detalhes de um pedido (página cFompleta)
+    // Mostra os detalhes de um pedido (página completa)
     public function show(Order $order)
     {
-        $order->load(['user', 'items.product', 'debt']);
+        $order->load(['user', 'items.product.category', 'debt', 'customer', 'restaurantTable']);
         return view('orders.show', compact('order'));
     }
 

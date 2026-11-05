@@ -72,6 +72,15 @@ class Order extends Model
     /* ============================
      * ACCESSORS
      * ============================ */
+    public function getTotalAmountAttribute(): float
+    {
+        if ($this->relationLoaded('items') && $this->items->isNotEmpty()) {
+            return (float) $this->items->sum('total_price');
+        }
+
+        return (float) ($this->estimated_amount ?? 0);
+    }
+
     public function getRemainingAmountAttribute()
     {
         return $this->estimated_amount - $this->advance_payment;

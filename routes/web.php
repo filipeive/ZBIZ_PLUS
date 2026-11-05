@@ -191,7 +191,7 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         Route::get('/{order}/duplicate', [OrderController::class, 'duplicate'])->name('duplicate')->middleware('permissions:create_orders');
         
         // NOVA ROTA: Página para concluir o pedido
-        Route::patch('/{order}/complete', [OrderController::class, 'complete'])->name('complete')->middleware('permissions:edit_orders');
+        Route::match(['get', 'patch'], '/{order}/complete', [OrderController::class, 'complete'])->name('complete')->middleware('permissions:edit_orders');
 
         // POST/PUT/PATCH/DELETE Routes
         Route::post('/', [OrderController::class, 'store'])->name('store')->middleware('permissions:create_orders');
