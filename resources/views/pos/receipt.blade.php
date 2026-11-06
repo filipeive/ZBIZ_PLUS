@@ -152,12 +152,22 @@
         <p>Obrigado pela preferência!</p>
         <p>Documento processado por <strong>ZBIZ+</strong></p>
     </div>
-
+    <!-- botao de fechar ou fecha automaticamente a janela após 5 segundos de impressão -->
+    <div class="text-center">
+        <button class="btn-print" onclick="window.close()">FECHAR</button>
+    </div>
     <script>
         window.onload = function() {
             if (window.location.search.includes('autoprint=1')) {
                 window.print();
             }
+            //close automatically after printing/ cancel printing
+            window.onafterprint = function() {
+                //depois de 5 segundos fecha a janela
+                setTimeout(function() {
+                    window.close();
+                }, 5000);
+            };
         };
     </script>
 </body>
