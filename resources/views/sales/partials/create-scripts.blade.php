@@ -97,6 +97,65 @@
                     : []
             );
 
+            // ===== HELPERS DE MODAIS E SIDERS (TAILWIND PURO) =====
+            function openOverlayModal(id) {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.classList.remove('hidden');
+                el.classList.add('flex');
+                el.setAttribute('aria-hidden', 'false');
+            }
+
+            function closeOverlayModal(id) {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+                el.setAttribute('aria-hidden', 'true');
+            }
+
+            document.querySelectorAll('[data-close-modal]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    closeOverlayModal(this.getAttribute('data-close-modal'));
+                });
+            });
+
+            ['editPricesModal', 'orderCreationOffcanvas', 'debtCreationOffcanvas'].forEach(modalId => {
+                const modalEl = document.getElementById(modalId);
+                if (modalEl) {
+                    modalEl.addEventListener('click', function(e) {
+                        if (e.target === modalEl) {
+                            closeOverlayModal(modalId);
+                        }
+                    });
+                }
+            });
+
+            // ===== SIDER MOBILE DO CARRINHO (< 1024px) =====
+            const mobileCartSider = document.getElementById('mobile-cart-sider');
+            const openMobileCartBtn = document.getElementById('open-mobile-cart-btn');
+            const closeMobileCartBtn = document.getElementById('close-mobile-cart-btn');
+
+            function openMobileCart() {
+                if (!mobileCartSider) return;
+                mobileCartSider.classList.remove('hidden');
+                mobileCartSider.classList.add('flex');
+            }
+
+            function closeMobileCart() {
+                if (!mobileCartSider) return;
+                mobileCartSider.classList.add('hidden');
+                mobileCartSider.classList.remove('flex');
+            }
+
+            openMobileCartBtn?.addEventListener('click', openMobileCart);
+            closeMobileCartBtn?.addEventListener('click', closeMobileCart);
+            mobileCartSider?.addEventListener('click', function(e) {
+                if (e.target === mobileCartSider && window.innerWidth < 1024) {
+                    closeMobileCart();
+                }
+            });
+
             // ===== SISTEMA DE NOTIFICAÇÃO (TOAST) =====
             function showToast(message, type = 'success') {
                 if (window.toast) {
@@ -390,10 +449,18 @@
                 const emptyMessage = document.getElementById('empty-cart-message');
                 const finalizeBtn = document.getElementById('finalize-sale');
                 const cartCounterBadge = document.getElementById('cart-items-badge');
+                const mobileCartCount = document.getElementById('mobile-cart-count');
+                const mobileCartTotal = document.getElementById('mobile-cart-total');
 
                 const totals = calculateTotals();
                 if (cartCounterBadge) {
                     cartCounterBadge.textContent = `${totals.totalItems} ${totals.totalItems === 1 ? 'item' : 'itens'}`;
+                }
+                if (mobileCartCount) {
+                    mobileCartCount.textContent = totals.totalItems;
+                }
+                if (mobileCartTotal) {
+                    mobileCartTotal.textContent = `${totals.finalTotal.toFixed(2).replace('.', ',')} MT`;
                 }
 
                 if (cart.length === 0) {
@@ -592,8 +659,8 @@
                     const isHidden = discountSection.style.display === 'none';
                     discountSection.style.display = isHidden ? 'block' : 'none';
                     this.innerHTML = isHidden 
-                        ? '<i class="fa-solid fa-xmark text-amber-500 text-[11px]"></i><span>Fechar Desconto</span>' 
-                        : '<i class="fa-solid fa-percent text-amber-500 text-[11px]"></i><span>Desconto (F3)</span>';
+                        ? '<i class="fa-solid fa-xmark text-amber-500 text-[10px]"></i><span>Fechar</span>' 
+                        : '<i class="fa-solid fa-percent text-amber-500 text-[10px]"></i><span>Desconto (F3)</span>';
                 });
             }
 
@@ -666,8 +733,7 @@
                     tbody.insertAdjacentHTML('beforeend', row);
                 });
 
-                const modal = new bootstrap.Modal(document.getElementById('editPricesModal'));
-                modal.show();
+                openOverlayModal('editPricesModal');
             });
 
             document.getElementById('save-price-changes')?.addEventListener('click', function() {
@@ -689,7 +755,7 @@
                     showToast('Preços atualizados com sucesso!', 'success');
                 }
 
-                bootstrap.Modal.getInstance(document.getElementById('editPricesModal'))?.hide();
+                closeOverlayModal('editPricesModal');
             });
 
             // ===== LIMPAR CARRINHO =====
@@ -766,8 +832,7 @@
                 }));
                 document.getElementById('order-items-input').value = JSON.stringify(orderItems);
 
-                const offcanvas = new bootstrap.Offcanvas(document.getElementById('orderCreationOffcanvas'));
-                offcanvas.show();
+                openOverlayModal('orderCreationOffcanvas');
             });
 
             document.getElementById('submit-order-form')?.addEventListener('click', function() {
@@ -802,7 +867,7 @@
                         cart = [];
                         generalDiscount = { value: 0, type: 'fixed', reason: '' };
                         updateCartDisplay();
-                        bootstrap.Offcanvas.getInstance(document.getElementById('orderCreationOffcanvas'))?.hide();
+                        closeOverlayModal('orderCreationOffcanvas');
                         setTimeout(() => {
                             window.location.href = data.redirect || '/orders';
                         }, 1200);
@@ -846,8 +911,7 @@
                 }));
                 document.getElementById('debt-items-input').value = JSON.stringify(debtProducts);
 
-                const offcanvas = new bootstrap.Offcanvas(document.getElementById('debtCreationOffcanvas'));
-                offcanvas.show();
+                openOverlayModal('debtCreationOffcanvas');
             });
 
             document.getElementById('submit-debt-form')?.addEventListener('click', function() {
@@ -889,7 +953,7 @@
                         showToast(data.message || 'Dívida criada com sucesso!', 'success');
                         cart = [];
                         updateCartDisplay();
-                        bootstrap.Offcanvas.getInstance(document.getElementById('debtCreationOffcanvas'))?.hide();
+                        closeOverlayModal('debtCreationOffcanvas');
                         setTimeout(() => {
                             window.location.href = data.redirect || '/debts';
                         }, 1200);
@@ -918,6 +982,8 @@
                     if (discountSection && discountSection.style.display !== 'none') {
                         toggleDiscountBtn.click();
                     }
+                    ['editPricesModal', 'orderCreationOffcanvas', 'debtCreationOffcanvas'].forEach(closeOverlayModal);
+                    if (window.innerWidth < 1024) closeMobileCart();
                 }
 
                 if (e.key === 'F2') {

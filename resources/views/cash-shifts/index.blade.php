@@ -8,7 +8,7 @@
 @endphp
 
 @section('content')
-<div class="space-y-6" x-data="{ viewMode: window.innerWidth < 1024 ? 'grid' : (localStorage.getItem('preferredView_cash_shifts') || 'table') }">
+<div class="space-y-6" x-data="{ viewMode: window.innerWidth < 1024 ? 'grid' : (localStorage.getItem('preferredView_cash_shifts') || 'table'), showStats: localStorage.getItem('zb_cash_shifts_stats_open') !== 'false' }">
     
     {{-- Header & Top Controls --}}
     <x-ui.page-header
@@ -17,6 +17,15 @@
         icon="fa-solid fa-cash-register"
     >
         <div class="flex flex-wrap items-center gap-2">
+            {{-- Botão Colapsar/Expandir Métricas --}}
+            <button type="button"
+                    @click="showStats = !showStats; localStorage.setItem('zb_cash_shifts_stats_open', showStats)"
+                    class="px-3.5 py-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-xs">
+                <i class="fa-solid fa-chart-pie text-sky-500"></i>
+                <span x-text="showStats ? 'Ocultar Métricas' : 'Ver Métricas'">Ocultar Métricas</span>
+                <i class="fa-solid fa-chevron-up text-[10px] transition-transform duration-200" :class="!showStats && 'rotate-180'"></i>
+            </button>
+
             {{-- View Switcher --}}
             <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-1 flex items-center gap-1">
                 <button type="button"
@@ -92,41 +101,74 @@
         </form>
     </div>
 
-    {{-- 4 KPI Summary Cards --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <x-ui.stat-card
-            title="Total Turnos"
-            :value="$totalShifts"
-            unit="turnos"
-            :subtitle="$openShifts . ' turno(s) actualmente em curso'"
-            icon="fa-solid fa-clock-rotate-left"
-            color="sky"
-        />
+    {{-- Stat Cards Colapsáveis --}}
+    <div>
+        <div x-show="showStats" x-transition class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <x-ui.stat-card
+                title="Total Turnos"
+                :value="$totalShifts"
+                unit="turnos"
+                :subtitle="$openShifts . ' turno(s) actualmente em curso'"
+                icon="fa-solid fa-clock-rotate-left"
+                color="sky"
+            />
 
-        <x-ui.stat-card
-            title="Turnos Abertos"
-            :value="$openShifts"
-            unit="caixas"
-            subtitle="Caixas em operação ativa neste momento"
-            icon="fa-solid fa-door-open"
-            color="emerald"
-        />
+            <x-ui.stat-card
+                title="Turnos Abertos"
+                :value="$openShifts"
+                unit="caixas"
+                subtitle="Caixas em operação ativa neste momento"
+                icon="fa-solid fa-door-open"
+                color="emerald"
+            />
 
-        <x-ui.stat-card
-            title="Quebras (Faltas)"
-            :value="number_format($totalShortages, 2, ',', '.') . ' MT'"
-            subtitle="Diferenças negativas apuradas em fecho cego"
-            icon="fa-solid fa-triangle-exclamation"
-            color="rose"
-        />
+            <x-ui.stat-card
+                title="Quebras (Faltas)"
+                :value="number_format($totalShortages, 2, ',', '.') . ' MT'"
+                subtitle="Diferenças negativas apuradas em fecho cego"
+                icon="fa-solid fa-triangle-exclamation"
+                color="rose"
+            />
 
-        <x-ui.stat-card
-            title="Sobras de Caixa"
-            :value="'+' . number_format($totalSurpluses, 2, ',', '.') . ' MT'"
-            subtitle="Excedentes de numerário apurados no fecho"
-            icon="fa-solid fa-circle-plus"
-            color="amber"
-        />
+            <x-ui.stat-card
+                title="Sobras de Caixa"
+                :value="'+' . number_format($totalSurpluses, 2, ',', '.') . ' MT'"
+                subtitle="Excedentes de numerário apurados no fecho"
+                icon="fa-solid fa-circle-plus"
+                color="amber"
+            />
+        </div>
+
+        <div x-show="!showStats" x-cloak
+             @click="showStats = true; localStorage.setItem('zb_cash_shifts_stats_open', true)"
+             class="px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-wrap items-center justify-between gap-3 cursor-pointer hover:border-sky-500/50 transition shadow-xs">
+            <div class="flex flex-wrap items-center gap-4 text-xs">
+                <span class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                    <i class="fa-solid fa-clock-rotate-left text-sky-500"></i>
+                    <span>Total Turnos:</span>
+                    <strong class="text-slate-900 dark:text-white tabular-nums">{{ $totalShifts }}</strong>
+                </span>
+                <span class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                    <i class="fa-solid fa-door-open text-emerald-500"></i>
+                    <span>Abertos:</span>
+                    <strong class="text-slate-900 dark:text-white tabular-nums">{{ $openShifts }}</strong>
+                </span>
+                <span class="flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>Quebras:</span>
+                    <strong class="tabular-nums">{{ number_format($totalShortages, 2, ',', '.') }} MT</strong>
+                </span>
+                <span class="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                    <i class="fa-solid fa-circle-plus"></i>
+                    <span>Sobras:</span>
+                    <strong class="tabular-nums">+{{ number_format($totalSurpluses, 2, ',', '.') }} MT</strong>
+                </span>
+            </div>
+            <span class="text-[11px] font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1">
+                <span>Expandir</span>
+                <i class="fa-solid fa-chevron-down text-[9px]"></i>
+            </span>
+        </div>
     </div>
 
     {{-- GRID VIEW CARDS (Mobile & Tablet) --}}

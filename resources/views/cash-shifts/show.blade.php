@@ -11,6 +11,7 @@
 
 @section('content')
 <div class="space-y-6" x-data="{
+    showStats: localStorage.getItem('zb_cash_shift_show_stats_open') !== 'false',
     showCorrection: false,
     correctionValue: '{{ $shift->closing_balance_actual }}',
     correctionReason: '',
@@ -97,6 +98,14 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <button type="button"
+                    @click="showStats = !showStats; localStorage.setItem('zb_cash_shift_show_stats_open', showStats)"
+                    class="px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-xs">
+                <i class="fa-solid fa-chart-pie text-sky-500"></i>
+                <span x-text="showStats ? 'Ocultar Métricas' : 'Ver Métricas'">Ocultar Métricas</span>
+                <i class="fa-solid fa-chevron-up text-[10px] transition-transform duration-200" :class="!showStats && 'rotate-180'"></i>
+            </button>
+
             <a href="{{ route('cash-shifts.receipt', $shift) }}" target="_blank"
                class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-sm">
                 <i class="fa-solid fa-receipt text-xs text-sky-500"></i>
@@ -119,40 +128,73 @@
         </div>
     </div>
 
-    {{-- Summary KPIs --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <x-ui.stat-card
-            title="Total de Vendas"
-            :value="$shift->sales->count()"
-            unit="talões"
-            subtitle="Vendas emitidas durante o turno"
-            icon="fa-solid fa-receipt"
-            color="sky"
-        />
+    {{-- Stat Cards Colapsáveis --}}
+    <div>
+        <div x-show="showStats" x-transition class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <x-ui.stat-card
+                title="Total de Vendas"
+                :value="$shift->sales->count()"
+                unit="talões"
+                subtitle="Vendas emitidas durante o turno"
+                icon="fa-solid fa-receipt"
+                color="sky"
+            />
 
-        <x-ui.stat-card
-            title="Total Faturado"
-            :value="number_format($shift->total_sales_amount, 2, ',', '.') . ' MT'"
-            subtitle="Volume global faturado neste turno"
-            icon="fa-solid fa-chart-line"
-            color="emerald"
-        />
+            <x-ui.stat-card
+                title="Total Faturado"
+                :value="number_format($shift->total_sales_amount, 2, ',', '.') . ' MT'"
+                subtitle="Volume global faturado neste turno"
+                icon="fa-solid fa-chart-line"
+                color="emerald"
+            />
 
-        <x-ui.stat-card
-            title="Vendas em Dinheiro"
-            :value="number_format($shift->cash_sales_total, 2, ',', '.') . ' MT'"
-            subtitle="Numerário físico transacionado"
-            icon="fa-solid fa-money-bill-wave"
-            color="teal"
-        />
+            <x-ui.stat-card
+                title="Vendas em Dinheiro"
+                :value="number_format($shift->cash_sales_total, 2, ',', '.') . ' MT'"
+                subtitle="Numerário físico transacionado"
+                icon="fa-solid fa-money-bill-wave"
+                color="teal"
+            />
 
-        <x-ui.stat-card
-            title="Diferença Apurada"
-            :value="($difference > 0 ? '+' : '') . number_format($difference, 2, ',', '.') . ' MT'"
-            :subtitle="$difference < 0 ? 'Quebra (Falta de dinheiro)' : ($difference > 0 ? 'Sobra de caixa apurada' : 'Caixa certo sem diferenças')"
-            icon="fa-solid fa-scale-balanced"
-            :color="$difference < 0 ? 'rose' : ($difference > 0 ? 'amber' : 'emerald')"
-        />
+            <x-ui.stat-card
+                title="Diferença Apurada"
+                :value="($difference > 0 ? '+' : '') . number_format($difference, 2, ',', '.') . ' MT'"
+                :subtitle="$difference < 0 ? 'Quebra (Falta de dinheiro)' : ($difference > 0 ? 'Sobra de caixa apurada' : 'Caixa certo sem diferenças')"
+                icon="fa-solid fa-scale-balanced"
+                :color="$difference < 0 ? 'rose' : ($difference > 0 ? 'amber' : 'emerald')"
+            />
+        </div>
+
+        <div x-show="!showStats" x-cloak
+             @click="showStats = true; localStorage.setItem('zb_cash_shift_show_stats_open', true)"
+             class="px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-wrap items-center justify-between gap-3 cursor-pointer hover:border-sky-500/50 transition shadow-xs">
+            <div class="flex flex-wrap items-center gap-4 text-xs">
+                <span class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                    <i class="fa-solid fa-receipt text-sky-500"></i>
+                    <span>Talões:</span>
+                    <strong class="text-slate-900 dark:text-white tabular-nums">{{ $shift->sales->count() }}</strong>
+                </span>
+                <span class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                    <i class="fa-solid fa-chart-line text-emerald-500"></i>
+                    <span>Faturado:</span>
+                    <strong class="text-slate-900 dark:text-white tabular-nums">{{ number_format($shift->total_sales_amount, 2, ',', '.') }} MT</strong>
+                </span>
+                <span class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                    <i class="fa-solid fa-money-bill-wave text-teal-500"></i>
+                    <span>Numerário:</span>
+                    <strong class="text-slate-900 dark:text-white tabular-nums">{{ number_format($shift->cash_sales_total, 2, ',', '.') }} MT</strong>
+                </span>
+                <span class="flex items-center gap-1.5 {{ $difference < 0 ? 'text-rose-600 dark:text-rose-400' : ($difference > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400') }}">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                    <span>Diferença:</span>
+                    <strong class="tabular-nums">{{ ($difference > 0 ? '+' : '') . number_format($difference, 2, ',', '.') }} MT</strong>
+                </span>
+            </div>
+            <span class="text-[11px] font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1">
+                <span>Expandir</span>
+                <i class="fa-solid fa-chevron-down text-[9px]"></i>
+            </span>
+        </div>
     </div>
 
     {{-- Sales History Table --}}

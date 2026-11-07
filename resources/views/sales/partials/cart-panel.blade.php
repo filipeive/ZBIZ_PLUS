@@ -2,10 +2,39 @@
     $isManual = $isManual ?? false;
 @endphp
 
-<div class="lg:col-span-5 space-y-4" x-data="{ showCustomDate: {{ $isManual ? 'true' : 'false' }} }">
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-5 transition sticky top-6">
+{{-- Barra Flutuante Inferior (Apenas Mobile / Tablet < 1024px) --}}
+<div class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-4 py-3 shadow-2xl flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+        <div class="relative w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold text-sm">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="mobile-cart-count" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center shadow-xs">
+                0
+            </span>
+        </div>
+        <div>
+            <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Total a Pagar</span>
+            <strong id="mobile-cart-total" class="text-base font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
+                0,00 MT
+            </strong>
+        </div>
+    </div>
+
+    <button type="button"
+            id="open-mobile-cart-btn"
+            class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-extrabold transition flex items-center gap-2 shadow-sm cursor-pointer">
+        <span>Carrinho &amp; Finalizar</span>
+        <i class="fa-solid fa-arrow-right text-[11px]"></i>
+    </button>
+</div>
+
+{{-- Coluna Direita (Desktop) / Sider Drawer (Mobile & Tablet < 1024px) --}}
+<div id="mobile-cart-sider"
+     class="hidden lg:block lg:col-span-5 fixed inset-0 z-50 lg:static lg:inset-auto lg:z-auto bg-slate-950/60 lg:bg-transparent backdrop-blur-xs lg:backdrop-blur-none"
+     x-data="{ showCustomDate: {{ $isManual ? 'true' : 'false' }} }">
+    
+    <div class="w-full max-w-md lg:max-w-none ml-auto h-full lg:h-auto overflow-y-auto lg:overflow-visible bg-white dark:bg-slate-900 border-l lg:border border-slate-200 dark:border-slate-800 lg:rounded-2xl shadow-2xl lg:shadow-sm p-5 transition lg:sticky lg:top-6">
         
-        {{-- Cabeçalho do Carrinho --}}
+        {{-- Cabeçalho do Carrinho / Sider --}}
         <div class="flex items-center justify-between pb-3.5 border-b border-slate-200 dark:border-slate-800">
             <div class="flex items-center gap-2.5">
                 <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold text-sm">
@@ -43,6 +72,13 @@
                         class="px-2.5 py-1 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition flex items-center gap-1 cursor-pointer">
                     <i class="fa-solid fa-trash-can text-[11px]"></i>
                     <span>Limpar</span>
+                </button>
+                {{-- Botão Fechar Sider (Apenas Mobile/Tablet) --}}
+                <button type="button"
+                        id="close-mobile-cart-btn"
+                        title="Fechar Carrinho"
+                        class="lg:hidden w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center justify-center text-sm cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
         </div>
@@ -84,7 +120,7 @@
                     </div>
                 </div>
 
-                {{-- Data da Transação (Sempre visível em Venda Manual, ou expansível em Venda Directa) --}}
+                {{-- Data da Transação --}}
                 <div x-show="showCustomDate" x-cloak class="pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
                     <label for="sale_date" class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">
                         Data &amp; Hora da Transação
