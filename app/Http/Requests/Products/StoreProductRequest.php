@@ -54,6 +54,10 @@ class StoreProductRequest extends FormRequest
             'manufacture_date'           => ['nullable', 'date'],
             'unit'                       => ['nullable', 'string', 'max:20'],
             'description'                => ['nullable', 'string', 'max:500'],
+            'icon'                       => ['nullable', 'string', 'max:80'],
+            'image'                      => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,gif', 'max:10240'],
+            'compressed_image_data'      => ['nullable', 'string'],
+            'remove_image'               => ['nullable', 'boolean'],
             'is_active'                  => ['nullable', 'boolean'],
         ];
 

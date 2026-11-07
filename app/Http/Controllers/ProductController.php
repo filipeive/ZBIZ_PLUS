@@ -105,8 +105,11 @@ class ProductController extends Controller
             $data = collect($validated)->only([
                 'name', 'category_id', 'supplier_id', 'linked_product_id', 'type', 'selling_price',
                 'purchase_price', 'promotional_price', 'promotion_discount_percent',
-                'promotion_ends_at', 'barcode', 'sku', 'unit', 'description'
+                'promotion_ends_at', 'barcode', 'sku', 'unit', 'description', 'icon'
             ])->toArray();
+
+            $visualData = $this->processProductVisuals($request, $tenantId);
+            $data = array_merge($data, $visualData);
 
             $data['tenant_id'] = $tenantId;
             $data['is_on_promotion'] = $request->boolean('is_on_promotion');
@@ -239,6 +242,10 @@ class ProductController extends Controller
                 'manufacture_date' => 'nullable|date',
                 'unit' => 'nullable|string|max:20',
                 'description' => 'nullable|string|max:500',
+                'icon' => 'nullable|string|max:80',
+                'image' => 'nullable|file|mimes:jpg,jpeg,png,webp,gif|max:10240',
+                'compressed_image_data' => 'nullable|string',
+                'remove_image' => 'nullable|boolean',
                 'is_active' => 'boolean'
             ];
 
@@ -251,8 +258,11 @@ class ProductController extends Controller
             $data = collect($validated)->only([
                 'name', 'category_id', 'supplier_id', 'linked_product_id', 'type', 'selling_price',
                 'purchase_price', 'promotional_price', 'promotion_discount_percent',
-                'promotion_ends_at', 'barcode', 'sku', 'unit', 'description'
+                'promotion_ends_at', 'barcode', 'sku', 'unit', 'description', 'icon'
             ])->toArray();
+
+            $visualData = $this->processProductVisuals($request, (int) (current_tenant_id() ?? $product->tenant_id ?? auth()->user()?->tenant_id), $product);
+            $data = array_merge($data, $visualData);
 
             $data['is_on_promotion'] = $request->boolean('is_on_promotion');
             $data['is_active'] = $request->boolean('is_active', true);
@@ -639,5 +649,53 @@ class ProductController extends Controller
             // ✅ USANDO O MÉTODO DO BASECONTROLLER
             return $this->error('products.index', 'Erro na operação em lote.');
         }
+    }
+
+    /**
+     * Processa o ícone e/ou imagem otimizada (<= 128 KB) do produto.
+     */
+    private function processProductVisuals(Request $request, ?int $tenantId = null, ?Product $product = null): array
+    {
+        $result = [];
+
+        if ($request->filled('icon')) {
+            $result['icon'] = trim((string) $request->input('icon'));
+        }
+
+        // Remoção explícita da imagem atual
+        if ($request->boolean('remove_image') && $product && !empty($product->image_path)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($product->image_path);
+            $result['image_path'] = null;
+        }
+
+        $folder = 'products/tenant_' . ($tenantId ?: 'default');
+
+        // 1. Prioridade para imagem já comprimida no cliente via Canvas (<= 128 KB DataURL)
+        $compressedData = $request->input('compressed_image_data');
+        if (!empty($compressedData) && preg_match('/^data:image\/(webp|jpeg|jpg|png);base64,(.+)$/i', $compressedData, $matches)) {
+            $ext = strtolower($matches[1]) === 'jpeg' ? 'jpg' : strtolower($matches[1]);
+            $binary = base64_decode($matches[2]);
+            if ($binary !== false && strlen($binary) <= 200 * 1024) {
+                $filename = $folder . '/prd_' . uniqid() . '.' . $ext;
+                \Illuminate\Support\Facades\Storage::disk('public')->put($filename, $binary);
+                if ($product && !empty($product->image_path)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($product->image_path);
+                }
+                $result['image_path'] = $filename;
+                return $result;
+            }
+        }
+
+        // 2. Fallback caso ficheiro seja enviado diretamente via input[type=file]
+        if ($request->hasFile('image') && $request->file('image')->isValid()) {
+            $file = $request->file('image');
+            $path = $file->store($folder, 'public');
+            if ($product && !empty($product->image_path)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($product->image_path);
+            }
+            $result['image_path'] = $path;
+        }
+
+        return $result;
     }
 }

@@ -130,9 +130,13 @@
                             <div>
                                 <div class="flex items-start justify-between gap-2 mb-2.5">
                                     <div class="flex items-center gap-1.5 min-w-0">
-                                        <span class="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center text-xs font-bold
+                                        <span class="w-8 h-8 rounded-xl shrink-0 overflow-hidden flex items-center justify-center text-xs font-bold
                                             {{ $product->type === 'product' ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20' : 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20' }}">
-                                            <i class="fa-solid {{ $product->type === 'product' ? 'fa-box' : 'fa-wrench' }}"></i>
+                                            @if($product->image_url)
+                                                <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                                            @else
+                                                <i class="{{ $product->display_icon }}"></i>
+                                            @endif
                                         </span>
                                         @if($product->category)
                                             <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate max-w-[110px]" title="{{ $product->category->name }}">

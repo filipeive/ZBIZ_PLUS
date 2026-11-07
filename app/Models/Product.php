@@ -23,6 +23,8 @@ class Product extends Model
         'barcode',
         'sku',
         'name',
+        'icon',
+        'image_path',
         'description',
         'type',
         'purchase_price',
@@ -159,6 +161,38 @@ class Product extends Model
     public function isPhysical(): bool
     {
         return in_array($this->type, ['product', 'physical']);
+    }
+
+    /**
+     * URL pública da imagem do produto (se existir).
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        if (empty($this->image_path)) {
+            return null;
+        }
+        if (str_starts_with($this->image_path, 'http://') || str_starts_with($this->image_path, 'https://') || str_starts_with($this->image_path, 'data:')) {
+            return $this->image_path;
+        }
+        return asset('storage/' . ltrim($this->image_path, '/'));
+    }
+
+    /**
+     * Classe FontAwesome do ícone do produto (com fallback inteligente).
+     */
+    public function getDisplayIconAttribute(): string
+    {
+        if (!empty($this->icon)) {
+            return str_contains($this->icon, 'fa-') && !str_contains($this->icon, ' ')
+                ? 'fa-solid ' . $this->icon
+                : $this->icon;
+        }
+
+        if ($this->type === 'service') {
+            return 'fa-solid fa-screwdriver-wrench';
+        }
+
+        return 'fa-solid fa-box';
     }
 
     public function isLowStock(): bool
