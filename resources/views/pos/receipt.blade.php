@@ -163,10 +163,10 @@
             }
             //close automatically after printing/ cancel printing
             window.onafterprint = function() {
-                //depois de 5 segundos fecha a janela
+                //depois de 1 segundo fecha a janela
                 setTimeout(function() {
                     window.close();
-                }, 5000);
+                }, 300);
             };
         };
     </script>
