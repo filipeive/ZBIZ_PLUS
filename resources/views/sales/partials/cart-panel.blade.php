@@ -2,8 +2,8 @@
     $isManual = $isManual ?? false;
 @endphp
 
-{{-- Barra Flutuante Inferior (Apenas Mobile / Tablet < 1024px) --}}
-<div class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-4 py-3 shadow-2xl flex items-center justify-between gap-3">
+{{-- Barra Flutuante Inferior (Apenas Mobile / Tablet < 1024px — posicionada acima da barra PWA inferior) --}}
+<div class="lg:hidden fixed bottom-[76px] left-3 right-3 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-emerald-500/40 dark:border-emerald-500/30 rounded-2xl px-4 py-3 shadow-2xl flex items-center justify-between gap-3">
     <div class="flex items-center gap-3">
         <div class="relative w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold text-sm">
             <i class="fa-solid fa-cart-shopping"></i>
@@ -21,7 +21,9 @@
 
     <button type="button"
             id="open-mobile-cart-btn"
-            class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-extrabold transition flex items-center gap-2 shadow-sm cursor-pointer">
+            data-open-mobile-cart
+            class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-extrabold transition flex items-center gap-2 shadow-md shadow-emerald-600/20 cursor-pointer">
+        <i class="fa-solid fa-cash-register text-xs"></i>
         <span>Carrinho &amp; Finalizar</span>
         <i class="fa-solid fa-arrow-right text-[11px]"></i>
     </button>
@@ -29,10 +31,10 @@
 
 {{-- Coluna Direita (Desktop) / Sider Drawer (Mobile & Tablet < 1024px) --}}
 <div id="mobile-cart-sider"
-     class="hidden lg:block lg:col-span-5 fixed inset-0 z-50 lg:static lg:inset-auto lg:z-auto bg-slate-950/60 lg:bg-transparent backdrop-blur-xs lg:backdrop-blur-none"
+     class="hidden lg:block lg:col-span-5 fixed inset-x-0 top-0 bottom-[68px] z-50 lg:static lg:inset-auto lg:z-auto bg-slate-950/60 lg:bg-transparent backdrop-blur-xs lg:backdrop-blur-none"
      x-data="{ showCustomDate: {{ $isManual ? 'true' : 'false' }} }">
     
-    <div class="w-full max-w-md lg:max-w-none ml-auto h-full lg:h-auto overflow-y-auto lg:overflow-visible bg-white dark:bg-slate-900 border-l lg:border border-slate-200 dark:border-slate-800 lg:rounded-2xl shadow-2xl lg:shadow-sm p-5 transition lg:sticky lg:top-6">
+    <div class="w-full max-w-md lg:max-w-none ml-auto h-full lg:h-auto overflow-y-auto lg:overflow-visible bg-white dark:bg-slate-900 border-l lg:border border-slate-200 dark:border-slate-800 lg:rounded-2xl shadow-2xl lg:shadow-sm p-4 sm:p-5 transition lg:sticky lg:top-6 flex flex-col justify-between">
         
         {{-- Cabeçalho do Carrinho / Sider --}}
         <div class="flex items-center justify-between pb-3.5 border-b border-slate-200 dark:border-slate-800">
@@ -276,29 +278,31 @@
             <input type="hidden" name="general_discount_type" id="hidden-general-discount-type">
             <input type="hidden" name="general_discount_reason" id="hidden-general-discount-reason">
 
-            {{-- Botão Principal de Conclusão --}}
-            <button type="submit" 
-                    id="finalize-sale" 
-                    disabled
-                    class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600 disabled:cursor-not-allowed text-white font-extrabold text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm cursor-pointer">
-                <i class="fa-solid fa-check-circle text-base"></i>
-                <span>Finalizar Venda (Ctrl+Enter)</span>
-            </button>
+            {{-- Rodapé Fixo no Mobile Sider: Botão Principal de Conclusão + Operações Secundárias --}}
+            <div class="sticky bottom-0 z-10 bg-white dark:bg-slate-900 pt-2.5 pb-1 border-t border-slate-200/80 dark:border-slate-800 space-y-2">
+                <button type="submit" 
+                        id="finalize-sale" 
+                        disabled
+                        class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-500 disabled:cursor-not-allowed text-white font-extrabold text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm cursor-pointer">
+                    <i class="fa-solid fa-check-circle text-base"></i>
+                    <span>Finalizar Venda (Ctrl+Enter)</span>
+                </button>
 
-            {{-- Operações Secundárias: Converter em Encomenda ou Crédito --}}
-            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/60 dark:border-slate-800">
-                <button type="button" 
-                        id="save-as-order"
-                        class="py-2 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/80 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer">
-                    <i class="fa-solid fa-clipboard-list text-[11px]"></i>
-                    <span>Criar Encomenda</span>
-                </button>
-                <button type="button" 
-                        id="save-as-debt"
-                        class="py-2 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/80 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer">
-                    <i class="fa-solid fa-hand-holding-dollar text-[11px]"></i>
-                    <span>Registar a Crédito</span>
-                </button>
+                {{-- Operações Secundárias: Converter em Encomenda ou Crédito --}}
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" 
+                            id="save-as-order"
+                            class="py-2 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/80 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-clipboard-list text-[11px]"></i>
+                        <span>Criar Encomenda</span>
+                    </button>
+                    <button type="button" 
+                            id="save-as-debt"
+                            class="py-2 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/80 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-hand-holding-dollar text-[11px]"></i>
+                        <span>Registar a Crédito</span>
+                    </button>
+                </div>
             </div>
 
         </form>

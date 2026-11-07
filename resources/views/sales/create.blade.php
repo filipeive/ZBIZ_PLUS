@@ -34,6 +34,15 @@
         icon="fa-solid fa-cash-register"
     >
         <div class="flex flex-wrap items-center gap-2">
+            {{-- Botão Abrir Carrinho Sider (Mobile / Tablet < 1024px) --}}
+            <button type="button"
+                    data-open-mobile-cart
+                    class="lg:hidden px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-extrabold transition flex items-center gap-2 shadow-sm cursor-pointer">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span>Carrinho &amp; Finalizar</span>
+                <span id="header-mobile-cart-count" class="px-1.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-black">0</span>
+            </button>
+
             {{-- Botão Colapsar/Expandir Stat Cards --}}
             <button type="button"
                     @click="showStats = !showStats; localStorage.setItem('zb_sales_stats_open', showStats)"
