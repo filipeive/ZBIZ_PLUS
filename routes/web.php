@@ -383,31 +383,31 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
 
     // ===== GESTÃO DE CLIENTES =====
     Route::post('/customers/quick-store', [\App\Http\Controllers\CustomerController::class, 'quickStore'])->name('customers.quick-store');
-    Route::middleware('permissions:view_customers')->group(function () {
-        Route::get('/customers', [\App\Http\Controllers\CustomerController::class, 'index'])->name('customers.index');
-        Route::get('/customers/{customer}', [\App\Http\Controllers\CustomerController::class, 'show'])->name('customers.show');
-    });
     Route::middleware('permissions:manage_customers')->group(function () {
         Route::get('/customers/create', [\App\Http\Controllers\CustomerController::class, 'create'])->name('customers.create');
         Route::post('/customers', [\App\Http\Controllers\CustomerController::class, 'store'])->name('customers.store');
-        Route::get('/customers/{customer}/edit', [\App\Http\Controllers\CustomerController::class, 'edit'])->name('customers.edit');
-        Route::put('/customers/{customer}', [\App\Http\Controllers\CustomerController::class, 'update'])->name('customers.update');
-        Route::delete('/customers/{customer}', [\App\Http\Controllers\CustomerController::class, 'destroy'])->name('customers.destroy');
+        Route::get('/customers/{customer}/edit', [\App\Http\Controllers\CustomerController::class, 'edit'])->name('customers.edit')->whereNumber('customer');
+        Route::put('/customers/{customer}', [\App\Http\Controllers\CustomerController::class, 'update'])->name('customers.update')->whereNumber('customer');
+        Route::delete('/customers/{customer}', [\App\Http\Controllers\CustomerController::class, 'destroy'])->name('customers.destroy')->whereNumber('customer');
+    });
+    Route::middleware('permissions:view_customers')->group(function () {
+        Route::get('/customers', [\App\Http\Controllers\CustomerController::class, 'index'])->name('customers.index');
+        Route::get('/customers/{customer}', [\App\Http\Controllers\CustomerController::class, 'show'])->name('customers.show')->whereNumber('customer');
     });
 
     // ===== GESTÃO DE FORNECEDORES =====
     Route::post('/suppliers/quick-store', [\App\Http\Controllers\SupplierController::class, 'quickStore'])->name('suppliers.quick-store');
-    Route::middleware('permissions:view_suppliers')->group(function () {
-        Route::get('/suppliers', [\App\Http\Controllers\SupplierController::class, 'index'])->name('suppliers.index');
-        Route::get('/suppliers/{supplier}', [\App\Http\Controllers\SupplierController::class, 'show'])->name('suppliers.show');
-    });
     Route::middleware('permissions:manage_suppliers')->group(function () {
         Route::get('/suppliers/create', [\App\Http\Controllers\SupplierController::class, 'create'])->name('suppliers.create');
         Route::post('/suppliers', [\App\Http\Controllers\SupplierController::class, 'store'])->name('suppliers.store');
-        Route::get('/suppliers/{supplier}/edit', [\App\Http\Controllers\SupplierController::class, 'edit'])->name('suppliers.edit');
-        Route::put('/suppliers/{supplier}', [\App\Http\Controllers\SupplierController::class, 'update'])->name('suppliers.update');
-        Route::delete('/suppliers/{supplier}', [\App\Http\Controllers\SupplierController::class, 'destroy'])->name('suppliers.destroy');
-        Route::patch('/suppliers/{supplier}/toggle-status', [\App\Http\Controllers\SupplierController::class, 'toggleStatus'])->name('suppliers.toggle-status');
+        Route::get('/suppliers/{supplier}/edit', [\App\Http\Controllers\SupplierController::class, 'edit'])->name('suppliers.edit')->whereNumber('supplier');
+        Route::put('/suppliers/{supplier}', [\App\Http\Controllers\SupplierController::class, 'update'])->name('suppliers.update')->whereNumber('supplier');
+        Route::delete('/suppliers/{supplier}', [\App\Http\Controllers\SupplierController::class, 'destroy'])->name('suppliers.destroy')->whereNumber('supplier');
+        Route::patch('/suppliers/{supplier}/toggle-status', [\App\Http\Controllers\SupplierController::class, 'toggleStatus'])->name('suppliers.toggle-status')->whereNumber('supplier');
+    });
+    Route::middleware('permissions:view_suppliers')->group(function () {
+        Route::get('/suppliers', [\App\Http\Controllers\SupplierController::class, 'index'])->name('suppliers.index');
+        Route::get('/suppliers/{supplier}', [\App\Http\Controllers\SupplierController::class, 'show'])->name('suppliers.show')->whereNumber('supplier');
     });
 
     // ===== TURNOS E FECHO DE CAIXA (FECHO Z) =====

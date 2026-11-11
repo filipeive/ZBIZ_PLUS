@@ -10,139 +10,222 @@
 @section('content')
 <div class="max-w-4xl mx-auto space-y-6">
     
-    <!-- Top Bar -->
-    <div class="flex items-center justify-between bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
-        <a href="{{ route('customers.show', $customer->id) }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
-            <i class="fa-solid fa-arrow-left"></i> Voltar ao Perfil
-        </a>
-        <div class="flex items-center gap-2">
-            <span class="text-xs text-slate-400">ID: #{{ $customer->id }}</span>
-        </div>
-    </div>
+    <!-- Page Header D1/D2 -->
+    <x-ui.page-header 
+        title="Editar Cliente" 
+        subtitle="Atualizar dados de identificação, NUIT, linha de crédito e morada de {{ $customer->name }} (Ref: #{{ $customer->id }})"
+    >
+        <x-slot:actions>
+            <a href="{{ route('customers.show', $customer->id) }}" 
+               class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold text-xs transition flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Voltar ao Dossier</span>
+            </a>
+        </x-slot:actions>
+    </x-ui.page-header>
 
     <!-- Form Card -->
-    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+    <x-ui.card>
         <form method="POST" action="{{ route('customers.update', $customer->id) }}" class="space-y-6">
             @csrf
             @method('PUT')
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <!-- Nome Completo -->
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                        Nome Completo / Razão Social <span class="text-rose-400">*</span>
-                    </label>
-                    <input type="text" name="name" value="{{ old('name', $customer->name) }}" required
-                           class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white placeholder-slate-600 focus:ring-2 {{ $theme['ring'] }} outline-none font-medium">
-                    @error('name') <span class="text-rose-400 text-xs mt-1 block">{{ $message }}</span> @enderror
-                </div>
+            <!-- Section 1: Dados Pessoais / Identificação -->
+            <div>
+                <h3 class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-id-card text-emerald-500"></i>
+                    <span>Identificação Principal & Fiscal</span>
+                </h3>
 
-                <!-- Telefone -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                        Telefone / Celular (WhatsApp / M-Pesa)
-                    </label>
-                    <input type="text" name="phone" value="{{ old('phone', $customer->phone) }}" placeholder="+258 84 123 4567"
-                           class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white placeholder-slate-600 focus:ring-2 {{ $theme['ring'] }} outline-none font-medium">
-                    @error('phone') <span class="text-rose-400 text-xs mt-1 block">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Email -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                        Endereço de E-mail
-                    </label>
-                    <input type="email" name="email" value="{{ old('email', $customer->email) }}" placeholder="cliente@dominio.co.mz"
-                           class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white placeholder-slate-600 focus:ring-2 {{ $theme['ring'] }} outline-none font-medium">
-                    @error('email') <span class="text-rose-400 text-xs mt-1 block">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- NUIT -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                        NUIT (Número de Identificação Tributária)
-                    </label>
-                    <input type="text" name="nuit" value="{{ old('nuit', $customer->nuit) }}" placeholder="Ex: 400123456" maxlength="15"
-                           class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white placeholder-slate-600 focus:ring-2 {{ $theme['ring'] }} outline-none font-medium font-mono">
-                    @error('nuit') <span class="text-rose-400 text-xs mt-1 block">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Tipo & Número de Documento -->
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                            Tipo de Doc.
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Nome Completo -->
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                            Nome Completo / Razão Social <span class="text-rose-500">*</span>
                         </label>
-                        <select name="document_type" class="w-full px-3 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:ring-2 {{ $theme['ring'] }} outline-none">
-                            <option value="BI" {{ old('document_type', $customer->document_type) == 'BI' ? 'selected' : '' }}>BI</option>
-                            <option value="DIRE" {{ old('document_type', $customer->document_type) == 'DIRE' ? 'selected' : '' }}>DIRE</option>
-                            <option value="Passaporte" {{ old('document_type', $customer->document_type) == 'Passaporte' ? 'selected' : '' }}>Passaporte</option>
-                            <option value="NUIT" {{ old('document_type', $customer->document_type) == 'NUIT' ? 'selected' : '' }}>NUIT</option>
-                            <option value="Outro" {{ old('document_type', $customer->document_type) == 'Outro' ? 'selected' : '' }}>Outro</option>
-                        </select>
+                        <input type="text" 
+                               name="name" 
+                               value="{{ old('name', $customer->name) }}" 
+                               required 
+                               class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none font-medium transition">
+                        @error('name') <span class="text-rose-500 text-xs mt-1 block font-medium">{{ $message }}</span> @enderror
                     </div>
+
+                    <!-- Telefone -->
                     <div>
-                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                            Nº Documento
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                            Telefone / Celular (WhatsApp / M-Pesa)
                         </label>
-                        <input type="text" name="document_number" value="{{ old('document_number', $customer->document_number) }}"
-                               class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white placeholder-slate-600 focus:ring-2 {{ $theme['ring'] }} outline-none font-medium">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-xs">
+                                <i class="fa-solid fa-phone"></i>
+                            </span>
+                            <input type="text" 
+                                   name="phone" 
+                                   value="{{ old('phone', $customer->phone) }}" 
+                                   placeholder="+258 84 123 4567"
+                                   class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none font-medium font-mono transition">
+                        </div>
+                        @error('phone') <span class="text-rose-500 text-xs mt-1 block font-medium">{{ $message }}</span> @enderror
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                            Endereço de E-mail
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-xs">
+                                <i class="fa-solid fa-envelope"></i>
+                            </span>
+                            <input type="email" 
+                                   name="email" 
+                                   value="{{ old('email', $customer->email) }}" 
+                                   placeholder="cliente@dominio.co.mz"
+                                   class="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none font-medium transition">
+                        </div>
+                        @error('email') <span class="text-rose-500 text-xs mt-1 block font-medium">{{ $message }}</span> @enderror
+                    </div>
+
+                    <!-- NUIT -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                            NUIT (Número de Identificação Tributária)
+                        </label>
+                        <input type="text" 
+                               name="nuit" 
+                               value="{{ old('nuit', $customer->nuit) }}" 
+                               placeholder="Ex: 400123456" 
+                               maxlength="15"
+                               class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none font-medium font-mono transition">
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 block">Obrigatório para emissão de Facturas Fiscais / A4</span>
+                        @error('nuit') <span class="text-rose-500 text-xs mt-1 block font-medium">{{ $message }}</span> @enderror
+                    </div>
+
+                    <!-- Tipo & Número de Documento -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                                Tipo de Doc.
+                            </label>
+                            <select name="document_type" 
+                                    class="w-full px-3 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition font-medium">
+                                <option value="BI" {{ old('document_type', $customer->document_type) == 'BI' ? 'selected' : '' }}>BI</option>
+                                <option value="DIRE" {{ old('document_type', $customer->document_type) == 'DIRE' ? 'selected' : '' }}>DIRE</option>
+                                <option value="Passaporte" {{ old('document_type', $customer->document_type) == 'Passaporte' ? 'selected' : '' }}>Passaporte</option>
+                                <option value="NUIT" {{ old('document_type', $customer->document_type) == 'NUIT' ? 'selected' : '' }}>NUIT</option>
+                                <option value="Outro" {{ old('document_type', $customer->document_type) == 'Outro' ? 'selected' : '' }}>Outro</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                                Nº Documento
+                            </label>
+                            <input type="text" 
+                                   name="document_number" 
+                                   value="{{ old('document_number', $customer->document_number) }}" 
+                                   placeholder="Nº do BI..."
+                                   class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none font-medium transition">
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Limite de Crédito -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                        Limite de Crédito Permitido (MT)
-                    </label>
-                    <div class="relative">
-                        <input type="number" step="0.01" min="0" name="credit_limit" value="{{ old('credit_limit', $customer->credit_limit) }}"
-                               class="w-full pl-4 pr-12 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white placeholder-slate-600 focus:ring-2 {{ $theme['ring'] }} outline-none font-medium font-mono">
-                        <span class="absolute inset-y-0 right-0 pr-4 flex items-center text-xs font-bold text-slate-500">MT</span>
+            <!-- Section 2: Política de Crédito & Estado -->
+            <div class="pt-6 border-t border-slate-100 dark:border-slate-800">
+                <h3 class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-credit-card text-amber-500"></i>
+                    <span>Parâmetros de Crédito & Acesso</span>
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 items-center">
+                    <!-- Limite de Crédito -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                            Limite de Crédito Máximo Autorizado
+                        </label>
+                        <div class="relative">
+                            <input type="number" 
+                                   step="0.01" 
+                                   min="0" 
+                                   name="credit_limit" 
+                                   value="{{ old('credit_limit', $customer->credit_limit) }}" 
+                                   placeholder="0.00"
+                                   class="w-full pl-4 pr-12 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none font-medium font-mono transition">
+                            <span class="absolute inset-y-0 right-0 pr-4 flex items-center text-xs font-bold text-slate-400">MT</span>
+                        </div>
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 block">
+                            Dívida ativa atual deste cliente: 
+                            <strong class="{{ $customer->current_debt > 0 ? 'text-rose-500' : 'text-slate-700 dark:text-slate-300' }}">
+                                {{ number_format($customer->current_debt, 2, ',', '.') }} MT
+                            </strong>
+                        </span>
+                        @error('credit_limit') <span class="text-rose-500 text-xs mt-1 block font-medium">{{ $message }}</span> @enderror
                     </div>
-                    @error('credit_limit') <span class="text-rose-400 text-xs mt-1 block">{{ $message }}</span> @enderror
-                </div>
 
-                <!-- Estado Ativo -->
-                <div class="flex items-center gap-3 pt-6">
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" name="is_active" value="1" class="sr-only peer" {{ old('is_active', $customer->is_active) ? 'checked' : '' }}>
-                        <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-                        <span class="ml-3 text-sm font-bold text-slate-300">Cliente Habilitado / Ativo</span>
-                    </label>
+                    <!-- Estado Ativo (Toggle Switch) -->
+                    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-bold text-slate-800 dark:text-slate-200 block">Cliente Habilitado</span>
+                            <span class="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">Permitir seleção deste cliente nas vendas e faturas</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="is_active" value="1" class="sr-only peer" {{ old('is_active', $customer->is_active) ? 'checked' : '' }}>
+                            <div class="w-11 h-6 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                        </label>
+                    </div>
                 </div>
+            </div>
 
-                <!-- Morada / Endereço -->
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                        Endereço / Localização
-                    </label>
-                    <input type="text" name="address" value="{{ old('address', $customer->address) }}"
-                           class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white placeholder-slate-600 focus:ring-2 {{ $theme['ring'] }} outline-none font-medium">
-                </div>
+            <!-- Section 3: Localização & Notas -->
+            <div class="pt-6 border-t border-slate-100 dark:border-slate-800">
+                <h3 class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-map-location-dot text-sky-500"></i>
+                    <span>Localização & Observações</span>
+                </h3>
 
-                <!-- Observações -->
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                        Observações / Notas Internas
-                    </label>
-                    <textarea name="notes" rows="3"
-                              class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white placeholder-slate-600 focus:ring-2 {{ $theme['ring'] }} outline-none font-medium">{{ old('notes', $customer->notes) }}</textarea>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Morada / Endereço -->
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                            Endereço / Morada de Faturação
+                        </label>
+                        <input type="text" 
+                               name="address" 
+                               value="{{ old('address', $customer->address) }}" 
+                               placeholder="Ex: Av. Samora Machel, Bairro Central, Chimoio"
+                               class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none font-medium transition">
+                        @error('address') <span class="text-rose-500 text-xs mt-1 block font-medium">{{ $message }}</span> @enderror
+                    </div>
+
+                    <!-- Observações -->
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                            Observações / Notas Internas
+                        </label>
+                        <textarea name="notes" 
+                                  rows="3" 
+                                  placeholder="Detalhes adicionais, preferências de faturação ou condições comerciais especiais..."
+                                  class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none font-medium transition">{{ old('notes', $customer->notes) }}</textarea>
+                        @error('notes') <span class="text-rose-500 text-xs mt-1 block font-medium">{{ $message }}</span> @enderror
+                    </div>
                 </div>
             </div>
 
             <!-- Submit Buttons -->
-            <div class="pt-6 border-t border-slate-800 flex items-center justify-end gap-3">
-                <a href="{{ route('customers.show', $customer->id) }}" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-2xl transition">
+            <div class="pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
+                <a href="{{ route('customers.show', $customer->id) }}" 
+                   class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition">
                     Cancelar
                 </a>
-                <button type="submit" class="px-6 py-2.5 {{ $theme['btn'] }} text-xs font-bold rounded-2xl shadow-lg transition flex items-center gap-2">
-                    <i class="fa-solid fa-floppy-disk"></i> Atualizar Dados
+                <button type="submit" 
+                        class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 transition flex items-center gap-2 active:scale-95">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span>Atualizar Cliente</span>
                 </button>
             </div>
         </form>
-    </div>
+    </x-ui.card>
 
 </div>
 @endsection
-
