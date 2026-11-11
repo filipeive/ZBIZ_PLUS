@@ -68,8 +68,10 @@ class StockMovementController extends Controller
             'movement_type' => 'required|in:in,out,adjustment',
             'quantity' => 'required|integer|min:1',
             'reason' => 'nullable|string|max:255',
-            'movement_date' => 'required|date',
+            'movement_date' => 'nullable|date',
         ]);
+
+        $movementDate = $request->filled('movement_date') ? $request->movement_date : now()->toDateString();
 
         StockMovement::create([
             'tenant_id' => current_tenant_id(),
@@ -79,20 +81,31 @@ class StockMovementController extends Controller
             'movement_type' => $request->movement_type,
             'quantity' => $request->quantity,
             'reason' => $request->reason,
-            'movement_date' => $request->movement_date,
+            'movement_date' => $movementDate,
         ]);
 
-        return redirect()->route('stock_movements.index')
-            ->with('success', 'Movimento registrado com sucesso.');
+        // Ajustar existências do produto se físico
+        $product = Product::find($request->product_id);
+        if ($product && $product->isPhysical()) {
+            if ($request->movement_type === 'in') {
+                $product->increment('stock_quantity', $request->quantity);
+            } elseif ($request->movement_type === 'out') {
+                $product->decrement('stock_quantity', $request->quantity);
+            }
+        }
+
+        return redirect()->route('stock-movements.index')
+            ->with('success', 'Movimento registado com sucesso.');
     }
 
     public function show(StockMovement $stockMovement)
     {
+        $stockMovement->load(['product.category', 'user']);
         return view('stock_movements.show', compact('stockMovement'));
     }
     public function edit(StockMovement $stockMovement)
     {
-        $products = Product::all();
+        $products = Product::where('is_active', true)->orderBy('name')->get();
         return view('stock_movements.edit', compact('stockMovement', 'products'));
     }
     public function update(Request $request, StockMovement $stockMovement)
@@ -102,8 +115,10 @@ class StockMovementController extends Controller
             'movement_type' => 'required|in:in,out,adjustment',
             'quantity' => 'required|integer|min:1',
             'reason' => 'nullable|string|max:255',
-            'movement_date' => 'required|date',
+            'movement_date' => 'nullable|date',
         ]);
+
+        $movementDate = $request->filled('movement_date') ? $request->movement_date : $stockMovement->movement_date;
 
         $stockMovement->update([
             'product_id' => $request->product_id,
@@ -111,10 +126,10 @@ class StockMovementController extends Controller
             'movement_type' => $request->movement_type,
             'quantity' => $request->quantity,
             'reason' => $request->reason,
-            'movement_date' => $request->movement_date,
+            'movement_date' => $movementDate,
         ]);
 
-        return redirect()->route('stock_movements.index')
+        return redirect()->route('stock-movements.index')
             ->with('success', 'Movimento atualizado com sucesso.');
     }
     public function destroy(StockMovement $stockMovement)
