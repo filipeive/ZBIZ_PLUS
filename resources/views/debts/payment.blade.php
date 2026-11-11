@@ -5,123 +5,150 @@
 
 @php
     $theme = tenant_theme();
+    $origAmount = (float) ($debt->original_amount ?? $debt->total_amount ?? 0);
+    $paidAmount = (float) ($debt->paid_amount ?? 0);
+    $remAmount = (float) $debt->remaining_amount;
 @endphp
 
 @section('content')
-<div class="w-full mx-auto space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
-        <div>
-            <h2 class="text-lg font-black font-heading text-white flex items-center gap-2">
-                <i class="fa-solid fa-money-bill-wave text-emerald-400"></i>
-                Registar Amortização
-            </h2>
-            <p class="text-xs text-slate-400">Fiado #{{ $debt->id }} - {{ $debt->debtor_name }}</p>
+<div class="w-full max-w-3xl mx-auto space-y-6">
+    
+    <!-- Page Header -->
+    <x-ui.page-header 
+        title="Amortização de Dívida #{{ $debt->id }}"
+        subtitle="{{ $debt->customer_name ?? $debt->customer?->name ?? $debt->employee_name ?? 'Cliente' }} — Registo financeiro de liquidação"
+    >
+        <x-slot:actions>
+            <a href="{{ route('debts.show', $debt) }}" 
+               class="px-4 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl flex items-center gap-2 border border-slate-200 dark:border-slate-700 shadow-sm transition">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Voltar ao Dossiê</span>
+            </a>
+        </x-slot:actions>
+    </x-ui.page-header>
+
+    <!-- Resumo dos Valores -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Valor Original</span>
+            <div class="text-lg font-bold font-mono text-slate-800 dark:text-slate-200 mt-1">
+                {{ number_format($origAmount, 2, ',', '.') }} MT
+            </div>
         </div>
-        <a href="{{ route('debts.show', $debt) }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
-            <i class="fa-solid fa-arrow-left"></i> Voltar
-        </a>
+
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Já Amortizado</span>
+            <div class="text-lg font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">
+                {{ number_format($paidAmount, 2, ',', '.') }} MT
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Saldo Devedor Atual</span>
+            <div class="text-xl font-black font-mono text-rose-600 dark:text-rose-400 mt-1">
+                {{ number_format($remAmount, 2, ',', '.') }} MT
+            </div>
+        </div>
     </div>
 
-    <!-- Informações da Dívida -->
-    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs mb-4">
-            <div>
-                <div class="text-slate-500 font-bold uppercase text-[10px]">Valor Original</div>
-                <div class="font-bold text-white font-mono text-sm mt-0.5">{{ $debt->formatted_original_amount }}</div>
-            </div>
-            <div>
-                <div class="text-slate-500 font-bold uppercase text-[10px]">Já Pago</div>
-                <div class="font-bold text-emerald-400 font-mono text-sm mt-0.5">{{ $debt->formatted_amount_paid }}</div>
-            </div>
-            <div>
-                <div class="text-slate-500 font-bold uppercase text-[10px]">Saldo Devedor</div>
-                <div class="font-black text-rose-400 font-mono text-base mt-0.5">{{ $debt->formatted_remaining_amount }}</div>
-            </div>
-        </div>
-
-        <!-- Formulário -->
-        <form action="{{ route('debts.add-payment', $debt) }}" method="POST" class="space-y-4">
+    <!-- Formulário de Pagamento -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm">
+        <form action="{{ route('debts.add-payment', $debt) }}" method="POST" class="space-y-5">
             @csrf
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Valor a Pagar (MT) *</label>
-                    <input type="number" step="0.01" min="0.01" max="{{ $debt->remaining_amount }}"
-                        class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-mono font-bold focus:ring-1 focus:ring-emerald-500 transition"
-                        name="amount" value="{{ old('amount', $debt->remaining_amount) }}" required autofocus>
-                    <span class="text-[10px] text-slate-500 mt-1 block">Máximo: {{ $debt->formatted_remaining_amount }}</span>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        Valor a Pagar (MT) *
+                    </label>
+                    <input type="number" 
+                           step="0.01" 
+                           min="0.01" 
+                           max="{{ $remAmount }}"
+                           class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-sm font-mono font-bold focus:ring-2 focus:ring-emerald-500 outline-none transition"
+                           name="amount" 
+                           value="{{ old('amount', $remAmount) }}" 
+                           required 
+                           autofocus>
+                    <span class="text-[11px] text-slate-400 mt-1.5 block">Máximo a amortizar: {{ number_format($remAmount, 2, ',', '.') }} MT</span>
                     @error('amount')
-                        <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                        <p class="text-rose-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Data do Pagamento *</label>
-                    <input type="date" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
-                        name="payment_date" value="{{ old('payment_date', date('Y-m-d')) }}" max="{{ date('Y-m-d') }}" required>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        Data do Pagamento *
+                    </label>
+                    <input type="date" 
+                           class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-xs font-mono focus:ring-2 focus:ring-emerald-500 outline-none transition"
+                           name="payment_date" 
+                           value="{{ old('payment_date', date('Y-m-d')) }}" 
+                           required>
                     @error('payment_date')
-                        <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                        <p class="text-rose-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        Método de Pagamento *
+                    </label>
+                    <select name="payment_method" 
+                            class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 outline-none transition" 
+                            required>
+                        <option value="cash" {{ old('payment_method') === 'cash' ? 'selected' : '' }}>Dinheiro Físico / Caixa</option>
+                        <option value="mpesa" {{ old('payment_method') === 'mpesa' ? 'selected' : '' }}>M-Pesa</option>
+                        <option value="emola" {{ old('payment_method') === 'emola' ? 'selected' : '' }}>e-Mola</option>
+                        <option value="pos" {{ old('payment_method') === 'pos' ? 'selected' : '' }}>Cartão / POS (TPA)</option>
+                        <option value="bank_transfer" {{ old('payment_method') === 'bank_transfer' ? 'selected' : '' }}>Transferência Bancária</option>
+                    </select>
+                    @error('payment_method')
+                        <p class="text-rose-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        Referência / Comprovativo
+                    </label>
+                    <input type="text" 
+                           class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-xs placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 outline-none transition"
+                           name="reference" 
+                           value="{{ old('reference') }}" 
+                           placeholder="Ex: Nº Transação M-Pesa / Cheque">
+                    @error('reference')
+                        <p class="text-rose-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div class="sm:col-span-2">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Forma de Pagamento *</label>
-                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                        <label class="flex flex-col items-center p-3 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 cursor-pointer transition text-center">
-                            <input type="radio" name="payment_method" value="cash" {{ old('payment_method', 'cash') === 'cash' ? 'checked' : '' }} class="mb-2 text-emerald-500">
-                            <i class="fa-solid fa-money-bill-wave text-emerald-400 mb-1"></i>
-                            <span class="text-[11px] font-bold text-slate-200">Dinheiro</span>
-                        </label>
-                        <label class="flex flex-col items-center p-3 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 cursor-pointer transition text-center">
-                            <input type="radio" name="payment_method" value="mpesa" {{ old('payment_method') === 'mpesa' ? 'checked' : '' }} class="mb-2 text-emerald-500">
-                            <i class="fa-solid fa-mobile-screen text-rose-400 mb-1"></i>
-                            <span class="text-[11px] font-bold text-slate-200">M-Pesa</span>
-                        </label>
-                        <label class="flex flex-col items-center p-3 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 cursor-pointer transition text-center">
-                            <input type="radio" name="payment_method" value="emola" {{ old('payment_method') === 'emola' ? 'checked' : '' }} class="mb-2 text-emerald-500">
-                            <i class="fa-solid fa-mobile-screen text-amber-400 mb-1"></i>
-                            <span class="text-[11px] font-bold text-slate-200">E-Mola</span>
-                        </label>
-                        <label class="flex flex-col items-center p-3 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 cursor-pointer transition text-center">
-                            <input type="radio" name="payment_method" value="card" {{ old('payment_method') === 'card' ? 'checked' : '' }} class="mb-2 text-emerald-500">
-                            <i class="fa-solid fa-credit-card text-blue-400 mb-1"></i>
-                            <span class="text-[11px] font-bold text-slate-200">POS / Cartão</span>
-                        </label>
-                        <label class="flex flex-col items-center p-3 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500 cursor-pointer transition text-center">
-                            <input type="radio" name="payment_method" value="transfer" {{ old('payment_method') === 'transfer' ? 'checked' : '' }} class="mb-2 text-emerald-500">
-                            <i class="fa-solid fa-building-columns text-indigo-400 mb-1"></i>
-                            <span class="text-[11px] font-bold text-slate-200">Transferência</span>
-                        </label>
-                    </div>
-                </div>
-
-                @if ($debt->isProductDebt())
-                    <div class="sm:col-span-2">
-                        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center gap-2">
-                            <input type="checkbox" name="create_sale" id="create-sale" value="1" checked class="rounded bg-slate-900 border-slate-700 text-emerald-500">
-                            <label for="create-sale" class="text-xs text-slate-300 cursor-pointer">
-                                <strong>Gerar venda/fatura automaticamente</strong> quando este fiado for totalmente liquidado
-                            </label>
-                        </div>
-                    </div>
-                @endif
-
-                <div class="sm:col-span-2">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Observações do Pagamento</label>
-                    <textarea class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition" name="notes" rows="2">{{ old('notes') }}</textarea>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        Observações do Pagamento
+                    </label>
+                    <textarea name="notes" 
+                              rows="2" 
+                              class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-xs placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 outline-none transition"
+                              placeholder="Notas adicionais sobre esta liquidação...">{{ old('notes') }}</textarea>
+                    @error('notes')
+                        <p class="text-rose-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
 
-            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
-                <a href="{{ route('debts.show', $debt) }}" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <a href="{{ route('debts.show', $debt) }}" 
+                   class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs transition">
                     Cancelar
                 </a>
-                <button type="submit" class="px-5 py-2.5 rounded-2xl {{ $theme['btn'] }} text-xs transition flex items-center gap-2">
-                    <i class="fa-solid fa-check"></i> Confirmar Registo de Pagamento
+                <button type="submit" 
+                        class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition active:scale-95 flex items-center gap-2">
+                    <i class="fa-solid fa-check"></i>
+                    <span>Confirmar Pagamento</span>
                 </button>
             </div>
         </form>
     </div>
+
 </div>
 @endsection

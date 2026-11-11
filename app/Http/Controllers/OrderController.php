@@ -55,12 +55,17 @@ class OrderController extends Controller
 
         $orders = $query->paginate(15);
 
-        // Estatísticas (seu código existente está bom)
+        // Estatísticas com escopo de filial
+        $baseStats = Order::query();
+        if ($branchId) {
+            $baseStats->where('branch_id', $branchId);
+        }
+
         $stats = [
-            'pending' => Order::where('status', 'pending')->count(),
-            'in_progress' => Order::where('status', 'in_progress')->count(),
-            'completed' => Order::where('status', 'completed')->count(),
-            'overdue' => Order::where('delivery_date', '<', now())
+            'pending' => (clone $baseStats)->where('status', 'pending')->count(),
+            'in_progress' => (clone $baseStats)->where('status', 'in_progress')->count(),
+            'completed' => (clone $baseStats)->where('status', 'completed')->count(),
+            'overdue' => (clone $baseStats)->where('delivery_date', '<', now())
                 ->whereIn('status', ['pending', 'in_progress'])
                 ->count()
         ];

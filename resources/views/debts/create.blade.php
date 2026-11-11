@@ -9,19 +9,20 @@
 
 @section('content')
 <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
-        <div>
-            <h2 class="text-lg font-black font-heading text-white flex items-center gap-2">
-                <i class="fa-solid fa-plus-circle text-emerald-400"></i>
-                Nova Dívida de {{ $type === 'product' ? 'Produtos' : 'Dinheiro' }}
-            </h2>
-            <p class="text-xs text-slate-400">Preencha os dados do devedor e os detalhes da conta a receber.</p>
-        </div>
-        <a href="{{ route('debts.index') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
-            <i class="fa-solid fa-arrow-left"></i> Voltar
-        </a>
-    </div>
+    
+    <!-- Page Header D1/D2 -->
+    <x-ui.page-header 
+        title="Nova Dívida de {{ $type === 'product' ? 'Produtos / Artigos' : 'Dinheiro / Adiantamento' }}"
+        subtitle="Registe o devedor, artigos concedidos a fiado ou valores monetários e condições de amortização."
+    >
+        <x-slot:actions>
+            <a href="{{ route('debts.index') }}" 
+               class="px-4 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl flex items-center gap-2 border border-slate-200 dark:border-slate-700 shadow-sm transition">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Voltar às Dívidas</span>
+            </a>
+        </x-slot:actions>
+    </x-ui.page-header>
 
     <!-- Formulário -->
     <form action="{{ route('debts.store') }}" method="POST" id="debt-form" class="space-y-6">
@@ -32,12 +33,12 @@
             <div class="lg:col-span-2 space-y-6">
 
                 <!-- Informações do Devedor -->
-                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
-                    <div class="flex items-center space-x-3 border-b border-slate-800 pb-4 mb-4">
-                        <div class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs">
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-sm">
+                    <div class="flex items-center space-x-3 border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+                        <div class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xs">
                             <i class="fa-solid fa-user"></i>
                         </div>
-                        <h3 class="text-sm font-black text-white font-heading">
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white font-heading">
                             {{ $type === 'product' ? 'Informações do Cliente' : 'Informações do Funcionário / Devedor' }}
                         </h3>
                     </div>
@@ -46,24 +47,24 @@
                         <!-- Dívida de Produtos -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nome do Cliente *</label>
-                                <input type="text" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Nome do Cliente *</label>
+                                <input type="text" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 outline-none transition"
                                     name="customer_name" value="{{ old('customer_name') }}" required>
                                 @error('customer_name')
-                                    <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                                    <p class="text-rose-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Telefone</label>
-                                <input type="text" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Telefone</label>
+                                <input type="text" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 outline-none transition font-mono"
                                     name="customer_phone" value="{{ old('customer_phone') }}">
                                 @error('customer_phone')
-                                    <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                                    <p class="text-rose-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div class="md:col-span-2">
-                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Documento / NUIT / BI</label>
-                                <input type="text" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition" 
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Documento (NUIT / BI)</label>
+                                <input type="text" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 outline-none transition font-mono" 
                                     name="customer_document" value="{{ old('customer_document') }}">
                             </div>
                         </div>
@@ -72,13 +73,13 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <div class="flex justify-between items-center mb-2">
-                                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Selecionar Funcionário</label>
-                                    <label class="flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer">
-                                        <input type="checkbox" id="is-external" name="is_external" class="rounded bg-slate-950 border-slate-800 text-emerald-500">
+                                    <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Selecionar Funcionário</label>
+                                    <label class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 cursor-pointer">
+                                        <input type="checkbox" id="is-external" name="is_external" class="rounded bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-emerald-600 focus:ring-emerald-500">
                                         <span>Pessoa Externa</span>
                                     </label>
                                 </div>
-                                <select class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                                <select class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 outline-none transition"
                                     name="employee_id" id="employee-select">
                                     <option value="">Escolha um funcionário...</option>
                                     @foreach ($employees as $employee)
@@ -89,34 +90,34 @@
                                     @endforeach
                                 </select>
                                 @error('employee_id')
-                                    <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                                    <p class="text-rose-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nome Completo *</label>
-                                <input type="text" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Nome Completo *</label>
+                                <input type="text" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 outline-none transition"
                                     name="employee_name" id="employee-name" value="{{ old('employee_name') }}" required>
                                 @error('employee_name')
-                                    <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                                    <p class="text-rose-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Telefone</label>
-                                <input type="text" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition" 
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Telefone</label>
+                                <input type="text" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 outline-none transition font-mono" 
                                     name="employee_phone" value="{{ old('employee_phone') }}">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Documento</label>
-                                <input type="text" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition" 
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Documento</label>
+                                <input type="text" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 outline-none transition font-mono" 
                                     name="employee_document" value="{{ old('employee_document') }}">
                             </div>
                             <div class="md:col-span-2">
-                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Valor da Dívida (MT) *</label>
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Valor da Dívida (MT) *</label>
                                 <input type="number" step="0.01" min="0.01"
-                                    class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-mono font-bold focus:ring-1 focus:ring-emerald-500 transition" 
+                                    class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-sm font-mono font-bold focus:ring-2 focus:ring-emerald-500 outline-none transition" 
                                     name="amount" value="{{ old('amount') }}" required>
                                 @error('amount')
-                                    <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                                    <p class="text-rose-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                         </div>
@@ -124,18 +125,18 @@
                 </div>
 
                 @if ($type === 'product')
-                    <!-- Produtos -->
-                    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
-                        <div class="flex items-center space-x-3 border-b border-slate-800 pb-4 mb-4">
-                            <div class="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-xs">
+                    <!-- Produtos a Fiado -->
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-sm">
+                        <div class="flex items-center space-x-3 border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+                            <div class="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 dark:text-blue-400 text-xs">
                                 <i class="fa-solid fa-boxes-stacked"></i>
                             </div>
-                            <h3 class="text-sm font-black text-white font-heading">Artigos / Produtos a Fiado</h3>
+                            <h3 class="text-sm font-bold text-slate-900 dark:text-white font-heading">Artigos / Produtos a Fiado</h3>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-12 gap-3 mb-4">
                             <div class="md:col-span-9">
-                                <select class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition" id="product-select">
+                                <select class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 outline-none transition" id="product-select">
                                     <option value="">Selecione um produto...</option>
                                     @foreach ($products as $product)
                                         @if ($product->stock_quantity > 0 || $product->type === 'service')
@@ -157,16 +158,16 @@
                                 </select>
                             </div>
                             <div class="md:col-span-3">
-                                <button type="button" class="w-full py-2.5 rounded-xl {{ $theme['btn'] }} text-xs flex items-center justify-center gap-2" onclick="addProduct()">
+                                <button type="button" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition active:scale-95" onclick="addProduct()">
                                     <i class="fa-solid fa-plus"></i> Adicionar
                                 </button>
                             </div>
                         </div>
 
-                        <div class="overflow-x-auto rounded-2xl border border-slate-800">
+                        <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
                             <table class="w-full text-left text-xs" id="products-table">
                                 <thead>
-                                    <tr class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider">
+                                    <tr class="bg-slate-50 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider">
                                         <th class="p-3">Produto</th>
                                         <th class="p-3 w-28">Quantidade</th>
                                         <th class="p-3 text-right w-32">Preço Unit.</th>
@@ -174,13 +175,13 @@
                                         <th class="p-3 text-center w-20">Ação</th>
                                     </tr>
                                 </thead>
-                                <tbody id="products-tbody" class="divide-y divide-slate-800/60 bg-transparent">
+                                <tbody id="products-tbody" class="divide-y divide-slate-100 dark:divide-slate-800 bg-transparent">
                                     <!-- Produtos via JS -->
                                 </tbody>
                                 <tfoot>
-                                    <tr class="bg-slate-950 border-t border-slate-800">
-                                        <td colspan="3" class="p-3 text-right font-bold text-slate-300 uppercase text-[10px]">Total Geral:</td>
-                                        <td class="p-3 text-right font-black text-emerald-400 font-mono text-sm" id="products-total">MT 0,00</td>
+                                    <tr class="bg-slate-50 dark:bg-slate-950/90 border-t border-slate-200 dark:border-slate-800">
+                                        <td colspan="3" class="p-3 text-right font-bold text-slate-700 dark:text-slate-300 uppercase text-[10px]">Total Geral:</td>
+                                        <td class="p-3 text-right font-black text-emerald-600 dark:text-emerald-400 font-mono text-sm" id="products-total">MT 0,00</td>
                                         <td></td>
                                     </tr>
                                 </tfoot>
@@ -189,47 +190,47 @@
 
                         <input type="hidden" name="products" id="products-json">
                         @error('products')
-                            <p class="text-rose-400 text-xs mt-2">{{ $message }}</p>
+                            <p class="text-rose-500 text-xs mt-2">{{ $message }}</p>
                         @enderror
                     </div>
                 @endif
 
                 <!-- Detalhes da Dívida -->
-                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
-                    <div class="flex items-center space-x-3 border-b border-slate-800 pb-4 mb-4">
-                        <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-xs">
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-sm">
+                    <div class="flex items-center space-x-3 border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+                        <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 dark:text-amber-400 text-xs">
                             <i class="fa-solid fa-info-circle"></i>
                         </div>
-                        <h3 class="text-sm font-black text-white font-heading">Condições & Prazos</h3>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white font-heading">Condições & Prazos</h3>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Data da Dívida *</label>
-                            <input type="date" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Data da Dívida *</label>
+                            <input type="date" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 outline-none transition font-mono"
                                 name="debt_date" value="{{ old('debt_date', date('Y-m-d')) }}" required>
                             @error('debt_date')
-                                <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                                <p class="text-rose-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Data de Vencimento / Limite</label>
-                            <input type="date" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition"
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Data de Vencimento / Limite</label>
+                            <input type="date" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 outline-none transition font-mono"
                                 name="due_date" value="{{ old('due_date') }}">
                             @error('due_date')
-                                <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                                <p class="text-rose-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Descrição / Motivo *</label>
-                            <textarea class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition" name="description" rows="2" required>{{ old('description') }}</textarea>
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Descrição / Motivo *</label>
+                            <textarea class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-xs placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 outline-none transition" name="description" rows="2" required>{{ old('description') }}</textarea>
                             @error('description')
-                                <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                                <p class="text-rose-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Observações Adicionais</label>
-                            <textarea class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:ring-1 focus:ring-emerald-500 transition" name="notes" rows="2">{{ old('notes') }}</textarea>
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Observações Adicionais</label>
+                            <textarea class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-xs placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 outline-none transition" name="notes" rows="2">{{ old('notes') }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -238,41 +239,40 @@
 
             <!-- Resumo Lateral -->
             <div class="lg:col-span-1 space-y-6">
-                <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl sticky top-24">
-                    <div class="flex items-center space-x-3 border-b border-slate-800 pb-4 mb-4">
-                        <div class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs">
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm sticky top-24 space-y-4">
+                    <div class="flex items-center space-x-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+                        <div class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xs">
                             <i class="fa-solid fa-calculator"></i>
                         </div>
-                        <h3 class="text-sm font-black text-white font-heading">Resumo da Dívida</h3>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white font-heading">Resumo da Dívida</h3>
                     </div>
 
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="text-xs text-slate-400">Tipo de Dívida:</span>
-                        <span class="text-xs font-bold text-white">{{ $type === 'product' ? 'Produtos / Serviços' : 'Empréstimo / Dinheiro' }}</span>
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-500 dark:text-slate-400">Tipo de Dívida:</span>
+                        <span class="font-bold text-slate-800 dark:text-slate-100">{{ $type === 'product' ? 'Artigos a Fiado' : 'Dinheiro / Empréstimo' }}</span>
                     </div>
 
-                        @if ($type === 'product')
-                            <div>
-                                <span class="text-[10px] uppercase font-bold text-slate-500 block">Total de Artigos</span>
-                                <span class="text-xs font-bold text-white" id="summary-items">0 produtos</span>
-                            </div>
-                            <div>
-                                <span class="text-[10px] uppercase font-bold text-slate-500 block">Montante Total</span>
-                                <div class="text-xl font-black font-mono text-emerald-400" id="summary-total">MT 0,00</div>
-                            </div>
-                        @endif
-
-                        <div class="border-t border-slate-800 pt-4">
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Entrada Inicial (MT)</label>
-                            <input type="number" step="0.01" min="0" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-mono"
-                                name="initial_payment" value="{{ old('initial_payment') }}" placeholder="0,00">
-                            <span class="text-[10px] text-slate-500 mt-1 block">Deixar vazio se não houver amortização imediata</span>
+                    @if ($type === 'product')
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Total de Artigos</span>
+                            <span class="text-xs font-bold text-slate-800 dark:text-slate-100" id="summary-items">0 produtos</span>
                         </div>
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Montante Total</span>
+                            <div class="text-xl font-black font-mono text-emerald-600 dark:text-emerald-400 mt-0.5" id="summary-total">MT 0,00</div>
+                        </div>
+                    @endif
 
-                        <button type="submit" class="w-full py-3 rounded-2xl {{ $theme['btn'] }} text-xs hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-floppy-disk"></i> Confirmar & Criar Dívida
-                        </button>
+                    <div class="border-t border-slate-100 dark:border-slate-800 pt-3">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Entrada Inicial (MT)</label>
+                        <input type="number" step="0.01" min="0" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-xs font-mono focus:ring-2 focus:ring-emerald-500 outline-none transition"
+                            name="initial_payment" value="{{ old('initial_payment') }}" placeholder="0,00">
+                        <span class="text-[10px] text-slate-400 mt-1 block">Deixar vazio se não houver amortização imediata</span>
                     </div>
+
+                    <button type="submit" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 active:scale-95 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> Confirmar & Criar Dívida
+                    </button>
                 </div>
             </div>
         </div>
@@ -310,11 +310,11 @@
             const select = document.getElementById('product-select');
             const option = select.options[select.selectedIndex];
             if (!option.value) {
-                showToast('Selecione um produto', 'warning');
+                alert('Selecione um produto');
                 return;
             }
             if (option.disabled) {
-                showToast('Produto sem stock disponível', 'error');
+                alert('Produto sem stock disponível');
                 return;
             }
 
@@ -334,7 +334,7 @@
                 if (existing.quantity < product.stock) {
                     existing.quantity++;
                 } else {
-                    showToast('Estoque máximo atingido para ' + product.name, 'warning');
+                    alert('Estoque máximo atingido para ' + product.name);
                     return;
                 }
             } else {
@@ -366,17 +366,17 @@
                 const subtotal = item.quantity * item.unit_price;
                 total += subtotal;
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-800/30 transition">
-                        <td class="p-3 text-white font-semibold">${item.name}</td>
+                    <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition">
+                        <td class="p-3 text-slate-900 dark:text-white font-semibold">${item.name}</td>
                         <td class="p-3">
-                            <input type="number" class="w-20 px-2 py-1 bg-slate-950 border border-slate-800 rounded-lg text-white text-xs font-mono text-center" 
+                            <input type="number" class="w-20 px-2 py-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white text-xs font-mono text-center focus:ring-1 focus:ring-emerald-500 outline-none" 
                                    value="${item.quantity}" min="1" max="${item.stock}"
                                    onchange="updateQuantity(${index}, this.value)">
                         </td>
-                        <td class="p-3 text-right font-mono text-slate-300">MT ${item.unit_price.toFixed(2)}</td>
-                        <td class="p-3 text-right font-mono font-bold text-emerald-400">MT ${subtotal.toFixed(2)}</td>
+                        <td class="p-3 text-right font-mono text-slate-600 dark:text-slate-300">MT ${item.unit_price.toFixed(2)}</td>
+                        <td class="p-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">MT ${subtotal.toFixed(2)}</td>
                         <td class="p-3 text-center">
-                            <button type="button" class="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 text-xs transition" onclick="removeProduct(${index})">
+                            <button type="button" class="w-7 h-7 rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs transition" onclick="removeProduct(${index})">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </td>
@@ -394,7 +394,7 @@
             @if ($type === 'product')
                 if (productsCart.length === 0) {
                     e.preventDefault();
-                    showToast('Adicione pelo menos um produto', 'warning');
+                    alert('Adicione pelo menos um produto');
                     return false;
                 }
             @endif

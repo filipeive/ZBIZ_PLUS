@@ -9,15 +9,19 @@
     - color: 'emerald' | 'amber' | 'rose' | 'sky' | 'teal' | 'slate' (padrão)
 --}}
 @props([
-    'title',
+    'title' => null,
+    'label' => null,
     'value',
     'unit' => null,
     'subtitle' => null,
+    'description' => null,
     'icon' => null,
     'color' => 'emerald',
 ])
 
 @php
+    $cardTitle = $title ?? $label ?? '';
+    $cardSubtitle = $subtitle ?? $description ?? null;
     $colors = [
         'emerald' => 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
         'teal' => 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20',
@@ -32,7 +36,7 @@
 
 <div {{ $attributes->merge(['class' => 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between']) }}>
     <div class="flex items-center justify-between gap-2 mb-3">
-        <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $title }}</span>
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $cardTitle }}</span>
         @if($icon)
             <div class="w-9 h-9 rounded-xl flex items-center justify-center text-sm border {{ $badgeStyle }}">
                 <i class="{{ $icon }}"></i>
@@ -46,8 +50,8 @@
                 <span class="text-xs font-normal text-slate-400 ms-1">{{ $unit }}</span>
             @endif
         </div>
-        @if($subtitle)
-            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{{ $subtitle }}</p>
+        @if($cardSubtitle)
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{{ $cardSubtitle }}</p>
         @endif
     </div>
 </div>

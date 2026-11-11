@@ -1,135 +1,137 @@
 <!-- Informações do Cliente -->
-<div class="mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="text-primary mb-0">
-            <i class="fas fa-user me-2"></i>Informações do Cliente
-        </h6>
-        <span class="badge {{ $order->status_badge }} fs-6">{{ $order->status_text }}</span>
+<div class="mb-5">
+    <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-800">
+        <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <i class="fa-solid fa-user text-sky-500"></i>
+            <span>Informações do Cliente</span>
+        </h4>
+        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border {{ $order->status_badge }}">
+            {{ $order->status_text }}
+        </span>
     </div>
     
-    <div class="row g-3">
-        <div class="col-md-6">
-            <strong class="text-dark">{{ $order->customer_name }}</strong>
-            @if($order->customer_phone)
-                <div class="text-muted small mt-1">
-                    <i class="fas fa-phone me-1"></i> {{ $order->customer_phone }}
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <div>
+            <div class="font-bold text-slate-900 dark:text-white text-sm">
+                {{ $order->customer_name ?? $order->customer?->name ?? 'Cliente Avulso' }}
+            </div>
+            @if($order->customer_phone ?? $order->customer?->phone)
+                <div class="text-slate-500 dark:text-slate-400 font-mono mt-1 flex items-center gap-1.5">
+                    <i class="fa-solid fa-phone text-[10px] text-slate-400"></i>
+                    <span>{{ $order->customer_phone ?? $order->customer?->phone }}</span>
                 </div>
             @endif
-            @if($order->customer_email)
-                <div class="text-muted small mt-1">
-                    <i class="fas fa-envelope me-1"></i> {{ $order->customer_email }}
+            @if($order->customer_email ?? $order->customer?->email)
+                <div class="text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1.5">
+                    <i class="fa-solid fa-envelope text-[10px] text-slate-400"></i>
+                    <span>{{ $order->customer_email ?? $order->customer?->email }}</span>
                 </div>
             @endif
         </div>
-        <div class="col-md-6">
-            <div class="text-end">
-                <div class="fw-bold text-primary fs-5">Pedido #{{ $order->id }}</div>
-                <div class="text-muted small">
-                    <i class="fas fa-calendar me-1"></i>
-                    {{ $order->created_at->format('d/m/Y H:i') }}
-                </div>
-                @if($order->delivery_date)
-                    <div class="text-muted small mt-1">
-                        <i class="fas fa-clock me-1"></i>
-                        Entrega: {{ $order->delivery_date->format('d/m/Y') }}
-                        @if($order->isOverdue())
-                            <span class="badge bg-danger ms-1">Atrasado</span>
-                        @endif
-                    </div>
-                @endif
+        <div class="sm:text-right">
+            <div class="font-mono font-black text-sky-600 dark:text-sky-400 text-sm">
+                Pedido #{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
             </div>
+            <div class="text-slate-400 text-[11px] font-mono mt-0.5">
+                {{ $order->created_at ? $order->created_at->format('d/m/Y H:i') : '-' }}
+            </div>
+            @if($order->delivery_date)
+                <div class="text-[11px] font-mono mt-1 {{ $order->isOverdue() ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-500 dark:text-slate-400' }}">
+                    <i class="fa-solid fa-clock text-[10px] mr-1"></i>
+                    Entrega: {{ \Carbon\Carbon::parse($order->delivery_date)->format('d/m/Y') }}
+                    @if($order->isOverdue())
+                        <span class="ml-1 px-1.5 py-0.2 rounded bg-rose-500/10 text-rose-500 border border-rose-500/30 font-bold">Atrasado</span>
+                    @endif
+                </div>
+            @endif
         </div>
     </div>
 </div>
 
 <!-- Descrição e Prioridade -->
-<div class="mb-4">
-    <h6 class="text-primary mb-2">
-        <i class="fas fa-info-circle me-2"></i>Descrição do Pedido
-    </h6>
-    <div class="bg-light p-3 rounded">
-        <p class="mb-2">{{ $order->description }}</p>
-        <div class="d-flex justify-content-between align-items-center">
-            <span class="badge {{ $order->priority_badge }}">
+<div class="mb-5">
+    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+        <i class="fa-solid fa-info-circle text-slate-400"></i>
+        <span>Descrição & Prioridade</span>
+    </h4>
+    <div class="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200/70 dark:border-slate-800 text-xs">
+        <p class="text-slate-700 dark:text-slate-300 mb-2 leading-relaxed">{{ $order->description ?? 'Sem descrição detalhada.' }}</p>
+        <div class="flex items-center justify-between pt-2 border-t border-slate-200/50 dark:border-slate-800/80">
+            <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold border {{ $order->priority_badge }}">
                 {{ $order->priority_text }}
             </span>
             @if($order->user)
-                <small class="text-muted">
-                    <i class="fas fa-user-circle me-1"></i>
-                    Criado por: {{ $order->user->name }}
-                </small>
+                <span class="text-slate-400 text-[11px]">
+                    <i class="fa-solid fa-user-circle mr-1"></i>
+                    {{ $order->user->name }}
+                </span>
             @endif
         </div>
     </div>
 </div>
 
 <!-- Itens do Pedido -->
-<div class="mb-4">
-    <h6 class="text-primary mb-3">
-        <i class="fas fa-box me-2"></i>Itens do Pedido ({{ $order->items->count() }})
-    </h6>
+<div class="mb-5">
+    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+        <i class="fa-solid fa-box text-slate-400"></i>
+        <span>Itens do Pedido ({{ $order->items ? $order->items->count() : 0 }})</span>
+    </h4>
     
-    <div class="table-responsive">
-        <table class="table table-sm table-hover">
-            <thead class="table-light">
+    <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+        <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider">
                 <tr>
-                    <th>Item</th>
-                    <th class="text-center" style="width: 70px;">Qtd</th>
-                    <th class="text-end" style="width: 100px;">Preço</th>
-                    <th class="text-end" style="width: 100px;">Total</th>
+                    <th class="p-2.5">Item</th>
+                    <th class="p-2.5 text-center w-16">Qtd</th>
+                    <th class="p-2.5 text-right w-24">Preço</th>
+                    <th class="p-2.5 text-right w-28">Total</th>
                 </tr>
             </thead>
-            <tbody>
-                @forelse($order->items as $item)
-                    <tr>
-                        <td>
-                            <div class="fw-semibold">{{ $item->item_name }}</div>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                @forelse($order->items ?? [] as $item)
+                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                        <td class="p-2.5">
+                            <div class="font-bold text-slate-800 dark:text-slate-100">{{ $item->item_name ?? $item->product?->name ?? 'Artigo' }}</div>
                             @if($item->product)
-                                <small class="text-success">
-                                    <i class="fas fa-tag me-1"></i>{{ $item->product->name }}
-                                </small>
-                            @endif
-                            @if($item->description)
-                                <div class="text-muted small mt-1">{{ $item->description }}</div>
+                                <div class="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono">
+                                    {{ $item->product->name }}
+                                </div>
                             @endif
                         </td>
-                        <td class="text-center">
-                            <span class="badge bg-secondary">{{ $item->quantity }}</span>
+                        <td class="p-2.5 text-center font-mono font-bold">
+                            {{ $item->quantity }}
                         </td>
-                        <td class="text-end">
-                            <span class="text-muted">MT</span> {{ number_format($item->unit_price, 2, ',', '.') }}
+                        <td class="p-2.5 text-right font-mono text-slate-600 dark:text-slate-300">
+                            {{ number_format($item->unit_price, 2, ',', '.') }} MT
                         </td>
-                        <td class="text-end fw-semibold">
-                            <span class="text-muted">MT</span> {{ number_format($item->total_price, 2, ',', '.') }}
+                        <td class="p-2.5 text-right font-mono font-bold text-slate-900 dark:text-white">
+                            {{ number_format($item->total_price ?? ($item->quantity * $item->unit_price), 2, ',', '.') }} MT
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="text-center text-muted py-3">
-                            <i class="fas fa-box-open fa-2x mb-2 opacity-50"></i>
-                            <p>Nenhum item encontrado</p>
-                        </td>
+                        <td colspan="4" class="p-4 text-center text-slate-400 text-xs">Nenhum item registado</td>
                     </tr>
                 @endforelse
             </tbody>
-            <tfoot class="table-light">
+            <tfoot class="bg-slate-50 dark:bg-slate-950/90 border-t border-slate-200 dark:border-slate-800 text-xs">
                 <tr>
-                    <td colspan="3" class="text-end fw-bold">Valor Total:</td>
-                    <td class="text-end fw-bold text-primary">
-                        MT {{ number_format($order->estimated_amount, 2, ',', '.') }}
+                    <td colspan="3" class="p-2.5 text-right font-bold text-slate-600 dark:text-slate-400">Valor Total:</td>
+                    <td class="p-2.5 text-right font-black font-mono text-emerald-600 dark:text-emerald-400">
+                        {{ number_format($order->total_amount ?? $order->estimated_amount, 2, ',', '.') }} MT
                     </td>
                 </tr>
                 @if($order->advance_payment > 0)
                     <tr>
-                        <td colspan="3" class="text-end text-success">Sinal Recebido:</td>
-                        <td class="text-end text-success">
-                            MT {{ number_format($order->advance_payment, 2, ',', '.') }}
+                        <td colspan="3" class="p-2 text-right text-emerald-600 dark:text-emerald-400">Sinal Recebido:</td>
+                        <td class="p-2 text-right font-mono text-emerald-600 dark:text-emerald-400">
+                            {{ number_format($order->advance_payment, 2, ',', '.') }} MT
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="3" class="text-end fw-bold text-danger">Valor Restante:</td>
-                        <td class="text-end fw-bold text-danger">
-                            MT {{ number_format($order->estimated_amount - $order->advance_payment, 2, ',', '.') }}
+                        <td colspan="3" class="p-2 text-right font-bold text-rose-600 dark:text-rose-400">Valor Restante:</td>
+                        <td class="p-2 text-right font-black font-mono text-rose-600 dark:text-rose-400">
+                            {{ number_format(($order->total_amount ?? $order->estimated_amount) - $order->advance_payment, 2, ',', '.') }} MT
                         </td>
                     </tr>
                 @endif
@@ -138,215 +140,56 @@
     </div>
 </div>
 
-<!-- Observações -->
-@if($order->notes || $order->internal_notes)
-    <div class="mb-4">
-        <h6 class="text-primary mb-3">
-            <i class="fas fa-sticky-note me-2"></i>Observações
-        </h6>
-        
-        @if($order->notes)
-            <div class="bg-light p-3 rounded mb-3">
-                <div class="fw-semibold text-dark mb-2">Observações do Cliente:</div>
-                <p class="mb-0 text-muted">{{ $order->notes }}</p>
-            </div>
-        @endif
-        
-        @if($order->internal_notes)
-            <div class="bg-info bg-opacity-10 border border-info p-3 rounded">
-                <div class="fw-semibold text-info mb-2">
-                    <i class="fas fa-lock me-1"></i>Notas Internas:
-                </div>
-                <p class="mb-0 text-secondary">{{ $order->internal_notes }}</p>
-            </div>
-        @endif
-    </div>
-@endif
-
-<!-- Dívida Relacionada -->
+<!-- Dívida Relacionada (se houver) -->
 @if($order->debt)
-    <div class="mb-4">
-        <h6 class="text-primary mb-3">
-            <i class="fas fa-credit-card me-2"></i>Dívida Relacionada
-        </h6>
+    <div class="mb-5">
+        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-credit-card text-amber-500"></i>
+            <span>Dívida Vinculada</span>
+        </h4>
         
-        <div class="bg-warning bg-opacity-10 border border-warning p-3 rounded">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="fw-semibold">Status da Dívida:</span>
-                <span class="badge {{ $order->debt->status_badge }}">
+        <div class="bg-amber-500/10 border border-amber-500/30 p-3.5 rounded-2xl text-xs space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="font-bold text-slate-800 dark:text-slate-200">Estado da Dívida:</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border {{ $order->debt->status_badge }}">
                     {{ $order->debt->status_text }}
                 </span>
             </div>
             
-            <div class="row g-2">
-                <div class="col-md-6">
-                    <small class="text-muted d-block">Valor Original:</small>
-                    <span class="fw-bold">MT {{ number_format($order->debt->original_amount, 2, ',', '.') }}</span>
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-amber-500/20 font-mono">
+                <div>
+                    <span class="text-[10px] text-slate-500 block uppercase">Original</span>
+                    <strong class="text-slate-800 dark:text-slate-200">{{ number_format($order->debt->original_amount, 2, ',', '.') }} MT</strong>
                 </div>
-                <div class="col-md-6">
-                    <small class="text-muted d-block">Valor Restante:</small>
-                    <span class="fw-bold text-danger">MT {{ number_format($order->debt->remaining_amount, 2, ',', '.') }}</span>
+                <div>
+                    <span class="text-[10px] text-slate-500 block uppercase">Restante</span>
+                    <strong class="text-rose-600 dark:text-rose-400 font-black">{{ number_format($order->debt->remaining_amount, 2, ',', '.') }} MT</strong>
                 </div>
             </div>
             
-            @if($order->debt->due_date)
-                <div class="mt-2">
-                    <small class="text-muted d-block">Vencimento:</small>
-                    <span class="fw-semibold {{ $order->debt->due_date < now() ? 'text-danger' : 'text-dark' }}">
-                        {{ $order->debt->due_date->format('d/m/Y') }}
-                        @if($order->debt->due_date < now())
-                            <i class="fas fa-exclamation-triangle ms-1"></i>
-                        @endif
-                    </span>
-                </div>
-            @endif
-            
-            <div class="mt-3">
-                <a href="{{ route('debts.show', $order->debt) }}" class="btn btn-sm btn-warning">
-                    <i class="fas fa-external-link-alt me-1"></i>Ver Detalhes da Dívida
+            <div class="pt-2">
+                <a href="{{ route('debts.show', $order->debt) }}" class="inline-flex items-center gap-1.5 font-bold text-amber-700 dark:text-amber-400 hover:underline">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                    <span>Ver Dossiê da Dívida</span>
                 </a>
             </div>
         </div>
     </div>
 @endif
 
-<!-- Ações -->
-<div class="mb-3">
-    <h6 class="text-primary mb-3">
-        <i class="fas fa-cogs me-2"></i>Ações Disponíveis
-    </h6>
-    
-    <div class="d-grid gap-2">
-        @if($order->canBeCompleted())
-            <button type="button" class="btn btn-outline-primary btn-sm" 
-                    onclick="openEditOrderOffcanvas({{ $order->id }})">
-                <i class="fas fa-edit me-2"></i>Editar Pedido
-            </button>
-        @endif
-        
-        @if($order->status !== 'cancelled')
-            <div class="btn-group" role="group">
-                <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" 
-                        data-bs-toggle="dropdown">
-                    <i class="fas fa-exchange-alt me-2"></i>Alterar Status
-                </button>
-                <ul class="dropdown-menu">
-                    @if($order->status !== 'pending')
-                        <li>
-                            <a class="dropdown-item" href="#" onclick="updateOrderStatus({{ $order->id }}, 'pending')">
-                                <i class="fas fa-clock me-2 text-warning"></i>Pendente
-                            </a>
-                        </li>
-                    @endif
-                    @if($order->status !== 'in_progress')
-                        <li>
-                            <a class="dropdown-item" href="#" onclick="updateOrderStatus({{ $order->id }}, 'in_progress')">
-                                <i class="fas fa-cog me-2 text-info"></i>Em Andamento
-                            </a>
-                        </li>
-                    @endif
-                    @if($order->status !== 'completed')
-                        <li>
-                            <a class="dropdown-item" href="#" onclick="updateOrderStatus({{ $order->id }}, 'completed')">
-                                <i class="fas fa-check me-2 text-success"></i>Concluído
-                            </a>
-                        </li>
-                    @endif
-                    @if($order->status !== 'delivered')
-                        <li>
-                            <a class="dropdown-item" href="#" onclick="updateOrderStatus({{ $order->id }}, 'delivered')">
-                                <i class="fas fa-truck me-2 text-primary"></i>Entregue
-                            </a>
-                        </li>
-                    @endif
-                </ul>
-            </div>
-        @endif
-        
-        @if($order->canBeCancelled())
-            <button type="button" class="btn btn-outline-danger btn-sm" 
-                    onclick="cancelOrder({{ $order->id }})">
-                <i class="fas fa-times me-2"></i>Cancelar Pedido
-            </button>
-        @endif
-        
-        @if($order->canBeDelivered())
-            <button type="button" class="btn btn-success btn-sm" 
-                    onclick="convertToSale({{ $order->id }})">
-                <i class="fas fa-exchange-alt me-2"></i>Converter em Venda
-            </button>
-        @endif
-    </div>
+<!-- Ações Rápidas -->
+<div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2 flex-wrap">
+    <a href="{{ route('orders.show', $order) }}" 
+       class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition flex items-center gap-1.5">
+        <i class="fa-solid fa-eye text-xs"></i>
+        <span>Página Completa</span>
+    </a>
+
+    @if(!in_array($order->status, ['completed', 'delivered', 'cancelled']))
+        <a href="{{ route('orders.complete', $order) }}" 
+           class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition flex items-center gap-1.5 active:scale-95">
+            <i class="fa-solid fa-check text-xs"></i>
+            <span>Concluir / Faturar</span>
+        </a>
+    @endif
 </div>
-
-<script>
-function updateOrderStatus(orderId, status) {
-    if (confirm('Confirmar alteração de status?')) {
-        fetch(`{{ url('orders') }}/${orderId}/status`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ status: status })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                showToast(data.message, 'success');
-                setTimeout(() => window.location.reload(), 1000);
-            } else {
-                showToast(data.message || 'Erro ao atualizar status', 'error');
-            }
-        })
-        .catch(() => showToast('Erro de conexão', 'error'));
-    }
-}
-
-function cancelOrder(orderId) {
-    if (confirm('Tem certeza que deseja cancelar este pedido?')) {
-        fetch(`{{ url('orders') }}/${orderId}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
-            }
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                showToast(data.message, 'success');
-                setTimeout(() => window.location.reload(), 1000);
-            } else {
-                showToast(data.message || 'Erro ao cancelar pedido', 'error');
-            }
-        })
-        .catch(() => showToast('Erro de conexão', 'error'));
-    }
-}
-
-function convertToSale(orderId) {
-    if (confirm('Converter este pedido em venda?')) {
-        fetch(`{{ url('orders') }}/${orderId}/convert-to-sale`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
-            }
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                showToast('Pedido convertido em venda!', 'success');
-                if (data.redirect) {
-                    setTimeout(() => window.location.href = data.redirect, 1000);
-                }
-            } else {
-                showToast(data.message || 'Erro ao converter pedido', 'error');
-            }
-        })
-        .catch(() => showToast('Erro de conexão', 'error'));
-    }
-}
-</script>
