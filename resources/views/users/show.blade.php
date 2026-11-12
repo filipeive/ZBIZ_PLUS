@@ -158,7 +158,7 @@
                     <h3 class="text-sm font-black text-content-main font-heading flex items-center gap-2">
                         <i class="fa-solid fa-clock-rotate-left text-blue-400"></i> Atividades Recentes
                     </h3>
-                    <a href="{{ route('users.activity', $user) }}" class="text-xs text-primary-500 font-bold hover:underline">Ver Todas</a>
+                    <a href="{{ route('users.activity', $user) }}" class="text-xs text-emerald-400 font-bold hover:underline">Ver Todas</a>
                 </div>
 
                 <div class="space-y-3">
@@ -192,7 +192,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-1">Conta de Saída *</label>
-                        <select name="financial_account_id" required class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-primary-500">
+                        <select name="financial_account_id" required class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-emerald-400">
                             @foreach($financialAccounts as $account)
                                 <option value="{{ $account->id }}">{{ $account->name }}</option>
                             @endforeach
@@ -201,27 +201,27 @@
 
                     <div>
                         <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-1">Salário Base (MT) *</label>
-                        <input type="number" step="0.01" min="0" name="base_amount" value="{{ old('base_amount', $user->monthly_salary) }}" required class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs font-mono font-bold focus:ring-1 focus:ring-primary-500">
+                        <input type="number" step="0.01" min="0" name="base_amount" value="{{ old('base_amount', $user->monthly_salary) }}" required class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs font-mono font-bold focus:ring-1 focus:ring-emerald-400">
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-1">Ajuste / Bónus (±)</label>
-                        <input type="number" step="0.01" min="-1500" max="1500" name="variable_amount" value="0" class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs font-mono focus:ring-1 focus:ring-primary-500">
+                        <input type="number" step="0.01" min="-1500" max="1500" name="variable_amount" value="0" class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs font-mono focus:ring-1 focus:ring-emerald-400">
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-1">Data Pagamento *</label>
-                        <input type="date" name="payment_date" value="{{ now()->format('Y-m-d') }}" required class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-primary-500">
+                        <input type="date" name="payment_date" value="{{ now()->format('Y-m-d') }}" required class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-emerald-400">
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-1">Mês de Referência</label>
-                        <input type="date" name="reference_month" value="{{ now()->startOfMonth()->format('Y-m-d') }}" class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-primary-500">
+                        <input type="date" name="reference_month" value="{{ now()->startOfMonth()->format('Y-m-d') }}" class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-emerald-400">
                     </div>
 
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-1">Notas</label>
-                        <textarea name="notes" rows="2" placeholder="Observações..." class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-primary-500"></textarea>
+                        <textarea name="notes" rows="2" placeholder="Observações..." class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-emerald-400"></textarea>
                     </div>
                 </div>
 

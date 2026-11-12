@@ -39,57 +39,57 @@
 
                 <div>
                     <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-2">Nome Completo *</label>
-                    <input type="text" name="name" value="{{ old('name', $user->name) }}" required class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-primary-500">
+                    <input type="text" name="name" value="{{ old('name', $user->name) }}" required class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-emerald-400">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-2">Código do Funcionário</label>
-                    <input type="text" name="employee_code" value="{{ old('employee_code', $user->employee_code) }}" class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-primary-500">
+                    <input type="text" name="employee_code" value="{{ old('employee_code', $user->employee_code) }}" class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-emerald-400">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-2">Email de Acesso *</label>
-                    <input type="email" name="email" value="{{ old('email', $user->email) }}" required class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-primary-500">
+                    <input type="email" name="email" value="{{ old('email', $user->email) }}" required class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-emerald-400">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-2">Telefone</label>
-                    <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-primary-500">
+                    <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-emerald-400">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-2">Cargo / Função</label>
-                    <input type="text" name="job_title" value="{{ old('job_title', $user->job_title) }}" class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-primary-500">
+                    <input type="text" name="job_title" value="{{ old('job_title', $user->job_title) }}" class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-emerald-400">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-2">Documento de Identificação</label>
-                    <input type="text" name="document_number" value="{{ old('document_number', $user->document_number) }}" class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-primary-500">
+                    <input type="text" name="document_number" value="{{ old('document_number', $user->document_number) }}" class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-emerald-400">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-2">Salário Base Mensal (MT)</label>
-                    <input type="number" step="0.01" min="0" name="monthly_salary" value="{{ old('monthly_salary', $user->monthly_salary) }}" class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs font-mono font-bold focus:ring-1 focus:ring-primary-500">
+                    <input type="number" step="0.01" min="0" name="monthly_salary" value="{{ old('monthly_salary', $user->monthly_salary) }}" class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs font-mono font-bold focus:ring-1 focus:ring-emerald-400">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-2">Data de Admissão</label>
-                    <input type="date" name="hire_date" value="{{ old('hire_date', optional($user->hire_date)->format('Y-m-d')) }}" class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-primary-500">
+                    <input type="date" name="hire_date" value="{{ old('hire_date', optional($user->hire_date)->format('Y-m-d')) }}" class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-emerald-400">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-2">Nova Palavra-passe (Deixar em branco para manter)</label>
-                    <input type="password" name="password" class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-primary-500">
+                    <input type="password" name="password" class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-emerald-400">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-2">Confirmar Nova Palavra-passe</label>
-                    <input type="password" name="password_confirmation" class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-primary-500">
+                    <input type="password" name="password_confirmation" class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-emerald-400">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-2">Função / Role *</label>
-                    <select name="role_id" required class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-primary-500">
+                    <select name="role_id" required class="w-full px-4 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-emerald-400">
                         @foreach($roles as $role)
                             <option value="{{ $role->id }}" {{ old('role_id', $user->role_id) == $role->id ? 'selected' : '' }}>
                                 {{ ucfirst($role->name) }}

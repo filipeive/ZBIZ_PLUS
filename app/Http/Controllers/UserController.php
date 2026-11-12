@@ -454,7 +454,21 @@ class UserController extends Controller
             ->distinct()
             ->pluck('action');
 
-        return view('users.activity', compact('user', 'activities', 'usersList', 'actionsList'));
+        $statsQuery = UserActivity::when(!$isGlobalOwner, fn($q) => $q->where('tenant_id', $tenantId));
+        if ($selectedUserId) {
+            $statsQuery->where('user_id', $selectedUserId);
+        }
+
+        $activityStats = [
+            'total'      => $activities->total(),
+            'logins'     => (clone $statsQuery)->whereIn('action', ['login', 'logout'])->count(),
+            'operations' => (clone $statsQuery)->whereIn('action', ['create', 'financial_transaction_create', 'sale_create'])->count(),
+            'updates'    => (clone $statsQuery)->where('action', 'update')->count(),
+            'deletes'    => (clone $statsQuery)->where('action', 'delete')->count(),
+            'security'   => (clone $statsQuery)->whereIn('action', ['password_reset', 'status_change', 'permission_change'])->count(),
+        ];
+
+        return view('users.activity', compact('user', 'activities', 'usersList', 'actionsList', 'activityStats'));
     }
     
     /**

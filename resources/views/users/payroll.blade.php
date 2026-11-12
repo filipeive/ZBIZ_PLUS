@@ -27,7 +27,7 @@
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-surface-card border border-border-default rounded-3xl p-5 shadow-xl backdrop-blur-xl">
         <form method="GET" action="{{ route('users.employees.payroll') }}" class="flex items-center gap-3">
             <span class="text-xs font-bold text-content-dimmed uppercase tracking-wider">Mês:</span>
-            <input type="date" name="reference_month" id="reference_month_filter" value="{{ $referenceMonth->format('Y-m-d') }}" class="px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-primary-500">
+            <input type="date" name="reference_month" id="reference_month_filter" value="{{ $referenceMonth->format('Y-m-d') }}" class="px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-emerald-400">
             <button type="submit" class="px-3.5 sm:px-4 py-2 bg-surface-hover hover:bg-surface-active text-content-main font-bold text-xs rounded-xl transition flex items-center gap-1.5" title="Atualizar Mês de Referência">
                 <i class="fa-solid fa-arrows-rotate"></i>
                 <span class="hidden sm:inline">Atualizar</span>
@@ -46,7 +46,7 @@
         <div x-show="kpisCollapsed" x-cloak class="bg-surface-card/60 backdrop-blur-xl border border-border-default/60 rounded-2xl px-4 py-2.5 flex items-center justify-between text-xs">
             <div class="flex items-center gap-3 sm:gap-6 flex-wrap">
                 <span class="text-content-dimmed font-medium flex items-center gap-1.5">
-                    <i class="fa-solid fa-users text-primary-500"></i>
+                    <i class="fa-solid fa-users text-emerald-400"></i>
                     Funcionários: <strong class="text-content-main font-bold">{{ $summary['employees'] }}</strong>
                 </span>
                 <span class="text-content-dimmed font-medium flex items-center gap-1.5">
@@ -183,7 +183,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-1">Conta Financeira de Saída *</label>
-                        <select name="financial_account_id" required class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-primary-500">
+                        <select name="financial_account_id" required class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-emerald-400">
                             @foreach($financialAccounts as $account)
                                 <option value="{{ $account->id }}">{{ $account->name }}</option>
                             @endforeach
@@ -192,27 +192,27 @@
 
                     <div>
                         <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-1">Montante Base (MT) *</label>
-                        <input type="number" step="0.01" min="0" name="base_amount" :value="balance > 0 ? balance : baseSalary" required class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs font-mono font-bold focus:ring-1 focus:ring-primary-500">
+                        <input type="number" step="0.01" min="0" name="base_amount" :value="balance > 0 ? balance : baseSalary" required class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs font-mono font-bold focus:ring-1 focus:ring-emerald-400">
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-1">Ajuste / Bónus (±)</label>
-                        <input type="number" step="0.01" min="-1500" max="1500" name="variable_amount" value="0" class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs font-mono focus:ring-1 focus:ring-primary-500">
+                        <input type="number" step="0.01" min="-1500" max="1500" name="variable_amount" value="0" class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs font-mono focus:ring-1 focus:ring-emerald-400">
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-1">Data Pagamento</label>
-                        <input type="date" name="payment_date" value="{{ now()->format('Y-m-d') }}" required class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-primary-500">
+                        <input type="date" name="payment_date" value="{{ now()->format('Y-m-d') }}" required class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-emerald-400">
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-1">Mês Ref.</label>
-                        <input type="date" name="reference_month" value="{{ $referenceMonth->format('Y-m-d') }}" class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-primary-500">
+                        <input type="date" name="reference_month" value="{{ $referenceMonth->format('Y-m-d') }}" class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-emerald-400">
                     </div>
 
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-bold text-content-dimmed uppercase tracking-wider mb-1">Notas</label>
-                        <textarea name="notes" rows="2" placeholder="Observações do pagamento..." class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-primary-500"></textarea>
+                        <textarea name="notes" rows="2" placeholder="Observações do pagamento..." class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-1 focus:ring-emerald-400"></textarea>
                     </div>
                 </div>
 
