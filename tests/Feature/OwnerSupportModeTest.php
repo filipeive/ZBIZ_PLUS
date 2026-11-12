@@ -112,6 +112,29 @@ test('super admin can access owner routes', function () {
         ->assertOk()
         ->assertSeeText($tenant->name);
 
+    $plan = Plan::first();
+    $license = \App\Models\LicenseKey::create([
+        'tenant_id' => $tenant->id,
+        'plan_id' => $plan->id,
+        'key_code' => 'ZBIZ-TEST-CERT-KEY1-ABCD',
+        'key_hash' => hash('sha256', 'test-key'),
+        'mode' => 'cloud',
+        'status' => 'active',
+        'starts_at' => now(),
+        'expires_at' => now()->addYear(),
+        'issued_by' => $owner->id,
+    ]);
+
+    $this->actingAs($owner)
+        ->get(route('owner.tenants.licenses.certificate', [$tenant, $license]))
+        ->assertOk()
+        ->assertSeeText('Certificado Oficial de Ativação')
+        ->assertSeeText('ZBIZ-TEST-CERT-KEY1-ABCD');
+
+    $this->actingAs($owner)
+        ->get(route('owner.tenants.licenses.certificate-pdf', [$tenant, $license]))
+        ->assertOk();
+
     $this->actingAs($owner)
         ->get(route('users.activity'))
         ->assertOk()
