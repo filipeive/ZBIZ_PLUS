@@ -36,9 +36,12 @@ class FinanceController extends Controller
         // Restrição de utilizador (não admin/gerente vê apenas os seus registos)
         $userIdFilter = ($user->isAdmin() || $user->isSuperAdmin() || $user->isManager()) ? null : $user->id;
 
-        $accounts = FinancialAccount::operational()
+        $showInactive = $request->boolean('show_inactive', false);
+        $accounts = FinancialAccount::with('branch')
+            ->when(!$showInactive, fn ($q) => $q->where('is_active', true))
             ->when($branchIdFilter, fn ($q) => $q->where('branch_id', $branchIdFilter))
             ->orderBy('sort_order')
+            ->orderBy('name')
             ->get();
 
         $accounts = $accounts->map(function (FinancialAccount $account) {
@@ -168,34 +171,137 @@ class FinanceController extends Controller
         return redirect()->route('finances.index')->with('success', 'Movimento financeiro registrado com sucesso.');
     }
 
-    public function updateAccount(Request $request, FinancialAccount $account)
+    public function storeAccount(Request $request)
     {
-        abort_unless(auth()->check() && auth()->user()->isAdmin(), 403);
+        abort_unless(auth()->check() && (auth()->user()->isAdmin() || auth()->user()->isManager() || \App\Helpers\PermissionHelper::userCan('manage_finances')), 403);
 
         $validated = $request->validate([
-            'opening_balance' => 'required|numeric',
+            'name' => 'required|string|max:100',
+            'type' => ['required', Rule::in(['cash', 'bank', 'mobile_money', 'other'])],
+            'opening_balance' => 'nullable|numeric|min:0',
+            'branch_id' => 'nullable|exists:branches,id',
+            'is_active' => 'nullable|boolean',
+            'sort_order' => 'nullable|integer|min:0',
         ]);
 
-        $account->update([
-            'opening_balance' => $validated['opening_balance'],
+        $tenantId = current_tenant_id() ?? auth()->user()->tenant_id;
+        $openingBalance = (float) ($validated['opening_balance'] ?? 0);
+        $branchId = !empty($validated['branch_id']) ? (int) $validated['branch_id'] : (current_branch_id() ?? auth()->user()->branch_id);
+
+        $baseSlug = \Illuminate\Support\Str::slug($validated['name']);
+        $slug = $baseSlug ?: 'conta';
+        $counter = 1;
+        while (FinancialAccount::where('tenant_id', $tenantId)->where('slug', $slug)->exists()) {
+            $slug = "{$baseSlug}-{$counter}";
+            $counter++;
+        }
+
+        $account = FinancialAccount::create([
+            'tenant_id' => $tenantId,
+            'branch_id' => $branchId,
+            'name' => $validated['name'],
+            'slug' => $slug,
+            'type' => $validated['type'],
+            'opening_balance' => $openingBalance,
+            'current_balance' => $openingBalance,
+            'is_active' => $request->boolean('is_active', true),
+            'sort_order' => (int) ($validated['sort_order'] ?? 0),
         ]);
 
         UserActivity::create([
             'user_id' => auth()->id(),
-            'action' => 'financial_transaction_create',
+            'action' => 'financial_account_create',
             'model_type' => FinancialAccount::class,
             'model_id' => $account->id,
-            'description' => "Atualizou saldo inicial da conta {$account->name}",
+            'description' => "Criou a conta financeira '{$account->name}' com saldo inicial de " . number_format($openingBalance, 2, ',', '.') . " MT",
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
         ]);
 
-        return redirect()->route('finances.index')->with('success', "Saldo inicial da conta {$account->name} atualizado com sucesso.");
+        return redirect()->route('finances.index')->with('success', "Conta financeira '{$account->name}' criada com sucesso.");
+    }
+
+    public function updateAccount(Request $request, FinancialAccount $account)
+    {
+        abort_unless(auth()->check() && (auth()->user()->isAdmin() || auth()->user()->isManager() || \App\Helpers\PermissionHelper::userCan('manage_finances')), 403);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'type' => ['required', Rule::in(['cash', 'bank', 'mobile_money', 'other'])],
+            'opening_balance' => 'required|numeric|min:0',
+            'branch_id' => 'nullable|exists:branches,id',
+            'is_active' => 'nullable|boolean',
+            'sort_order' => 'nullable|integer|min:0',
+        ]);
+
+        $oldOpening = (float) $account->opening_balance;
+        $newOpening = (float) $validated['opening_balance'];
+        $diff = $newOpening - $oldOpening;
+
+        $account->update([
+            'name' => $validated['name'],
+            'type' => $validated['type'],
+            'opening_balance' => $newOpening,
+            'current_balance' => (float) $account->current_balance + $diff,
+            'branch_id' => !empty($validated['branch_id']) ? (int) $validated['branch_id'] : null,
+            'is_active' => $request->boolean('is_active', true),
+            'sort_order' => (int) ($validated['sort_order'] ?? $account->sort_order ?? 0),
+        ]);
+
+        UserActivity::create([
+            'user_id' => auth()->id(),
+            'action' => 'financial_account_update',
+            'model_type' => FinancialAccount::class,
+            'model_id' => $account->id,
+            'description' => "Atualizou as configurações da conta financeira '{$account->name}'",
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
+        return redirect()->route('finances.index')->with('success', "Conta '{$account->name}' atualizada com sucesso.");
+    }
+
+    public function destroyAccount(FinancialAccount $account)
+    {
+        abort_unless(auth()->check() && (auth()->user()->isAdmin() || auth()->user()->isManager() || \App\Helpers\PermissionHelper::userCan('manage_finances')), 403);
+
+        $hasTransactions = $account->transactions()->exists();
+
+        if ($hasTransactions) {
+            $account->update(['is_active' => false]);
+
+            UserActivity::create([
+                'user_id' => auth()->id(),
+                'action' => 'financial_account_deactivate',
+                'model_type' => FinancialAccount::class,
+                'model_id' => $account->id,
+                'description' => "Desativou a conta '{$account->name}' (possuía histórico de transações)",
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
+
+            return redirect()->route('finances.index')->with('success', "A conta '{$account->name}' possui movimentações registradas e foi desativada em vez de excluída para preservar o histórico do livro-razão.");
+        }
+
+        $accountName = $account->name;
+        $account->delete();
+
+        UserActivity::create([
+            'user_id' => auth()->id(),
+            'action' => 'financial_account_delete',
+            'model_type' => FinancialAccount::class,
+            'model_id' => $account->id,
+            'description' => "Excluiu a conta financeira '{$accountName}'",
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
+        return redirect()->route('finances.index')->with('success', "Conta financeira '{$accountName}' removida com sucesso.");
     }
 
     public function adjustAccountBalance(Request $request, FinancialAccount $account)
     {
-        abort_unless(auth()->check() && auth()->user()->isAdmin(), 403);
+        abort_unless(auth()->check() && (auth()->user()->isAdmin() || auth()->user()->isManager() || \App\Helpers\PermissionHelper::userCan('manage_finances')), 403);
 
         $validated = $request->validate([
             'mode' => ['required', Rule::in(['add', 'remove', 'set'])],

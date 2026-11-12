@@ -434,9 +434,11 @@ Route::middleware(['auth', 'permissions', 'temp.password', 'subscription'])->gro
         });
 
         Route::middleware('permissions:manage_finances')->group(function () {
-            Route::post('/transactions', [FinanceController::class, 'storeTransaction'])->name('transactions.store');
-            Route::patch('/accounts/{account}', [FinanceController::class, 'updateAccount'])->name('accounts.update');
+            Route::post('/accounts', [FinanceController::class, 'storeAccount'])->name('accounts.store');
+            Route::match(['put', 'patch'], '/accounts/{account}', [FinanceController::class, 'updateAccount'])->name('accounts.update');
+            Route::delete('/accounts/{account}', [FinanceController::class, 'destroyAccount'])->name('accounts.destroy');
             Route::post('/accounts/{account}/adjust-balance', [FinanceController::class, 'adjustAccountBalance'])->name('accounts.adjust-balance');
+            Route::post('/transactions', [FinanceController::class, 'storeTransaction'])->name('transactions.store');
             Route::post('/transactions/{transaction}/revert', [FinanceController::class, 'revertTransaction'])->name('transactions.revert');
             Route::patch('/transactions/{transaction}/toggle-metrics', [FinanceController::class, 'toggleMetrics'])->name('transactions.toggle-metrics');
         });
