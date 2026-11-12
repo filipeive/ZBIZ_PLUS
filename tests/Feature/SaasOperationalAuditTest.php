@@ -184,11 +184,31 @@ class SaasOperationalAuditTest extends TestCase
         $this->actingAs($admin)->get(route('debts.index'))->assertStatus(200);
         $this->actingAs($admin)->get(route('debts.debtors-report'))->assertStatus(200);
 
-        // 3. Finances & Stock Movements
+        // 3. Finances, Expenses & Stock Movements
         $this->actingAs($admin)->get(route('finances.index'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('expenses.index'))->assertStatus(200);
         $this->actingAs($admin)->get(route('stock-movements.index'))->assertStatus(200);
 
-        // 4. Reports Hub & Specialized Reports
+        // 4. Sales & POS Shifts
+        $this->actingAs($admin)->get(route('sales.index'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('sales.create'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('cash-shifts.index'))->assertStatus(200);
+
+        // 5. Customers, Quotations, Categories & Suppliers
+        $this->actingAs($admin)->get(route('customers.index'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('customers.create'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('quotations.index'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('quotations.create'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('categories.index'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('suppliers.index'))->assertStatus(200);
+
+        // 6. Restaurant Module (Tables & Kitchen - scoped to restaurant business type)
+        $admin->tenant->update(['business_type' => 'restaurant']);
+        $this->actingAs($admin)->get(route('restaurant.tables.index'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('restaurant.kitchen.index'))->assertStatus(200);
+        $admin->tenant->update(['business_type' => 'pharmacy']);
+
+        // 7. Reports Hub & Specialized Reports
         $this->actingAs($admin)->get(route('reports.index'))->assertStatus(200);
         $this->actingAs($admin)->get(route('reports.daily-sales'))->assertStatus(200);
         $this->actingAs($admin)->get(route('reports.monthly-sales'))->assertStatus(200);
@@ -197,8 +217,15 @@ class SaasOperationalAuditTest extends TestCase
         $this->actingAs($admin)->get(route('reports.abc-analysis'))->assertStatus(200);
         $this->actingAs($admin)->get(route('reports.cash-flow'))->assertStatus(200);
 
-        // 5. Users & Settings
+        // 8. Users, Payroll, Activity & Settings
         $this->actingAs($admin)->get(route('users.index'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('users.create'))->assertStatus(200);
+        $subscription = \App\Models\Subscription::where('tenant_id', $admin->tenant_id)->first();
+        if ($subscription && $subscription->plan) {
+            $subscription->plan->update(['features' => array_merge($subscription->plan->features ?? [], ['salaries'])]);
+        }
+        $this->actingAs($admin)->get(route('users.employees.payroll'))->assertStatus(200);
+        $this->actingAs($admin)->get(route('users.activity'))->assertStatus(200);
         $this->actingAs($admin)->get(route('admin.settings'))->assertStatus(200);
     }
 
