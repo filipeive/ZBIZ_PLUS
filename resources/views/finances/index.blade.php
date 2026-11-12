@@ -114,30 +114,18 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-            <a href="{{ route('sales.index') }}" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-                <i class="fa-solid fa-cart-shopping text-emerald-400"></i> Vendas
-            </a>
-            <a href="{{ route('expenses.index') }}" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-                <i class="fa-solid fa-money-bill-wave text-rose-400"></i> Despesas
-            </a>
-            <a href="{{ route('debts.index') }}" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-                <i class="fa-solid fa-hand-holding-dollar text-amber-400"></i> Dívidas
-            </a>
+            <a href="{{ route('sales.index') }}" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5 shadow-sm" title="Vendas"><i class="fa-solid fa-cart-shopping text-emerald-400"></i> <span class="hidden sm:inline">Vendas</span></a>
+            <a href="{{ route('expenses.index') }}" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5 shadow-sm" title="Despesas"><i class="fa-solid fa-money-bill-wave text-rose-400"></i> <span class="hidden sm:inline">Despesas</span></a>
+            <a href="{{ route('debts.index') }}" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5 shadow-sm" title="Dívidas"><i class="fa-solid fa-hand-holding-dollar text-amber-400"></i> <span class="hidden sm:inline">Dívidas</span></a>
             @if(App\Helpers\PermissionHelper::userCan('view_reports'))
-                <a href="{{ route('reports.cash-flow') }}" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-chart-pie text-sky-400"></i> Fluxo Caixa
-                </a>
+                <a href="{{ route('reports.cash-flow') }}" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5 shadow-sm" title="Fluxo de Caixa"><i class="fa-solid fa-chart-pie text-sky-400"></i> <span class="hidden sm:inline">Fluxo Caixa</span></a>
             @endif
 
             @if(App\Helpers\PermissionHelper::userCan('manage_finances') || auth()->user()?->isAdmin() || auth()->user()?->isManager())
                 <!-- Botão Nova Conta -->
-                <button type="button" @click="openCreateAccount()" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-plus"></i> Nova Conta
-                </button>
+                <button type="button" @click="openCreateAccount()" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5" title="Nova Conta"><i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Nova Conta</span></button>
                 <!-- Botão Novo Lançamento -->
-                <button type="button" @click="showTransactionModal = true" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-sm transition flex items-center gap-2">
-                    <i class="fa-solid fa-plus-circle"></i> Novo Lançamento
-                </button>
+                <button type="button" @click="showTransactionModal = true" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-sm transition flex items-center gap-2" title="Novo Lançamento"><i class="fa-solid fa-plus-circle"></i> <span class="hidden sm:inline">Novo Lançamento</span></button>
             @endif
         </div>
     </div>
@@ -280,9 +268,7 @@
                 </a>
 
                 @if(App\Helpers\PermissionHelper::userCan('manage_finances') || auth()->user()?->isAdmin() || auth()->user()?->isManager())
-                    <button type="button" @click="openCreateAccount()" class="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-plus"></i> Nova Conta
-                    </button>
+                    <button type="button" @click="openCreateAccount()" class="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5" title="Nova Conta"><i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Nova Conta</span></button>
                 @endif
             </div>
         </div>
@@ -391,7 +377,7 @@
             </div>
 
             <button @click="filterOpen = !filterOpen" type="button" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition flex items-center gap-1.5 self-start sm:self-auto">
-                <i class="fa-solid fa-filter"></i> Filtros de Extrato
+                <i class="fa-solid fa-filter"></i> <span class="hidden sm:inline">Filtros</span>
             </button>
         </div>
 

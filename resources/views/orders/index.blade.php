@@ -50,11 +50,7 @@
             </div>
 
             @if($isRestaurant)
-                <a href="{{ route('restaurant.kitchen.index') }}" 
-                   class="px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-md shadow-orange-500/20 transition flex items-center gap-2">
-                    <i class="fa-solid fa-utensils"></i>
-                    <span>Cozinha (KDS)</span>
-                </a>
+                <a href="{{ route('restaurant.kitchen.index') }}" class="px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-md shadow-orange-500/20 transition flex items-center gap-2" title="Monitor de Cozinha (KDS)"><i class="fa-solid fa-utensils"></i> <span class="hidden sm:inline">Cozinha (KDS)</span></a>
             @endif
             
             @if(auth()->user()->role === 'admin')
@@ -65,11 +61,7 @@
                 </a>
             @endif
 
-            <a href="{{ route('orders.create') }}" 
-               class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition flex items-center gap-2 active:scale-95">
-                <i class="fa-solid fa-plus"></i>
-                <span>Nova Encomenda</span>
-            </a>
+            <a href="{{ route('orders.create') }}" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition flex items-center gap-2 active:scale-95" title="Nova Encomenda"><i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Nova Encomenda</span></a>
         </x-slot:actions>
     </x-ui.page-header>
 

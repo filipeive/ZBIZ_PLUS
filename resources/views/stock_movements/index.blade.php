@@ -68,25 +68,12 @@
             </button>
         </div>
 
-        <a href="{{ route('reports.inventory') }}"
-           class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-800 transition shadow-sm">
-            <i class="fa-solid fa-boxes-stacked text-sky-500"></i>
-            <span>Relatório Inventário</span>
-        </a>
+        <a href="{{ route('reports.inventory') }}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-800 transition shadow-sm" title="Relatório de Inventário"><i class="fa-solid fa-boxes-stacked text-sky-500"></i> <span class="hidden sm:inline">Inventário</span></a>
 
-        <a href="{{ route('reports.low-stock') }}"
-           class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-800 transition shadow-sm">
-            <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
-            <span>Stock Baixo</span>
-        </a>
+        <a href="{{ route('reports.low-stock') }}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-800 transition shadow-sm" title="Stock Baixo"><i class="fa-solid fa-triangle-exclamation text-amber-500"></i> <span class="hidden sm:inline">Stock Baixo</span></a>
 
         @if(\App\Helpers\PermissionHelper::userCan('create_stock_movements') || \App\Helpers\PermissionHelper::userCan('manage_stock'))
-            <button type="button"
-                    @click="showModal = true"
-                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm shadow-emerald-500/20 transition cursor-pointer">
-                <i class="fa-solid fa-plus-minus"></i>
-                <span>Novo Ajuste / Entrada</span>
-            </button>
+            <button type="button" @click="showModal = true" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm shadow-emerald-500/20 transition cursor-pointer" title="Novo Ajuste ou Entrada"><i class="fa-solid fa-plus-minus"></i> <span class="hidden sm:inline">Novo Ajuste</span></button>
         @endif
     </x-ui.page-header>
 

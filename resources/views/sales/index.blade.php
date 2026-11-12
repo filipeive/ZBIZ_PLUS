@@ -75,25 +75,13 @@
             </button>
         </div>
 
-        <a href="{{ route('reports.sales-specialized') }}"
-           class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-800 transition shadow-sm">
-            <i class="fa-solid fa-chart-pie text-emerald-500"></i>
-            <span>Relatórios</span>
-        </a>
+        <a href="{{ route('reports.sales-specialized') }}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-800 transition shadow-sm" title="Relatórios"><i class="fa-solid fa-chart-pie text-emerald-500"></i> <span class="hidden sm:inline">Relatórios</span></a>
 
         @if(auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->hasPermission('create_sales'))
-            <a href="{{ route('sales.manual-create') }}"
-               class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-800 transition shadow-sm">
-                <i class="fa-solid fa-pen-to-square text-amber-500"></i>
-                <span>Venda Manual</span>
-            </a>
+            <a href="{{ route('sales.manual-create') }}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-800 transition shadow-sm" title="Venda Manual"><i class="fa-solid fa-pen-to-square text-amber-500"></i> <span class="hidden sm:inline">Venda Manual</span></a>
         @endif
 
-        <a href="{{ route('pos.index') }}"
-           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm shadow-emerald-500/20 transition">
-            <i class="fa-solid fa-cash-register"></i>
-            <span>Frente de Caixa POS</span>
-        </a>
+        <a href="{{ route('pos.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm shadow-emerald-500/20 transition" title="Frente de Caixa POS"><i class="fa-solid fa-cash-register"></i> <span class="hidden sm:inline">Frente de Caixa POS</span></a>
     </x-ui.page-header>
 
     {{-- KPI Stat Cards (Collapsible) --}}

@@ -57,11 +57,7 @@
             </a>
 
             <!-- Nova Dívida / Fiado -->
-            <a href="{{ route('debts.create') }}" 
-               class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition flex items-center gap-2 active:scale-95">
-                <i class="fa-solid fa-plus"></i>
-                <span>Registar Dívida</span>
-            </a>
+            <a href="{{ route('debts.create') }}" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition flex items-center gap-2 active:scale-95" title="Registar Dívida"><i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Registar Dívida</span></a>
         </x-slot:actions>
     </x-ui.page-header>
 

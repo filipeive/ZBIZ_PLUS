@@ -32,18 +32,9 @@
         subtitle="Gestão do salão, esplanada, ocupação em tempo real e abertura de pedidos."
     >
         <x-slot:actions>
-            <a href="{{ route('restaurant.kitchen.index') }}" 
-               class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-bold text-xs shadow-md shadow-amber-500/20 transition flex items-center gap-2 active:scale-95">
-                <i class="fa-solid fa-utensils"></i>
-                <span>Monitor de Cozinha (KDS)</span>
-            </a>
+            <a href="{{ route('restaurant.kitchen.index') }}" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-bold text-xs shadow-md shadow-amber-500/20 transition flex items-center gap-2 active:scale-95" title="Monitor de Cozinha (KDS)"><i class="fa-solid fa-utensils"></i> <span class="hidden sm:inline">Cozinha (KDS)</span></a>
 
-            <button type="button"
-                    @click="showModal = true" 
-                    class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition flex items-center gap-2 active:scale-95">
-                <i class="fa-solid fa-plus"></i>
-                <span>Nova Mesa</span>
-            </button>
+            <button type="button" @click="showModal = true" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition flex items-center gap-2 active:scale-95" title="Nova Mesa"><i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Nova Mesa</span></button>
         </x-slot:actions>
     </x-ui.page-header>
 

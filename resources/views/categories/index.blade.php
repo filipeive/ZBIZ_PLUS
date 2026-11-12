@@ -98,12 +98,7 @@
             </div>
 
             <!-- Botão Nova Categoria -->
-            <button type="button"
-                    @click="editMode = false; categoryName = ''; categoryDesc = ''; categoryIcon = 'fa-tag'; categoryActive = true; showModal = true" 
-                    class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition flex items-center gap-2 active:scale-95">
-                <i class="fa-solid fa-plus"></i>
-                <span>Nova Categoria</span>
-            </button>
+            <button type="button" @click="editMode = false; categoryName = ''; categoryDesc = ''; categoryIcon = 'fa-tag'; categoryActive = true; showModal = true" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition flex items-center gap-2 active:scale-95" title="Nova Categoria"><i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Nova Categoria</span></button>
         </x-slot:actions>
     </x-ui.page-header>
 

@@ -66,18 +66,10 @@
             </button>
         </div>
 
-        <a href="{{ route('products.report') }}"
-           class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-800 transition shadow-sm">
-            <i class="fa-solid fa-chart-pie text-emerald-500"></i>
-            <span>Relatórios</span>
-        </a>
+        <a href="{{ route('products.report') }}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-800 transition shadow-sm" title="Relatórios"><i class="fa-solid fa-chart-pie text-emerald-500"></i> <span class="hidden sm:inline">Relatórios</span></a>
 
         @if(auth()->user()->isStockManager() || auth()->user()->isManager() || auth()->user()->isAdmin())
-            <a href="{{ route('products.create') }}"
-               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm shadow-emerald-500/20 transition">
-                <i class="fa-solid fa-plus"></i>
-                <span>{{ $isPharmacy ? 'Novo Medicamento' : 'Novo Artigo' }}</span>
-            </a>
+            <a href="{{ route('products.create') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm shadow-emerald-500/20 transition" title="{{ $isPharmacy ? 'Novo Medicamento' : 'Novo Artigo' }}"><i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">{{ $isPharmacy ? 'Novo Medicamento' : 'Novo Artigo' }}</span></a>
         @endif
     </x-ui.page-header>
 

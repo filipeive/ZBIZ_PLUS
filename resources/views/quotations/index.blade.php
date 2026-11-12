@@ -50,11 +50,7 @@
                 <span class="hidden sm:inline">Modelos & IVA</span>
             </a>
 
-            <a href="{{ route('quotations.create') }}" 
-               class="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-md shadow-sky-600/20 transition flex items-center gap-2 active:scale-95">
-                <i class="fa-solid fa-plus"></i>
-                <span>Nova Cotação</span>
-            </a>
+            <a href="{{ route('quotations.create') }}" class="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-md shadow-sky-600/20 transition flex items-center gap-2 active:scale-95" title="Nova Cotação"><i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Nova Cotação</span></a>
         </x-slot:actions>
     </x-ui.page-header>
 

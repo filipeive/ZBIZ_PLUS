@@ -100,22 +100,14 @@
             </div>
 
             <!-- Botão Filtros -->
-            <button @click="filterOpen = !filterOpen" type="button" class="px-3.5 py-2 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold border border-slate-700/80 transition flex items-center gap-1.5 shadow-sm">
-                <i class="fa-solid fa-filter text-slate-400"></i> Filtros
-            </button>
+            <button @click="filterOpen = !filterOpen" type="button" class="px-3.5 py-2 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold border border-slate-700/80 transition flex items-center gap-1.5 shadow-sm" title="Filtros"><i class="fa-solid fa-filter text-slate-400"></i> <span class="hidden sm:inline">Filtros</span></button>
 
             @if(App\Helpers\PermissionHelper::userCan('manage_expenses') || App\Helpers\PermissionHelper::userCan('manage_categories'))
-                <a href="{{ route('expense-categories.index') }}" 
-                   class="px-3.5 py-2 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold border border-slate-700/80 transition flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-tags text-indigo-400"></i>
-                    <span>Categorias</span>
-                </a>
+                <a href="{{ route('expense-categories.index') }}" class="px-3.5 py-2 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold border border-slate-700/80 transition flex items-center gap-1.5 shadow-sm" title="Categorias"><i class="fa-solid fa-tags text-indigo-400"></i> <span class="hidden sm:inline">Categorias</span></a>
             @endif
 
             @if(App\Helpers\PermissionHelper::userCan('create_expenses'))
-                <button @click="showModal = true" class="px-4 py-2 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md hover:scale-105 active:scale-95 transition flex items-center gap-2">
-                    <i class="fa-solid fa-plus"></i> Nova Despesa
-                </button>
+                <button @click="showModal = true" class="px-4 py-2 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md hover:scale-105 active:scale-95 transition flex items-center gap-2" title="Nova Despesa"><i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Nova Despesa</span></button>
             @endif
         </div>
     </div>
