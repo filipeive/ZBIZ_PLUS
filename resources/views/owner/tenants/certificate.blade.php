@@ -38,7 +38,7 @@
         </div>
         <div class="flex items-center gap-2 flex-wrap">
             <button type="button" @click="copyKey('{{ $license->key_code }}')" 
-                    class="px-3.5 py-2 rounded-xl bg-primary-600 hover:bg-primary-500 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-sm"
+                    class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-400 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-sm"
                     title="Copiar Chave Serial do Software">
                 <i class="fa-solid" :class="copiedKey ? 'fa-check' : 'fa-copy'"></i>
                 <span x-text="copiedKey ? 'Chave Copiada!' : 'Copiar Chave'" class="hidden sm:inline"></span>
@@ -54,11 +54,11 @@
             <button type="button" @click="copyMessage(`{{ addslashes($smsNotice) }}`)" 
                     class="px-3.5 py-2 rounded-xl bg-surface-base hover:bg-surface-hover text-content-dimmed hover:text-content-main font-bold text-xs transition flex items-center gap-1.5 border border-border-default shadow-sm"
                     title="Copiar texto formatado para envio por SMS ou mensagem direta">
-                <i class="fa-solid" :class="copiedMsg ? 'fa-check text-primary-500' : 'fa-comment-sms'"></i>
+                <i class="fa-solid" :class="copiedMsg ? 'fa-check text-emerald-400' : 'fa-comment-sms'"></i>
                 <span x-text="copiedMsg ? 'Mensagem Copiada!' : 'Copiar SMS'" class="hidden sm:inline"></span>
             </button>
             <a href="{{ route('owner.tenants.licenses.certificate-pdf', [$tenant, $license]) }}" 
-               class="px-3.5 py-2 rounded-xl bg-primary-500/10 hover:bg-primary-500/20 text-primary-500 border border-primary-500/30 font-bold text-xs transition flex items-center gap-1.5"
+               class="px-3.5 py-2 rounded-xl bg-emerald-400/10 hover:bg-emerald-400/20 text-emerald-400 border border-emerald-400/30 font-bold text-xs transition flex items-center gap-1.5"
                title="Descarregar documento oficial em formato PDF">
                 <i class="fa-solid fa-file-pdf"></i>
                 <span class="hidden sm:inline">Descarregar PDF</span>
@@ -71,28 +71,28 @@
     </div>
 
     <!-- Printable Certificate Document Card -->
-    <div class="bg-surface-card border-2 border-primary-500/40 rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden print:border-slate-300 print:bg-white print:text-black print:p-6 print:shadow-none">
+    <div class="bg-surface-card border-2 border-emerald-400/40 rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden print:border-slate-300 print:bg-white print:text-black print:p-6 print:shadow-none">
         
         <!-- Watermark / Background Accent -->
-        <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-primary-500/5 blur-3xl pointer-events-none print:hidden"></div>
-        <div class="absolute -left-20 -bottom-20 w-80 h-80 rounded-full bg-primary-500/5 blur-3xl pointer-events-none print:hidden"></div>
+        <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-emerald-400/5 blur-3xl pointer-events-none print:hidden"></div>
+        <div class="absolute -left-20 -bottom-20 w-80 h-80 rounded-full bg-emerald-400/5 blur-3xl pointer-events-none print:hidden"></div>
 
         <!-- Header -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border-default print:border-slate-300 pb-8 gap-6">
             <div class="flex items-center space-x-4">
-                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-2xl font-black shadow-xl print:border print:border-slate-400">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white text-2xl font-black shadow-xl print:border print:border-slate-400">
                     <i class="fa-solid fa-bolt"></i>
                 </div>
                 <div>
                     <div class="text-2xl font-black font-heading tracking-tight text-content-main print:text-black">
-                        ZBIZ<span class="text-primary-500 print:text-emerald-700">+</span>
+                        ZBIZ<span class="text-emerald-400 print:text-emerald-700">+</span>
                     </div>
                     <p class="text-xs uppercase tracking-widest text-content-dimmed font-bold print:text-slate-600">Enterprise Cloud & POS Suite · Moçambique</p>
                 </div>
             </div>
 
             <div class="sm:text-right">
-                <span class="inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-primary-500/10 text-primary-500 border border-primary-500/30 print:border-slate-400 print:text-black">
+                <span class="inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-400/10 text-emerald-400 border border-emerald-400/30 print:border-slate-400 print:text-black">
                     CERTIFICADO OFICIAL DE LICENÇA
                 </span>
                 <p class="text-[11px] text-content-dimmed font-mono mt-1 print:text-slate-600">Ref: ZB-LIC-{{ str_pad($license->id, 6, '0', STR_PAD_LEFT) }}</p>
@@ -111,8 +111,8 @@
             </div>
 
             <!-- License Key In Mega Display Box -->
-            <div class="p-6 rounded-2xl bg-surface-base border-2 border-dashed border-primary-500/40 text-center space-y-3 print:bg-slate-50 print:border-slate-400 shadow-inner">
-                <span class="text-[10px] uppercase font-black tracking-widest text-primary-500 print:text-emerald-700 block">
+            <div class="p-6 rounded-2xl bg-surface-base border-2 border-dashed border-emerald-400/40 text-center space-y-3 print:bg-slate-50 print:border-slate-400 shadow-inner">
+                <span class="text-[10px] uppercase font-black tracking-widest text-emerald-400 print:text-emerald-700 block">
                     CHAVE SERIAL DE LICENÇA (SOFTWARE SERIAL KEY)
                 </span>
                 <div class="text-2xl sm:text-3xl font-black font-mono tracking-widest text-content-main print:text-black select-all py-1">
@@ -120,7 +120,7 @@
                 </div>
                 <div class="flex items-center justify-center gap-2 print:hidden">
                     <button type="button" @click="copyKey('{{ $license->key_code }}')" 
-                            class="px-3 py-1.5 rounded-lg bg-primary-500/10 hover:bg-primary-500/20 text-primary-500 border border-primary-500/30 text-xs font-bold transition flex items-center gap-1.5">
+                            class="px-3 py-1.5 rounded-lg bg-emerald-400/10 hover:bg-emerald-400/20 text-emerald-400 border border-emerald-400/30 text-xs font-bold transition flex items-center gap-1.5">
                         <i class="fa-solid" :class="copiedKey ? 'fa-check' : 'fa-copy'"></i>
                         <span x-text="copiedKey ? 'Copiado!' : 'Copiar Chave'"></span>
                     </button>
@@ -154,8 +154,8 @@
                     <div class="space-y-1 text-xs">
                         <div class="text-content-main print:text-black font-bold text-sm">{{ $license->plan?->name ?? 'Plano Standard' }}</div>
                         <div class="text-content-dimmed print:text-slate-600">Modo de Operação: <span class="font-bold uppercase text-content-main print:text-black">{{ $license->mode }}</span></div>
-                        <div class="text-content-dimmed print:text-slate-600">Validade: <span class="font-mono font-bold text-primary-500 print:text-emerald-700">{{ $license->starts_at?->format('d/m/Y') }} a {{ $license->expires_at?->format('d/m/Y') }}</span></div>
-                        <div class="text-content-dimmed print:text-slate-600">Estado Atual: <span class="font-bold uppercase text-primary-500 print:text-emerald-700">{{ $license->status }}</span></div>
+                        <div class="text-content-dimmed print:text-slate-600">Validade: <span class="font-mono font-bold text-emerald-400 print:text-emerald-700">{{ $license->starts_at?->format('d/m/Y') }} a {{ $license->expires_at?->format('d/m/Y') }}</span></div>
+                        <div class="text-content-dimmed print:text-slate-600">Estado Atual: <span class="font-bold uppercase text-emerald-400 print:text-emerald-700">{{ $license->status }}</span></div>
                     </div>
                 </div>
             </div>

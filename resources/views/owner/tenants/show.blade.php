@@ -32,7 +32,7 @@
     <!-- Top Bar with Compact Mobile Actions -->
     <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-surface-card border border-border-default rounded-3xl p-5 shadow-sm backdrop-blur-xl">
         <div class="flex items-center space-x-3.5">
-            <div class="w-12 h-12 rounded-2xl bg-primary-500/10 border border-primary-500/20 flex items-center justify-center text-primary-500 flex-shrink-0 shadow-inner">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-400/10 border border-emerald-400/20 flex items-center justify-center text-emerald-400 flex-shrink-0 shadow-inner">
                 <i class="fa-solid fa-building-shield text-xl"></i>
             </div>
             <div>
@@ -62,11 +62,11 @@
                 <a href="{{ route('owner.tenants.licenses.certificate', [$tenant, $latestLicense]) }}" 
                    class="px-3.5 py-2 rounded-xl bg-surface-base hover:bg-surface-hover text-content-main text-xs font-bold transition flex items-center gap-1.5 border border-border-default shadow-sm"
                    title="Visualizar Certificado Oficial de Licenciamento">
-                    <i class="fa-solid fa-file-shield text-primary-500"></i>
+                    <i class="fa-solid fa-file-shield text-emerald-400"></i>
                     <span class="hidden sm:inline">Certificado</span>
                 </a>
                 <a href="{{ route('owner.tenants.licenses.certificate-pdf', [$tenant, $latestLicense]) }}" 
-                   class="px-3.5 py-2 rounded-xl bg-primary-600 hover:bg-primary-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+                   class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-400 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
                    title="Descarregar Certificado Oficial em PDF">
                     <i class="fa-solid fa-file-pdf"></i>
                     <span class="hidden sm:inline">Baixar PDF</span>
@@ -152,28 +152,28 @@
 
     <!-- License Just Issued Alert Card -->
     @if(session('issued_license_key_code') || session('issued_license_token'))
-        <div class="rounded-3xl border border-primary-500/30 bg-primary-500/10 p-6 space-y-4 shadow-xl">
+        <div class="rounded-3xl border border-emerald-400/30 bg-emerald-400/10 p-6 space-y-4 shadow-xl">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-xl bg-primary-500/20 flex items-center justify-center text-primary-500">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-400/20 flex items-center justify-center text-emerald-400">
                         <i class="fa-solid fa-key text-sm"></i>
                     </div>
                     <div>
-                        <div class="text-sm font-black text-primary-500 font-heading">Nova Chave de Licença Emitida com Sucesso!</div>
+                        <div class="text-sm font-black text-emerald-400 font-heading">Nova Chave de Licença Emitida com Sucesso!</div>
                         <p class="text-xs text-content-dimmed">Entregue esta chave serial ao cliente para ativação ou renovação do sistema.</p>
                     </div>
                 </div>
             </div>
 
             @if(session('issued_license_key_code'))
-                <div class="p-4 rounded-2xl bg-surface-base border border-primary-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="p-4 rounded-2xl bg-surface-base border border-emerald-400/30 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div>
                         <span class="text-[10px] font-bold uppercase tracking-wider text-content-dimmed block">Chave Serial do Software (License Key)</span>
                         <span class="text-lg sm:text-xl font-black font-mono text-content-main tracking-wider select-all">{{ session('issued_license_key_code') }}</span>
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
                         <button type="button" @click="copyToClipboard('{{ session('issued_license_key_code') }}', false)" 
-                                class="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-500 text-white font-bold text-xs transition flex items-center justify-center gap-2 shadow-md">
+                                class="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-400 text-white font-bold text-xs transition flex items-center justify-center gap-2 shadow-md">
                             <i class="fa-solid" :class="copiedKey ? 'fa-check' : 'fa-copy'"></i>
                             <span x-text="copiedKey ? 'Chave Copiada!' : 'Copiar Chave Serial'"></span>
                         </button>
@@ -183,7 +183,7 @@
 
             @if(session('issued_license_token'))
                 <div class="pt-2" x-data="{ showRawToken: false }">
-                    <button type="button" @click="showRawToken = !showRawToken" class="text-xs text-content-dimmed hover:text-primary-500 flex items-center gap-1.5 transition">
+                    <button type="button" @click="showRawToken = !showRawToken" class="text-xs text-content-dimmed hover:text-emerald-400 flex items-center gap-1.5 transition">
                         <i class="fa-solid" :class="showRawToken ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
                         <span x-text="showRawToken ? 'Ocultar Certificado Completo (Token Assinado)' : 'Ver Certificado Completo Offline (Token Assinado)'"></span>
                     </button>
@@ -191,7 +191,7 @@
                         <textarea readonly rows="3" class="w-full bg-surface-base border border-border-default rounded-2xl p-3 text-[11px] text-content-dimmed font-mono">{{ session('issued_license_token') }}</textarea>
                         <button type="button" @click="copyToClipboard('{{ session('issued_license_token') }}', true)" 
                                 class="px-4 py-2 rounded-xl bg-surface-card hover:bg-surface-hover text-content-dimmed hover:text-content-main text-xs font-bold transition flex items-center gap-2 border border-border-default">
-                            <i class="fa-solid" :class="copiedToken ? 'fa-check text-primary-500' : 'fa-copy'"></i>
+                            <i class="fa-solid" :class="copiedToken ? 'fa-check text-emerald-400' : 'fa-copy'"></i>
                             <span x-text="copiedToken ? 'Certificado Copiado!' : 'Copiar Token Assinado'"></span>
                         </button>
                     </div>
@@ -219,23 +219,23 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label class="space-y-1">
                     <span class="text-[10px] uppercase text-content-dimmed font-bold">Nome Comercial *</span>
-                    <input name="name" value="{{ old('name', $tenant->name) }}" required class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                    <input name="name" value="{{ old('name', $tenant->name) }}" required class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none">
                 </label>
                 <label class="space-y-1">
                     <span class="text-[10px] uppercase text-content-dimmed font-bold">Email de Contacto</span>
-                    <input name="email" value="{{ old('email', $tenant->email) }}" type="email" class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                    <input name="email" value="{{ old('email', $tenant->email) }}" type="email" class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none">
                 </label>
                 <label class="space-y-1">
                     <span class="text-[10px] uppercase text-content-dimmed font-bold">Telefone</span>
-                    <input name="phone" value="{{ old('phone', $tenant->phone) }}" class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                    <input name="phone" value="{{ old('phone', $tenant->phone) }}" class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none">
                 </label>
                 <label class="space-y-1">
                     <span class="text-[10px] uppercase text-content-dimmed font-bold">NUIT</span>
-                    <input name="nuit" value="{{ old('nuit', $tenant->nuit) }}" class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                    <input name="nuit" value="{{ old('nuit', $tenant->nuit) }}" class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none">
                 </label>
                 <label class="space-y-1">
                     <span class="text-[10px] uppercase text-content-dimmed font-bold">Setor de Atividade *</span>
-                    <select name="business_type" class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                    <select name="business_type" class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none">
                         @foreach(['retail' => 'Retalho Geral', 'pharmacy' => 'Farmácia & Saúde', 'reprography' => 'Reprografia & Gráfica', 'restaurant' => 'Restaurante / F&B', 'services' => 'Prestação de Serviços', 'other' => 'Outro'] as $value => $label)
                             <option value="{{ $value }}" {{ old('business_type', $tenant->business_type) === $value ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
@@ -243,7 +243,7 @@
                 </label>
                 <label class="space-y-1">
                     <span class="text-[10px] uppercase text-content-dimmed font-bold">Estado da Conta *</span>
-                    <select name="status" class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                    <select name="status" class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none">
                         @foreach(['trial' => 'Trial (Avaliação)', 'active' => 'Ativo (Regular)', 'suspended' => 'Suspenso (Bloqueado)', 'cancelled' => 'Cancelado'] as $value => $label)
                             <option value="{{ $value }}" {{ old('status', $tenant->status) === $value ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
@@ -251,7 +251,7 @@
                 </label>
                 <label class="space-y-1">
                     <span class="text-[10px] uppercase text-content-dimmed font-bold">Modo de Instalação *</span>
-                    <select name="installation_mode" class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                    <select name="installation_mode" class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none">
                         @foreach(['cloud' => 'Cloud SaaS (Nuvem)', 'local_online' => 'Local com Internet', 'offline' => 'Local Offline (Sem Internet)'] as $value => $label)
                             <option value="{{ $value }}" {{ old('installation_mode', $tenant->installation_mode ?? 'cloud') === $value ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
@@ -259,11 +259,11 @@
                 </label>
                 <label class="space-y-1">
                     <span class="text-[10px] uppercase text-content-dimmed font-bold">Data de Expiração</span>
-                    <input name="license_expires_at" type="date" value="{{ old('license_expires_at', $tenant->license_expires_at?->format('Y-m-d')) }}" class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                    <input name="license_expires_at" type="date" value="{{ old('license_expires_at', $tenant->license_expires_at?->format('Y-m-d')) }}" class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none">
                 </label>
                 <label class="space-y-1 md:col-span-2">
                     <span class="text-[10px] uppercase text-content-dimmed font-bold">Plano de Subscrição *</span>
-                    <select name="plan_id" class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                    <select name="plan_id" class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none">
                         <option value="">Manter plano atual</option>
                         @foreach($plans as $plan)
                             <option value="{{ $plan->id }}" {{ old('plan_id', $tenant->currentSubscription?->plan_id) == $plan->id ? 'selected' : '' }}>
@@ -274,7 +274,7 @@
                 </label>
             </div>
             <div class="flex items-center justify-end pt-2">
-                <button type="submit" class="px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-500 text-white font-bold text-xs shadow-sm hover:scale-[1.02] transition flex items-center gap-1.5">
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-400 text-white font-bold text-xs shadow-sm hover:scale-[1.02] transition flex items-center gap-1.5">
                     <i class="fa-solid fa-floppy-disk"></i>
                     <span>Guardar Alterações do Tenant</span>
                 </button>
@@ -304,7 +304,7 @@
                         <div class="text-[10px] text-content-dimmed font-bold uppercase tracking-wider">Users</div>
                     </div>
                     <div class="rounded-2xl bg-surface-base border border-border-default p-3">
-                        <div class="text-lg font-black text-primary-500">{{ $tenant->licenseKeys->count() }}</div>
+                        <div class="text-lg font-black text-emerald-400">{{ $tenant->licenseKeys->count() }}</div>
                         <div class="text-[10px] text-content-dimmed font-bold uppercase tracking-wider">Licenças</div>
                     </div>
                 </div>
@@ -332,7 +332,7 @@
             </div>
 
             <div class="p-3 rounded-2xl bg-surface-base/80 border border-border-default text-[11px] text-content-dimmed flex items-center gap-2.5">
-                <i class="fa-solid fa-shield-halved text-primary-500 text-sm"></i>
+                <i class="fa-solid fa-shield-halved text-emerald-400 text-sm"></i>
                 <span>Licenciamento criptográfico com validação local HMAC SHA-256.</span>
             </div>
         </div>
@@ -345,7 +345,7 @@
             @csrf
             <div>
                 <h3 class="text-sm font-black font-heading text-content-main flex items-center gap-2">
-                    <i class="fa-solid fa-key text-primary-500"></i>
+                    <i class="fa-solid fa-key text-emerald-400"></i>
                     <span>Emitir Chave de Licença</span>
                 </h3>
                 <p class="text-[11px] text-content-dimmed mt-0.5">Gere um serial no formato padrão de software.</p>
@@ -353,7 +353,7 @@
 
             <div>
                 <label class="block text-[10px] uppercase font-bold text-content-dimmed mb-1">Plano da Licença *</label>
-                <select name="plan_id" required class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                <select name="plan_id" required class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none">
                     @foreach($plans as $plan)
                         <option value="{{ $plan->id }}" {{ $tenant->currentSubscription?->plan_id === $plan->id ? 'selected' : '' }}>{{ $plan->name }}</option>
                     @endforeach
@@ -362,7 +362,7 @@
 
             <div>
                 <label class="block text-[10px] uppercase font-bold text-content-dimmed mb-1">Modo de Operação *</label>
-                <select name="mode" required class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                <select name="mode" required class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none">
                     <option value="offline">Local Offline</option>
                     <option value="local_online">Local com internet</option>
                     <option value="cloud">Cloud SaaS</option>
@@ -372,25 +372,25 @@
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="block text-[10px] uppercase font-bold text-content-dimmed mb-1">Início *</label>
-                    <input name="starts_at" type="date" value="{{ now()->format('Y-m-d') }}" required class="w-full px-3 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                    <input name="starts_at" type="date" value="{{ now()->format('Y-m-d') }}" required class="w-full px-3 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-[10px] uppercase font-bold text-content-dimmed mb-1">Expiração *</label>
-                    <input name="expires_at" type="date" value="{{ now()->addYear()->format('Y-m-d') }}" required class="w-full px-3 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                    <input name="expires_at" type="date" value="{{ now()->addYear()->format('Y-m-d') }}" required class="w-full px-3 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none">
                 </div>
             </div>
 
             <div>
                 <label class="block text-[10px] uppercase font-bold text-content-dimmed mb-1">Emitido Para</label>
-                <input name="issued_to" value="{{ $tenant->name }}" class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                <input name="issued_to" value="{{ $tenant->name }}" class="w-full px-3.5 py-2.5 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none">
             </div>
 
             <div>
                 <label class="block text-[10px] uppercase font-bold text-content-dimmed mb-1">Notas Internas</label>
-                <textarea name="notes" rows="2" placeholder="Observações de pagamento ou contrato..." class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-primary-500 focus:outline-none"></textarea>
+                <textarea name="notes" rows="2" placeholder="Observações de pagamento ou contrato..." class="w-full px-3.5 py-2 bg-surface-base border border-border-default rounded-xl text-content-main text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none"></textarea>
             </div>
 
-            <button type="submit" class="w-full py-2.5 rounded-xl bg-primary-600 hover:bg-primary-500 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-2">
+            <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-400 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-2">
                 <i class="fa-solid fa-plus text-xs"></i>
                 <span>Gerar Chave de Software</span>
             </button>
@@ -401,7 +401,7 @@
             <div class="space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border-default/80 pb-3">
                     <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-xl bg-surface-base flex items-center justify-center text-primary-500">
+                        <div class="w-8 h-8 rounded-xl bg-surface-base flex items-center justify-center text-emerald-400">
                             <i class="fa-solid fa-clock-rotate-left text-sm"></i>
                         </div>
                         <div>
@@ -450,10 +450,10 @@
                             @forelse($tenant->licenseKeys as $license)
                                 <tr class="hover:bg-surface-hover/50 transition {{ $license->trashed() ? 'opacity-60 bg-surface-base/40' : '' }}">
                                     <td class="py-3">
-                                        <div class="font-mono font-bold {{ $license->trashed() ? 'text-content-dimmed line-through' : 'text-primary-500' }} flex items-center gap-1.5">
+                                        <div class="font-mono font-bold {{ $license->trashed() ? 'text-content-dimmed line-through' : 'text-emerald-400' }} flex items-center gap-1.5">
                                             <span>{{ $license->key_code }}</span>
                                             <button type="button" @click="copyRowKey('{{ $license->key_code }}', {{ $license->id }})" title="Copiar Chave Serial" class="text-content-dimmed hover:text-content-main transition">
-                                                <i class="fa-solid" :class="copiedKeyId === {{ $license->id }} ? 'fa-check text-primary-500' : 'fa-copy text-[11px]'"></i>
+                                                <i class="fa-solid" :class="copiedKeyId === {{ $license->id }} ? 'fa-check text-emerald-400' : 'fa-copy text-[11px]'"></i>
                                             </button>
                                         </div>
                                     </td>
@@ -492,12 +492,12 @@
                                             <a href="{{ route('owner.tenants.licenses.certificate', [$tenant, $license]) }}" 
                                                class="px-2.5 py-1.5 rounded-lg bg-surface-base hover:bg-surface-hover text-content-dimmed hover:text-content-main font-bold text-[11px] border border-border-default transition flex items-center gap-1"
                                                title="Ver Certificado Oficial">
-                                                <i class="fa-solid fa-file-shield text-primary-500"></i>
+                                                <i class="fa-solid fa-file-shield text-emerald-400"></i>
                                                 <span class="hidden sm:inline">Certificado</span>
                                             </a>
 
                                             <a href="{{ route('owner.tenants.licenses.certificate-pdf', [$tenant, $license]) }}" 
-                                               class="px-2.5 py-1.5 rounded-lg bg-primary-500/10 hover:bg-primary-500/20 text-primary-500 font-bold text-[11px] border border-primary-500/30 transition flex items-center gap-1"
+                                               class="px-2.5 py-1.5 rounded-lg bg-emerald-400/10 hover:bg-emerald-400/20 text-emerald-400 font-bold text-[11px] border border-emerald-400/30 transition flex items-center gap-1"
                                                title="Descarregar Certificado em PDF">
                                                 <i class="fa-solid fa-file-pdf"></i>
                                                 <span class="hidden sm:inline">PDF</span>
