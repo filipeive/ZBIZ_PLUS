@@ -1,518 +1,418 @@
 @extends('layouts.app')
 
-@section('title', 'Relatório de Despesas')
-@section('page-title', 'Relatório Especializado de Despesas')
-@section('title-icon', 'fa-receipt')
+@section('title', 'Relatório Especializado de Despesas')
+@section('page-title', 'Análise & Relatório Especializado de Despesas')
 
-@section('breadcrumbs')
-    <li class="breadcrumb-item"><a href="{{ route('reports.index') }}">Relatórios</a></li>
-    <li class="breadcrumb-item active">Relatório de Despesas</li>
-@endsection
+@php
+    $theme = tenant_theme();
+@endphp
 
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="space-y-6" x-data="{
+    metricsCollapsed: localStorage.getItem('expensespec_metrics_collapsed') === 'true',
+    toggleMetrics() {
+        this.metricsCollapsed = !this.metricsCollapsed;
+        localStorage.setItem('expensespec_metrics_collapsed', this.metricsCollapsed);
+    }
+}">
+    
+    <!-- Top Action Bar -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
         <div>
-            <h2 class="h3 mb-1 text-danger fw-bold">
-                <i class="fas fa-receipt me-2"></i>
-                Análise Completa de Despesas
+            <h2 class="text-lg font-black font-heading text-white flex items-center gap-2">
+                <i class="fa-solid fa-receipt text-rose-400"></i> Análise Completa de Despesas
             </h2>
-            <p class="text-muted mb-0">Controle detalhado de gastos operacionais e análise de eficiência</p>
+            <p class="text-xs text-slate-400 mt-0.5">Controlo detalhado de gastos operacionais, centros de custos e análise de eficiência financeira.</p>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-1"></i> Voltar
+
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{{ route('reports.index') }}" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs rounded-xl border border-slate-700/80 transition flex items-center gap-1.5 shadow-sm" title="Central de Relatórios">
+                <i class="fa-solid fa-arrow-left"></i> <span class="hidden sm:inline">Central de Relatórios</span>
             </a>
-            <button onclick="window.print()" class="btn btn-primary">
-                <i class="fas fa-print me-1"></i> Imprimir
+            
+            <button type="button" onclick="exportToExcel()" class="px-3.5 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs rounded-xl border border-emerald-500/30 transition flex items-center gap-1.5" title="Exportar Excel">
+                <i class="fa-solid fa-file-excel"></i> <span class="hidden sm:inline">Excel</span>
+            </button>
+
+            <button type="button" onclick="exportToPDF()" class="px-3.5 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold text-xs rounded-xl border border-rose-500/30 transition flex items-center gap-1.5" title="Exportar PDF">
+                <i class="fa-solid fa-file-pdf"></i> <span class="hidden sm:inline">PDF</span>
+            </button>
+
+            <button type="button" onclick="window.print()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-1.5 shadow-sm" title="Imprimir Relatório">
+                <i class="fa-solid fa-print"></i> <span class="hidden sm:inline">Imprimir</span>
             </button>
         </div>
     </div>
 
     <!-- Filtros Avançados -->
-    <div class="card mb-4">
-        <div class="card-header bg-white">
-            <h5 class="card-title mb-0">
-                <i class="fas fa-filter me-2"></i>
-                Filtros Avançados
-            </h5>
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
+        <form method="GET" action="{{ route('reports.expenses-specialized') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+            @if(auth()->user()?->isSuperAdmin())
+            <div>
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tenant (SaaS)</label>
+                <select name="tenant_id" class="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white outline-none focus:ring-1 focus:ring-rose-500">
+                    <option value="all" {{ request('tenant_id') === 'all' || !request('tenant_id') ? 'selected' : '' }}>Todos os Tenants</option>
+                    @foreach(\App\Models\Tenant::orderBy('name')->get() as $t)
+                        <option value="{{ $t->id }}" {{ request('tenant_id') == $t->id ? 'selected' : '' }}>{{ $t->name }} (#{{ $t->id }})</option>
+                    @endforeach
+                </select>
+            </div>
+            @endif
+            <div>
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Data Inicial</label>
+                <input type="date" name="date_from" value="{{ $dateFrom }}" class="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white outline-none focus:ring-1 focus:ring-rose-500">
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Data Final</label>
+                <input type="date" name="date_to" value="{{ $dateTo }}" class="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white outline-none focus:ring-1 focus:ring-rose-500">
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Categoria</label>
+                <select name="category_id" class="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white outline-none focus:ring-1 focus:ring-rose-500">
+                    <option value="all" {{ $categoryId == 'all' ? 'selected' : '' }}>Todas Categorias</option>
+                    @foreach($categories as $category)
+                        <option value="{{ $category->id }}" {{ $categoryId == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Utilizador</label>
+                <select name="user_id" class="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white outline-none focus:ring-1 focus:ring-rose-500">
+                    <option value="all" {{ $userId == 'all' ? 'selected' : '' }}>Todos Utilizadores</option>
+                    @foreach($users as $user)
+                        <option value="{{ $user->id }}" {{ $userId == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="sm:col-span-2 lg:col-span-5 flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+                <a href="{{ route('reports.expenses-specialized') }}" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition">Limpar</a>
+                <button type="submit" class="px-5 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-filter"></i> Aplicar Filtros
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Collapsible KPI Section -->
+    <div class="space-y-2">
+        <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-pie text-slate-500"></i> Síntese de Gastos
+            </span>
+            <button @click="toggleMetrics()" type="button" class="text-xs font-bold text-slate-400 hover:text-white transition flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60">
+                <i class="fa-solid" :class="metricsCollapsed ? 'fa-eye' : 'fa-eye-slash'"></i>
+                <span x-text="metricsCollapsed ? 'Ver Métricas' : 'Ocultar Métricas'"></span>
+            </button>
         </div>
-        <div class="card-body">
-            <form method="GET" action="{{ route('reports.expenses-specialized') }}">
-                <div class="row g-3">
-                    @if(auth()->user()?->isSuperAdmin())
-                    <div class="col-md-3">
-                        <label class="form-label">Tenant (SaaS)</label>
-                        <select class="form-select" name="tenant_id">
-                            <option value="all" {{ request('tenant_id') === 'all' || !request('tenant_id') ? 'selected' : '' }}>Todos os Tenants</option>
-                            @foreach(\App\Models\Tenant::orderBy('name')->get() as $t)
-                                <option value="{{ $t->id }}" {{ request('tenant_id') == $t->id ? 'selected' : '' }}>{{ $t->name }} (#{{ $t->id }})</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @endif
-                    <div class="col-md-3">
-                        <label class="form-label">Data Inicial</label>
-                        <input type="date" class="form-control" name="date_from" value="{{ $dateFrom }}">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Data Final</label>
-                        <input type="date" class="form-control" name="date_to" value="{{ $dateTo }}">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Categoria</label>
-                        <select class="form-select" name="category_id">
-                            <option value="all" {{ $categoryId == 'all' ? 'selected' : '' }}>Todas Categorias</option>
-                            @foreach($categories as $category)
-                                <option value="{{ $category->id }}" {{ $categoryId == $category->id ? 'selected' : '' }}>
-                                    {{ $category->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Usuário</label>
-                        <select class="form-select" name="user_id">
-                            <option value="all" {{ $userId == 'all' ? 'selected' : '' }}>Todos Usuários</option>
-                            @foreach($users as $user)
-                                <option value="{{ $user->id }}" {{ $userId == $user->id ? 'selected' : '' }}>
-                                    {{ $user->name }}
-                                </option>
-                            @endforeach
-                        </select>
+
+        <!-- 1-Line Compact Summary Bar (When Collapsed) -->
+        <div x-show="metricsCollapsed" x-cloak class="bg-slate-900/90 border border-slate-800 rounded-2xl px-5 py-3 shadow-lg flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400">Total Despesas:</span>
+                <span class="font-black text-white font-mono">{{ $expenseCount }}</span>
+            </div>
+            <div class="hidden sm:block text-slate-700">|</div>
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400">Valor Total:</span>
+                <span class="font-black text-rose-400 font-mono">{{ number_format($totalExpenses, 2, ',', '.') }} MT</span>
+            </div>
+            <div class="hidden sm:block text-slate-700">|</div>
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400">Média:</span>
+                <span class="font-black text-amber-400 font-mono">{{ number_format($averageExpense, 2, ',', '.') }} MT</span>
+            </div>
+            <div class="hidden sm:block text-slate-700">|</div>
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400">Variação:</span>
+                <span class="font-black font-mono {{ $expenseGrowth <= 0 ? 'text-emerald-400' : 'text-rose-400' }}">{{ $expenseGrowth >= 0 ? '+' : '' }}{{ number_format($expenseGrowth, 1) }}%</span>
+            </div>
+        </div>
+
+        <!-- 4 Summary KPI Cards (When Expanded) -->
+        <div x-show="!metricsCollapsed" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl relative overflow-hidden group">
+                <div class="w-1.5 h-full absolute left-0 top-0 bg-rose-500"></div>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Total Despesas</span>
+                    <div class="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-receipt"></i>
                     </div>
                 </div>
-                <div class="text-center mt-3">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search me-1"></i> Aplicar Filtros
-                    </button>
-                    <a href="{{ route('reports.expenses-specialized') }}" class="btn btn-outline-secondary ms-2">
-                        <i class="fas fa-times me-1"></i> Limpar
-                    </a>
+                <div class="text-2xl font-black font-heading text-white">{{ $expenseCount }}</div>
+                <div class="text-[10px] text-slate-500 mt-1">lançamentos no período</div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl relative overflow-hidden group">
+                <div class="w-1.5 h-full absolute left-0 top-0 bg-rose-500"></div>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Valor Total Pago</span>
+                    <div class="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-money-bill-wave"></i>
+                    </div>
                 </div>
-            </form>
+                <div class="text-2xl font-black font-heading text-rose-400 font-mono">{{ number_format($totalExpenses, 2, ',', '.') }} MT</div>
+                <div class="text-[10px] text-slate-500 mt-1">saída líquida de caixa</div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl relative overflow-hidden group">
+                <div class="w-1.5 h-full absolute left-0 top-0 bg-amber-500"></div>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Despesa Média</span>
+                    <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-calculator"></i>
+                    </div>
+                </div>
+                <div class="text-2xl font-black font-heading text-amber-400 font-mono">{{ number_format($averageExpense, 2, ',', '.') }} MT</div>
+                <div class="text-[10px] text-slate-500 mt-1">média por operação</div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl relative overflow-hidden group">
+                <div class="w-1.5 h-full absolute left-0 top-0 {{ $expenseGrowth <= 0 ? 'bg-emerald-500' : 'bg-rose-500' }}"></div>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Variação / Crescimento</span>
+                    <div class="w-8 h-8 rounded-xl {{ $expenseGrowth <= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400' }} flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                </div>
+                <div class="text-2xl font-black font-heading font-mono {{ $expenseGrowth <= 0 ? 'text-emerald-400' : 'text-rose-400' }}">
+                    {{ $expenseGrowth >= 0 ? '+' : '' }}{{ number_format($expenseGrowth, 1) }}%
+                </div>
+                <div class="text-[10px] text-slate-500 mt-1">em relação ao período anterior</div>
+            </div>
         </div>
     </div>
 
-    <!-- KPIs Principais -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
-            <div class="card stats-card danger h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-receipt fa-2x text-danger mb-2"></i>
-                    <h3 class="mb-1 text-danger">{{ $expenseCount }}</h3>
-                    <p class="text-muted mb-0 small">Total Despesas</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
-            <div class="card stats-card warning h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-money-bill-wave fa-2x text-warning mb-2"></i>
-                    <h4 class="mb-1 text-warning">{{ number_format($totalExpenses, 0) }} MT</h4>
-                    <p class="text-muted mb-0 small">Valor Total</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
-            <div class="card stats-card info h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-calculator fa-2x text-info mb-2"></i>
-                    <h4 class="mb-1 text-info">{{ number_format($averageExpense, 0) }} MT</h4>
-                    <p class="text-muted mb-0 small">Despesa Média</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
-            <div class="card stats-card {{ $expenseGrowth <= 0 ? 'success' : ($expenseGrowth <= 10 ? 'warning' : 'danger') }} h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-chart-line fa-2x {{ $expenseGrowth <= 0 ? 'text-success' : ($expenseGrowth <= 10 ? 'text-warning' : 'text-danger') }} mb-2"></i>
-                    <h4 class="mb-1 {{ $expenseGrowth <= 0 ? 'text-success' : ($expenseGrowth <= 10 ? 'text-warning' : 'text-danger') }}">
-                        {{ $expenseGrowth >= 0 ? '+' : '' }}{{ number_format($expenseGrowth, 1) }}%
-                    </h4>
-                    <p class="text-muted mb-0 small">Crescimento</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Alertas de Controle -->
+    <!-- Alertas de Auditoria -->
     @if($expenseGrowth > 15)
-    <div class="alert alert-danger" role="alert">
-        <i class="fas fa-exclamation-triangle me-2"></i>
-        <strong>Atenção:</strong> As despesas cresceram {{ number_format($expenseGrowth, 1) }}% em relação ao período anterior. Revise os gastos urgentemente.
-    </div>
-    @elseif($expenseGrowth > 10)
-    <div class="alert alert-warning" role="alert">
-        <i class="fas fa-info-circle me-2"></i>
-        <strong>Aviso:</strong> Crescimento de {{ number_format($expenseGrowth, 1) }}% nas despesas. Monitore os gastos de perto.
-    </div>
+        <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-3">
+            <i class="fa-solid fa-triangle-exclamation text-rose-400 text-lg"></i>
+            <div>
+                <strong class="text-rose-400">Alerta de Gestão:</strong> As despesas cresceram <strong>{{ number_format($expenseGrowth, 1) }}%</strong> em relação ao período anterior. Recomenda-se auditoria detalhada nos centros de custo.
+            </div>
+        </div>
     @elseif($expenseGrowth < -5)
-    <div class="alert alert-success" role="alert">
-        <i class="fas fa-check-circle me-2"></i>
-        <strong>Parabéns:</strong> Redução de {{ number_format(abs($expenseGrowth), 1) }}% nas despesas. Controle eficiente de custos!
-    </div>
+        <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-3">
+            <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+            <div>
+                <strong class="text-emerald-400">Eficiência de Custos:</strong> Redução de <strong>{{ number_format(abs($expenseGrowth), 1) }}%</strong> nas despesas. Excelente controle orçamentário no período.
+            </div>
+        </div>
     @endif
 
     <!-- Gráficos de Análise -->
-    <div class="row mb-4">
-        <div class="col-lg-8">
-            <div class="card">
-                <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-chart-area me-2"></i>
-                                                Evolução Diária das Despesas
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="expensesEvolutionChart" height="100"></canvas>
-                </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+                <h3 class="text-sm font-black font-heading text-white">Evolução Diária das Despesas</h3>
+            </div>
+            <div class="h-64 sm:h-72 w-full">
+                <canvas id="expensesEvolutionChart"></canvas>
             </div>
         </div>
-        <div class="col-lg-4">
-            <div class="card">
-                <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-chart-pie me-2"></i>
-                        Despesas por Categoria
-                    </h5>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+                    <h3 class="text-sm font-black font-heading text-white">Despesas por Categoria</h3>
                 </div>
-                <div class="card-body">
-                    <canvas id="categoriesChart" height="100"></canvas>
+                <div class="h-52 w-full relative flex items-center justify-center">
+                    <canvas id="categoriesChart"></canvas>
                 </div>
+            </div>
+            <div class="pt-3 border-t border-slate-800 text-[11px] text-slate-400 text-center">
+                Distribuição percentual por centro de custo
             </div>
         </div>
     </div>
 
-    <!-- Análise por Categoria -->
-    <div class="card mb-4">
-        <div class="card-header bg-white">
-            <h5 class="card-title mb-0">
-                <i class="fas fa-tags me-2"></i>
-                Análise por Categoria de Despesa
-            </h5>
+    <!-- Análise por Categoria Table -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden space-y-3">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <h3 class="text-sm font-black font-heading text-white flex items-center gap-2">
+                <i class="fa-solid fa-tags text-indigo-400"></i> Despesas por Categoria
+            </h3>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Categoria</th>
-                            <th class="text-center">Quantidade</th>
-                            <th class="text-center">% do Total</th>
-                            <th class="text-end">Valor Total</th>
-                            <th class="text-end">Despesa Média</th>
-                            <th class="text-center">Status</th>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider">
+                        <th class="pb-3">Categoria</th>
+                        <th class="pb-3 text-center">Quantidade</th>
+                        <th class="pb-3 text-center">% do Total</th>
+                        <th class="pb-3 text-right">Valor Total (MT)</th>
+                        <th class="pb-3 text-right">Despesa Média (MT)</th>
+                        <th class="pb-3 text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                    @foreach($expensesByCategory as $category)
+                        <tr class="hover:bg-slate-800/30 transition">
+                            <td class="py-3 font-bold text-white">{{ $category['category'] }}</td>
+                            <td class="py-3 text-center text-slate-400 font-mono">{{ $category['count'] }}</td>
+                            <td class="py-3 text-center">
+                                <span class="font-mono text-slate-300">{{ number_format($category['percentage'], 1) }}%</span>
+                                <div class="w-24 h-1.5 bg-slate-800 rounded-full mx-auto mt-1 overflow-hidden">
+                                    <div class="h-full bg-rose-500 rounded-full" style="width: {{ $category['percentage'] }}%"></div>
+                                </div>
+                            </td>
+                            <td class="py-3 text-right font-black text-rose-400 font-mono">{{ number_format($category['total'], 2, ',', '.') }} MT</td>
+                            <td class="py-3 text-right font-mono text-slate-300">{{ number_format($category['avg'], 2, ',', '.') }} MT</td>
+                            <td class="py-3 text-center">
+                                @if($category['percentage'] >= 40)
+                                    <span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-rose-500/10 text-rose-400 border border-rose-500/20">Crítico</span>
+                                @elseif($category['percentage'] >= 25)
+                                    <span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-amber-500/10 text-amber-400 border border-amber-500/20">Alto</span>
+                                @elseif($category['percentage'] >= 15)
+                                    <span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-sky-500/10 text-sky-400 border border-sky-500/20">Médio</span>
+                                @else
+                                    <span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Normal</span>
+                                @endif
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($expensesByCategory as $category)
-                            <tr>
-                                <td><strong>{{ $category['category'] }}</strong></td>
-                                <td class="text-center">{{ $category['count'] }}</td>
-                                <td class="text-center">
-                                    {{ number_format($category['percentage'], 1) }}%
-                                    <div class="progress mt-1" style="height: 4px;">
-                                        <div class="progress-bar bg-danger" style="width: {{ $category['percentage'] }}%"></div>
-                                    </div>
-                                </td>
-                                <td class="text-end text-danger fw-bold">{{ number_format($category['total'], 0) }} MT</td>
-                                <td class="text-end">{{ number_format($category['avg'], 0) }} MT</td>
-                                <td class="text-center">
-                                    @if($category['percentage'] >= 40)
-                                        <span class="badge bg-danger">CRÍTICO</span>
-                                    @elseif($category['percentage'] >= 25)
-                                        <span class="badge bg-warning">ALTO</span>
-                                    @elseif($category['percentage'] >= 15)
-                                        <span class="badge bg-info">MÉDIO</span>
-                                    @else
-                                        <span class="badge bg-success">CONTROLADO</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- Análise por Usuário -->
-    <div class="card mb-4">
-        <div class="card-header bg-white">
-            <h5 class="card-title mb-0">
-                <i class="fas fa-users me-2"></i>
-                Despesas por Usuário
-            </h5>
+    <!-- Top 10 Maiores Despesas -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden space-y-3">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <h3 class="text-sm font-black font-heading text-white flex items-center gap-2">
+                <i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Top 10 Maiores Despesas do Período
+            </h3>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Usuário</th>
-                            <th class="text-center">Quantidade</th>
-                            <th class="text-end">Valor Total</th>
-                            <th class="text-end">Despesa Média</th>
-                            <th class="text-center">Performance</th>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider">
+                        <th class="pb-3">Data</th>
+                        <th class="pb-3">Categoria</th>
+                        <th class="pb-3">Descrição</th>
+                        <th class="pb-3">Operador</th>
+                        <th class="pb-3 text-center">Recibo</th>
+                        <th class="pb-3 text-right">Valor (MT)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                    @foreach($topExpenses as $expense)
+                        <tr class="hover:bg-slate-800/30 transition">
+                            <td class="py-3 font-mono text-slate-400">{{ \Carbon\Carbon::parse($expense->expense_date)->format('d/m/Y') }}</td>
+                            <td class="py-3">
+                                <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                                    {{ $expense->category->name ?? 'Geral' }}
+                                </span>
+                            </td>
+                            <td class="py-3 font-bold text-white">
+                                {{ Str::limit($expense->description, 50) }}
+                                @if($expense->notes)
+                                    <p class="text-[10px] font-normal text-slate-400 mt-0.5">{{ Str::limit($expense->notes, 60) }}</p>
+                                @endif
+                            </td>
+                            <td class="py-3 text-slate-400">{{ $expense->user->name ?? 'Sistema' }}</td>
+                            <td class="py-3 text-center font-mono text-slate-400">
+                                {{ $expense->receipt_number ?? '-' }}
+                            </td>
+                            <td class="py-3 text-right font-black font-mono text-rose-400">
+                                -{{ number_format($expense->amount, 2, ',', '.') }} MT
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($expensesByUser as $user)
-                            <tr>
-                                <td><strong>{{ $user['user'] }}</strong></td>
-                                <td class="text-center">{{ $user['count'] }}</td>
-                                <td class="text-end text-danger fw-bold">{{ number_format($user['total'], 0) }} MT</td>
-                                <td class="text-end">{{ number_format($user['avg'], 0) }} MT</td>
-                                <td class="text-center">
-                                    @if($user['avg'] <= $averageExpense * 0.8)
-                                        <span class="badge bg-success">CONTROLADO</span>
-                                    @elseif($user['avg'] <= $averageExpense * 1.2)
-                                        <span class="badge bg-info">NORMAL</span>
-                                    @else
-                                        <span class="badge bg-warning">ATENÇÃO</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Maiores Despesas -->
-    <div class="card mb-4">
-        <div class="card-header bg-warning text-dark">
-            <h5 class="card-title mb-0">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                Top 10 Maiores Despesas do Período
-            </h5>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Data</th>
-                            <th>Categoria</th>
-                            <th>Descrição</th>
-                            <th class="text-end">Valor</th>
-                            <th>Usuário</th>
-                            <th>Recibo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($topExpenses as $expense)
-                            <tr>
-                                <td>{{ \Carbon\Carbon::parse($expense->expense_date)->format('d/m/Y') }}</td>
-                                <td>
-                                    <span class="badge bg-secondary">{{ $expense->category->name ?? 'Sem Categoria' }}</span>
-                                </td>
-                                <td>
-                                    <div>
-                                        <strong>{{ Str::limit($expense->description, 50) }}</strong>
-                                        @if($expense->notes)
-                                            <br><small class="text-muted">{{ Str::limit($expense->notes, 60) }}</small>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td class="text-end">
-                                    <span class="fw-bold text-danger fs-6">{{ number_format($expense->amount, 2, ',', '.') }} MT</span>
-                                </td>
-                                <td>{{ $expense->user->name ?? 'N/A' }}</td>
-                                <td>
-                                    @if($expense->receipt_number)
-                                        <span class="badge bg-success">{{ $expense->receipt_number }}</span>
-                                    @else
-                                        <span class="badge bg-danger">Sem Recibo</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
 
     <!-- Despesas Detalhadas -->
-    <div class="card">
-        <div class="card-header bg-white">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-table me-2"></i>
-                    Despesas Detalhadas ({{ $expenses->count() }} despesas)
-                </h5>
-                <div class="btn-group btn-group-sm" role="group">
-                    <button type="button" class="btn btn-outline-primary" onclick="exportToExcel()">
-                        <i class="fas fa-file-excel me-1"></i> Excel
-                    </button>
-                    <button type="button" class="btn btn-outline-danger" onclick="exportToPDF()">
-                        <i class="fas fa-file-pdf me-1"></i> PDF
-                    </button>
-                </div>
-            </div>
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden space-y-3">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <h3 class="text-sm font-black font-heading text-white flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-slate-400"></i> Despesas Detalhadas ({{ $expenses->count() }})
+            </h3>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" id="expensesTable">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th>Data</th>
-                            <th>Categoria</th>
-                            <th>Descrição</th>
-                            <th class="text-end">Valor</th>
-                            <th>Recibo</th>
-                            <th>Usuário</th>
-                            <th class="text-center">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($expenses as $expense)
-                            <tr>
-                                <td><strong class="text-danger">#{{ $expense->id }}</strong></td>
-                                <td>{{ \Carbon\Carbon::parse($expense->expense_date)->format('d/m/Y') }}</td>
-                                <td>
-                                    <span class="badge bg-secondary">{{ $expense->category->name ?? 'Sem Categoria' }}</span>
-                                </td>
-                                <td>
-                                    <div>
-                                        <strong>{{ Str::limit($expense->description, 60) }}</strong>
-                                        @if($expense->notes)
-                                            <br><small class="text-muted">{{ Str::limit($expense->notes, 80) }}</small>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td class="text-end">
-                                    <span class="fw-bold text-danger">{{ number_format($expense->amount, 2, ',', '.') }} MT</span>
-                                    @if($expense->amount >= $averageExpense * 2)
-                                        <br><small class="badge bg-warning">Alto Valor</small>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($expense->receipt_number)
-                                        <span class="badge bg-success">{{ $expense->receipt_number }}</span>
-                                    @else
-                                        <span class="badge bg-danger">Sem Recibo</span>
-                                    @endif
-                                </td>
-                                <td>{{ $expense->user->name ?? 'N/A' }}</td>
-                                <td class="text-center">
-                                    @if(!$expense->receipt_number)
-                                        <span class="badge bg-warning">Documentar</span>
-                                    @elseif($expense->amount >= $averageExpense * 3)
-                                        <span class="badge bg-info">Revisar</span>
-                                    @else
-                                        <span class="badge bg-success">OK</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="text-center py-5 text-muted">
-                                    <i class="fas fa-receipt fa-3x mb-3 opacity-50"></i>
-                                    <h5>Nenhuma despesa encontrada</h5>
-                                    <p>Tente ajustar os filtros ou o período de busca.</p>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                    <tfoot class="table-light">
-                        <tr class="fw-bold fs-6">
-                            <td colspan="4">TOTAL GERAL:</td>
-                            <td class="text-end text-danger">{{ number_format($totalExpenses, 2, ',', '.') }} MT</td>
-                            <td colspan="3">
-                                <small class="text-muted">
-                                    Média: {{ number_format($averageExpense, 2, ',', '.') }} MT por despesa
-                                </small>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider">
+                        <th class="pb-3">Data</th>
+                        <th class="pb-3">Descrição</th>
+                        <th class="pb-3">Categoria</th>
+                        <th class="pb-3">Operador</th>
+                        <th class="pb-3">Nº Doc</th>
+                        <th class="pb-3 text-right">Valor (MT)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                    @forelse($expenses as $expense)
+                        <tr class="hover:bg-slate-800/30 transition">
+                            <td class="py-3 font-mono text-slate-400 whitespace-nowrap">{{ \Carbon\Carbon::parse($expense->expense_date)->format('d/m/Y') }}</td>
+                            <td class="py-3 font-bold text-white">{{ $expense->description }}</td>
+                            <td class="py-3 whitespace-nowrap">
+                                <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                                    {{ $expense->category->name ?? 'Geral' }}
+                                </span>
                             </td>
+                            <td class="py-3 text-slate-400 whitespace-nowrap">{{ $expense->user->name ?? 'Sistema' }}</td>
+                            <td class="py-3 font-mono text-slate-400 whitespace-nowrap">{{ $expense->receipt_number ?? '-' }}</td>
+                            <td class="py-3 text-right font-black font-mono text-rose-400 whitespace-nowrap">-{{ number_format($expense->amount, 2, ',', '.') }} MT</td>
                         </tr>
-                    </tfoot>
-                </table>
-            </div>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="py-8 text-center text-slate-500">Nenhuma despesa registada no período.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
-@endsection
+
+</div>
 
 @push('scripts')
-{{-- Chart.js carregado no app.js via Vite --}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Gráfico de Evolução Diária
-        const evolutionCtx = document.getElementById('expensesEvolutionChart').getContext('2d');
-        const expensesByDay = @json($expensesByDay->values());
-        
+document.addEventListener('DOMContentLoaded', function () {
+    // 1. Gráfico de Evolução Diária
+    const evolutionCtx = document.getElementById('expensesEvolutionChart');
+    if (evolutionCtx) {
+        const dailyExpenses = @json($dailyExpenses);
         new Chart(evolutionCtx, {
             type: 'line',
             data: {
-                labels: expensesByDay.map(day => {
-                    const date = new Date(day.date);
-                    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-                }),
-                datasets: [
-                    {
-                        label: 'Valor Diário (MT)',
-                        data: expensesByDay.map(day => day.total),
-                        borderColor: '#dc3545',
-                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                        tension: 0.3,
-                        fill: true,
-                        yAxisID: 'y'
-                    },
-                    {
-                        label: 'Quantidade',
-                        data: expensesByDay.map(day => day.count),
-                        borderColor: '#ffc107',
-                        backgroundColor: 'rgba(255, 193, 7, 0.1)',
-                        tension: 0.3,
-                        fill: false,
-                        yAxisID: 'y1'
-                    }
-                ]
+                labels: dailyExpenses.map(d => d.date),
+                datasets: [{
+                    label: 'Despesas Diárias (MT)',
+                    data: dailyExpenses.map(d => d.total),
+                    borderColor: '#f43f5e',
+                    backgroundColor: 'rgba(244, 63, 94, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        position: 'top'
-                    }
+                    legend: { labels: { color: '#94a3b8', font: { size: 10 } } }
                 },
                 scales: {
-                    y: {
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
-                        title: {
-                            display: true,
-                            text: 'Valores (MT)'
-                        }
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        title: {
-                            display: true,
-                            text: 'Quantidade'
-                        },
-                        grid: {
-                            drawOnChartArea: false,
-                        }
-                    }
+                    x: { grid: { color: 'rgba(51, 65, 85, 0.3)' }, ticks: { color: '#64748b', font: { size: 10 } } },
+                    y: { grid: { color: 'rgba(51, 65, 85, 0.3)' }, ticks: { color: '#64748b', font: { size: 10 } } }
                 }
             }
         });
+    }
 
-        // Gráfico de Categorias
-        const categoriesCtx = document.getElementById('categoriesChart').getContext('2d');
+    // 2. Gráfico de Categorias
+    const categoriesCtx = document.getElementById('categoriesChart');
+    if (categoriesCtx) {
         const expensesByCategory = @json($expensesByCategory);
-        
         const categoryLabels = Object.values(expensesByCategory).map(cat => cat.category);
         const categoryData = Object.values(expensesByCategory).map(cat => cat.total);
         const categoryColors = [
-            '#dc3545', '#ffc107', '#17a2b8', '#28a745', '#6f42c1', 
-            '#fd7e14', '#20c997', '#e83e8c', '#6c757d', '#343a40'
+            '#f43f5e', '#f59e0b', '#0ea5e9', '#10b981', '#8b5cf6', 
+            '#ec4899', '#14b8a6', '#6366f1', '#64748b', '#94a3b8'
         ];
         
         new Chart(categoriesCtx, {
@@ -522,79 +422,38 @@
                 datasets: [{
                     data: categoryData,
                     backgroundColor: categoryColors.slice(0, categoryLabels.length),
-                    borderWidth: 2
+                    borderWidth: 0
                 }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            boxWidth: 12,
-                            padding: 10
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const total = categoryData.reduce((a, b) => a + b, 0);
-                                const percentage = ((context.parsed * 100) / total).toFixed(1);
-                                return context.label + ': ' + context.parsed.toLocaleString('pt-MZ') + 
-                                       ' MT (' + percentage + '%)';
-                            }
-                        }
-                    }
-                }
+                    legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } }
+                },
+                cutout: '70%'
             }
         });
+    }
+});
+
+function exportToExcel() {
+    window.location.href = '{{ route("reports.export") }}?' + new URLSearchParams({
+        date_from: '{{ $dateFrom }}',
+        date_to: '{{ $dateTo }}',
+        report_type: 'expenses',
+        format: 'excel'
     });
+}
 
-    // Funções de exportação
-    function exportToExcel() {
-        window.location.href = '{{ route("reports.export") }}?' + new URLSearchParams({
-            date_from: '{{ $dateFrom }}',
-            date_to: '{{ $dateTo }}',
-            report_type: 'expenses',
-            format: 'excel'
-        });
-    }
-
-    function exportToPDF() {
-        window.open('{{ route("reports.export") }}?' + new URLSearchParams({
-            date_from: '{{ $dateFrom }}',
-            date_to: '{{ $dateTo }}',
-            report_type: 'expenses',
-            format: 'pdf'
-        }), '_blank');
-    }
+function exportToPDF() {
+    window.open('{{ route("reports.export") }}?' + new URLSearchParams({
+        date_from: '{{ $dateFrom }}',
+        date_to: '{{ $dateTo }}',
+        report_type: 'expenses',
+        format: 'pdf'
+    }), '_blank');
+}
 </script>
 @endpush
-
-@push('styles')
-<style>
-    .stats-card {
-        transition: transform 0.2s ease;
-        border-left: 4px solid transparent;
-    }
-    
-    .stats-card.danger { border-left-color: #dc3545; }
-    .stats-card.warning { border-left-color: #ffc107; }
-    .stats-card.info { border-left-color: #17a2b8; }
-    .stats-card.success { border-left-color: #28a745; }
-    
-    .stats-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-    
-    .progress {
-        background-color: #e9ecef;
-    }
-
-    @media print {
-        .btn, form, .btn-group, .alert { display: none !important; }
-        .card { border: 1px solid #ddd !important; box-shadow: none !important; }
-    }
-</style>
-@endpush
+@endsection

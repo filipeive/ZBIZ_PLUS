@@ -8,51 +8,93 @@
 @endphp
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6" x-data="{
+    metricsCollapsed: localStorage.getItem('monthlysales_metrics_collapsed') === 'true',
+    toggleMetrics() {
+        this.metricsCollapsed = !this.metricsCollapsed;
+        localStorage.setItem('monthlysales_metrics_collapsed', this.metricsCollapsed);
+    }
+}">
     
     <!-- Top Action Bar -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
         <div>
             <h2 class="text-lg font-black font-heading text-white flex items-center gap-2">
                 <i class="fa-solid fa-calendar-days text-sky-400"></i> Relatório de Vendas Mensais
             </h2>
-            <p class="text-xs text-slate-400">Análise da evolução de faturamento e sazonalidade mês a mês.</p>
+            <p class="text-xs text-slate-400 mt-0.5">Análise da evolução de faturamento e sazonalidade mês a mês.</p>
         </div>
 
-        <div class="flex items-center gap-2.5">
-            <a href="{{ route('reports.index') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
-                <i class="fa-solid fa-arrow-left"></i> Central de Relatórios
+        <div class="flex items-center gap-2">
+            <a href="{{ route('reports.index') }}" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition shadow-sm" title="Central de Relatórios">
+                <i class="fa-solid fa-arrow-left"></i> <span class="hidden sm:inline">Central de Relatórios</span>
             </a>
-            <button type="button" onclick="window.print()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-2">
-                <i class="fa-solid fa-print"></i> Imprimir / PDF
+            <button type="button" onclick="window.print()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-1.5 shadow-sm" title="Imprimir ou Exportar PDF">
+                <i class="fa-solid fa-print"></i> <span class="hidden sm:inline">Imprimir / PDF</span>
             </button>
         </div>
     </div>
 
-    <!-- 4 Summary KPI Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Meses com Registo</span>
-            <div class="text-2xl font-black font-heading text-white mt-2">{{ $sales->count() }} <span class="text-xs font-normal text-slate-400">meses</span></div>
-            <div class="text-xs text-slate-500 mt-1">no histórico</div>
+    <!-- Collapsible KPI Section -->
+    <div class="space-y-2">
+        <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-pie text-slate-500"></i> Métricas Consolidadas
+            </span>
+            <button @click="toggleMetrics()" type="button" class="text-xs font-bold text-slate-400 hover:text-white transition flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60">
+                <i class="fa-solid" :class="metricsCollapsed ? 'fa-eye' : 'fa-eye-slash'"></i>
+                <span x-text="metricsCollapsed ? 'Ver Métricas' : 'Ocultar Métricas'"></span>
+            </button>
         </div>
 
-        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Receita Acumulada</span>
-            <div class="text-2xl font-black font-heading text-emerald-400 font-mono mt-2">{{ number_format($sales->sum('total'), 2, ',', '.') }} <span class="text-xs font-normal text-slate-400">MT</span></div>
-            <div class="text-xs text-slate-500 mt-1">total faturado</div>
+        <!-- 1-Line Compact Summary Bar (When Collapsed) -->
+        <div x-show="metricsCollapsed" x-cloak class="bg-slate-900/90 border border-slate-800 rounded-2xl px-5 py-3 shadow-lg flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400">Meses:</span>
+                <span class="font-black text-white font-mono">{{ $sales->count() }}</span>
+            </div>
+            <div class="hidden sm:block text-slate-700">|</div>
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400">Receita Acumulada:</span>
+                <span class="font-black text-emerald-400 font-mono">{{ number_format($sales->sum('total'), 2, ',', '.') }} MT</span>
+            </div>
+            <div class="hidden sm:block text-slate-700">|</div>
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400">Média Mensal:</span>
+                <span class="font-black text-amber-400 font-mono">{{ $sales->count() > 0 ? number_format($sales->avg('total'), 2, ',', '.') : '0,00' }} MT</span>
+            </div>
+            <div class="hidden sm:block text-slate-700">|</div>
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400">Melhor Mês:</span>
+                <span class="font-black text-sky-400 font-mono">{{ $sales->count() > 0 ? number_format($sales->max('total'), 2, ',', '.') : '0,00' }} MT</span>
+            </div>
         </div>
 
-        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Média Mensal</span>
-            <div class="text-2xl font-black font-heading text-amber-400 font-mono mt-2">{{ $sales->count() > 0 ? number_format($sales->avg('total'), 2, ',', '.') : '0,00' }} <span class="text-xs font-normal text-slate-400">MT</span></div>
-            <div class="text-xs text-slate-500 mt-1">por mês ativo</div>
-        </div>
+        <!-- 4 Summary KPI Cards (When Expanded) -->
+        <div x-show="!metricsCollapsed" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Meses com Registo</span>
+                <div class="text-2xl font-black font-heading text-white mt-2">{{ $sales->count() }} <span class="text-xs font-normal text-slate-400">meses</span></div>
+                <div class="text-xs text-slate-500 mt-1">no histórico</div>
+            </div>
 
-        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Melhor Mês</span>
-            <div class="text-2xl font-black font-heading text-sky-400 font-mono mt-2">{{ $sales->count() > 0 ? number_format($sales->max('total'), 2, ',', '.') : '0,00' }} <span class="text-xs font-normal text-slate-400">MT</span></div>
-            <div class="text-xs text-slate-500 mt-1">pico de faturamento</div>
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Receita Acumulada</span>
+                <div class="text-2xl font-black font-heading text-emerald-400 font-mono mt-2">{{ number_format($sales->sum('total'), 2, ',', '.') }} <span class="text-xs font-normal text-slate-400">MT</span></div>
+                <div class="text-xs text-slate-500 mt-1">total faturado</div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Média Mensal</span>
+                <div class="text-2xl font-black font-heading text-amber-400 font-mono mt-2">{{ $sales->count() > 0 ? number_format($sales->avg('total'), 2, ',', '.') : '0,00' }} <span class="text-xs font-normal text-slate-400">MT</span></div>
+                <div class="text-xs text-slate-500 mt-1">por mês ativo</div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Melhor Mês</span>
+                <div class="text-2xl font-black font-heading text-sky-400 font-mono mt-2">{{ $sales->count() > 0 ? number_format($sales->max('total'), 2, ',', '.') : '0,00' }} <span class="text-xs font-normal text-slate-400">MT</span></div>
+                <div class="text-xs text-slate-500 mt-1">pico de faturamento</div>
+            </div>
         </div>
     </div>
 

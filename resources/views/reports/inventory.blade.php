@@ -8,57 +8,99 @@
 @endphp
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6" x-data="{
+    metricsCollapsed: localStorage.getItem('inventory_metrics_collapsed') === 'true',
+    toggleMetrics() {
+        this.metricsCollapsed = !this.metricsCollapsed;
+        localStorage.setItem('inventory_metrics_collapsed', this.metricsCollapsed);
+    }
+}">
     
     <!-- Top Action Bar -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
         <div>
             <h2 class="text-lg font-black font-heading text-white flex items-center gap-2">
                 <i class="fa-solid fa-boxes-stacked text-emerald-400"></i> Relatório de Inventário Físico
             </h2>
-            <p class="text-xs text-slate-400">Visão consolidada de quantidades em armazém, custos médios e valores totais de venda.</p>
+            <p class="text-xs text-slate-400 mt-0.5">Visão consolidada de quantidades em armazém, custos médios e valores totais de venda.</p>
         </div>
 
-        <div class="flex items-center gap-2.5">
+        <div class="flex items-center gap-2">
             @if(\App\Helpers\PermissionHelper::userCan('view_reports'))
-            <a href="{{ route('reports.index') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
-                <i class="fa-solid fa-arrow-left"></i> Central de Relatórios
+            <a href="{{ route('reports.index') }}" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition shadow-sm" title="Central de Relatórios">
+                <i class="fa-solid fa-arrow-left"></i> <span class="hidden sm:inline">Central de Relatórios</span>
             </a>
             @endif
-            <button type="button" onclick="window.print()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-2">
-                <i class="fa-solid fa-print"></i> Imprimir / PDF
+            <button type="button" onclick="window.print()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-1.5 shadow-sm" title="Imprimir ou Exportar PDF">
+                <i class="fa-solid fa-print"></i> <span class="hidden sm:inline">Imprimir / PDF</span>
             </button>
         </div>
     </div>
 
-    <!-- 4 Summary KPI Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total de Artigos</span>
-            <div class="text-2xl font-black font-heading text-white mt-2">{{ $products->count() }} <span class="text-xs font-normal text-slate-400">itens</span></div>
-            <div class="text-xs text-slate-500 mt-1">no catálogo geral</div>
+    <!-- Collapsible KPI Section -->
+    <div class="space-y-2">
+        <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-pie text-slate-500"></i> Métricas de Stock
+            </span>
+            <button @click="toggleMetrics()" type="button" class="text-xs font-bold text-slate-400 hover:text-white transition flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60">
+                <i class="fa-solid" :class="metricsCollapsed ? 'fa-eye' : 'fa-eye-slash'"></i>
+                <span x-text="metricsCollapsed ? 'Ver Métricas' : 'Ocultar Métricas'"></span>
+            </button>
         </div>
 
-        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Artigos Disponíveis</span>
-            <div class="text-2xl font-black font-heading text-emerald-400 font-mono mt-2">{{ $products->where('stock_quantity', '>', 0)->count() }}</div>
-            <div class="text-xs text-slate-500 mt-1">com stock positivo</div>
-        </div>
-
-        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Stock Crítico / Ruptura</span>
-            <div class="text-2xl font-black font-heading text-rose-400 font-mono mt-2">
-                {{ $products->filter(function($p) { return $p->stock_quantity <= $p->min_stock_level; })->count() }}
+        <!-- 1-Line Compact Summary Bar (When Collapsed) -->
+        <div x-show="metricsCollapsed" x-cloak class="bg-slate-900/90 border border-slate-800 rounded-2xl px-5 py-3 shadow-lg flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400">Total Artigos:</span>
+                <span class="font-black text-white font-mono">{{ $products->count() }}</span>
             </div>
-            <div class="text-xs text-rose-500/80 mt-1 font-semibold">abaixo do limite mínimo</div>
+            <div class="hidden sm:block text-slate-700">|</div>
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400">Disponíveis:</span>
+                <span class="font-black text-emerald-400 font-mono">{{ $products->where('stock_quantity', '>', 0)->count() }}</span>
+            </div>
+            <div class="hidden sm:block text-slate-700">|</div>
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400">Crítico:</span>
+                <span class="font-black text-rose-400 font-mono">{{ $products->filter(function($p) { return $p->stock_quantity <= $p->min_stock_level; })->count() }}</span>
+            </div>
+            <div class="hidden sm:block text-slate-700">|</div>
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400">Valor em Stock:</span>
+                <span class="font-black text-sky-400 font-mono">{{ number_format($products->sum(function($p) { return $p->selling_price * $p->stock_quantity; }), 2, ',', '.') }} MT</span>
+            </div>
         </div>
 
-        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Valor em Inventário</span>
-            <div class="text-2xl font-black font-heading text-sky-400 font-mono mt-2">
-                {{ number_format($products->sum(function($p) { return $p->selling_price * $p->stock_quantity; }), 2, ',', '.') }} MT
+        <!-- 4 Summary KPI Cards (When Expanded) -->
+        <div x-show="!metricsCollapsed" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total de Artigos</span>
+                <div class="text-2xl font-black font-heading text-white mt-2">{{ $products->count() }} <span class="text-xs font-normal text-slate-400">itens</span></div>
+                <div class="text-xs text-slate-500 mt-1">no catálogo geral</div>
             </div>
-            <div class="text-xs text-slate-500 mt-1">valor estimado de venda</div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Artigos Disponíveis</span>
+                <div class="text-2xl font-black font-heading text-emerald-400 font-mono mt-2">{{ $products->where('stock_quantity', '>', 0)->count() }}</div>
+                <div class="text-xs text-slate-500 mt-1">com stock positivo</div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Stock Crítico / Ruptura</span>
+                <div class="text-2xl font-black font-heading text-rose-400 font-mono mt-2">
+                    {{ $products->filter(function($p) { return $p->stock_quantity <= $p->min_stock_level; })->count() }}
+                </div>
+                <div class="text-xs text-rose-500/80 mt-1 font-semibold">abaixo do limite mínimo</div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-lg backdrop-blur-xl">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Valor em Inventário</span>
+                <div class="text-2xl font-black font-heading text-sky-400 font-mono mt-2">
+                    {{ number_format($products->sum(function($p) { return $p->selling_price * $p->stock_quantity; }), 2, ',', '.') }} MT
+                </div>
+                <div class="text-xs text-slate-500 mt-1">valor estimado de venda</div>
+            </div>
         </div>
     </div>
 

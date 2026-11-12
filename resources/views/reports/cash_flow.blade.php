@@ -8,97 +8,135 @@
 @endphp
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6" x-data="{
+    metricsCollapsed: localStorage.getItem('cashflow_metrics_collapsed') === 'true',
+    toggleMetrics() {
+        this.metricsCollapsed = !this.metricsCollapsed;
+        localStorage.setItem('cashflow_metrics_collapsed', this.metricsCollapsed);
+    }
+}">
     
     <!-- Top Action Bar -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
         <div>
             <h2 class="text-lg font-black font-heading text-white flex items-center gap-2">
                 <i class="fa-solid fa-money-bill-transfer text-sky-400"></i> Demonstrativo de Fluxo de Caixa Real
             </h2>
-            <p class="text-xs text-slate-400">Conciliação de entradas financeiras efetivas (vendas e recebimentos) contra saídas (despesas e pagamentos).</p>
+            <p class="text-xs text-slate-400 mt-0.5">Conciliação de entradas financeiras efetivas (vendas e recebimentos) contra saídas (despesas e pagamentos).</p>
         </div>
 
-        <div class="flex items-center gap-2.5">
-            <a href="{{ route('reports.index') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
-                <i class="fa-solid fa-arrow-left"></i> Central de Relatórios
+        <div class="flex items-center gap-2">
+            <a href="{{ route('reports.index') }}" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition shadow-sm" title="Central de Relatórios">
+                <i class="fa-solid fa-arrow-left"></i> <span class="hidden sm:inline">Central de Relatórios</span>
             </a>
-            <button type="button" onclick="window.print()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-2">
-                <i class="fa-solid fa-print"></i> Imprimir / PDF
+            <button type="button" onclick="window.print()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-1.5 shadow-sm" title="Imprimir ou Exportar PDF">
+                <i class="fa-solid fa-print"></i> <span class="hidden sm:inline">Imprimir / PDF</span>
             </button>
         </div>
     </div>
 
     <!-- Filters Section -->
-    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
-        <form method="GET" action="{{ route('reports.cash-flow') }}" class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-4 items-end">
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
+        <form method="GET" action="{{ route('reports.cash-flow') }}" class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-3 items-end">
             <div>
-                <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Data Inicial</label>
-                <input type="date" name="date_from" value="{{ $dateFrom }}" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Data Inicial</label>
+                <input type="date" name="date_from" value="{{ $dateFrom }}" class="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
             </div>
             <div>
-                <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Data Final</label>
-                <input type="date" name="date_to" value="{{ $dateTo }}" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Data Final</label>
+                <input type="date" name="date_to" value="{{ $dateTo }}" class="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none">
             </div>
             <div>
-                <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-filter"></i> Atualizar Fluxo
+                <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-filter"></i> <span>Atualizar Fluxo</span>
                 </button>
             </div>
         </form>
     </div>
 
-    <!-- 3 Summary KPI Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        
-        <!-- Total Entradas -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total de Entradas</span>
-                <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg">
-                    <i class="fa-solid fa-arrow-down-left"></i>
-                </div>
+    <!-- Collapsible KPI Section -->
+    <div class="space-y-2">
+        <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-pie text-slate-500"></i> Totais do Período
+            </span>
+            <button @click="toggleMetrics()" type="button" class="text-xs font-bold text-slate-400 hover:text-white transition flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60">
+                <i class="fa-solid" :class="metricsCollapsed ? 'fa-eye' : 'fa-eye-slash'"></i>
+                <span x-text="metricsCollapsed ? 'Ver Métricas' : 'Ocultar Métricas'"></span>
+            </button>
+        </div>
+
+        <!-- 1-Line Compact Summary Bar (When Collapsed) -->
+        <div x-show="metricsCollapsed" x-cloak class="bg-slate-900/90 border border-slate-800 rounded-2xl px-5 py-3 shadow-lg flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400">Total Entradas:</span>
+                <span class="font-black text-emerald-400 font-mono">+{{ number_format($totalInflows, 2, ',', '.') }} MT</span>
             </div>
-            <div class="mt-4">
-                <div class="text-3xl font-black font-heading text-emerald-400 font-mono">
-                    {{ number_format($totalInflows, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
-                </div>
-                <div class="text-xs text-slate-500 mt-1">vendas e recebimentos confirmados</div>
+            <div class="hidden sm:block text-slate-700">|</div>
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400">Total Saídas:</span>
+                <span class="font-black text-rose-400 font-mono">-{{ number_format($totalOutflows, 2, ',', '.') }} MT</span>
+            </div>
+            <div class="hidden sm:block text-slate-700">|</div>
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400">Fluxo Líquido:</span>
+                <span class="font-black font-mono {{ $netCashFlow >= 0 ? 'text-teal-400' : 'text-rose-400' }}">{{ number_format($netCashFlow, 2, ',', '.') }} MT</span>
             </div>
         </div>
 
-        <!-- Total Saídas -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total de Saídas</span>
-                <div class="w-10 h-10 rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center text-lg">
-                    <i class="fa-solid fa-arrow-up-right"></i>
+        <!-- 3 Summary KPI Cards (When Expanded) -->
+        <div x-show="!metricsCollapsed" class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            <!-- Total Entradas -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl relative overflow-hidden group">
+                <div class="w-1.5 h-full absolute left-0 top-0 bg-emerald-500"></div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total de Entradas</span>
+                    <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-arrow-down-left"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="text-3xl font-black font-heading text-emerald-400 font-mono">
+                        {{ number_format($totalInflows, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
+                    </div>
+                    <div class="text-xs text-slate-500 mt-1">vendas e recebimentos confirmados</div>
                 </div>
             </div>
-            <div class="mt-4">
-                <div class="text-3xl font-black font-heading text-rose-400 font-mono">
-                    {{ number_format($totalOutflows, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
+
+            <!-- Total Saídas -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl relative overflow-hidden group">
+                <div class="w-1.5 h-full absolute left-0 top-0 bg-rose-500"></div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total de Saídas</span>
+                    <div class="w-10 h-10 rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-arrow-up-right"></i>
+                    </div>
                 </div>
-                <div class="text-xs text-slate-500 mt-1">despesas e pagamentos operacionais</div>
+                <div class="mt-4">
+                    <div class="text-3xl font-black font-heading text-rose-400 font-mono">
+                        {{ number_format($totalOutflows, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
+                    </div>
+                    <div class="text-xs text-slate-500 mt-1">despesas e pagamentos operacionais</div>
+                </div>
+            </div>
+
+            <!-- Fluxo Líquido -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl relative overflow-hidden group">
+                <div class="w-1.5 h-full absolute left-0 top-0 bg-sky-500"></div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Fluxo Líquido de Caixa</span>
+                    <div class="w-10 h-10 rounded-2xl bg-sky-500/10 text-sky-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-scale-balanced"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="text-3xl font-black font-heading {{ $netCashFlow >= 0 ? 'text-emerald-400' : 'text-rose-400' }} font-mono">
+                        {{ number_format($netCashFlow, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
+                    </div>
+                    <div class="text-xs text-slate-500 mt-1">saldo líquido do período</div>
+                </div>
             </div>
         </div>
-
-        <!-- Fluxo Líquido -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Fluxo Líquido de Caixa</span>
-                <div class="w-10 h-10 rounded-2xl bg-sky-500/10 text-sky-400 flex items-center justify-center text-lg">
-                    <i class="fa-solid fa-scale-balanced"></i>
-                </div>
-            </div>
-            <div class="mt-4">
-                <div class="text-3xl font-black font-heading {{ $netCashFlow >= 0 ? 'text-emerald-400' : 'text-rose-400' }} font-mono">
-                    {{ number_format($netCashFlow, 2, ',', '.') }} <span class="text-xs text-slate-400 font-normal">MT</span>
-                </div>
-                <div class="text-xs text-slate-500 mt-1">saldo líquido do período</div>
-            </div>
-        </div>
-
     </div>
 
     <!-- Charts Row -->
@@ -160,14 +198,14 @@
         <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl space-y-4">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <h3 class="text-sm font-black text-white font-heading flex items-center gap-2">
-                    <i class="fa-solid fa-receipt text-rose-400"></i> Saídas por Categoria
+                    <i class="fa-solid fa-receipt text-rose-400"></i> Saídas por Categoria / Tipo
                 </h3>
             </div>
             <div class="space-y-3">
                 @forelse($cashOutflows as $type => $amount)
                     <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800/80 text-xs">
-                        <span class="text-slate-300 font-bold">{{ $outflowLabels[$type] ?? ucfirst($type) }}</span>
-                        <span class="font-mono font-black text-rose-400">{{ number_format($amount, 2, ',', '.') }} MT</span>
+                        <span class="text-slate-300 font-bold uppercase text-[11px]">{{ ucfirst(str_replace('_', ' ', $type)) }}</span>
+                        <span class="font-mono font-black text-rose-400">-{{ number_format($amount, 2, ',', '.') }} MT</span>
                     </div>
                 @empty
                     <p class="text-xs text-slate-500 text-center py-4">Nenhuma saída registada no período.</p>
@@ -177,69 +215,18 @@
 
     </div>
 
-    <!-- Daily Cash Flow Table -->
-    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-xl overflow-hidden">
-        <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
-            <div>
-                <h3 class="text-base font-black font-heading text-white">Extrato Cronológico Diário</h3>
-                <p class="text-xs text-slate-400">Demonstração diária de entradas, saídas e saldo líquido do caixa.</p>
-            </div>
-        </div>
-
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-                <thead>
-                    <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider">
-                        <th class="pb-3">Data</th>
-                        <th class="pb-3 text-center">Transações</th>
-                        <th class="pb-3 text-right">Entradas (MT)</th>
-                        <th class="pb-3 text-right">Saídas (MT)</th>
-                        <th class="pb-3 text-right">Saldo Líquido (MT)</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-800/60 font-medium">
-                    @forelse($dailyCashFlow as $day)
-                        <tr class="hover:bg-slate-800/30 transition">
-                            <td class="py-3 font-mono font-bold text-white">
-                                {{ $day['date_full'] }}
-                            </td>
-                            <td class="py-3 text-center text-slate-400">
-                                {{ $day['sales_count'] }} vendas
-                            </td>
-                            <td class="py-3 text-right font-mono text-emerald-400 font-bold">
-                                {{ number_format($day['inflow'], 2, ',', '.') }} MT
-                            </td>
-                            <td class="py-3 text-right font-mono text-rose-400">
-                                {{ number_format($day['outflow'], 2, ',', '.') }} MT
-                            </td>
-                            <td class="py-3 text-right font-mono font-black {{ $day['net'] >= 0 ? 'text-emerald-400' : 'text-rose-400' }}">
-                                {{ number_format($day['net'], 2, ',', '.') }} MT
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="py-12 text-center text-slate-500">
-                                <i class="fa-solid fa-money-bill-transfer text-3xl mb-2 text-slate-600"></i>
-                                <p>Nenhum movimento de caixa encontrado no período.</p>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-
 </div>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const dailyData = @json($dailyCashFlow);
     const inflowsData = @json($cashInflows);
 
-    // 1. Daily Inflows vs Outflows Chart
+    // 1. Daily Inflows vs Outflows Bar Chart
     const dailyCtx = document.getElementById('cashFlowDailyChart');
-    if (dailyCtx && dailyData.length > 0) {
+    if (dailyCtx) {
         new Chart(dailyCtx, {
             type: 'bar',
             data: {

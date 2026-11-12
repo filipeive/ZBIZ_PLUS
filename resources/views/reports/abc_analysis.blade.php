@@ -8,23 +8,29 @@
 @endphp
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6" x-data="{
+    metricsCollapsed: localStorage.getItem('abcanalysis_metrics_collapsed') === 'true',
+    toggleMetrics() {
+        this.metricsCollapsed = !this.metricsCollapsed;
+        localStorage.setItem('abcanalysis_metrics_collapsed', this.metricsCollapsed);
+    }
+}">
     
     <!-- Top Action Bar -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-xl">
         <div>
             <h2 class="text-lg font-black font-heading text-white flex items-center gap-2">
                 <i class="fa-solid fa-ranking-star text-amber-400"></i> Análise Curva ABC (80 / 15 / 5)
             </h2>
-            <p class="text-xs text-slate-400">Classificação de produtos por relevância de faturamento para priorização de compras e inventário.</p>
+            <p class="text-xs text-slate-400 mt-0.5">Classificação de produtos por relevância de faturamento para priorização de compras e inventário.</p>
         </div>
 
-        <div class="flex items-center gap-2.5">
-            <a href="{{ route('reports.index') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl flex items-center gap-2 transition">
-                <i class="fa-solid fa-arrow-left"></i> Central de Relatórios
+        <div class="flex items-center gap-2">
+            <a href="{{ route('reports.index') }}" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition shadow-sm" title="Central de Relatórios">
+                <i class="fa-solid fa-arrow-left"></i> <span class="hidden sm:inline">Central de Relatórios</span>
             </a>
-            <button type="button" onclick="window.print()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-2">
-                <i class="fa-solid fa-print"></i> Imprimir / PDF
+            <button type="button" onclick="window.print()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-1.5 shadow-sm" title="Imprimir ou Exportar PDF">
+                <i class="fa-solid fa-print"></i> <span class="hidden sm:inline">Imprimir / PDF</span>
             </button>
         </div>
     </div>
@@ -48,93 +54,125 @@
         </form>
     </div>
 
-    <!-- 3 Classes ABC Summary Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        
-        <!-- Classe A -->
-        <div class="bg-slate-900/90 border border-emerald-500/30 rounded-3xl p-6 shadow-xl backdrop-blur-xl relative overflow-hidden">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-                <div>
-                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                        Classe A (Premium)
-                    </span>
-                    <h3 class="text-base font-black text-white mt-2">80% da Receita</h3>
-                </div>
-                <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg">
-                    <i class="fa-solid fa-star"></i>
-                </div>
-            </div>
-            <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
-                <div>
-                    <div class="text-slate-500 text-[10px] uppercase font-bold">Qtd Artigos</div>
-                    <div class="text-xl font-black text-white mt-0.5">{{ $abcStats['A']->count() }}</div>
-                </div>
-                <div>
-                    <div class="text-slate-500 text-[10px] uppercase font-bold">Faturamento</div>
-                    <div class="text-xl font-black text-emerald-400 font-mono mt-0.5">{{ number_format($abcStats['A']->sum('total_revenue'), 0, ',', '.') }} MT</div>
-                </div>
-            </div>
-            <p class="text-[11px] text-slate-400 mt-4 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
-                <strong>Estratégia:</strong> Artigos vitais. Manter sempre estoque disponível e monitorar reposição com rigor.
-            </p>
+    <!-- Collapsible KPI Section -->
+    <div class="space-y-2">
+        <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-pie text-slate-500"></i> Síntese Curva ABC
+            </span>
+            <button @click="toggleMetrics()" type="button" class="text-xs font-bold text-slate-400 hover:text-white transition flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60">
+                <i class="fa-solid" :class="metricsCollapsed ? 'fa-eye' : 'fa-eye-slash'"></i>
+                <span x-text="metricsCollapsed ? 'Ver Métricas' : 'Ocultar Métricas'"></span>
+            </button>
         </div>
 
-        <!-- Classe B -->
-        <div class="bg-slate-900/90 border border-amber-500/30 rounded-3xl p-6 shadow-xl backdrop-blur-xl relative overflow-hidden">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-                <div>
-                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                        Classe B (Intermédio)
-                    </span>
-                    <h3 class="text-base font-black text-white mt-2">15% da Receita</h3>
-                </div>
-                <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg">
-                    <i class="fa-solid fa-medal"></i>
-                </div>
+        <!-- 1-Line Compact Summary Bar (When Collapsed) -->
+        <div x-show="metricsCollapsed" x-cloak class="bg-slate-900/90 border border-slate-800 rounded-2xl px-5 py-3 shadow-lg flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2">
+                <span class="text-emerald-400 font-bold">Classe A (80%):</span>
+                <span class="text-white font-mono">{{ $abcStats['A']->count() }} itens</span>
+                <span class="text-emerald-400 font-mono font-bold">({{ number_format($abcStats['A']->sum('total_revenue'), 0, ',', '.') }} MT)</span>
             </div>
-            <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
-                <div>
-                    <div class="text-slate-500 text-[10px] uppercase font-bold">Qtd Artigos</div>
-                    <div class="text-xl font-black text-white mt-0.5">{{ $abcStats['B']->count() }}</div>
-                </div>
-                <div>
-                    <div class="text-slate-500 text-[10px] uppercase font-bold">Faturamento</div>
-                    <div class="text-xl font-black text-amber-400 font-mono mt-0.5">{{ number_format($abcStats['B']->sum('total_revenue'), 0, ',', '.') }} MT</div>
-                </div>
+            <div class="hidden sm:block text-slate-700">|</div>
+            <div class="flex items-center gap-2">
+                <span class="text-amber-400 font-bold">Classe B (15%):</span>
+                <span class="text-white font-mono">{{ $abcStats['B']->count() }} itens</span>
+                <span class="text-amber-400 font-mono font-bold">({{ number_format($abcStats['B']->sum('total_revenue'), 0, ',', '.') }} MT)</span>
             </div>
-            <p class="text-[11px] text-slate-400 mt-4 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
-                <strong>Estratégia:</strong> Artigos moderados. Reposição padrão conforme demanda regular.
-            </p>
+            <div class="hidden sm:block text-slate-700">|</div>
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400 font-bold">Classe C (5%):</span>
+                <span class="text-white font-mono">{{ $abcStats['C']->count() }} itens</span>
+                <span class="text-slate-300 font-mono font-bold">({{ number_format($abcStats['C']->sum('total_revenue'), 0, ',', '.') }} MT)</span>
+            </div>
         </div>
 
-        <!-- Classe C -->
-        <div class="bg-slate-900/90 border border-slate-700 rounded-3xl p-6 shadow-xl backdrop-blur-xl relative overflow-hidden">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-                <div>
-                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-slate-800 text-slate-400 border border-slate-700">
-                        Classe C (Cauda Longa)
-                    </span>
-                    <h3 class="text-base font-black text-white mt-2">5% da Receita</h3>
+        <!-- 3 Classes ABC Summary Cards (When Expanded) -->
+        <div x-show="!metricsCollapsed" class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <!-- Classe A -->
+            <div class="bg-slate-900/90 border border-emerald-500/30 rounded-3xl p-6 shadow-xl backdrop-blur-xl relative overflow-hidden">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                    <div>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                            Classe A (Premium)
+                        </span>
+                        <h3 class="text-base font-black text-white mt-2">80% da Receita</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-star"></i>
+                    </div>
                 </div>
-                <div class="w-10 h-10 rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center text-lg">
-                    <i class="fa-solid fa-box-open"></i>
+                <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                        <div class="text-slate-500 text-[10px] uppercase font-bold">Qtd Artigos</div>
+                        <div class="text-xl font-black text-white mt-0.5">{{ $abcStats['A']->count() }}</div>
+                    </div>
+                    <div>
+                        <div class="text-slate-500 text-[10px] uppercase font-bold">Faturamento</div>
+                        <div class="text-xl font-black text-emerald-400 font-mono mt-0.5">{{ number_format($abcStats['A']->sum('total_revenue'), 0, ',', '.') }} MT</div>
+                    </div>
                 </div>
+                <p class="text-[11px] text-slate-400 mt-4 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
+                    <strong>Estratégia:</strong> Artigos vitais. Manter sempre estoque disponível e monitorar reposição com rigor.
+                </p>
             </div>
-            <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
-                <div>
-                    <div class="text-slate-500 text-[10px] uppercase font-bold">Qtd Artigos</div>
-                    <div class="text-xl font-black text-white mt-0.5">{{ $abcStats['C']->count() }}</div>
-                </div>
-                <div>
-                    <div class="text-slate-500 text-[10px] uppercase font-bold">Faturamento</div>
-                    <div class="text-xl font-black text-slate-300 font-mono mt-0.5">{{ number_format($abcStats['C']->sum('total_revenue'), 0, ',', '.') }} MT</div>
-                </div>
-            </div>
-            <p class="text-[11px] text-slate-400 mt-4 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
-                <strong>Estratégia:</strong> Baixa rotatividade. Evitar compras em excesso para não imobilizar capital.
-            </p>
-        </div>
 
+            <!-- Classe B -->
+            <div class="bg-slate-900/90 border border-amber-500/30 rounded-3xl p-6 shadow-xl backdrop-blur-xl relative overflow-hidden">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                    <div>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                            Classe B (Intermédio)
+                        </span>
+                        <h3 class="text-base font-black text-white mt-2">15% da Receita</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-medal"></i>
+                    </div>
+                </div>
+                <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                        <div class="text-slate-500 text-[10px] uppercase font-bold">Qtd Artigos</div>
+                        <div class="text-xl font-black text-white mt-0.5">{{ $abcStats['B']->count() }}</div>
+                    </div>
+                    <div>
+                        <div class="text-slate-500 text-[10px] uppercase font-bold">Faturamento</div>
+                        <div class="text-xl font-black text-amber-400 font-mono mt-0.5">{{ number_format($abcStats['B']->sum('total_revenue'), 0, ',', '.') }} MT</div>
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-4 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
+                    <strong>Estratégia:</strong> Artigos moderados. Reposição padrão conforme demanda regular.
+                </p>
+            </div>
+
+            <!-- Classe C -->
+            <div class="bg-slate-900/90 border border-slate-700 rounded-3xl p-6 shadow-xl backdrop-blur-xl relative overflow-hidden">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                    <div>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-slate-800 text-slate-400 border border-slate-700">
+                            Classe C (Cauda Longa)
+                        </span>
+                        <h3 class="text-base font-black text-white mt-2">5% da Receita</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-box-open"></i>
+                    </div>
+                </div>
+                <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                        <div class="text-slate-500 text-[10px] uppercase font-bold">Qtd Artigos</div>
+                        <div class="text-xl font-black text-white mt-0.5">{{ $abcStats['C']->count() }}</div>
+                    </div>
+                    <div>
+                        <div class="text-slate-500 text-[10px] uppercase font-bold">Faturamento</div>
+                        <div class="text-xl font-black text-slate-300 font-mono mt-0.5">{{ number_format($abcStats['C']->sum('total_revenue'), 0, ',', '.') }} MT</div>
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-4 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
+                    <strong>Estratégia:</strong> Baixa rotatividade. Evitar compras em excesso para não imobilizar capital.
+                </p>
+            </div>
+        </div>
     </div>
 
     <!-- Charts Row -->

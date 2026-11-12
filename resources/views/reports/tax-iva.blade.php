@@ -34,18 +34,18 @@
             </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2.5">
-            <a href="{{ route('reports.index') }}" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs rounded-xl border border-slate-700/80 transition flex items-center gap-2">
-                <i class="fa-solid fa-arrow-left"></i> Relatórios
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{{ route('reports.index') }}" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs rounded-xl border border-slate-700/80 transition flex items-center gap-1.5 shadow-sm" title="Central de Relatórios">
+                <i class="fa-solid fa-arrow-left"></i> <span class="hidden sm:inline">Relatórios</span>
             </a>
 
             <a href="{{ route('reports.tax-iva.pdf', ['month' => $month, 'year' => $year, 'branch_id' => $branchId]) }}" 
-               class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-600/20 transition flex items-center gap-2">
-                <i class="fa-solid fa-file-pdf"></i> Descarregar Declaração PDF (Modelo A)
+               class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-1.5" title="Descarregar Declaração PDF (Modelo A)">
+                <i class="fa-solid fa-file-pdf"></i> <span class="hidden sm:inline">Declaração PDF (Mod. A)</span><span class="sm:hidden">PDF</span>
             </a>
 
-            <button type="button" onclick="window.print()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-1.5">
-                <i class="fa-solid fa-print"></i> Imprimir
+            <button type="button" onclick="window.print()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs rounded-xl border border-slate-700 transition flex items-center gap-1.5 shadow-sm" title="Imprimir Relatório">
+                <i class="fa-solid fa-print"></i> <span class="hidden sm:inline">Imprimir</span>
             </button>
         </div>
     </div>
